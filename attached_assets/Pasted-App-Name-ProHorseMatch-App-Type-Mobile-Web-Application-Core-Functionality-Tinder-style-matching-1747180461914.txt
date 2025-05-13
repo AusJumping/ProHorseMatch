@@ -1,0 +1,117 @@
+App Name: ProHorseMatch
+App Type: Mobile + Web Application
+Core Functionality: Tinder-style matching app that connects professional riders (Customers) with performance horses for sale (by Owners) based on a range of defined criteria.
+🧩 DATABASE SCHEMA
+
+1. Horse Model
+id: UUID
+owner_id: Foreign Key
+location_country: String
+location_radius_km: Integer
+disciplines: Array[String] (Jumping, Eventing, Dressage)
+levels: Array[String]
+breeds: Array[String]
+age: Integer (0–20+)
+height_hands: Float
+height_cm: Integer
+sex: Enum(Mare, Gelding, Stallion)
+sire: String
+dam: String
+dam_sire: String
+characteristics: Array[String] (Scope, Forward, Schoolmaster, etc.)
+price: Integer
+currency: String
+photos: Array[File] (Portrait + Landscape)
+videos: Array[File] (Portrait + Landscape)
+created_at: Timestamp
+2. Owner Model
+id: UUID
+business_name: String
+contact_name: String
+email: String
+password: Hashed String
+3. Customer (Rider) Profile
+id: UUID
+name: String
+email: String
+password: Hashed String
+location_country: String
+location_radius_km: Integer
+preferred_disciplines: Array[String]
+preferred_levels: Array[String]
+preferred_breeds: Array[String]
+age_range: Tuple[min, max]
+height_range: Tuple[min, max] (in hands or cm)
+preferred_sexes: Array[String]
+breeding_preferences: String (free text)
+preferred_characteristics: Array[String]
+price_range: Tuple[min, max]
+currency: String
+🎯 MATCHING LOGIC
+
+Perform dynamic filtering on horses that match the Customer's selected criteria.
+Use a sliding card interface (Tinder-style) to show one horse at a time.
+Horses outside the set radius (if set) are excluded.
+Horses in currencies different from the customer’s locale will have real-time currency conversion using a public FX API (e.g., exchangerate-api.com).
+🖥️ FRONTEND FUNCTIONALITY
+
+1. Horse Display (Card Style)
+Carousel layout with:
+Horse name and media (auto-looping video, then swipeable photo gallery)
+Key stats: Breed, Sex, Age, Height, Discipline, Level, Price (auto-converted)
+"More info" opens full profile including breeding, characteristics
+2. Filters for Customers
+Multi-select dropdowns for:
+Disciplines
+Levels (adjusted per discipline)
+Breeds
+Preferred Sexes
+Sliders for:
+Age
+Height
+Price
+Location filter:
+Option to choose "Any", specific country, or set radius via geolocation
+Keyword search for bloodlines
+Toggle switch for currency display
+3. Owner Horse Entry Form
+Input fields:
+Location
+Breed, Discipline, Level (multiple select)
+Height (in hands or cm with conversion)
+Age
+Sex
+Breeding details
+Preferred Characteristics
+Price and Currency
+Media Upload:
+Landscape and Portrait (separate validation for each)
+Image cropper/resizer
+Submit/Save button
+4. Messaging System
+In-app messaging between Customers and Owners
+Real-time chat (WebSockets)
+Notifications panel (message received, match found, etc.)
+Push/email notification integration (e.g., Firebase, OneSignal)
+🔐 SECURITY & USER MANAGEMENT
+
+Secure login/signup for both Owners and Customers
+Password hashing with salt (e.g., bcrypt)
+JWT-based session authentication
+Email verification
+Media files stored securely (e.g., AWS S3 with signed URLs)
+🌐 INTERNATIONALISATION
+
+App supports:
+Auto-detection of locale to adjust currency
+Optional manual override for currency and language
+Built-in FX conversion service
+🧪 TECH STACK SUGGESTION
+
+Frontend: React Native (mobile), React.js (web)
+Backend: Node.js with Express OR Python with Django/FastAPI
+Database: PostgreSQL
+Auth: Firebase Auth or Auth0
+Currency API: exchangerate-api.com or openexchangerates.org
+Messaging: Firebase Realtime DB or socket.io
+Media Storage: AWS S3
