@@ -1,0 +1,724 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import Layout from "@/components/Layout";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Save, LogOut } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
+import { useMobile } from "@/hooks/use-mobile";
+
+// Schemas for form validation
+const profileFormSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  location_country: z.string().optional(),
+  location_radius_km: z.number().min(0).max(500).optional(),
+  preferred_disciplines: z.array(z.string()).optional(),
+  preferred_levels: z.array(z.string()).optional(),
+  preferred_breeds: z.array(z.string()).optional(),
+  age_range_min: z.number().min(0).max(20).optional(),
+  age_range_max: z.number().min(0).max(20).optional(),
+  height_range_min: z.number().min(13).max(18).optional(),
+  height_range_max: z.number().min(13).max(18).optional(),
+  preferred_sexes: z.array(z.string()).optional(),
+  breeding_preferences: z.string().optional(),
+  preferred_characteristics: z.array(z.string()).optional(),
+  price_range_min: z.number().min(0).optional(),
+  price_range_max: z.number().min(0).optional(),
+  currency: z.string().optional(),
+});
+
+// Define the constants from the schema
+const disciplines = ["Jumping", "Dressage", "Eventing"];
+const sexes = ["Mare", "Gelding", "Stallion"];
+const breeds = [
+  "Hanoverian", "Dutch Warmblood", "Holsteiner", "KWPN", "Thoroughbred", 
+  "Westphalian", "Selle Francais", "Belgian Warmblood", "Oldenburg", "Trakehner", "Irish Sport Horse"
+];
+const characteristics = [
+  "Forward", "Brave", "Careful", "Scope", "Easy to Ride", "Schoolmaster", 
+  "Athletic", "Honest", "Talented", "Bold", "Sensitive", "Calm"
+];
+const countries = [
+  "Germany", "Netherlands", "Belgium", "France", "United Kingdom", 
+  "United States", "Ireland", "Sweden", "Denmark", "Spain", "Italy"
+];
+
+export default function Profile() {
+  const isMobile = useMobile();
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Fetch user profile data
+  const { data: user, isLoading } = useQuery({
+    queryKey: ['/api/auth/me'],
+  });
+
+  // Fetch constants for form dropdowns
+  const { data: constants } = useQuery({
+    queryKey: ['/api/constants'],
+  });
+
+  const profileForm = useForm<z.infer<typeof profileFormSchema>>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      name: user?.name || "",
+      email: user?.email || "",
+      location_country: user?.profile?.location_country || undefined,
+      location_radius_km: user?.profile?.location_radius_km || 0,
+      preferred_disciplines: user?.profile?.preferred_disciplines || [],
+      preferred_levels: user?.profile?.preferred_levels || [],
+      preferred_breeds: user?.profile?.preferred_breeds || [],
+      age_range_min: user?.profile?.age_range_min || 0,
+      age_range_max: user?.profile?.age_range_max || 20,
+      height_range_min: user?.profile?.height_range_min || 13,
+      height_range_max: user?.profile?.height_range_max || 18,
+      preferred_sexes: user?.profile?.preferred_sexes || [],
+      breeding_preferences: user?.profile?.breeding_preferences || "",
+      preferred_characteristics: user?.profile?.preferred_characteristics || [],
+      price_range_min: user?.profile?.price_range_min || 0,
+      price_range_max: user?.profile?.price_range_max || 100000,
+      currency: user?.profile?.currency || "EUR",
+    }
+  });
+
+  // Update form values when user data is loaded
+  const onProfileSubmit = async (data: z.infer<typeof profileFormSchema>) => {
+    try {
+      await apiRequest("PATCH", `/api/customers/${user?.id}`, data);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+      });
+      
+      // Invalidate the user query to refetch the updated data
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await apiRequest("POST", "/api/auth/logout", {});
+      
+      // Clear all queries from cache
+      queryClient.clear();
+      
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully.",
+      });
+      
+      navigate("/auth");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to logout",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Layout pageTitle="Profile">
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading profile...</span>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout pageTitle="Profile">
+      <div className="max-w-4xl mx-auto">
+        <Tabs defaultValue="profile" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="profile">My Profile</TabsTrigger>
+            <TabsTrigger value="preferences">Horse Preferences</TabsTrigger>
+            <TabsTrigger value="settings">Account Settings</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="profile">
+            <Card>
+              <CardHeader>
+                <CardTitle>Personal Information</CardTitle>
+                <CardDescription>
+                  Update your personal information and contact details
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...profileForm}>
+                  <form className="space-y-6">
+                    <FormField
+                      control={profileForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={profileForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input {...field} disabled />
+                          </FormControl>
+                          <FormDescription>
+                            To change your email, please contact support
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={profileForm.control}
+                        name="location_country"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Country</FormLabel>
+                            <Select 
+                              value={field.value} 
+                              onValueChange={field.onChange}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a country" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectGroup>
+                                  {countries.map((country) => (
+                                    <SelectItem key={country} value={country}>
+                                      {country}
+                                    </SelectItem>
+                                  ))}
+                                </SelectGroup>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={profileForm.control}
+                        name="location_radius_km"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Search Radius (km)</FormLabel>
+                            <FormControl>
+                              <div className="pt-6">
+                                <Slider
+                                  value={[field.value || 0]}
+                                  min={0}
+                                  max={500}
+                                  step={50}
+                                  onValueChange={(vals) => field.onChange(vals[0])}
+                                />
+                              </div>
+                            </FormControl>
+                            <div className="flex justify-between text-xs text-neutral-500 mt-2">
+                              <span>0 km</span>
+                              <span>{field.value || 0} km</span>
+                              <span>500 km</span>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </form>
+                </Form>
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button type="submit" onClick={profileForm.handleSubmit(onProfileSubmit)}>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="preferences">
+            <Card>
+              <CardHeader>
+                <CardTitle>Horse Preferences</CardTitle>
+                <CardDescription>
+                  Set your preferences for the horses you want to see
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className={isMobile ? "h-[calc(100vh-320px)]" : ""}>
+                  <Form {...profileForm}>
+                    <form className="space-y-8">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Basic Criteria</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <FormField
+                            control={profileForm.control}
+                            name="preferred_disciplines"
+                            render={() => (
+                              <FormItem>
+                                <FormLabel>Disciplines</FormLabel>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {disciplines.map((discipline) => (
+                                    <FormField
+                                      key={discipline}
+                                      control={profileForm.control}
+                                      name="preferred_disciplines"
+                                      render={({ field }) => {
+                                        return (
+                                          <FormItem
+                                            key={discipline}
+                                            className="flex flex-row items-start space-x-2"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(discipline)}
+                                                onCheckedChange={(checked) => {
+                                                  return checked
+                                                    ? field.onChange([...field.value || [], discipline])
+                                                    : field.onChange(
+                                                        field.value?.filter(
+                                                          (value) => value !== discipline
+                                                        )
+                                                      )
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="font-normal cursor-pointer">
+                                              {discipline}
+                                            </FormLabel>
+                                          </FormItem>
+                                        )
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="preferred_sexes"
+                            render={() => (
+                              <FormItem>
+                                <FormLabel>Sex</FormLabel>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {sexes.map((sex) => (
+                                    <FormField
+                                      key={sex}
+                                      control={profileForm.control}
+                                      name="preferred_sexes"
+                                      render={({ field }) => {
+                                        return (
+                                          <FormItem
+                                            key={sex}
+                                            className="flex flex-row items-start space-x-2"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(sex)}
+                                                onCheckedChange={(checked) => {
+                                                  return checked
+                                                    ? field.onChange([...field.value || [], sex])
+                                                    : field.onChange(
+                                                        field.value?.filter(
+                                                          (value) => value !== sex
+                                                        )
+                                                      )
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="font-normal cursor-pointer">
+                                              {sex}
+                                            </FormLabel>
+                                          </FormItem>
+                                        )
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      
+                      <Separator />
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Price Range</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <FormField
+                            control={profileForm.control}
+                            name="price_range_min"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Minimum Price</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    value={field.value || 0}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="price_range_max"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Maximum Price</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="number"
+                                    value={field.value || 0}
+                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="currency"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Currency</FormLabel>
+                                <Select 
+                                  value={field.value} 
+                                  onValueChange={field.onChange}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select currency" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="EUR">Euro (EUR)</SelectItem>
+                                    <SelectItem value="USD">US Dollar (USD)</SelectItem>
+                                    <SelectItem value="GBP">British Pound (GBP)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      
+                      <Separator />
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Physical Attributes</h3>
+                        <div className="space-y-6">
+                          <FormField
+                            control={profileForm.control}
+                            name="age_range_min"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex justify-between">
+                                  <FormLabel>Age Range</FormLabel>
+                                  <span className="text-sm text-primary font-semibold">
+                                    {profileForm.watch("age_range_min") || 0} - {profileForm.watch("age_range_max") || 20} years
+                                  </span>
+                                </div>
+                                <FormControl>
+                                  <div className="pt-6">
+                                    <Slider
+                                      value={[
+                                        profileForm.watch("age_range_min") || 0,
+                                        profileForm.watch("age_range_max") || 20
+                                      ]}
+                                      min={0}
+                                      max={20}
+                                      step={1}
+                                      onValueChange={(vals) => {
+                                        profileForm.setValue("age_range_min", vals[0]);
+                                        profileForm.setValue("age_range_max", vals[1]);
+                                      }}
+                                    />
+                                  </div>
+                                </FormControl>
+                                <div className="flex justify-between text-xs text-neutral-500 mt-2">
+                                  <span>0 years</span>
+                                  <span>20+ years</span>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="height_range_min"
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex justify-between">
+                                  <FormLabel>Height Range (hands)</FormLabel>
+                                  <span className="text-sm text-primary font-semibold">
+                                    {profileForm.watch("height_range_min") || 13} - {profileForm.watch("height_range_max") || 18} hh
+                                  </span>
+                                </div>
+                                <FormControl>
+                                  <div className="pt-6">
+                                    <Slider
+                                      value={[
+                                        profileForm.watch("height_range_min") || 13,
+                                        profileForm.watch("height_range_max") || 18
+                                      ]}
+                                      min={13}
+                                      max={18}
+                                      step={0.1}
+                                      onValueChange={(vals) => {
+                                        profileForm.setValue("height_range_min", vals[0]);
+                                        profileForm.setValue("height_range_max", vals[1]);
+                                      }}
+                                    />
+                                  </div>
+                                </FormControl>
+                                <div className="flex justify-between text-xs text-neutral-500 mt-2">
+                                  <span>13 hh</span>
+                                  <span>18 hh</span>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                      
+                      <Separator />
+                      
+                      <div>
+                        <h3 className="text-lg font-semibold mb-4">Characteristics & Breeding</h3>
+                        <div className="grid grid-cols-1 gap-6">
+                          <FormField
+                            control={profileForm.control}
+                            name="preferred_breeds"
+                            render={() => (
+                              <FormItem>
+                                <FormLabel>Preferred Breeds</FormLabel>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                                  {breeds.map((breed) => (
+                                    <FormField
+                                      key={breed}
+                                      control={profileForm.control}
+                                      name="preferred_breeds"
+                                      render={({ field }) => {
+                                        return (
+                                          <FormItem
+                                            key={breed}
+                                            className="flex flex-row items-start space-x-2"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(breed)}
+                                                onCheckedChange={(checked) => {
+                                                  return checked
+                                                    ? field.onChange([...field.value || [], breed])
+                                                    : field.onChange(
+                                                        field.value?.filter(
+                                                          (value) => value !== breed
+                                                        )
+                                                      )
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="font-normal cursor-pointer">
+                                              {breed}
+                                            </FormLabel>
+                                          </FormItem>
+                                        )
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="breeding_preferences"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Breeding Preferences</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g. Cornet Obolensky line" {...field} />
+                                </FormControl>
+                                <FormDescription>
+                                  Enter any specific bloodlines or breeding preferences
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="preferred_characteristics"
+                            render={() => (
+                              <FormItem>
+                                <FormLabel>Preferred Characteristics</FormLabel>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
+                                  {characteristics.map((characteristic) => (
+                                    <FormField
+                                      key={characteristic}
+                                      control={profileForm.control}
+                                      name="preferred_characteristics"
+                                      render={({ field }) => {
+                                        return (
+                                          <FormItem
+                                            key={characteristic}
+                                            className="flex flex-row items-start space-x-2"
+                                          >
+                                            <FormControl>
+                                              <Checkbox
+                                                checked={field.value?.includes(characteristic)}
+                                                onCheckedChange={(checked) => {
+                                                  return checked
+                                                    ? field.onChange([...field.value || [], characteristic])
+                                                    : field.onChange(
+                                                        field.value?.filter(
+                                                          (value) => value !== characteristic
+                                                        )
+                                                      )
+                                                }}
+                                              />
+                                            </FormControl>
+                                            <FormLabel className="font-normal cursor-pointer">
+                                              {characteristic}
+                                            </FormLabel>
+                                          </FormItem>
+                                        )
+                                      }}
+                                    />
+                                  ))}
+                                </div>
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+                    </form>
+                  </Form>
+                </ScrollArea>
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button type="submit" onClick={profileForm.handleSubmit(onProfileSubmit)}>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Preferences
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="settings">
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Settings</CardTitle>
+                <CardDescription>
+                  Manage your account settings and preferences
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold">Email Notifications</h3>
+                      <p className="text-sm text-neutral-500">Receive email notifications for new matches and messages</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold">Push Notifications</h3>
+                      <p className="text-sm text-neutral-500">Receive push notifications on your device</p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div>
+                    <h3 className="font-semibold text-red-500 mb-2">Danger Zone</h3>
+                    <p className="text-sm text-neutral-500 mb-4">
+                      Once you delete your account, there is no going back. This action cannot be undone.
+                    </p>
+                    <Button variant="destructive" disabled={true}>
+                      Delete Account
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button variant="outline" onClick={handleLogout} disabled={isLoggingOut}>
+                  {isLoggingOut ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logging out...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </Layout>
+  );
+}

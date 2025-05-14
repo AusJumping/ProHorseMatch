@@ -1,0 +1,293 @@
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useRoute, useLocation } from "wouter";
+import { Horse } from "@shared/schema";
+import Layout from "@/components/Layout";
+import MediaCarousel from "@/components/MediaCarousel";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Heart, MessageSquare, Share2, ChevronLeft, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { useMobile } from "@/hooks/use-mobile";
+
+export default function HorseDetail() {
+  const isMobile = useMobile();
+  const [, params] = useRoute("/horse/:id");
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [isSaved, setIsSaved] = useState(false);
+  const [isMessageOpen, setIsMessageOpen] = useState(false);
+  const [messageContent, setMessageContent] = useState("");
+
+  // Fetch horse data
+  const { data: horse, isLoading, isError } = useQuery<Horse>({
+    queryKey: [`/api/horses/${params?.id}`],
+    enabled: !!params?.id,
+  });
+
+  // Check if this horse is in the user's favorites
+  useEffect(() => {
+    const checkFavorite = async () => {
+      try {
+        const matches = await fetch("/api/matches", { credentials: "include" }).then(res => res.json());
+        const isLiked = matches.some(
+          (match: any) => match.horse_id === parseInt(params!.id) && match.is_liked
+        );
+        setIsSaved(isLiked);
+      } catch (error) {
+        console.error("Error checking if horse is favorite:", error);
+      }
+    };
+
+    if (params?.id) {
+      checkFavorite();
+    }
+  }, [params?.id]);
+
+  const handleSave = async () => {
+    try {
+      await apiRequest("POST", "/api/matches", {
+        customer_id: 1, // In a real app, this would be the logged-in user ID
+        horse_id: parseInt(params!.id),
+        is_liked: true
+      });
+      
+      setIsSaved(true);
+      toast({
+        title: "Horse saved",
+        description: "This horse has been added to your favorites.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save horse. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageContent.trim()) return;
+    
+    try {
+      await apiRequest("POST", "/api/messages", {
+        customer_id: 1, // In a real app, this would be the logged-in user ID
+        owner_id: horse!.owner_id,
+        horse_id: horse!.id,
+        content: messageContent,
+        sender_type: "customer"
+      });
+      
+      toast({
+        title: "Message sent",
+        description: "Your message has been sent to the owner.",
+      });
+      
+      setMessageContent("");
+      setIsMessageOpen(false);
+      navigate("/messages");
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleContactOwner = () => {
+    setIsMessageOpen(!isMessageOpen);
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `${horse?.name} - ProHorseMatch`,
+          text: `Check out ${horse?.name}, a ${horse?.age}yo ${horse?.breeds[0]} ${horse?.sex} for sale on ProHorseMatch!`,
+          url: window.location.href,
+        })
+        .catch((error) => console.log("Error sharing", error));
+    } else {
+      // Fallback for browsers that don't support navigator.share
+      navigator.clipboard.writeText(window.location.href);
+      toast({
+        title: "Link copied",
+        description: "Horse listing URL copied to clipboard",
+      });
+    }
+  };
+
+  const handleBack = () => {
+    navigate("/");
+  };
+
+  if (isLoading) {
+    return (
+      <Layout pageTitle="Horse Detail" showBackButton onBackClick={handleBack}>
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading horse details...</span>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (isError || !horse) {
+    return (
+      <Layout pageTitle="Horse Detail" showBackButton onBackClick={handleBack}>
+        <div className="flex justify-center items-center h-full">
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-red-500">Error Loading Horse</h2>
+            <p className="mt-2">Could not load horse details. Please try again later.</p>
+            <Button className="mt-4" onClick={handleBack}>
+              Go Back
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout 
+      pageTitle={horse.name} 
+      showBackButton 
+      onBackClick={handleBack}
+    >
+      <div className="w-full max-w-4xl mx-auto">
+        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} bg-white rounded-xl overflow-hidden shadow-md`}>
+          {/* Media Gallery */}
+          <div className={isMobile ? "w-full h-[40vh]" : "w-1/2 h-[600px]"}>
+            <MediaCarousel media={horse.photos} />
+          </div>
+          
+          {/* Details Content */}
+          <div className={isMobile ? "w-full p-4" : "w-1/2 p-6"}>
+            <div className="flex justify-between items-start mb-2">
+              <h2 className="font-display font-bold text-2xl">{horse.name}</h2>
+              <span className="text-lg font-accent font-semibold text-primary">
+                {horse.currency} {horse.price.toLocaleString()}
+              </span>
+            </div>
+            
+            <p className="text-neutral-800 mb-4">
+              {horse.age}yo {horse.breeds[0]} {horse.sex} • {horse.height_hands} hands
+            </p>
+            
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="bg-neutral-50 p-3 rounded-lg">
+                <p className="text-sm text-neutral-500">Discipline</p>
+                <p className="font-medium">{horse.disciplines.join(", ")}</p>
+              </div>
+              <div className="bg-neutral-50 p-3 rounded-lg">
+                <p className="text-sm text-neutral-500">Level</p>
+                <p className="font-medium">{horse.levels.join(", ")}</p>
+              </div>
+              <div className="bg-neutral-50 p-3 rounded-lg">
+                <p className="text-sm text-neutral-500">Breeding</p>
+                <p className="font-medium">
+                  {horse.sire && horse.dam ? `${horse.sire} x ${horse.dam}` : "Not specified"}
+                </p>
+              </div>
+              <div className="bg-neutral-50 p-3 rounded-lg">
+                <p className="text-sm text-neutral-500">Location</p>
+                <p className="font-medium">{horse.location_country}</p>
+              </div>
+            </div>
+            
+            {/* Description */}
+            <div className="mb-6">
+              <h3 className="font-accent font-semibold mb-2">About {horse.name}</h3>
+              <p className="text-neutral-700 text-sm leading-relaxed">
+                {horse.description || "No description provided."}
+              </p>
+            </div>
+            
+            {/* Characteristics */}
+            {horse.characteristics && horse.characteristics.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-accent font-semibold mb-2">Characteristics</h3>
+                <div className="flex flex-wrap gap-2">
+                  {horse.characteristics.map((characteristic, index) => (
+                    <Badge key={index} variant="outline" className="bg-primary bg-opacity-10 text-primary border-transparent">
+                      {characteristic}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Seller Info */}
+            <div className="border-t border-neutral-200 pt-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-500">
+                  <span className="text-lg font-semibold">ES</span>
+                </div>
+                <div>
+                  <h4 className="font-medium">Elite Sporthorses</h4>
+                  <p className="text-sm text-neutral-500">Professional Seller • {horse.location_country}</p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Message form (conditionally displayed) */}
+            {isMessageOpen && (
+              <div className="mb-6">
+                <h3 className="font-accent font-semibold mb-2">Message the Owner</h3>
+                <textarea
+                  className="w-full p-3 border border-neutral-200 rounded-lg mb-3"
+                  rows={3}
+                  placeholder={`Ask a question about ${horse.name}...`}
+                  value={messageContent}
+                  onChange={(e) => setMessageContent(e.target.value)}
+                ></textarea>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsMessageOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSendMessage}>
+                    Send Message
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            {/* Action Buttons */}
+            {!isMessageOpen && (
+              <div className="flex gap-3 mt-auto">
+                <Button 
+                  variant="outline" 
+                  className={`flex-1 ${isSaved ? 'bg-primary-light bg-opacity-10 text-primary' : ''}`}
+                  onClick={handleSave} 
+                  disabled={isSaved}
+                >
+                  <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
+                  {isSaved ? 'Saved to Favorites' : 'Save to Favorites'}
+                </Button>
+                <Button className="flex-1" onClick={handleContactOwner}>
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Contact Seller
+                </Button>
+              </div>
+            )}
+            
+            {/* Share button (mobile only) */}
+            {isMobile && (
+              <div className="mt-4 flex justify-center">
+                <Button variant="ghost" onClick={handleShare}>
+                  <Share2 className="mr-2 h-4 w-4" />
+                  Share
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+}
