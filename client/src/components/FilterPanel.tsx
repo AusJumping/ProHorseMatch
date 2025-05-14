@@ -226,7 +226,7 @@ const FilterPanel = ({
                 <SelectValue placeholder="All Breeds" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Breeds</SelectItem>
+                <SelectItem value="all_breeds">All Breeds</SelectItem>
                 {constants?.breeds?.map((breed: string) => (
                   <SelectItem key={breed} value={breed}>{breed}</SelectItem>
                 ))}
@@ -266,7 +266,7 @@ const FilterPanel = ({
                   </SelectTrigger>
                   <SelectContent>
                     {countries.map((country) => (
-                      <SelectItem key={country} value={country}>{country}</SelectItem>
+                      <SelectItem key={country} value={country === "Any Location" ? "any_location" : country}>{country}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -281,7 +281,7 @@ const FilterPanel = ({
                   </SelectTrigger>
                   <SelectContent>
                     {radiusOptions.map((option) => (
-                      <SelectItem key={option} value={option === "Any" ? "" : option}>{option}</SelectItem>
+                      <SelectItem key={option} value={option === "Any" ? "any_radius" : option}>{option}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
