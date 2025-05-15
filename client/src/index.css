@@ -123,9 +123,9 @@
   }
   
   .pass-button:hover {
-    background-color: #333 !important;
-    color: white !important;
-    border-color: #333 !important;
+    background-color: white !important;
+    color: black !important;
+    border-color: black !important;
   }
 
   .profile-stats-item {
