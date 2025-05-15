@@ -290,13 +290,14 @@ const FilterPanel = ({
               </div>
               <div className="flex-1">
                 <Select 
-                  value={filters.age_max?.toString() || "20"} 
+                  value={filters.age_max?.toString() || "999"} 
                   onValueChange={(value) => handleChange('age_max', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     <SelectValue placeholder="Max Age" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="999">No Max</SelectItem>
                     <SelectItem value="5">5 years</SelectItem>
                     <SelectItem value="6">6 years</SelectItem>
                     <SelectItem value="7">7 years</SelectItem>
