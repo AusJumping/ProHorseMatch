@@ -1,6 +1,7 @@
-import type { Express } from "express";
+import type { Express, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage } from "./storage";
+import session from "express-session";
 import { 
   insertHorseSchema, 
   insertUserSchema,
