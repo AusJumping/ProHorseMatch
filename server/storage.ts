@@ -279,7 +279,21 @@ export class MemStorage implements IStorage {
   }
   
   async getHorsesByFilters(filters: Partial<Horse>): Promise<Horse[]> {
+    console.log("MemStorage.getHorsesByFilters - filters:", JSON.stringify(filters, null, 2));
+    
     const horses = Array.from(this.horses.values());
+    console.log("MemStorage.getHorsesByFilters - all horses:", horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+    
+    if (filters.owner_id !== undefined) {
+      // Special case when filtering by owner_id only, which is a common pattern
+      console.log(`MemStorage.getHorsesByFilters - filtering by owner_id ${filters.owner_id} specifically`);
+      
+      const ownerHorses = horses.filter(horse => horse.owner_id === filters.owner_id);
+      console.log(`MemStorage.getHorsesByFilters - found ${ownerHorses.length} horses for owner ${filters.owner_id}:`, 
+        ownerHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      
+      return ownerHorses;
+    }
     
     return horses.filter(horse => {
       // Filter by owner_id if specified
@@ -317,6 +331,8 @@ export class MemStorage implements IStorage {
       if (filters.location_country && horse.location_country !== filters.location_country) {
         return false;
       }
+      
+      return true;
       
       // Filter by price range if specified
       if (filters.price) {

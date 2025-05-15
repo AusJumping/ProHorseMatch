@@ -377,15 +377,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the user with their roles
       const user = await storage.getUserById(req.session.userId);
       
+      console.log(`GET /api/horses/owner - user:`, user);
+      
       // Check if the user has selling permission
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can access their horses" });
       }
       
       const ownerId = req.session.userId;
+      console.log(`GET /api/horses/owner - searching for owner_id:`, ownerId);
+      
+      // Get all horses first for debugging
+      const allHorses = await storage.getHorses();
+      console.log(`GET /api/horses/owner - all horses:`, allHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      
       const filters = { owner_id: ownerId };
       
       const horses = await storage.getHorsesByFilters(filters);
+      console.log(`GET /api/horses/owner - filtered horses:`, horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      
       return res.json(horses);
     } catch (error) {
       console.error("Get owner horses error:", error);
@@ -733,6 +743,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Only allow for logged-in sellers
       const user = await storage.getUserById(req.session.userId);
       
+      console.log(`POST /api/admin/reassign-horses - user:`, user);
+      
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can reassign horses" });
       }
@@ -740,12 +752,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const horses = await storage.getHorses();
       const userId = req.session.userId;
       
+      console.log(`POST /api/admin/reassign-horses - found ${horses.length} horses to reassign to user ${userId}`);
+      console.log(`POST /api/admin/reassign-horses - horses before reassignment:`, 
+        horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      
       // Update each horse to be owned by the current user
+      const updatedHorses = [];
       for (const horse of horses) {
-        await storage.updateHorse(horse.id, { owner_id: userId });
+        console.log(`POST /api/admin/reassign-horses - updating horse ${horse.id} (${horse.name}) from owner ${horse.owner_id} to ${userId}`);
+        const updatedHorse = await storage.updateHorse(horse.id, { owner_id: userId });
+        if (updatedHorse) {
+          updatedHorses.push(updatedHorse);
+        }
       }
       
-      return res.json({ message: `Successfully reassigned ${horses.length} horses to user ${userId}` });
+      console.log(`POST /api/admin/reassign-horses - updated ${updatedHorses.length} out of ${horses.length} horses`);
+      console.log(`POST /api/admin/reassign-horses - horses after reassignment:`, 
+        updatedHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      
+      return res.json({ 
+        message: `Successfully reassigned ${updatedHorses.length} horses to user ${userId}`,
+        horses: updatedHorses.map(h => ({ id: h.id, name: h.name }))
+      });
     } catch (error) {
       console.error("Reassign horses error:", error);
       return res.status(500).json({ message: "Failed to reassign horses" });
