@@ -57,6 +57,23 @@ export interface IStorage {
   updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
 }
 
+// Use global namespace to persist data across hot reloads
+declare global {
+  var __persistent_storage: {
+    horses: Map<number, Horse>;
+    users: Map<number, User>;
+    matches: Map<number, Match>;
+    messages: Map<number, Message>;
+    conversations: Map<number, Conversation>;
+    horseId: number;
+    userId: number;
+    matchId: number;
+    messageId: number;
+    conversationId: number;
+    seeded: boolean;
+  } | undefined;
+}
+
 export class MemStorage implements IStorage {
   private horses: Map<number, Horse>;
   private users: Map<number, User>;
@@ -70,32 +87,66 @@ export class MemStorage implements IStorage {
   private messageId: number;
   private conversationId: number;
   
-  // Flag to check if seed data has already been run to prevent repopulating on app restart
   constructor(skipSeed = false) {
-    this.horses = new Map();
-    this.users = new Map();
-    this.matches = new Map();
-    this.messages = new Map();
-    this.conversations = new Map();
-    
-    this.horseId = 1;
-    this.userId = 1;
-    this.matchId = 1;
-    this.messageId = 1;
-    this.conversationId = 1;
-    
-    // Only seed data if not explicitly skipped
-    if (!skipSeed) {
-      this.seedData();
-      console.log("MemStorage initialized with seed data");
+    // If we already have global storage initialized, use it
+    if (global.__persistent_storage) {
+      console.log("MemStorage: Reusing existing data from global storage");
+      this.horses = global.__persistent_storage.horses;
+      this.users = global.__persistent_storage.users;
+      this.matches = global.__persistent_storage.matches;
+      this.messages = global.__persistent_storage.messages;
+      this.conversations = global.__persistent_storage.conversations;
+      
+      this.horseId = global.__persistent_storage.horseId;
+      this.userId = global.__persistent_storage.userId;
+      this.matchId = global.__persistent_storage.matchId;
+      this.messageId = global.__persistent_storage.messageId;
+      this.conversationId = global.__persistent_storage.conversationId;
+      
+      // Log the current state for debugging
+      console.log(`MemStorage: Loaded ${this.horses.size} horses from global storage`);
+      console.log(`MemStorage: Current horse IDs:`, Array.from(this.horses.keys()));
     } else {
-      console.log("MemStorage initialized without seed data - preserving empty state");
+      // Initialize storage for the first time
+      console.log("MemStorage: Initializing new global storage");
+      this.horses = new Map();
+      this.users = new Map();
+      this.matches = new Map();
+      this.messages = new Map();
+      this.conversations = new Map();
+      
+      this.horseId = 1;
+      this.userId = 1;
+      this.matchId = 1;
+      this.messageId = 1;
+      this.conversationId = 1;
+      
+      // Only seed if we're starting fresh and not explicitly skipping
+      if (!skipSeed) {
+        this.seedData();
+        console.log("MemStorage: Initialized with seed data");
+      } else {
+        console.log("MemStorage: Initialized with empty state (skipSeed=true)");
+      }
+      
+      // Save to global for persistence across restarts
+      global.__persistent_storage = {
+        horses: this.horses,
+        users: this.users,
+        matches: this.matches,
+        messages: this.messages,
+        conversations: this.conversations,
+        horseId: this.horseId,
+        userId: this.userId,
+        matchId: this.matchId,
+        messageId: this.messageId,
+        conversationId: this.conversationId,
+        seeded: true
+      };
     }
     
-    // Verify seeded users
-    const users = Array.from(this.users.entries());
-    console.log("MemStorage constructor - Seeded users count:", users.length);
-    console.log("MemStorage constructor - Seeded users:", JSON.stringify(users, null, 2));
+    // Verify storage state
+    console.log(`MemStorage: Current state - ${this.horses.size} horses, ${this.users.size} users`);
   }
   
   // Seed some initial data
@@ -357,6 +408,14 @@ export class MemStorage implements IStorage {
     const id = this.horseId++;
     const newHorse: Horse = { id, ...horse, created_at: new Date() };
     this.horses.set(id, newHorse);
+    
+    // Update global storage counters to persist across restarts
+    if (global.__persistent_storage) {
+      global.__persistent_storage.horseId = this.horseId;
+    }
+    
+    console.log(`MemStorage: Created new horse with ID ${id}, name: ${horse.name}`);
+    console.log(`MemStorage: Total horses after creation: ${this.horses.size}`);
     return newHorse;
   }
   
@@ -401,6 +460,8 @@ export class MemStorage implements IStorage {
       })}`);
       this.horses.delete(id);
       console.log(`MemStorage.deleteHorse - Successfully deleted horse with ID: ${id}`);
+      console.log(`MemStorage: Total horses after deletion: ${this.horses.size}`);
+      console.log(`MemStorage: Remaining horse IDs:`, Array.from(this.horses.keys()));
     } else {
       console.log(`MemStorage.deleteHorse - Horse with ID ${id} not found`);
     }
@@ -954,11 +1015,18 @@ export const storage = createStorage(false);
 
 // Add a function to completely reset to no horses for clean database functionality
 export function resetStorageToEmpty() {
-  if (!useDatabase && storageInstance) {
-    const memStorage = storageInstance as MemStorage;
-    const horsesMap = memStorage.getInternalHorsesMap();
-    horsesMap.clear();
-    console.log("Completely reset storage - all horses removed");
+  if (!useDatabase && global.__persistent_storage) {
+    // Clear the horses map in global storage
+    global.__persistent_storage.horses.clear();
+    
+    // If we have a live storageInstance, clear that too
+    if (storageInstance) {
+      const memStorage = storageInstance as MemStorage;
+      const horsesMap = memStorage.getInternalHorsesMap();
+      horsesMap.clear();
+    }
+    
+    console.log("Completely reset storage - all horses removed from global storage");
     return true;
   }
   return false;
