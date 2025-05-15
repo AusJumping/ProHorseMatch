@@ -2,9 +2,10 @@ import { ReactNode } from "react";
 import { useLocation } from "wouter";
 import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
-import { ArrowLeft, Filter } from "lucide-react";
+import { ArrowLeft, Filter, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
+import { useQuery } from "@tanstack/react-query";
 
 interface LayoutProps {
   children: ReactNode;
@@ -24,7 +25,23 @@ const Layout = ({
   onFilterClick,
 }: LayoutProps) => {
   const isMobile = useMobile();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
+
+  // Fetch user data to determine if user is an owner
+  const { data: user } = useQuery({
+    queryKey: ['/api/auth/me'],
+    queryFn: async () => {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.status === 401) return null;
+        return await res.json();
+      } catch (error) {
+        return null;
+      }
+    }
+  });
+
+  const isOwner = user?.type === "owner";
 
   const handleBack = () => {
     if (onBackClick) {
@@ -58,16 +75,31 @@ const Layout = ({
               <h2 className="font-display font-bold text-xl">{pageTitle}</h2>
             </div>
 
-            {/* Filter Button (Mobile only) */}
-            {isMobile && showFilterButton && onFilterClick && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onFilterClick}
-              >
-                <Filter size={18} />
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {/* Add Horse Button for mobile (only on home page for owners) */}
+              {isMobile && isOwner && location === "/" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/add-horse")}
+                  className="flex items-center"
+                >
+                  <PlusCircle className="mr-1 h-4 w-4" />
+                  <span className="text-sm">Add Horse</span>
+                </Button>
+              )}
+              
+              {/* Filter Button (Mobile only) */}
+              {isMobile && showFilterButton && onFilterClick && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onFilterClick}
+                >
+                  <Filter size={18} />
+                </Button>
+              )}
+            </div>
 
             {/* Desktop Header Content */}
             {!isMobile && (
@@ -84,6 +116,18 @@ const Layout = ({
                     </svg>
                   </button>
                 </div>
+                
+                {isOwner && (
+                  <Button 
+                    onClick={() => navigate("/add-horse")}
+                    className={`${location === "/add-horse" ? "bg-primary-light text-primary" : ""}`}
+                    variant="outline"
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Horse
+                  </Button>
+                )}
+                
                 <div className="border-l border-neutral-200 h-8"></div>
                 <button className="relative">
                   <svg className="h-6 w-6 text-neutral-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
