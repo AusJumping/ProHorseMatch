@@ -35,9 +35,9 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Filter>({
-    disciplines: ["Jumping"],
-    breeds: ["Warmblood"],
-    sexes: ["Gelding"],
+    disciplines: [],  // Empty array for All Disciplines
+    breeds: [],       // Empty array for All Breeds
+    sexes: [],        // Empty array for Any Sex
     location_country: null,
     location_radius_km: null,
     age_min: null,

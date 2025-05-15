@@ -71,19 +71,22 @@ const FilterPanel = ({
   };
 
   const handleReset = () => {
-    setFilters({
-      disciplines: [],
-      breeds: [],
-      sexes: [],
+    const resetFilters = {
+      disciplines: [],  // Empty array for All Disciplines
+      breeds: [],       // Empty array for All Breeds
+      sexes: [],        // Empty array for Any Sex
       location_country: null,
       location_radius_km: null,
-      age_min: 0,
-      age_max: 20,
-      height_min: 0,
-      height_max: 18,
-      price_min: 0,
-      price_max: 100000
-    });
+      age_min: null,
+      age_max: null,
+      height_min: null,
+      height_max: null,
+      price_min: null,
+      price_max: null,
+      currency: "AUD"
+    };
+    setFilters(resetFilters);
+    onApplyFilters(resetFilters); // Apply the reset filters immediately
   };
 
   if (!isOpen && isMobile) return null;
@@ -114,8 +117,14 @@ const FilterPanel = ({
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Disciplines</Label>
             <Select 
-              value={filters.disciplines[0] || ""} 
-              onValueChange={(value) => handleChange('disciplines', [value])}
+              value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"} 
+              onValueChange={(value) => {
+                if (value === "all_disciplines") {
+                  handleChange('disciplines', []);
+                } else {
+                  handleChange('disciplines', [value]);
+                }
+              }}
             >
               <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                 <SelectValue placeholder="All Disciplines" />
