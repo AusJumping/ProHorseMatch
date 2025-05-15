@@ -332,13 +332,9 @@ export class MemStorage implements IStorage {
         return false;
       }
       
-      return true;
-      
       // Filter by price range if specified
-      if (filters.price) {
-        if (horse.price > filters.price) {
-          return false;
-        }
+      if (filters.price && horse.price > filters.price) {
+        return false;
       }
       
       return true;

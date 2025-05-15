@@ -749,30 +749,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only users with selling permission can reassign horses" });
       }
       
-      const horses = await storage.getHorses();
-      const userId = req.session.userId;
+      // Get source owner ID from request body or default to 1 (the original owner)
+      const sourceOwnerId = req.body.sourceOwnerId || 1;
+      const targetUserId = req.session.userId;
       
-      console.log(`POST /api/admin/reassign-horses - found ${horses.length} horses to reassign to user ${userId}`);
-      console.log(`POST /api/admin/reassign-horses - horses before reassignment:`, 
-        horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      console.log(`POST /api/admin/reassign-horses - transferring from owner ${sourceOwnerId} to ${targetUserId}`);
+      
+      // Get all horses first
+      const allHorses = await storage.getHorses();
+      console.log(`POST /api/admin/reassign-horses - all horses before reassignment:`, 
+        allHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      
+      // Find horses from the source owner
+      const horsesToTransfer = allHorses.filter(h => h.owner_id === sourceOwnerId);
+      console.log(`POST /api/admin/reassign-horses - found ${horsesToTransfer.length} horses to transfer from owner ${sourceOwnerId}`);
+      
+      if (horsesToTransfer.length === 0) {
+        return res.status(404).json({ 
+          message: `No horses found for owner ${sourceOwnerId}`,
+          allHorses: allHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id }))
+        });
+      }
       
       // Update each horse to be owned by the current user
       const updatedHorses = [];
-      for (const horse of horses) {
-        console.log(`POST /api/admin/reassign-horses - updating horse ${horse.id} (${horse.name}) from owner ${horse.owner_id} to ${userId}`);
-        const updatedHorse = await storage.updateHorse(horse.id, { owner_id: userId });
+      for (const horse of horsesToTransfer) {
+        console.log(`POST /api/admin/reassign-horses - updating horse ${horse.id} (${horse.name}) from owner ${horse.owner_id} to ${targetUserId}`);
+        const updatedHorse = await storage.updateHorse(horse.id, { owner_id: targetUserId });
         if (updatedHorse) {
           updatedHorses.push(updatedHorse);
+          console.log(`POST /api/admin/reassign-horses - horse ${horse.id} updated successfully, new owner_id: ${updatedHorse.owner_id}`);
+        } else {
+          console.error(`POST /api/admin/reassign-horses - failed to update horse ${horse.id}`);
         }
       }
       
-      console.log(`POST /api/admin/reassign-horses - updated ${updatedHorses.length} out of ${horses.length} horses`);
-      console.log(`POST /api/admin/reassign-horses - horses after reassignment:`, 
-        updatedHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      // Verify the transfer by getting horses again
+      const horsesAfter = await storage.getHorses();
+      console.log(`POST /api/admin/reassign-horses - all horses after reassignment:`, 
+        horsesAfter.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      
+      // Check the user's horses specifically
+      const userHorsesAfter = horsesAfter.filter(h => h.owner_id === targetUserId);
+      console.log(`POST /api/admin/reassign-horses - user ${targetUserId} now has ${userHorsesAfter.length} horses`);
       
       return res.json({ 
-        message: `Successfully reassigned ${updatedHorses.length} horses to user ${userId}`,
-        horses: updatedHorses.map(h => ({ id: h.id, name: h.name }))
+        message: `Successfully reassigned ${updatedHorses.length} horses from user ${sourceOwnerId} to user ${targetUserId}`,
+        horses: updatedHorses.map(h => ({ id: h.id, name: h.name })),
+        userHorses: userHorsesAfter.map(h => ({ id: h.id, name: h.name }))
       });
     } catch (error) {
       console.error("Reassign horses error:", error);
