@@ -130,7 +130,7 @@ const Sidebar = () => {
                   {user.name || user.business_name || "User"}
                 </p>
                 <p className="text-sm text-neutral-500">
-                  {user.type === "customer" ? "Rider Account" : "Owner Account"}
+                  {user.type === "customer" ? "Searching Account" : "Selling Account"}
                 </p>
               </div>
             </div>

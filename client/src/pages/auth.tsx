@@ -415,7 +415,7 @@ export default function Auth() {
                       <ChevronLeft size={18} />
                     </Button>
                     <div>
-                      <CardTitle>Horse Owner Registration</CardTitle>
+                      <CardTitle>Selling Registration</CardTitle>
                       <CardDescription>
                         Create your account to list your horses for sale
                       </CardDescription>
