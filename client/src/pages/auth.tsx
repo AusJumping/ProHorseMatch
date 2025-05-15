@@ -218,11 +218,11 @@ export default function Auth() {
                             >
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="customer" id="customer" />
-                                <Label htmlFor="customer">Rider</Label>
+                                <Label htmlFor="customer">Searching</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="owner" id="owner" />
-                                <Label htmlFor="owner">Horse Owner</Label>
+                                <Label htmlFor="owner">Selling</Label>
                               </div>
                             </RadioGroup>
                           </FormControl>
@@ -327,7 +327,7 @@ export default function Auth() {
                       <ChevronLeft size={18} />
                     </Button>
                     <div>
-                      <CardTitle>Rider Registration</CardTitle>
+                      <CardTitle>Searching Registration</CardTitle>
                       <CardDescription>
                         Create your account to find your perfect horse
                       </CardDescription>
