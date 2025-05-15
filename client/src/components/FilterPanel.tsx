@@ -238,19 +238,20 @@ const FilterPanel = ({
           {/* Sex */}
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Sex</Label>
-            <div className="flex flex-wrap gap-2">
-              {constants?.sexes?.map((sex: string) => (
-                <Button 
-                  key={sex}
-                  type="button"
-                  variant={filters.sexes.includes(sex) ? "default" : "outline"}
-                  className={filters.sexes.includes(sex) ? "bg-primary text-white" : "bg-neutral-100 text-neutral-800"}
-                  onClick={() => toggleItem('sexes', sex)}
-                >
-                  {sex}
-                </Button>
-              ))}
-            </div>
+            <Select 
+              value={filters.sexes[0] || ""} 
+              onValueChange={(value) => handleChange('sexes', [value])}
+            >
+              <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                <SelectValue placeholder="Any Sex" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any_sex">Any Sex</SelectItem>
+                {constants?.sexes?.map((sex: string) => (
+                  <SelectItem key={sex} value={sex}>{sex}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           {/* Location */}

@@ -129,6 +129,11 @@ export default function Home() {
       newFilters.disciplines = [];
     }
     
+    // Clean up the sexes array - remove "any_sex" value if present
+    if (newFilters.sexes.includes("any_sex")) {
+      newFilters.sexes = [];
+    }
+    
     setActiveFilters(newFilters);
     setIsFilterOpen(false);
   };
