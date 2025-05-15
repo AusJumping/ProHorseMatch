@@ -200,13 +200,14 @@ const FilterPanel = ({
               </div>
               <div className="flex-1">
                 <Select 
-                  value={filters.price_max?.toString() || "100000"} 
+                  value={filters.price_max?.toString() || "999999999"} 
                   onValueChange={(value) => handleChange('price_max', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     <SelectValue placeholder="Max Price" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="999999999">No Max</SelectItem>
                     <SelectItem value="15000">
                       {filters.currency === "USD" ? "$15,000" : 
                        filters.currency === "GBP" ? "£15,000" : 
@@ -358,13 +359,14 @@ const FilterPanel = ({
               </div>
               <div className="flex-1">
                 <Select 
-                  value={filters.height_max?.toString() || "18.0"} 
+                  value={filters.height_max?.toString() || "999"} 
                   onValueChange={(value) => handleChange('height_max', parseFloat(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     <SelectValue placeholder="Max Height" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="999">No Max</SelectItem>
                     <SelectItem value="15.0">15.0 hh</SelectItem>
                     <SelectItem value="15.1">15.1 hh</SelectItem>
                     <SelectItem value="15.2">15.2 hh</SelectItem>
@@ -373,11 +375,6 @@ const FilterPanel = ({
                     <SelectItem value="16.1">16.1 hh</SelectItem>
                     <SelectItem value="16.2">16.2 hh</SelectItem>
                     <SelectItem value="16.3">16.3 hh</SelectItem>
-                    <SelectItem value="17.0">17.0 hh</SelectItem>
-                    <SelectItem value="17.1">17.1 hh</SelectItem>
-                    <SelectItem value="17.2">17.2 hh</SelectItem>
-                    <SelectItem value="17.3">17.3 hh</SelectItem>
-                    <SelectItem value="18.0">18.0 hh</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
