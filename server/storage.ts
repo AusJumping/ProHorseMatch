@@ -15,6 +15,7 @@ export interface IStorage {
   getHorseById(id: number): Promise<Horse | undefined>;
   getHorsesByFilters(filters: Partial<Horse>): Promise<Horse[]>;
   createHorse(horse: InsertHorse): Promise<Horse>;
+  deleteHorse(id: number): Promise<boolean>;
   
   // Owner methods
   getOwners(): Promise<Owner[]>;
