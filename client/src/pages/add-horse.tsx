@@ -731,27 +731,30 @@ export default function AddHorse() {
                     </TabsContent>
                   </ScrollArea>
                 </Tabs>
+                {/* Form buttons inside the form tag */}
+                <div className="flex justify-between pt-6">
+                  <Button type="button" variant="outline" onClick={prevTab} disabled={activeTab === "basic"}>
+                    Previous
+                  </Button>
+                  <Button 
+                    type={activeTab === "media" ? "submit" : "button"}
+                    onClick={activeTab === "media" ? undefined : nextTab}
+                    disabled={isSubmitting || (activeTab === "media" && photoUrls.length === 0)}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      activeTab === "media" ? "Submit Listing" : "Next"
+                    )}
+                  </Button>
+                </div>
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={prevTab} disabled={activeTab === "basic"}>
-              Previous
-            </Button>
-            <Button 
-              onClick={activeTab === "media" ? form.handleSubmit(onSubmit) : nextTab}
-              disabled={isSubmitting || (activeTab === "media" && photoUrls.length === 0)}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                activeTab === "media" ? "Submit Listing" : "Next"
-              )}
-            </Button>
-          </CardFooter>
+          {/* No CardFooter here since we moved the buttons inside the form */}
         </Card>
       </div>
     </Layout>
