@@ -28,10 +28,13 @@ export default function MyHorses() {
   });
 
   const handleEdit = (horseId: number) => {
+    // Find horse by ID
+    const horse = horses?.find(h => h.id === horseId);
+    
     // Show modal with information instead of redirecting
     toast({
       title: "Edit feature coming soon",
-      description: "The edit feature is under development. For now, you can create a new listing or delete this one.",
+      description: `The edit feature for ${horse?.name || "this horse"} is under development. For now, you can create a new listing or delete this one.`,
       variant: "default",
       duration: 5000,
     });
