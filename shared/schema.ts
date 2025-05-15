@@ -149,17 +149,10 @@ export type Conversation = typeof conversations.$inferSelect;
 export const disciplines = ["Jumping", "Dressage", "Eventing"];
 export const sexes = ["Mare", "Gelding", "Stallion"];
 export const breeds = [
-  "Hanoverian", 
-  "Dutch Warmblood", 
-  "Holsteiner", 
-  "KWPN", 
+  "Warmblood", 
   "Thoroughbred", 
-  "Westphalian",
-  "Selle Francais",
-  "Belgian Warmblood",
-  "Oldenburg",
-  "Trakehner",
-  "Irish Sport Horse"
+  "OTT Thoroughbred", 
+  "Other"
 ];
 export const characteristics = [
   "Forward",

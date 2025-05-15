@@ -575,9 +575,10 @@ export default function AddHorse() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {constants?.breeds?.map((breed: string) => (
-                                    <SelectItem key={breed} value={breed}>{breed}</SelectItem>
-                                  ))}
+                                  <SelectItem value="Warmblood">Warmblood</SelectItem>
+                                  <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
+                                  <SelectItem value="OTT Thoroughbred">OTT Thoroughbred</SelectItem>
+                                  <SelectItem value="Other">Other</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />

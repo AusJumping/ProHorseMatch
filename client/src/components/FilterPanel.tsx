@@ -400,9 +400,10 @@ const FilterPanel = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all_breeds">All Breeds</SelectItem>
-                {constants?.breeds?.map((breed: string) => (
-                  <SelectItem key={breed} value={breed}>{breed}</SelectItem>
-                ))}
+                <SelectItem value="Warmblood">Warmblood</SelectItem>
+                <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
+                <SelectItem value="OTT Thoroughbred">OTT Thoroughbred</SelectItem>
+                <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
           </div>
