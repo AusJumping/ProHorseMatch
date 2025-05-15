@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus, X, Upload, Image, FileVideo } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
@@ -654,26 +654,66 @@ export default function AddHorse() {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <div className="flex gap-2">
-                              <Input
-                                value={newPhotoUrl}
-                                onChange={(e) => setNewPhotoUrl(e.target.value)}
-                                placeholder="Enter photo URL"
-                              />
-                              <Button type="button" size="icon" onClick={addPhotoUrl}>
-                                <Plus className="h-4 w-4" />
-                              </Button>
+                            <div className="flex flex-col gap-2">
+                              <div className="flex gap-2">
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  className="flex-1"
+                                  onClick={() => document.getElementById('photo-upload')?.click()}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Select photo
+                                </Button>
+                                <input
+                                  id="photo-upload"
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    
+                                    try {
+                                      const response = await fetch('/api/upload', {
+                                        method: 'POST',
+                                        body: formData,
+                                      });
+                                      
+                                      if (!response.ok) throw new Error('Upload failed');
+                                      
+                                      const data = await response.json();
+                                      setPhotoUrls([...photoUrls, data.url]);
+                                      
+                                      // Reset the input
+                                      e.target.value = '';
+                                    } catch (error) {
+                                      console.error('Upload error:', error);
+                                      toast({
+                                        title: "Upload failed",
+                                        description: "There was an error uploading your photo. Please try again.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                />
+                              </div>
+                              <FormDescription>
+                                Select photos from your device to upload
+                              </FormDescription>
                             </div>
-                            <FormDescription className="mt-1">
-                              Enter a URL for each photo you want to add
-                            </FormDescription>
                           </div>
                           
                           <div className="space-y-2">
                             {photoUrls.map((url, index) => (
                               <div key={index} className="flex items-center gap-2">
-                                <img src={url} alt={`Photo ${index + 1}`} className="w-12 h-12 object-cover rounded" />
-                                <span className="flex-1 truncate text-sm">{url}</span>
+                                <div className="w-12 h-12 bg-neutral-100 rounded flex items-center justify-center overflow-hidden">
+                                  <img src={url.startsWith('http') ? url : url} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                                </div>
+                                <span className="flex-1 truncate text-sm">{url.split('/').pop()}</span>
                                 <Button type="button" size="icon" variant="ghost" onClick={() => removePhotoUrl(url)}>
                                   <X className="h-4 w-4" />
                                 </Button>
@@ -694,31 +734,66 @@ export default function AddHorse() {
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <div className="flex gap-2">
-                              <Input
-                                value={newVideoUrl}
-                                onChange={(e) => setNewVideoUrl(e.target.value)}
-                                placeholder="Enter video URL"
-                              />
-                              <Button type="button" size="icon" onClick={addVideoUrl}>
-                                <Plus className="h-4 w-4" />
-                              </Button>
+                            <div className="flex flex-col gap-2">
+                              <div className="flex gap-2">
+                                <Button 
+                                  type="button" 
+                                  variant="outline" 
+                                  className="flex-1"
+                                  onClick={() => document.getElementById('video-upload')?.click()}
+                                >
+                                  <Upload className="h-4 w-4 mr-2" />
+                                  Select video
+                                </Button>
+                                <input
+                                  id="video-upload"
+                                  type="file"
+                                  accept="video/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    
+                                    try {
+                                      const response = await fetch('/api/upload', {
+                                        method: 'POST',
+                                        body: formData,
+                                      });
+                                      
+                                      if (!response.ok) throw new Error('Upload failed');
+                                      
+                                      const data = await response.json();
+                                      setVideoUrls([...videoUrls, data.url]);
+                                      
+                                      // Reset the input
+                                      e.target.value = '';
+                                    } catch (error) {
+                                      console.error('Upload error:', error);
+                                      toast({
+                                        title: "Upload failed",
+                                        description: "There was an error uploading your video. Please try again.",
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                />
+                              </div>
+                              <FormDescription>
+                                Select videos from your device to upload
+                              </FormDescription>
                             </div>
-                            <FormDescription className="mt-1">
-                              Enter a URL for each video you want to add
-                            </FormDescription>
                           </div>
                           
                           <div className="space-y-2">
                             {videoUrls.map((url, index) => (
                               <div key={index} className="flex items-center gap-2">
                                 <div className="w-12 h-12 bg-neutral-200 rounded flex items-center justify-center">
-                                  <svg className="h-6 w-6 text-neutral-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                  </svg>
+                                  <FileVideo className="h-6 w-6 text-neutral-500" />
                                 </div>
-                                <span className="flex-1 truncate text-sm">{url}</span>
+                                <span className="flex-1 truncate text-sm">{url.split('/').pop()}</span>
                                 <Button type="button" size="icon" variant="ghost" onClick={() => removeVideoUrl(url)}>
                                   <X className="h-4 w-4" />
                                 </Button>
