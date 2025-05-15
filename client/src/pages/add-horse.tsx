@@ -162,14 +162,14 @@ export default function AddHorse() {
     setVideoUrls(videoUrls.filter(video => video !== url));
   };
 
+  // Navigate to the next tab
   const nextTab = () => {
     if (activeTab === "basic") {
       setActiveTab("details");
     } else if (activeTab === "details") {
       setActiveTab("media");
-    } else if (activeTab === "media") {
-      form.handleSubmit(onSubmit)();
     }
+    // We don't need the "media" case since the submit button is a form submit button
   };
 
   const prevTab = () => {
@@ -203,7 +203,7 @@ export default function AddHorse() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <div className="space-y-8">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid grid-cols-3 w-full">
                     <TabsTrigger value="basic">Basic Information</TabsTrigger>
