@@ -302,6 +302,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
   
+  // Admin routes
+  app.delete("/api/admin/delete-all-horses", isAuthenticated, async (req, res) => {
+    try {
+      console.log("Delete all horses request received");
+      
+      // Get user to verify they are a seller
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only sellers can perform this action" });
+      }
+      
+      // Get all horses
+      const horses = await storage.getHorses();
+      
+      // Delete each horse
+      let deletedCount = 0;
+      for (const horse of horses) {
+        const success = await storage.deleteHorse(horse.id);
+        if (success) deletedCount++;
+      }
+      
+      console.log(`Deleted ${deletedCount} horses`);
+      
+      return res.status(200).json({ 
+        message: `Successfully deleted ${deletedCount} horses`, 
+        deletedCount 
+      });
+    } catch (error) {
+      console.error("Delete all horses error:", error);
+      return res.status(500).json({ message: "Failed to delete horses" });
+    }
+  });
+  
   app.patch("/api/users/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);

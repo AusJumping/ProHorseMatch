@@ -1,200 +1,132 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/lib/auth";
-import { apiRequest } from "@/lib/queryClient";
-import { useLocation } from "wouter";
-import Layout from "@/components/Layout";
-import { AlertCircle, CheckCircle2, Loader2, Trash2 } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useState } from 'react';
+import Layout from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
+import { Loader2, AlertCircle, Check, Trash } from 'lucide-react';
+import { useAuth } from '@/lib/auth';
+import { useLocation } from 'wouter';
 
-export default function AdminPanel() {
+const AdminPanel = () => {
   const { toast } = useToast();
-  const [, navigate] = useLocation();
-  const { user, isAuthenticated, isLoading } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteResult, setDeleteResult] = useState<any>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate("/auth");
-    }
-  }, [isLoading, isAuthenticated, navigate]);
+  const { user, isAuthenticated } = useAuth();
+  const [_, navigate] = useLocation();
+
+  // Redirect if not authenticated or not a seller
+  if (!isAuthenticated || !user?.is_selling) {
+    navigate('/auth');
+    return null;
+  }
 
   const handleDeleteAllHorses = async () => {
-    if (!window.confirm("Are you sure you want to delete ALL horses? This action cannot be undone.")) {
-      return;
-    }
-    
-    try {
+    if (window.confirm('Are you sure you want to delete ALL horses in the database? This action cannot be undone.')) {
       setIsDeleting(true);
-      setDeleteError(null);
-      setDeleteResult(null);
-      
-      // Call the admin endpoint to delete all horses
-      const result = await apiRequest("DELETE", "/api/admin/horses");
-      
-      console.log("Delete result:", result);
-      setDeleteResult(result);
-      
-      toast({
-        title: "Horses Deleted",
-        description: result.message || "All horses have been deleted",
-      });
-    } catch (error: any) {
-      console.error("Delete error:", error);
-      
-      // Extract error message
-      let errorMsg = "Could not delete horses";
-      if (error.response?.data?.message) {
-        errorMsg = error.response.data.message;
-      } else if (error.message) {
-        errorMsg = error.message;
+      try {
+        await fetch('/api/admin/delete-all-horses', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        // Invalidate all horse-related queries
+        await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+        
+        toast({
+          title: 'Success',
+          description: 'All horses have been deleted from the database.',
+          variant: 'default',
+        });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete horses. Please try again.',
+          variant: 'destructive',
+        });
+        console.error('Failed to delete horses:', error);
+      } finally {
+        setIsDeleting(false);
       }
-      
-      setDeleteError(errorMsg);
-      
-      toast({
-        title: "Delete Failed",
-        description: errorMsg,
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <Layout pageTitle="Admin Panel">
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-        </div>
-      </Layout>
-    );
-  }
-  
-  if (!user?.is_selling) {
-    return (
-      <Layout pageTitle="Admin Panel">
-        <Card className="mx-auto max-w-md">
-          <CardHeader>
-            <CardTitle>Not Authorized</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">You need to have selling permission to access the admin panel.</p>
-            <Button onClick={() => navigate("/account-settings")}>Go to Account Settings</Button>
-          </CardContent>
-        </Card>
-      </Layout>
-    );
-  }
-
   return (
     <Layout pageTitle="Admin Panel">
-      <div className="container mx-auto py-6">
-        <h1 className="text-3xl font-bold mb-6 font-accent text-center">Admin Panel</h1>
+      <div className="p-6 space-y-6">
+        <div className="mb-6">
+          <h1 className="font-accent text-3xl font-bold text-primary mb-2">Admin Panel</h1>
+          <p className="text-neutral-500">Manage system settings and perform administrative tasks</p>
+        </div>
         
-        <Tabs defaultValue="horses" className="w-full max-w-3xl mx-auto">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="horses">Horse Management</TabsTrigger>
-            <TabsTrigger value="system">System Operations</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="horses" className="mt-6">
+        <section>
+          <h2 className="font-accent text-xl font-semibold mb-4">Horse Management</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
-              <CardHeader>
-                <CardTitle>Horse Management</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle>Delete All Horses</CardTitle>
                 <CardDescription>
-                  Delete all horses from the system to start fresh
+                  Remove all horse listings from the database
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {deleteResult && (
-                  <Alert className="mb-4 border-green-600 bg-green-50 text-green-800">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <AlertTitle>Success!</AlertTitle>
-                    <AlertDescription>
-                      {deleteResult.message}
-                      {deleteResult.deletedHorses && deleteResult.deletedHorses.length > 0 && (
-                        <div className="mt-2">
-                          <p className="font-semibold">Deleted horses:</p>
-                          <ul className="list-disc list-inside">
-                            {deleteResult.deletedHorses.map((horse: any) => (
-                              <li key={horse.id}>{horse.name}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </AlertDescription>
-                  </Alert>
-                )}
-                
-                {deleteError && (
-                  <Alert className="mb-4 border-red-600 bg-red-50 text-red-800">
-                    <AlertCircle className="h-5 w-5 text-red-600" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{deleteError}</AlertDescription>
-                  </Alert>
-                )}
-                
-                <p className="mb-4">
-                  This operation will permanently delete all horses in the system. This action cannot be undone.
-                </p>
-                <p className="mb-6 text-muted-foreground">
-                  After deletion, you can add new horses that will be correctly assigned to your owner account.
+                <p className="text-sm text-destructive flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  This action cannot be undone
                 </p>
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button 
+              <CardFooter>
+                <Button
+                  variant="destructive"
                   onClick={handleDeleteAllHorses}
                   disabled={isDeleting}
-                  variant="destructive"
-                  className="flex items-center"
+                  className="w-full"
                 >
                   {isDeleting ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Deleting Horses...
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
                     </>
                   ) : (
                     <>
-                      <Trash2 className="w-4 h-4 mr-2" />
+                      <Trash className="mr-2 h-4 w-4" />
                       Delete All Horses
                     </>
                   )}
                 </Button>
-                
-                {deleteResult && deleteResult.remainingHorses === 0 && (
-                  <Button 
-                    onClick={() => navigate("/add-horse")}
-                    variant="outline"
-                  >
-                    Add New Horse
-                  </Button>
-                )}
               </CardFooter>
             </Card>
-          </TabsContent>
-          
-          <TabsContent value="system" className="mt-6">
+            
             <Card>
-              <CardHeader>
-                <CardTitle>System Operations</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle>Add New Horse</CardTitle>
                 <CardDescription>
-                  Advanced system maintenance operations
+                  Create a new horse listing
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">No system operations available at this time.</p>
+                <p className="text-sm text-neutral-500">
+                  Add a new horse to your inventory with detailed information
+                </p>
               </CardContent>
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/add-horse')}
+                >
+                  Add Horse
+                </Button>
+              </CardFooter>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </section>
       </div>
     </Layout>
   );
-}
+};
+
+export default AdminPanel;
