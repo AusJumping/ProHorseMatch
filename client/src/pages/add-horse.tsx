@@ -95,21 +95,29 @@ export default function AddHorse() {
     }
   });
 
+  // This function is called when the form is submitted
   const onSubmit = async (data: HorseFormValues) => {
+    console.log("Form submission started", data);
     try {
       setIsSubmitting(true);
       
       // Include the photo and video URLs in the form data
-      data.photos = photoUrls;
-      data.videos = videoUrls;
-      data.owner_id = ownerID;
+      const submissionData = {
+        ...data,
+        photos: photoUrls,
+        videos: videoUrls,
+        owner_id: ownerID,
+      };
+      
+      console.log("Submitting data:", submissionData);
       
       // Convert height from hands to cm if needed
-      if (data.height_hands && !data.height_cm) {
-        data.height_cm = Math.round(data.height_hands * 10.16);
+      if (submissionData.height_hands && !submissionData.height_cm) {
+        submissionData.height_cm = Math.round(submissionData.height_hands * 10.16);
       }
       
-      await apiRequest("POST", "/api/horses", data);
+      // Make the API request with the complete data
+      await apiRequest("POST", "/api/horses", submissionData);
       
       toast({
         title: "Horse added successfully",
@@ -795,20 +803,29 @@ export default function AddHorse() {
                   <Button type="button" variant="outline" onClick={prevTab} disabled={activeTab === "basic"}>
                     Previous
                   </Button>
-                  <Button 
-                    type={activeTab === "media" ? "submit" : "button"}
-                    onClick={activeTab === "media" ? undefined : nextTab}
-                    disabled={isSubmitting || (activeTab === "media" && photoUrls.length === 0)}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Submitting...
-                      </>
-                    ) : (
-                      activeTab === "media" ? "Submit Listing" : "Next"
-                    )}
-                  </Button>
+                  {activeTab === "media" ? (
+                    <Button 
+                      type="submit"
+                      disabled={isSubmitting || photoUrls.length === 0}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Submit Listing"
+                      )}
+                    </Button>
+                  ) : (
+                    <Button 
+                      type="button"
+                      onClick={nextTab}
+                      disabled={isSubmitting}
+                    >
+                      Next
+                    </Button>
+                  )}
                 </div>
               </form>
             </Form>
