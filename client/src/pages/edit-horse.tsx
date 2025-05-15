@@ -390,46 +390,53 @@ export default function EditHorse() {
                     <FormField
                       control={form.control}
                       name="breeds"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem>
                           <div className="mb-4">
                             <FormLabel>Breed</FormLabel>
                             <FormDescription>Select all that apply</FormDescription>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
-                            {constants?.breeds.map((breed: string) => (
-                              <FormField
-                                key={breed}
-                                control={form.control}
-                                name="breeds"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={breed}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(breed)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, breed])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== breed
-                                                  )
-                                                )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal">
-                                        {breed}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
+                            {constants?.breeds.map((breed: string) => {
+                              // Ensure field.value is always an array
+                              const breeds = Array.isArray(field.value) ? field.value : [];
+                              
+                              // Debug log to see what's happening
+                              console.log(`Breed ${breed} checked:`, breeds.includes(breed));
+                              
+                              return (
+                                <div
+                                  key={breed}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <Checkbox
+                                    id={`breed-${breed}`}
+                                    checked={breeds.includes(breed)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        // Add the breed if it's not already in the array
+                                        if (!breeds.includes(breed)) {
+                                          const newBreeds = [...breeds, breed];
+                                          console.log("Adding breed:", newBreeds);
+                                          field.onChange(newBreeds);
+                                        }
+                                      } else {
+                                        // Remove the breed if it's in the array
+                                        const newBreeds = breeds.filter((value) => value !== breed);
+                                        console.log("Removing breed:", newBreeds);
+                                        field.onChange(newBreeds);
+                                      }
+                                    }}
+                                  />
+                                  <label 
+                                    htmlFor={`breed-${breed}`}
+                                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                    {breed}
+                                  </label>
+                                </div>
+                              );
+                            })}
                           </div>
                           <FormMessage />
                         </FormItem>
@@ -459,46 +466,53 @@ export default function EditHorse() {
                     <FormField
                       control={form.control}
                       name="disciplines"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem>
                           <div className="mb-4">
                             <FormLabel>Disciplines</FormLabel>
                             <FormDescription>Select all that apply</FormDescription>
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                            {constants?.disciplines.map((discipline: string) => (
-                              <FormField
-                                key={discipline}
-                                control={form.control}
-                                name="disciplines"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={discipline}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(discipline)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, discipline])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== discipline
-                                                  )
-                                                )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal">
-                                        {discipline}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
+                            {constants?.disciplines.map((discipline: string) => {
+                              // Ensure field.value is always an array
+                              const disciplines = Array.isArray(field.value) ? field.value : [];
+                              
+                              // Debug log to see what's happening
+                              console.log(`Discipline ${discipline} checked:`, disciplines.includes(discipline));
+                              
+                              return (
+                                <div
+                                  key={discipline}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <Checkbox
+                                    id={`discipline-${discipline}`}
+                                    checked={disciplines.includes(discipline)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        // Add the discipline if it's not already in the array
+                                        if (!disciplines.includes(discipline)) {
+                                          const newDisciplines = [...disciplines, discipline];
+                                          console.log("Adding discipline:", newDisciplines);
+                                          field.onChange(newDisciplines);
+                                        }
+                                      } else {
+                                        // Remove the discipline if it's in the array
+                                        const newDisciplines = disciplines.filter((value) => value !== discipline);
+                                        console.log("Removing discipline:", newDisciplines);
+                                        field.onChange(newDisciplines);
+                                      }
+                                    }}
+                                  />
+                                  <label 
+                                    htmlFor={`discipline-${discipline}`}
+                                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                    {discipline}
+                                  </label>
+                                </div>
+                              );
+                            })}
                           </div>
                           <FormMessage />
                         </FormItem>
