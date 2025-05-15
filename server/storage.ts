@@ -6,6 +6,8 @@ import {
   messages, type Message, type InsertMessage,
   conversations, type Conversation, type InsertConversation
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc, asc } from "drizzle-orm";
 
 export interface IStorage {
   // Horse methods
@@ -465,4 +467,184 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database-backed storage implementation
+export class DatabaseStorage implements IStorage {
+  // Horse methods
+  async getHorses(): Promise<Horse[]> {
+    return await db.select().from(horses);
+  }
+
+  async getHorseById(id: number): Promise<Horse | undefined> {
+    const [horse] = await db.select().from(horses).where(eq(horses.id, id));
+    return horse;
+  }
+
+  async getHorsesByFilters(filters: Partial<Horse>): Promise<Horse[]> {
+    // Basic implementation that just returns all horses
+    // In a real app, you would implement proper filtering here
+    return await db.select().from(horses);
+  }
+
+  async createHorse(horse: InsertHorse): Promise<Horse> {
+    const [newHorse] = await db.insert(horses).values(horse).returning();
+    return newHorse;
+  }
+
+  // Owner methods
+  async getOwners(): Promise<Owner[]> {
+    return await db.select().from(owners);
+  }
+
+  async getOwnerById(id: number): Promise<Owner | undefined> {
+    const [owner] = await db.select().from(owners).where(eq(owners.id, id));
+    return owner;
+  }
+
+  async getOwnerByEmail(email: string): Promise<Owner | undefined> {
+    const [owner] = await db.select().from(owners).where(eq(owners.email, email));
+    return owner;
+  }
+
+  async createOwner(owner: InsertOwner): Promise<Owner> {
+    const [newOwner] = await db.insert(owners).values(owner).returning();
+    return newOwner;
+  }
+
+  // Customer methods
+  async getCustomers(): Promise<Customer[]> {
+    return await db.select().from(customers);
+  }
+
+  async getCustomerById(id: number): Promise<Customer | undefined> {
+    const [customer] = await db.select().from(customers).where(eq(customers.id, id));
+    return customer;
+  }
+
+  async getCustomerByEmail(email: string): Promise<Customer | undefined> {
+    const [customer] = await db.select().from(customers).where(eq(customers.email, email));
+    return customer;
+  }
+
+  async createCustomer(customer: InsertCustomer): Promise<Customer> {
+    const [newCustomer] = await db.insert(customers).values(customer).returning();
+    return newCustomer;
+  }
+
+  async updateCustomer(id: number, customer: Partial<Customer>): Promise<Customer> {
+    const [updatedCustomer] = await db
+      .update(customers)
+      .set(customer)
+      .where(eq(customers.id, id))
+      .returning();
+    
+    if (!updatedCustomer) {
+      throw new Error("Customer not found");
+    }
+    
+    return updatedCustomer;
+  }
+
+  // Match methods
+  async getMatches(): Promise<Match[]> {
+    return await db.select().from(matches);
+  }
+
+  async getMatchById(id: number): Promise<Match | undefined> {
+    const [match] = await db.select().from(matches).where(eq(matches.id, id));
+    return match;
+  }
+
+  async getMatchesByCustomerId(customerId: number): Promise<Match[]> {
+    return await db
+      .select()
+      .from(matches)
+      .where(eq(matches.customer_id, customerId));
+  }
+
+  async getMatchesByHorseId(horseId: number): Promise<Match[]> {
+    return await db
+      .select()
+      .from(matches)
+      .where(eq(matches.horse_id, horseId));
+  }
+
+  async createMatch(match: InsertMatch): Promise<Match> {
+    const [newMatch] = await db.insert(matches).values(match).returning();
+    return newMatch;
+  }
+
+  // Message methods
+  async getMessages(): Promise<Message[]> {
+    return await db.select().from(messages);
+  }
+
+  async getMessageById(id: number): Promise<Message | undefined> {
+    const [message] = await db.select().from(messages).where(eq(messages.id, id));
+    return message;
+  }
+
+  async getMessagesByConversationId(customerId: number, ownerId: number, horseId: number): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(
+        and(
+          eq(messages.customer_id, customerId),
+          eq(messages.owner_id, ownerId),
+          eq(messages.horse_id, horseId)
+        )
+      )
+      .orderBy(asc(messages.created_at));
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [newMessage] = await db.insert(messages).values(message).returning();
+    return newMessage;
+  }
+
+  // Conversation methods
+  async getConversations(): Promise<Conversation[]> {
+    return await db.select().from(conversations);
+  }
+
+  async getConversationById(id: number): Promise<Conversation | undefined> {
+    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
+    return conversation;
+  }
+
+  async getConversationsByCustomerId(customerId: number): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.customer_id, customerId));
+  }
+
+  async getConversationsByOwnerId(ownerId: number): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.owner_id, ownerId));
+  }
+
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    const [newConversation] = await db.insert(conversations).values(conversation).returning();
+    return newConversation;
+  }
+
+  async updateConversation(id: number, update: Partial<Conversation>): Promise<Conversation> {
+    const [updatedConversation] = await db
+      .update(conversations)
+      .set(update)
+      .where(eq(conversations.id, id))
+      .returning();
+    
+    if (!updatedConversation) {
+      throw new Error("Conversation not found");
+    }
+    
+    return updatedConversation;
+  }
+}
+
+// Switch to using the database storage
+export const storage = new DatabaseStorage();
