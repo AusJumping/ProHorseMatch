@@ -1,174 +1,85 @@
 {
   "horses": [
     [
-      1,
+      5,
       {
-        "id": 1,
-        "owner_id": 1,
+        "id": 5,
+        "owner_id": 3,
         "name": "Maestro",
-        "location_country": "Germany",
-        "location_radius_km": null,
+        "location_country": "Australia",
+        "location_radius_km": 0,
         "disciplines": [
-          "Jumping"
-        ],
-        "levels": [
-          "1.40m"
-        ],
-        "breeds": [
-          "Hanoverian"
-        ],
-        "age": 7,
-        "height_hands": 16.2,
-        "height_cm": 168,
-        "sex": "Gelding",
-        "sire": "Cornet Obolensky",
-        "dam": "Callista",
-        "dam_sire": "Casall",
-        "characteristics": [
-          "Forward",
-          "Brave",
-          "Careful",
-          "Scope",
-          "Easy to Ride"
-        ],
-        "price": 65000,
-        "currency": "EUR",
-        "description": "Maestro is an exceptional 7-year-old Hanoverian gelding with a proven competition record at the 1.40m level. With his powerful, elastic movement and careful jumping technique, he has all the qualities of a future Grand Prix horse. He is well-mannered both in the stable and under saddle, making him suitable for an ambitious amateur or professional rider looking to move up the levels. Recently vetted with clean x-rays, he's ready for his new partnership.",
-        "photos": [
-          "https://cdn.pixabay.com/photo/2018/04/14/16/29/horse-3319234_1280.jpg",
-          "https://cdn.pixabay.com/photo/2018/01/05/08/19/horse-3062029_1280.jpg",
-          "https://cdn.pixabay.com/photo/2016/11/23/17/56/horse-1854175_1280.jpg",
-          "https://cdn.pixabay.com/photo/2018/01/03/18/06/horse-3059565_1280.jpg"
-        ],
-        "videos": [],
-        "created_at": "2025-05-15T10:48:06.123Z"
-      }
-    ],
-    [
-      2,
-      {
-        "id": 2,
-        "owner_id": 1,
-        "name": "Bella",
-        "location_country": "Germany",
-        "location_radius_km": null,
-        "disciplines": [
+          "Jumping",
           "Dressage"
         ],
         "levels": [
-          "Medium",
-          "Advanced"
-        ],
-        "breeds": [
-          "Holsteiner"
-        ],
-        "age": 6,
-        "height_hands": 16.1,
-        "height_cm": 165,
-        "sex": "Mare",
-        "sire": "Bentley",
-        "dam": "Diana",
-        "dam_sire": "De Niro",
-        "characteristics": [
-          "Sensitive",
-          "Athletic",
-          "Talented"
-        ],
-        "price": 45000,
-        "currency": "EUR",
-        "description": "Bella is a beautiful and talented Holsteiner mare with exceptional dressage potential. She has three outstanding gaits and a wonderful temperament. Already competing successfully at Medium level.",
-        "photos": [
-          "https://cdn.pixabay.com/photo/2016/05/25/13/55/horse-1414889_1280.jpg",
-          "https://cdn.pixabay.com/photo/2016/11/08/05/05/white-1807347_1280.jpg",
-          "https://cdn.pixabay.com/photo/2015/08/17/14/29/horse-892509_1280.jpg"
-        ],
-        "videos": [],
-        "created_at": "2025-05-15T10:48:06.123Z"
-      }
-    ],
-    [
-      3,
-      {
-        "id": 3,
-        "owner_id": 1,
-        "name": "Cassini",
-        "location_country": "Netherlands",
-        "location_radius_km": null,
-        "disciplines": [
-          "Jumping"
-        ],
-        "levels": [
           "1.30m",
-          "1.40m"
+          "Medium"
         ],
         "breeds": [
           "Dutch Warmblood"
         ],
         "age": 8,
-        "height_hands": 17,
-        "height_cm": 173,
+        "height_hands": 16.2,
+        "height_cm": 168,
         "sex": "Gelding",
-        "sire": "Cassini II",
-        "dam": "Elegance",
-        "dam_sire": "Heartbreaker",
+        "sire": "Jazz",
+        "dam": "Mariposa",
+        "dam_sire": "Ferro",
         "characteristics": [
-          "Scope",
-          "Brave",
-          "Bold"
+          "Talented",
+          "Gentle"
         ],
-        "price": 85000,
-        "currency": "EUR",
-        "description": "Cassini is a powerful 8-year-old Dutch Warmblood with plenty of scope and ability. Already competing successfully at 1.40m level with clear rounds at international shows.",
+        "price": 45000,
+        "currency": "AUD",
+        "description": "Talented gelding with excellent temperament and scope. Perfect for ambitious amateur or young rider.",
         "photos": [
-          "https://cdn.pixabay.com/photo/2017/03/27/14/33/animal-2179133_1280.jpg",
-          "https://cdn.pixabay.com/photo/2020/11/10/19/32/horse-5731147_1280.jpg",
-          "https://cdn.pixabay.com/photo/2015/09/09/17/55/horse-932766_1280.jpg"
+          "https://images.unsplash.com/photo-1598974357809-112ca5eaa0b2?q=80&w=2574",
+          "https://images.unsplash.com/photo-1551884831-bbf3cdc6469e?q=80&w=2574"
         ],
         "videos": [],
-        "created_at": "2025-05-15T10:48:06.123Z"
+        "created_at": "2025-05-15T10:50:56.300Z"
       }
     ],
     [
-      4,
+      6,
       {
-        "id": 4,
-        "owner_id": 1,
-        "name": "Quantum",
-        "location_country": "Netherlands",
-        "location_radius_km": null,
+        "id": 6,
+        "owner_id": 3,
+        "name": "Maestro",
+        "location_country": "Australia",
+        "location_radius_km": 0,
         "disciplines": [
           "Jumping",
-          "Eventing"
+          "Dressage"
         ],
         "levels": [
           "1.30m",
-          "CCI2*"
+          "Medium"
         ],
         "breeds": [
-          "KWPN"
+          "Dutch Warmblood"
         ],
-        "age": 9,
-        "height_hands": 16.3,
-        "height_cm": 170,
+        "age": 8,
+        "height_hands": 16.2,
+        "height_cm": 168,
         "sex": "Gelding",
-        "sire": "Quidam de Revel",
-        "dam": "Fernanda",
-        "dam_sire": "For Pleasure",
+        "sire": "Jazz",
+        "dam": "Mariposa",
+        "dam_sire": "Ferro",
         "characteristics": [
-          "Versatile",
-          "Brave",
-          "Athletic"
+          "Talented",
+          "Gentle"
         ],
-        "price": 72000,
-        "currency": "EUR",
-        "description": "Quantum is a versatile KWPN gelding with experience in both jumping and eventing. He has a wonderful temperament and is suitable for an ambitious amateur or young professional.",
+        "price": 45000,
+        "currency": "AUD",
+        "description": "Talented gelding with excellent temperament and scope. Perfect for ambitious amateur or young rider.",
         "photos": [
-          "https://cdn.pixabay.com/photo/2016/07/20/23/26/horse-1531692_1280.jpg",
-          "https://cdn.pixabay.com/photo/2016/12/31/21/40/animal-1943371_1280.jpg",
-          "https://cdn.pixabay.com/photo/2015/09/14/21/10/horse-940275_1280.jpg"
+          "https://images.unsplash.com/photo-1598974357809-112ca5eaa0b2?q=80&w=2574",
+          "https://images.unsplash.com/photo-1551884831-bbf3cdc6469e?q=80&w=2574"
         ],
         "videos": [],
-        "created_at": "2025-05-15T10:48:06.123Z"
+        "created_at": "2025-05-15T10:51:29.700Z"
       }
     ]
   ],
@@ -243,12 +154,43 @@
         "currency": "EUR",
         "created_at": "2025-05-15T10:48:06.123Z"
       }
+    ],
+    [
+      3,
+      {
+        "id": 3,
+        "email": "owner@example.com",
+        "password": "password123",
+        "business_name": "Elite Sporthorses",
+        "contact_name": "John Smith",
+        "is_selling": true,
+        "is_searching": false,
+        "name": null,
+        "created_at": "2025-05-15T10:50:29.882Z"
+      }
+    ],
+    [
+      4,
+      {
+        "id": 4,
+        "email": "customer@example.com",
+        "password": "password123",
+        "name": "Sarah Thompson",
+        "is_searching": true,
+        "is_selling": false,
+        "location_country": "Australia",
+        "preferred_disciplines": [
+          "Jumping"
+        ],
+        "currency": "AUD",
+        "created_at": "2025-05-15T10:50:29.884Z"
+      }
     ]
   ],
   "matches": [],
   "messages": [],
   "conversations": [],
-  "horseId": 5,
+  "horseId": 7,
   "userId": 3,
   "matchId": 1,
   "messageId": 1,
