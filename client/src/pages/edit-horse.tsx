@@ -503,46 +503,53 @@ export default function EditHorse() {
                     <FormField
                       control={form.control}
                       name="levels"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem>
                           <div className="mb-4">
                             <FormLabel>Experience Levels</FormLabel>
                             <FormDescription>Select all levels the horse has competed at</FormDescription>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
-                            {constants?.levels.map((level: string) => (
-                              <FormField
-                                key={level}
-                                control={form.control}
-                                name="levels"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={level}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(level)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value, level])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== level
-                                                  )
-                                                )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal">
-                                        {level}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
+                            {constants?.levels.map((level: string) => {
+                              // Ensure field.value is always an array
+                              const levels = Array.isArray(field.value) ? field.value : [];
+                              
+                              // Debug log to see what's happening
+                              console.log(`Level ${level} checked:`, levels.includes(level));
+                              
+                              return (
+                                <div
+                                  key={level}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <Checkbox
+                                    id={`level-${level}`}
+                                    checked={levels.includes(level)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        // Add the level if it's not already in the array
+                                        if (!levels.includes(level)) {
+                                          const newLevels = [...levels, level];
+                                          console.log("Adding level:", newLevels);
+                                          field.onChange(newLevels);
+                                        }
+                                      } else {
+                                        // Remove the level if it's in the array
+                                        const newLevels = levels.filter((value) => value !== level);
+                                        console.log("Removing level:", newLevels);
+                                        field.onChange(newLevels);
+                                      }
+                                    }}
+                                  />
+                                  <label 
+                                    htmlFor={`level-${level}`}
+                                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                    {level}
+                                  </label>
+                                </div>
+                              );
+                            })}
                           </div>
                           <FormMessage />
                         </FormItem>
@@ -552,46 +559,53 @@ export default function EditHorse() {
                     <FormField
                       control={form.control}
                       name="characteristics"
-                      render={() => (
+                      render={({ field }) => (
                         <FormItem>
                           <div className="mb-4">
                             <FormLabel>Characteristics</FormLabel>
                             <FormDescription>Select all that apply</FormDescription>
                           </div>
                           <div className="grid grid-cols-2 gap-2">
-                            {constants?.characteristics.map((trait: string) => (
-                              <FormField
-                                key={trait}
-                                control={form.control}
-                                name="characteristics"
-                                render={({ field }) => {
-                                  return (
-                                    <FormItem
-                                      key={trait}
-                                      className="flex flex-row items-start space-x-3 space-y-0"
-                                    >
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(trait)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...field.value || [], trait])
-                                              : field.onChange(
-                                                  field.value?.filter(
-                                                    (value) => value !== trait
-                                                  )
-                                                )
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal">
-                                        {trait}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )
-                                }}
-                              />
-                            ))}
+                            {constants?.characteristics.map((trait: string) => {
+                              // Ensure field.value is always an array
+                              const characteristics = Array.isArray(field.value) ? field.value : [];
+                              
+                              // Debug log to see what's happening
+                              console.log(`Characteristic ${trait} checked:`, characteristics.includes(trait));
+                              
+                              return (
+                                <div
+                                  key={trait}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <Checkbox
+                                    id={`trait-${trait}`}
+                                    checked={characteristics.includes(trait)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        // Add the trait if it's not already in the array
+                                        if (!characteristics.includes(trait)) {
+                                          const newCharacteristics = [...characteristics, trait];
+                                          console.log("Adding characteristic:", newCharacteristics);
+                                          field.onChange(newCharacteristics);
+                                        }
+                                      } else {
+                                        // Remove the trait if it's in the array
+                                        const newCharacteristics = characteristics.filter((value) => value !== trait);
+                                        console.log("Removing characteristic:", newCharacteristics);
+                                        field.onChange(newCharacteristics);
+                                      }
+                                    }}
+                                  />
+                                  <label 
+                                    htmlFor={`trait-${trait}`}
+                                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                  >
+                                    {trait}
+                                  </label>
+                                </div>
+                              );
+                            })}
                           </div>
                           <FormMessage />
                         </FormItem>
