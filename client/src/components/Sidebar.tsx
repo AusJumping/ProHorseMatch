@@ -49,7 +49,7 @@ const Sidebar = () => {
               onClick={() => navigate("/")}
             >
               <Home className="mr-3 h-5 w-5" />
-              <span>Discover Horses</span>
+              <span>Home</span>
             </Button>
           </li>
           <li>
