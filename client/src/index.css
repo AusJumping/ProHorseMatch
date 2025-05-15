@@ -127,6 +127,18 @@
     color: black !important;
     border-color: black !important;
   }
+  
+  .info-button {
+    background-color: white !important;
+    color: black !important;
+    border-color: #e5e5e5 !important;
+  }
+  
+  .info-button:hover {
+    background-color: #666 !important;
+    color: white !important;
+    border-color: #666 !important;
+  }
 
   .profile-stats-item {
     position: relative;
