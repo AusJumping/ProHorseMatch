@@ -57,6 +57,13 @@ export interface IStorage {
   updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
 }
 
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Path for storing data on disk to ensure persistence across restarts
+const DATA_DIR = './.data';
+const STORAGE_FILE = path.join(DATA_DIR, 'persistent_storage.json');
+
 // Use global namespace to persist data across hot reloads
 declare global {
   var __persistent_storage: {
@@ -74,6 +81,73 @@ declare global {
   } | undefined;
 }
 
+// Helper functions for file-based persistence
+function ensureDataDirExists() {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    console.log(`Created data directory: ${DATA_DIR}`);
+  }
+}
+
+function saveStorageToDisk() {
+  if (!global.__persistent_storage) return;
+  
+  try {
+    ensureDataDirExists();
+    
+    // Convert Maps to serializable objects
+    const serializableData = {
+      horses: Array.from(global.__persistent_storage.horses.entries()),
+      users: Array.from(global.__persistent_storage.users.entries()),
+      matches: Array.from(global.__persistent_storage.matches.entries()),
+      messages: Array.from(global.__persistent_storage.messages.entries()),
+      conversations: Array.from(global.__persistent_storage.conversations.entries()),
+      horseId: global.__persistent_storage.horseId,
+      userId: global.__persistent_storage.userId,
+      matchId: global.__persistent_storage.matchId,
+      messageId: global.__persistent_storage.messageId,
+      conversationId: global.__persistent_storage.conversationId,
+      seeded: global.__persistent_storage.seeded
+    };
+    
+    fs.writeFileSync(STORAGE_FILE, JSON.stringify(serializableData, null, 2));
+    console.log(`Saved storage data to ${STORAGE_FILE}`);
+  } catch (error) {
+    console.error('Error saving storage to disk:', error);
+  }
+}
+
+function loadStorageFromDisk() {
+  try {
+    if (fs.existsSync(STORAGE_FILE)) {
+      const data = JSON.parse(fs.readFileSync(STORAGE_FILE, 'utf8'));
+      
+      // Convert serialized arrays back to Maps
+      const storage = {
+        horses: new Map(data.horses),
+        users: new Map(data.users),
+        matches: new Map(data.matches),
+        messages: new Map(data.messages),
+        conversations: new Map(data.conversations),
+        horseId: data.horseId,
+        userId: data.userId,
+        matchId: data.matchId,
+        messageId: data.messageId,
+        conversationId: data.conversationId,
+        seeded: data.seeded
+      };
+      
+      console.log(`Loaded storage data from ${STORAGE_FILE}`);
+      console.log(`Loaded ${storage.horses.size} horses from disk storage`);
+      return storage;
+    }
+  } catch (error) {
+    console.error('Error loading storage from disk:', error);
+  }
+  
+  return null;
+}
+
 export class MemStorage implements IStorage {
   private horses: Map<number, Horse>;
   private users: Map<number, User>;
@@ -88,7 +162,10 @@ export class MemStorage implements IStorage {
   private conversationId: number;
   
   constructor(skipSeed = false) {
-    // If we already have global storage initialized, use it
+    // First, try to load from disk file if it exists
+    const diskStorage = loadStorageFromDisk();
+    
+    // If we have global storage initialized, use it
     if (global.__persistent_storage) {
       console.log("MemStorage: Reusing existing data from global storage");
       this.horses = global.__persistent_storage.horses;
@@ -106,9 +183,44 @@ export class MemStorage implements IStorage {
       // Log the current state for debugging
       console.log(`MemStorage: Loaded ${this.horses.size} horses from global storage`);
       console.log(`MemStorage: Current horse IDs:`, Array.from(this.horses.keys()));
-    } else {
+    } 
+    // If we have disk storage, use it and set up global storage
+    else if (diskStorage) {
+      console.log("MemStorage: Loading data from disk storage");
+      this.horses = diskStorage.horses;
+      this.users = diskStorage.users;
+      this.matches = diskStorage.matches;
+      this.messages = diskStorage.messages;
+      this.conversations = diskStorage.conversations;
+      
+      this.horseId = diskStorage.horseId;
+      this.userId = diskStorage.userId;
+      this.matchId = diskStorage.matchId;
+      this.messageId = diskStorage.messageId;
+      this.conversationId = diskStorage.conversationId;
+      
+      // Save to global for persistence across restarts
+      global.__persistent_storage = {
+        horses: this.horses,
+        users: this.users,
+        matches: this.matches,
+        messages: this.messages,
+        conversations: this.conversations,
+        horseId: this.horseId,
+        userId: this.userId,
+        matchId: this.matchId,
+        messageId: this.messageId,
+        conversationId: this.conversationId,
+        seeded: true
+      };
+      
+      console.log(`MemStorage: Restored ${this.horses.size} horses from disk storage`);
+      console.log(`MemStorage: Restored horse IDs:`, Array.from(this.horses.keys()));
+    } 
+    // If neither global nor disk storage exists, initialize from scratch
+    else {
       // Initialize storage for the first time
-      console.log("MemStorage: Initializing new global storage");
+      console.log("MemStorage: Initializing new storage from scratch");
       this.horses = new Map();
       this.users = new Map();
       this.matches = new Map();
@@ -143,6 +255,9 @@ export class MemStorage implements IStorage {
         conversationId: this.conversationId,
         seeded: true
       };
+      
+      // Also save to disk immediately
+      saveStorageToDisk();
     }
     
     // Verify storage state
@@ -417,6 +532,9 @@ export class MemStorage implements IStorage {
       global.__persistent_storage.horseId = this.horseId;
       global.__persistent_storage.horses = this.horses;
       
+      // Save to disk for persistence across application restarts
+      saveStorageToDisk();
+      
       console.log(`MemStorage: Synchronized global storage, now has ${global.__persistent_storage.horses.size} horses`);
       console.log(`MemStorage: Global horse IDs:`, Array.from(global.__persistent_storage.horses.keys()));
     } else {
@@ -455,6 +573,10 @@ export class MemStorage implements IStorage {
     if (global.__persistent_storage) {
       // Direct reference update to ensure global storage stays in sync
       global.__persistent_storage.horses = this.horses;
+      
+      // Save to disk for persistence across application restarts
+      saveStorageToDisk();
+      
       console.log(`MemStorage: Synchronized global storage after update, now has ${global.__persistent_storage.horses.size} horses`);
     } else {
       console.warn("MemStorage: Warning - global.__persistent_storage is not initialized!");
@@ -484,6 +606,10 @@ export class MemStorage implements IStorage {
       if (global.__persistent_storage) {
         // Direct reference update to ensure global storage stays in sync
         global.__persistent_storage.horses = this.horses;
+        
+        // Save to disk for persistence across application restarts
+        saveStorageToDisk();
+        
         console.log(`MemStorage: Synchronized global storage after deletion, now has ${global.__persistent_storage.horses.size} horses`);
         console.log(`MemStorage: Global horse IDs after deletion:`, Array.from(global.__persistent_storage.horses.keys()));
       } else {
