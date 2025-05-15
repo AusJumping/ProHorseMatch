@@ -367,6 +367,13 @@ const FilterPanel = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999">No Max</SelectItem>
+                    <SelectItem value="13.1">13.1 hh</SelectItem>
+                    <SelectItem value="13.2">13.2 hh</SelectItem>
+                    <SelectItem value="13.3">13.3 hh</SelectItem>
+                    <SelectItem value="14.0">14.0 hh</SelectItem>
+                    <SelectItem value="14.1">14.1 hh</SelectItem>
+                    <SelectItem value="14.2">14.2 hh</SelectItem>
+                    <SelectItem value="14.3">14.3 hh</SelectItem>
                     <SelectItem value="15.0">15.0 hh</SelectItem>
                     <SelectItem value="15.1">15.1 hh</SelectItem>
                     <SelectItem value="15.2">15.2 hh</SelectItem>
