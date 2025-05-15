@@ -129,6 +129,27 @@ const FilterPanel = ({
             </Select>
           </div>
           
+          {/* Discipline Levels */}
+          {filters.disciplines && filters.disciplines.length > 0 && filters.disciplines[0] !== "all_disciplines" && (
+            <div className="filter-group">
+              <Label className="block font-accent font-semibold mb-2 text-neutral-800">Level</Label>
+              <Select 
+                value={filters.levels?.[0] || ""} 
+                onValueChange={(value) => handleChange('levels', [value])}
+              >
+                <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                  <SelectValue placeholder="Any Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any_level">Any Level</SelectItem>
+                  {constants?.levels && filters.disciplines[0] && constants.levels[filters.disciplines[0]]?.map((level: string) => (
+                    <SelectItem key={level} value={level}>{level}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          
           {/* Price Range */}
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Price Range</Label>
