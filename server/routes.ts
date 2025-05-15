@@ -575,6 +575,203 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Completely clear the database and start fresh
+  app.post("/api/admin/clean-database", isAuthenticated, async (req, res) => {
+    try {
+      console.log("Clean database request received - COMPLETE RESET");
+      
+      // Get user to verify they are a seller
+      const userId = req.session.userId;
+      console.log("Current user ID:", userId);
+      
+      const user = await storage.getUserById(userId);
+      console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
+      
+      if (!user || !user.is_selling) {
+        console.log("User doesn't have seller permissions");
+        return res.status(403).json({ message: "Only sellers can perform this action" });
+      }
+      
+      // Special direct method for MemStorage
+      if (storage instanceof MemStorage) {
+        console.log("Using direct MemStorage clear method");
+        
+        try {
+          // Get all horses first for logging
+          const allHorses = await storage.getHorses();
+          console.log(`Found ${allHorses.length} total horses in database to delete`);
+          
+          // Get direct access to the internal map
+          const horsesMap = (storage as MemStorage).getInternalHorsesMap();
+          if (!horsesMap) {
+            console.error("Could not access internal horses map");
+            return res.status(500).json({ message: "Failed to access storage" });
+          }
+          
+          // Save the original size
+          const originalSize = horsesMap.size;
+          console.log(`Original database size: ${originalSize} horses`);
+          
+          // Document all horses before clearing
+          const allHorsesSummary = allHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id }));
+          console.log(`Horses before clearing: ${JSON.stringify(allHorsesSummary)}`);
+          
+          // Clear the entire map - FULL RESET
+          console.log("CLEARING ENTIRE DATABASE...");
+          horsesMap.clear();
+          console.log(`Database size after clear: ${horsesMap.size}`);
+          
+          // Verify the operation
+          const allHorsesAfterClear = await storage.getHorses();
+          console.log(`Horses after clear: ${JSON.stringify(allHorsesAfterClear.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })))}`);
+          
+          if (allHorsesAfterClear.length === 0) {
+            console.log("SUCCESS: Database completely cleared");
+          } else {
+            console.error(`ERROR: Database still contains ${allHorsesAfterClear.length} horses after clear!`);
+          }
+          
+          return res.status(200).json({
+            success: true,
+            message: `Database completely cleared. Removed all ${originalSize} horses.`,
+            removedCount: originalSize
+          });
+        } catch (innerError) {
+          console.error("Error during database clear:", innerError);
+          return res.status(500).json({ 
+            success: false,
+            message: "Failed during database clear operation",
+            error: innerError.toString()
+          });
+        }
+      } else {
+        // For other storage types (should implement similar functionality)
+        return res.status(501).json({ 
+          success: false,
+          message: "Clean database functionality not implemented for this storage type" 
+        });
+      }
+    } catch (error) {
+      console.error("Clean database error:", error);
+      return res.status(500).json({ 
+        success: false,
+        message: "Failed to clean database", 
+        error: error.toString() 
+      });
+    }
+  });
+  
+  // Completely rebuild the database from scratch
+  app.post("/api/admin/rebuild-database", isAuthenticated, async (req, res) => {
+    try {
+      console.log("Rebuild database request received");
+      
+      // Get user to verify they are a seller
+      const userId = req.session.userId;
+      console.log("Current user ID:", userId);
+      
+      const user = await storage.getUserById(userId);
+      console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
+      
+      if (!user || !user.is_selling) {
+        console.log("User doesn't have seller permissions");
+        return res.status(403).json({ message: "Only sellers can perform this action" });
+      }
+      
+      // Special direct method for MemStorage
+      if (storage instanceof MemStorage) {
+        console.log("Using direct MemStorage rebuild method");
+        
+        try {
+          // Get all horses
+          const allHorses = await storage.getHorses();
+          console.log(`Found ${allHorses.length} total horses in database`);
+          
+          // Filter for the current user's horses ONLY
+          const userHorses = allHorses.filter(h => h.owner_id === userId);
+          console.log(`Found ${userHorses.length} horses owned by user ID ${userId}: ${JSON.stringify(userHorses.map(h => ({ id: h.id, name: h.name })))}`);
+          
+          // Get direct access to the internal map
+          const horsesMap = (storage as MemStorage).getInternalHorsesMap();
+          if (!horsesMap) {
+            console.error("Could not access internal horses map");
+            return res.status(500).json({ message: "Failed to access storage" });
+          }
+          
+          // Save the original size
+          const originalSize = horsesMap.size;
+          console.log(`Original database size: ${originalSize} horses`);
+          
+          // Document all horses before clearing
+          const allHorsesBeforeReset = Array.from(horsesMap.values());
+          const allHorsesSummary = allHorsesBeforeReset.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id }));
+          console.log(`Horses before rebuild: ${JSON.stringify(allHorsesSummary)}`);
+          
+          // Problematic horses summary
+          const problematicHorses = allHorsesBeforeReset.filter(h => h.owner_id === 1);
+          console.log(`Found ${problematicHorses.length} problematic horses owned by user 1`);
+          
+          // Clear the entire map - FULL RESET
+          console.log("CLEARING ENTIRE DATABASE...");
+          horsesMap.clear();
+          console.log(`Database size after clear: ${horsesMap.size}`);
+          
+          // ONLY Add back the current user's horses
+          let restoredCount = 0;
+          for (const horse of userHorses) {
+            horsesMap.set(horse.id, horse);
+            restoredCount++;
+            console.log(`Restored horse: ${horse.name} (ID: ${horse.id}, Owner: ${horse.owner_id})`);
+          }
+          
+          // Verify the operation
+          console.log(`Final database size after rebuild: ${horsesMap.size}`);
+          
+          // Double check what horses remain in the database
+          const allHorsesAfterRebuild = await storage.getHorses();
+          console.log(`Horses after rebuild: ${JSON.stringify(allHorsesAfterRebuild.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })))}`);
+          
+          // Verify no other horses remain (especially problematic ones)
+          const remainingHorsesNotOwnedByUser = allHorsesAfterRebuild.filter(h => h.owner_id !== userId);
+          if (remainingHorsesNotOwnedByUser.length > 0) {
+            console.error(`ERROR: Found ${remainingHorsesNotOwnedByUser.length} horses not owned by user ${userId} after rebuild!`);
+          } else {
+            console.log(`SUCCESS: Only horses owned by user ${userId} remain in the database.`);
+          }
+          
+          console.log(`Database rebuild complete. Removed ${originalSize - restoredCount} horses, preserved ${restoredCount} horses.`);
+          
+          return res.status(200).json({
+            success: true,
+            message: `Database successfully rebuilt from scratch with only your horses.`,
+            removedCount: originalSize - restoredCount,
+            preservedCount: restoredCount
+          });
+        } catch (innerError) {
+          console.error("Error during database rebuild:", innerError);
+          return res.status(500).json({ 
+            success: false,
+            message: "Failed during database rebuild operation",
+            error: innerError.toString()
+          });
+        }
+      } else {
+        // For other storage types (should implement similar functionality)
+        return res.status(501).json({ 
+          success: false,
+          message: "Rebuild functionality not implemented for this storage type" 
+        });
+      }
+    } catch (error) {
+      console.error("Rebuild database error:", error);
+      return res.status(500).json({ 
+        success: false,
+        message: "Failed to rebuild database", 
+        error: error.toString() 
+      });
+    }
+  });
+  
   app.patch("/api/users/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);

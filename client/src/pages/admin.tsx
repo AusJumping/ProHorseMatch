@@ -398,6 +398,109 @@ const AdminPanel = () => {
                 </Button>
               </CardFooter>
             </Card>
+            
+            <Card className="border-red-500 bg-red-50">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-red-600">Clean Database</CardTitle>
+                <CardDescription className="text-red-500 font-semibold">
+                  DANGER: Complete database reset
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-red-600 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  Removes ALL horses including yours!
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="destructive"
+                  disabled={isResettingDb}
+                  onClick={async () => {
+                    if (isResettingDb) return;
+                    
+                    if (window.confirm('EXTREME DANGER: This will delete ALL horses in the database including yours. This action CANNOT be undone. Are you sure you want to continue?')) {
+                      // Double confirm because this is dangerous
+                      const confirmation = window.prompt('FINAL WARNING: You are about to delete ALL data. Type "DELETE" to confirm.');
+                      if (confirmation === 'DELETE') {
+                        setIsResettingDb(true);
+                        
+                        try {
+                          console.log("Sending clean database request...");
+                          const response = await fetch('/api/admin/clean-database', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json'
+                            }
+                          });
+                          
+                          // Even if we get a 200 response, let's try to parse the JSON
+                          let data;
+                          try {
+                            const textResponse = await response.text();
+                            console.log("Raw response:", textResponse);
+                            data = JSON.parse(textResponse);
+                          } catch (parseError) {
+                            console.error("Error parsing response:", parseError);
+                            throw new Error("Invalid response from server");
+                          }
+                          
+                          console.log("Clean database response:", data);
+                          
+                          if (!response.ok || data.success === false) {
+                            throw new Error(data.message || 'Failed to clean database');
+                          }
+                          
+                          // Invalidate all horse-related queries
+                          await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+                          await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+                          
+                          toast({
+                            title: 'Success',
+                            description: data.message || 'Database completely cleared. All horses have been removed.',
+                            variant: 'default',
+                          });
+                          
+                          // Force a complete refresh of the page (not just client-side)
+                          toast({
+                            title: 'Refreshing Page',
+                            description: 'Database completely cleared. Refreshing page in 3 seconds...',
+                            variant: 'default',
+                          });
+                          
+                          setTimeout(() => {
+                            // Force a full page reload from server
+                            window.location.href = window.location.href;
+                          }, 3000);
+                        } catch (error) {
+                          console.error('Failed to clean database:', error);
+                          toast({
+                            title: 'Error',
+                            description: error.message || 'Failed to clean database',
+                            variant: 'destructive',
+                          });
+                        } finally {
+                          setIsResettingDb(false);
+                        }
+                      }
+                    }
+                  }}
+                  className="w-full"
+                >
+                  {isResettingDb ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Clearing Database...
+                    </>
+                  ) : (
+                    <>
+                      <Trash className="mr-2 h-4 w-4" />
+                      Clean Database (Delete All)
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
           </div>
         </section>
       </div>
