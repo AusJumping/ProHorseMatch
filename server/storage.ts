@@ -71,9 +71,7 @@ export class MemStorage implements IStorage {
   private conversationId: number;
   
   // Flag to check if seed data has already been run to prevent repopulating on app restart
-  private static hasInitialized = false;
-  
-  constructor() {
+  constructor(skipSeed = false) {
     this.horses = new Map();
     this.users = new Map();
     this.matches = new Map();
@@ -86,13 +84,12 @@ export class MemStorage implements IStorage {
     this.messageId = 1;
     this.conversationId = 1;
     
-    // Only seed data if this is the first time the storage is being initialized
-    if (!MemStorage.hasInitialized) {
+    // Only seed data if not explicitly skipped
+    if (!skipSeed) {
       this.seedData();
-      MemStorage.hasInitialized = true;
-      console.log("MemStorage initialized with seed data for the first time");
+      console.log("MemStorage initialized with seed data");
     } else {
-      console.log("MemStorage reused - skipping seed data to preserve existing database state");
+      console.log("MemStorage initialized without seed data - preserving empty state");
     }
     
     // Verify seeded users
@@ -930,4 +927,30 @@ export class DatabaseStorage implements IStorage {
 // Choose which storage implementation to use
 const useDatabase = process.env.NODE_ENV === 'production';
 console.log(`Using ${useDatabase ? 'DatabaseStorage' : 'MemStorage'} implementation`);
-export const storage = useDatabase ? new DatabaseStorage() : new MemStorage();
+// Create a flag for seeding status that persists across hot reloads
+let hasPerformedInitialSeed = false;
+
+// Export a function to create storage with ability to skip seeding
+export function createStorage(skipSeed = false) {
+  if (useDatabase) {
+    return new DatabaseStorage();
+  } else {
+    return new MemStorage(skipSeed || hasPerformedInitialSeed);
+  }
+}
+
+// Set the flag after first seed
+export const storage = createStorage(false);
+hasPerformedInitialSeed = true;
+
+// Add a function to completely reset to no horses for clean database functionality
+export function resetStorageToEmpty() {
+  if (!useDatabase) {
+    const memStorage = storage as MemStorage;
+    const horsesMap = memStorage.getInternalHorsesMap();
+    horsesMap.clear();
+    console.log("Completely reset storage - all horses removed");
+    return true;
+  }
+  return false;
+}

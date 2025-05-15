@@ -1,6 +1,6 @@
 import type { Express, Response } from "express";
 import { createServer, type Server } from "http";
-import { storage, MemStorage } from "./storage";
+import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
 import { 
   insertHorseSchema, 
@@ -592,63 +592,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only sellers can perform this action" });
       }
       
-      // Special direct method for MemStorage
-      if (storage instanceof MemStorage) {
-        console.log("Using direct MemStorage clear method");
+      // Use our enhanced storage reset functionality
+      try {
+        // Get all horses first for logging
+        const allHorses = await storage.getHorses();
+        console.log(`Found ${allHorses.length} total horses in database to delete`);
         
-        try {
-          // Get all horses first for logging
-          const allHorses = await storage.getHorses();
-          console.log(`Found ${allHorses.length} total horses in database to delete`);
-          
-          // Get direct access to the internal map
-          const horsesMap = (storage as MemStorage).getInternalHorsesMap();
-          if (!horsesMap) {
-            console.error("Could not access internal horses map");
-            return res.status(500).json({ message: "Failed to access storage" });
-          }
-          
-          // Save the original size
-          const originalSize = horsesMap.size;
-          console.log(`Original database size: ${originalSize} horses`);
-          
-          // Document all horses before clearing
-          const allHorsesSummary = allHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id }));
-          console.log(`Horses before clearing: ${JSON.stringify(allHorsesSummary)}`);
-          
-          // Clear the entire map - FULL RESET
-          console.log("CLEARING ENTIRE DATABASE...");
-          horsesMap.clear();
-          console.log(`Database size after clear: ${horsesMap.size}`);
-          
-          // Verify the operation
-          const allHorsesAfterClear = await storage.getHorses();
-          console.log(`Horses after clear: ${JSON.stringify(allHorsesAfterClear.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })))}`);
-          
-          if (allHorsesAfterClear.length === 0) {
-            console.log("SUCCESS: Database completely cleared");
-          } else {
-            console.error(`ERROR: Database still contains ${allHorsesAfterClear.length} horses after clear!`);
-          }
+        // Document all horses before clearing
+        const allHorsesSummary = allHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id }));
+        console.log(`Horses before clearing: ${JSON.stringify(allHorsesSummary)}`);
+        
+        // Use the reset function from storage.ts
+        const success = resetStorageToEmpty();
+        
+        if (!success) {
+          return res.status(501).json({ 
+            success: false,
+            message: "Clean database functionality not implemented for this storage type" 
+          });
+        }
+        
+        console.log("CLEARING ENTIRE DATABASE...");
+        
+        // Verify the operation
+        const allHorsesAfterClear = await storage.getHorses();
+        console.log(`Horses after clear: ${JSON.stringify(allHorsesAfterClear.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })))}`);
+        
+        if (allHorsesAfterClear.length === 0) {
+          console.log("SUCCESS: Database completely cleared");
           
           return res.status(200).json({
             success: true,
-            message: `Database completely cleared. Removed all ${originalSize} horses.`,
-            removedCount: originalSize
+            message: `Database completely cleared. Removed all ${allHorses.length} horses.`,
+            removedCount: allHorses.length
           });
-        } catch (innerError) {
-          console.error("Error during database clear:", innerError);
-          return res.status(500).json({ 
+        } else {
+          console.error(`ERROR: Database still contains ${allHorsesAfterClear.length} horses after clear!`);
+          return res.status(500).json({
             success: false,
-            message: "Failed during database clear operation",
-            error: innerError.toString()
+            message: `Failed to completely clear database. ${allHorsesAfterClear.length} horses still remain.`
           });
         }
-      } else {
-        // For other storage types (should implement similar functionality)
-        return res.status(501).json({ 
+      } catch (innerError) {
+        console.error("Error during database clear:", innerError);
+        return res.status(500).json({ 
           success: false,
-          message: "Clean database functionality not implemented for this storage type" 
+          message: "Failed during database clear operation",
+          error: innerError.toString()
         });
       }
     } catch (error) {
