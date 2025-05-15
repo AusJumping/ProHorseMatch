@@ -117,7 +117,11 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
             </div>
             <div className="profile-stats-item">
               <p className="font-accent font-semibold text-primary text-sm">
-                {horse.levels[0]}
+                {horse.levels && horse.levels.length > 0 
+                  ? (horse.levels.length > 1 
+                    ? `${horse.levels[0]} +${horse.levels.length-1}` 
+                    : horse.levels[0])
+                  : 'N/A'}
               </p>
               <p className="text-xs text-neutral-800">Level</p>
             </div>
