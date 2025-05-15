@@ -19,13 +19,28 @@ import express from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
 
+// Extend Express Session
+declare module "express-session" {
+  interface SessionData {
+    userId?: number;
+    userType?: string;
+  }
+}
+
 const SessionStore = MemoryStore(session);
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session middleware
+  const isProduction = process.env.NODE_ENV === "production";
+  
   app.use(
     session({
-      cookie: { maxAge: 86400000 }, // 24 hours
+      cookie: { 
+        maxAge: 86400000, // 24 hours
+        secure: isProduction, // Only use secure in production
+        httpOnly: true,
+        sameSite: isProduction ? 'strict' : 'lax'
+      }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
       }),
@@ -105,20 +120,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
+      console.log("Login attempt:", req.body);
       const { email, password, userType } = req.body;
       
       if (!email || !password || !userType) {
+        console.log("Login failed - Missing required fields");
         return res.status(400).json({ message: "Email, password and user type are required" });
       }
       
       if (userType === "customer") {
+        console.log("Login attempt as customer:", email);
         const customer = await storage.getCustomerByEmail(email);
-        if (!customer || customer.password !== password) {
+        
+        if (!customer) {
+          console.log("Login failed - Customer not found:", email);
           return res.status(401).json({ message: "Invalid credentials" });
         }
         
+        if (customer.password !== password) {
+          console.log("Login failed - Invalid password for customer:", email);
+          return res.status(401).json({ message: "Invalid credentials" });
+        }
+        
+        console.log("Login successful - Setting customer session:", {
+          id: customer.id,
+          type: "customer",
+          sessionId: req.sessionID
+        });
+        
         req.session.userId = customer.id;
         req.session.userType = "customer";
+        
+        // Save session explicitly
+        await new Promise<void>((resolve) => {
+          req.session.save((err) => {
+            if (err) {
+              console.error("Session save error:", err);
+            } else {
+              console.log("Session saved successfully");
+            }
+            resolve();
+          });
+        });
         
         return res.json({ 
           id: customer.id,
@@ -127,13 +170,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: "customer"
         });
       } else if (userType === "owner") {
+        console.log("Login attempt as owner:", email);
         const owner = await storage.getOwnerByEmail(email);
-        if (!owner || owner.password !== password) {
+        
+        if (!owner) {
+          console.log("Login failed - Owner not found:", email);
           return res.status(401).json({ message: "Invalid credentials" });
         }
         
+        if (owner.password !== password) {
+          console.log("Login failed - Invalid password for owner:", email);
+          return res.status(401).json({ message: "Invalid credentials" });
+        }
+        
+        console.log("Login successful - Setting owner session:", {
+          id: owner.id,
+          type: "owner",
+          sessionId: req.sessionID
+        });
+        
         req.session.userId = owner.id;
         req.session.userType = "owner";
+        
+        // Save session explicitly
+        await new Promise<void>((resolve) => {
+          req.session.save((err) => {
+            if (err) {
+              console.error("Session save error:", err);
+            } else {
+              console.log("Session saved successfully");
+            }
+            resolve();
+          });
+        });
         
         return res.json({ 
           id: owner.id,
@@ -143,9 +212,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           type: "owner"
         });
       } else {
+        console.log("Login failed - Invalid user type:", userType);
         return res.status(400).json({ message: "Invalid user type" });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
