@@ -2,16 +2,16 @@ import { useState } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { queryClient } from '@/lib/queryClient';
-import { Loader2, AlertCircle, Check, Trash } from 'lucide-react';
+import { Loader2, AlertCircle, Check, Trash, X } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useLocation } from 'wouter';
 
 const AdminPanel = () => {
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeletingSpecific, setIsDeletingSpecific] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const [_, navigate] = useLocation();
 
@@ -53,6 +53,41 @@ const AdminPanel = () => {
       }
     }
   };
+  
+  const handleDeleteSpecificHorses = async () => {
+    if (window.confirm('Are you sure you want to delete Maestro, Bella, and Cassini? This action cannot be undone.')) {
+      setIsDeletingSpecific(true);
+      try {
+        const response = await fetch('/api/admin/delete-specific-horses', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        // Invalidate all horse-related queries
+        await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+        
+        toast({
+          title: 'Success',
+          description: `${data.deletedCount} horses (Maestro, Bella, Cassini) have been deleted.`,
+          variant: 'default',
+        });
+      } catch (error) {
+        toast({
+          title: 'Error',
+          description: 'Failed to delete specific horses. Please try again.',
+          variant: 'destructive',
+        });
+        console.error('Failed to delete specific horses:', error);
+      } finally {
+        setIsDeletingSpecific(false);
+      }
+    }
+  };
 
   return (
     <Layout pageTitle="Admin Panel">
@@ -65,6 +100,41 @@ const AdminPanel = () => {
         <section>
           <h2 className="font-accent text-xl font-semibold mb-4">Horse Management</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle>Delete Specific Horses</CardTitle>
+                <CardDescription>
+                  Delete Maestro, Bella, and Cassini
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-orange-500 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  Removes only the specified horses
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteSpecificHorses}
+                  disabled={isDeletingSpecific}
+                  className="w-full"
+                >
+                  {isDeletingSpecific ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <X className="mr-2 h-4 w-4" />
+                      Delete Specific Horses
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+          
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle>Delete All Horses</CardTitle>

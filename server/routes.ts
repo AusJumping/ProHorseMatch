@@ -337,6 +337,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Delete specific horses (Maestro, Bella, Cassini)
+  app.delete("/api/admin/delete-specific-horses", isAuthenticated, async (req, res) => {
+    try {
+      console.log("Delete specific horses request received");
+      
+      // Get user to verify they are a seller
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only sellers can perform this action" });
+      }
+      
+      // Get all horses
+      const horses = await storage.getHorses();
+      
+      // Target specific horse names
+      const targetNames = ['Maestro', 'Bella', 'Cassini'];
+      
+      // Delete specific horses
+      let deletedCount = 0;
+      for (const horse of horses) {
+        if (targetNames.includes(horse.name)) {
+          const success = await storage.deleteHorse(horse.id);
+          if (success) {
+            deletedCount++;
+            console.log(`Deleted horse: ${horse.name}`);
+          }
+        }
+      }
+      
+      console.log(`Deleted ${deletedCount} specified horses`);
+      
+      return res.status(200).json({ 
+        message: `Successfully deleted ${deletedCount} horses`, 
+        deletedCount 
+      });
+    } catch (error) {
+      console.error("Delete specific horses error:", error);
+      return res.status(500).json({ message: "Failed to delete specific horses" });
+    }
+  });
+  
   app.patch("/api/users/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
