@@ -423,8 +423,14 @@ const FilterPanel = ({
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Breed</Label>
             <Select 
-              value={filters.breeds[0] || "Warmblood"} 
-              onValueChange={(value) => handleChange('breeds', [value])}
+              value={filters.breeds && filters.breeds.length > 0 ? filters.breeds[0] : "all_breeds"} 
+              onValueChange={(value) => {
+                if (value === "all_breeds") {
+                  handleChange('breeds', []);
+                } else {
+                  handleChange('breeds', [value]);
+                }
+              }}
             >
               <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                 <SelectValue placeholder="All Breeds" />
@@ -443,8 +449,14 @@ const FilterPanel = ({
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Sex</Label>
             <Select 
-              value={filters.sexes[0] || ""} 
-              onValueChange={(value) => handleChange('sexes', [value])}
+              value={filters.sexes && filters.sexes.length > 0 ? filters.sexes[0] : "any_sex"} 
+              onValueChange={(value) => {
+                if (value === "any_sex") {
+                  handleChange('sexes', []);
+                } else {
+                  handleChange('sexes', [value]);
+                }
+              }}
             >
               <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                 <SelectValue placeholder="Any Sex" />
