@@ -32,6 +32,7 @@ function Router() {
       <Route path="/edit-horse/:id" component={EditHorse} />
       <Route path="/migrate-horses" component={MigrateHorses} />
       <Route path="/admin" component={AdminPanel} />
+      <Route path="/favorites" component={Favorites} />
       <Route component={NotFound} />
     </Switch>
   );

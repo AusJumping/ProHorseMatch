@@ -41,6 +41,7 @@ export interface IStorage {
   getMatchesByCustomerId(customerId: number): Promise<Match[]>;
   getMatchesByHorseId(horseId: number): Promise<Match[]>;
   createMatch(match: InsertMatch): Promise<Match>;
+  updateMatch(id: number, match: Partial<Match>): Promise<Match>;
   
   // Message methods
   getMessages(): Promise<Message[]>;

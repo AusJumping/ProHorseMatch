@@ -1227,8 +1227,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
   });
-
+  
+  // Get user's matches
   app.get("/api/matches", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const matches = await storage.getMatchesByCustomerId(userId);
+      return res.json(matches);
+    } catch (error) {
+      console.error("Get matches error:", error);
+      return res.status(500).json({ message: "Failed to fetch matches" });
+    }
+  });
+  
+  // Update match (used to toggle like/unlike)
+  app.patch("/api/matches/:id", isAuthenticated, async (req, res) => {
+    try {
+      const matchId = parseInt(req.params.id);
+      const userId = req.session.userId;
+      
+      // Get the match to check ownership
+      const match = await storage.getMatchById(matchId);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      // Ensure user owns this match
+      if (match.customer_id !== userId) {
+        return res.status(403).json({ message: "Cannot update match that belongs to another user" });
+      }
+      
+      // Update the match with new data
+      const updatedMatch = await storage.updateMatch(matchId, req.body);
+      return res.json(updatedMatch);
+    } catch (error) {
+      console.error("Update match error:", error);
+      return res.status(500).json({ message: "Failed to update match" });
+    }
+  });
+
+  app.get("/api/matches/by-role", isAuthenticated, async (req, res) => {
     try {
       let matches;
       

@@ -3,12 +3,12 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import { Layout } from "@/components/Layout";
+import Layout from "@/components/Layout";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Info, Heart } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MediaCarousel } from "@/components/MediaCarousel";
+import MediaCarousel from "@/components/MediaCarousel";
 import type { Horse, Match } from "@shared/schema";
 
 export default function Favorites() {

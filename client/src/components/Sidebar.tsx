@@ -54,10 +54,11 @@ const Sidebar = () => {
           </li>
           <li>
             <Button
-              variant="ghost"
-              className="w-full justify-start px-5 py-3 text-neutral-800 hover:bg-neutral-100"
+              variant={location === "/favorites" ? "default" : "ghost"}
+              className={`w-full justify-start px-5 py-3 ${
+                location === "/favorites" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+              }`}
               onClick={() => navigate("/favorites")}
-              disabled
             >
               <Heart className="mr-3 h-5 w-5" />
               <span>My Favorites</span>
