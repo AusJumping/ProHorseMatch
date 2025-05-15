@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Home, Heart, Filter, MessageSquare, User, PlusCircle } from "lucide-react";
+import { Home, Heart, Filter, MessageSquare, User, PlusCircle, List } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 const MobileNavbar = () => {
@@ -27,12 +27,12 @@ const MobileNavbar = () => {
         {isOwner ? (
           <button 
             className={`flex flex-col items-center ${
-              location === "/add-horse" ? "text-primary" : "text-neutral-500"
+              location === "/my-horses" ? "text-primary" : "text-neutral-500"
             }`}
-            onClick={() => navigate("/add-horse")}
+            onClick={() => navigate("/my-horses")}
           >
-            <PlusCircle className="h-5 w-5" />
-            <span className="text-xs mt-1">Add Horse</span>
+            <List className="h-5 w-5" />
+            <span className="text-xs mt-1">My Horses</span>
           </button>
         ) : (
           <button 

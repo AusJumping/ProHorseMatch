@@ -18,10 +18,10 @@ export default function MyHorses() {
   const [selectedHorseId, setSelectedHorseId] = useState<number | null>(null);
 
   // Fetch horses owned by the current user
-  const { data: horses, isLoading, refetch } = useQuery({
+  const { data: horses, isLoading, refetch } = useQuery<Horse[]>({
     queryKey: ["/api/my-horses"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/horses/owner");
+      const response = await apiRequest<Horse[]>("GET", "/api/horses/owner");
       return response;
     },
     enabled: !!user

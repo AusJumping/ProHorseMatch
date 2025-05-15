@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings } from "lucide-react";
+import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 const Sidebar = () => {
@@ -88,18 +88,32 @@ const Sidebar = () => {
             </Button>
           </li>
           {user?.type === "owner" && (
-            <li>
-              <Button
-                variant={location === "/add-horse" ? "default" : "ghost"}
-                className={`w-full justify-start px-5 py-3 ${
-                  location === "/add-horse" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
-                }`}
-                onClick={() => navigate("/add-horse")}
-              >
-                <span className="mr-3">🐎</span>
-                <span>Add Horse</span>
-              </Button>
-            </li>
+            <>
+              <li>
+                <Button
+                  variant={location === "/my-horses" ? "default" : "ghost"}
+                  className={`w-full justify-start px-5 py-3 ${
+                    location === "/my-horses" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                  }`}
+                  onClick={() => navigate("/my-horses")}
+                >
+                  <List className="mr-3 h-5 w-5" />
+                  <span>My Horses</span>
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant={location === "/add-horse" ? "default" : "ghost"}
+                  className={`w-full justify-start px-5 py-3 ${
+                    location === "/add-horse" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                  }`}
+                  onClick={() => navigate("/add-horse")}
+                >
+                  <PlusCircle className="mr-3 h-5 w-5" />
+                  <span>Add Horse</span>
+                </Button>
+              </li>
+            </>
           )}
         </ul>
       </div>
