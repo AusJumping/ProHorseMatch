@@ -42,17 +42,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.status === 401) return null;
-        return await res.json();
+        const userData = await res.json();
+        console.log("Auth user data:", userData); // Debug log
+        return userData;
       } catch (error) {
+        console.error("Auth fetch error:", error);
         return null;
       }
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true, // Change to true to ensure we keep auth state updated
   });
   
   // Ensure user is either User object or null, never undefined
   const user = data === undefined ? null : data;
+  
+  // Debug log for auth state
+  console.log("Auth state:", { isAuthenticated: !!user, userType: user?.type });
 
   const login = async (email: string, password: string, userType: string) => {
     try {
@@ -83,9 +89,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         credentials: 'include',
       });
 
-      // Clear all queries from cache
-      queryClient.clear();
-      navigate('/auth');
+      // Reset auth state and invalidate queries
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      await refetch();
+      
+      // Do not navigate here - let the component handle navigation
     } catch (error) {
       console.error('Logout error:', error);
       throw error;

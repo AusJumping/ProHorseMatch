@@ -1,24 +1,14 @@
 import { useLocation } from "wouter";
 import { Home, Heart, Filter, MessageSquare, User, PlusCircle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
 
 const MobileNavbar = () => {
   const [location, navigate] = useLocation();
+  const { user, isAuthenticated } = useAuth();
   
-  // Fetch user data to determine if user is an owner
-  const { data: user } = useQuery({
-    queryKey: ['/api/auth/me'],
-    queryFn: async () => {
-      try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (res.status === 401) return null;
-        return await res.json();
-      } catch (error) {
-        return null;
-      }
-    }
-  });
-
+  // Log for debugging
+  console.log("MobileNavbar - Auth state:", { isAuthenticated, userType: user?.type });
+  
   const isOwner = user?.type === "owner";
 
   return (

@@ -1,31 +1,21 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 const Sidebar = () => {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
-
-  // Fetch user data
-  const { data: user } = useQuery({
-    queryKey: ['/api/auth/me'],
-    queryFn: async () => {
-      try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (res.status === 401) return null;
-        return await res.json();
-      } catch (error) {
-        return null;
-      }
-    }
-  });
+  const { user, isAuthenticated, logout } = useAuth();
+  
+  // Debug log
+  console.log("Sidebar - Auth state:", { isAuthenticated, userType: user?.type });
 
   const handleLogout = async () => {
     try {
-      await apiRequest("POST", "/api/auth/logout", {});
+      await logout();
       toast({
         title: "Logged out",
         description: "You have been logged out successfully.",
