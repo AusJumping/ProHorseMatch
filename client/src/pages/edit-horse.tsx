@@ -390,57 +390,38 @@ export default function EditHorse() {
                     <FormField
                       control={form.control}
                       name="breeds"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="mb-4">
+                      render={({ field }) => {
+                        // Ensure field.value is always an array
+                        const selectedBreed = Array.isArray(field.value) && field.value.length > 0 
+                          ? field.value[0] 
+                          : "Warmblood"; // Default value if no breed is selected
+                        
+                        return (
+                          <FormItem>
                             <FormLabel>Breed</FormLabel>
-                            <FormDescription>Select all that apply</FormDescription>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {constants?.breeds.map((breed: string) => {
-                              // Ensure field.value is always an array
-                              const breeds = Array.isArray(field.value) ? field.value : [];
-                              
-                              // Debug log to see what's happening
-                              console.log(`Breed ${breed} checked:`, breeds.includes(breed));
-                              
-                              return (
-                                <div
-                                  key={breed}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <Checkbox
-                                    id={`breed-${breed}`}
-                                    checked={breeds.includes(breed)}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        // Add the breed if it's not already in the array
-                                        if (!breeds.includes(breed)) {
-                                          const newBreeds = [...breeds, breed];
-                                          console.log("Adding breed:", newBreeds);
-                                          field.onChange(newBreeds);
-                                        }
-                                      } else {
-                                        // Remove the breed if it's in the array
-                                        const newBreeds = breeds.filter((value) => value !== breed);
-                                        console.log("Removing breed:", newBreeds);
-                                        field.onChange(newBreeds);
-                                      }
-                                    }}
-                                  />
-                                  <label 
-                                    htmlFor={`breed-${breed}`}
-                                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
-                                    {breed}
-                                  </label>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                            <Select 
+                              value={selectedBreed}
+                              onValueChange={(value) => {
+                                // Convert single selection to array for compatibility with schema
+                                console.log("Selected breed:", value);
+                                field.onChange([value]);
+                              }}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select breed" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {constants?.breeds.map((breed: string) => (
+                                  <SelectItem key={breed} value={breed}>{breed}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                     
                     <FormField
