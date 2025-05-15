@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,6 +43,7 @@ const ownerRegisterSchema = z.object({
 
 export default function Auth() {
   const { toast } = useToast();
+  const { login, register } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
   const [registerType, setRegisterType] = useState<string>("customer");
@@ -82,18 +84,8 @@ export default function Auth() {
     try {
       console.log("Submitting login form with data:", data);
       
-      // Use the more direct fetch approach for login to ensure cookies are set properly
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
-      }
+      // Use the auth context login function
+      await login(data.email, data.password);
       
       toast({
         title: "Login successful",
