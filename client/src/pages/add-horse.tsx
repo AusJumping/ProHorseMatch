@@ -203,7 +203,7 @@ export default function AddHorse() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div className="space-y-8">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid grid-cols-3 w-full">
                     <TabsTrigger value="basic">Basic Information</TabsTrigger>
