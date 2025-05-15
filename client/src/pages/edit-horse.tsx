@@ -696,15 +696,51 @@ export default function EditHorse() {
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium">Photos</h3>
                       <div className="flex flex-col md:flex-row gap-2">
-                        <Input 
-                          placeholder="Enter photo URL" 
-                          value={photoUrl} 
-                          onChange={(e) => setPhotoUrl(e.target.value)} 
+                        <Button 
+                          type="button" 
+                          variant="outline" 
                           className="flex-1"
-                        />
-                        <Button type="button" onClick={addPhoto} variant="outline">
-                          <Plus className="h-4 w-4 mr-2" /> Add Photo
+                          onClick={() => document.getElementById('photo-upload-edit')?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Select Photo
                         </Button>
+                        <input
+                          id="photo-upload-edit"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            
+                            try {
+                              const response = await fetch('/api/upload', {
+                                method: 'POST',
+                                body: formData,
+                              });
+                              
+                              if (!response.ok) throw new Error('Upload failed');
+                              
+                              const data = await response.json();
+                              const currentPhotos = form.getValues("photos") || [];
+                              form.setValue("photos", [...currentPhotos, data.url]);
+                              
+                              // Reset the input
+                              e.target.value = '';
+                            } catch (error) {
+                              console.error('Upload error:', error);
+                              toast({
+                                title: "Upload failed",
+                                description: "There was an error uploading your photo. Please try again.",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
+                        />
                       </div>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
@@ -736,21 +772,60 @@ export default function EditHorse() {
                       
                       <h3 className="text-lg font-medium">Videos</h3>
                       <div className="flex flex-col md:flex-row gap-2">
-                        <Input 
-                          placeholder="Enter video URL" 
-                          value={videoUrl} 
-                          onChange={(e) => setVideoUrl(e.target.value)} 
+                        <Button 
+                          type="button" 
+                          variant="outline" 
                           className="flex-1"
-                        />
-                        <Button type="button" onClick={addVideo} variant="outline">
-                          <Plus className="h-4 w-4 mr-2" /> Add Video
+                          onClick={() => document.getElementById('video-upload-edit')?.click()}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Select Video
                         </Button>
+                        <input
+                          id="video-upload-edit"
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            
+                            try {
+                              const response = await fetch('/api/upload', {
+                                method: 'POST',
+                                body: formData,
+                              });
+                              
+                              if (!response.ok) throw new Error('Upload failed');
+                              
+                              const data = await response.json();
+                              const currentVideos = form.getValues("videos") || [];
+                              form.setValue("videos", [...currentVideos, data.url]);
+                              
+                              // Reset the input
+                              e.target.value = '';
+                            } catch (error) {
+                              console.error('Upload error:', error);
+                              toast({
+                                title: "Upload failed",
+                                description: "There was an error uploading your video. Please try again.",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
+                        />
                       </div>
                       
                       <div className="space-y-2 mt-4">
                         {form.watch("videos")?.map((video, index) => (
                           <div key={index} className="flex items-center justify-between bg-muted p-2 rounded-md">
-                            <span className="truncate flex-1">{video}</span>
+                            <div className="flex items-center gap-2">
+                              <FileVideo className="h-4 w-4 text-neutral-500" />
+                              <span className="truncate flex-1">{video.split('/').pop()}</span>
+                            </div>
                             <Button
                               type="button"
                               size="icon"
