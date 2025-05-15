@@ -68,7 +68,7 @@ const MessageCard = ({ conversation, onClick, isActive = false }: MessageCardPro
         <div className="flex justify-between items-start">
           <h4 className="font-medium">
             {conversation.otherParty?.name || "User"}
-            {conversation.horse && ` (${conversation.horse.name})`}
+            {conversation.horse && <span className="font-accent"> ({conversation.horse.name})</span>}
           </h4>
           <span className="text-xs text-neutral-500">
             {conversation.last_message_time 

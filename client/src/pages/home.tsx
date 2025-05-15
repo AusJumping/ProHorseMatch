@@ -252,7 +252,7 @@ export default function Home() {
                     className="w-16 h-16 object-cover rounded-lg" 
                   />
                   <div className="flex-1">
-                    <h4 className="font-medium">{horse.name}</h4>
+                    <h4 className="font-accent font-medium">{horse.name}</h4>
                     <p className="text-xs text-neutral-700">
                       {horse.age}yo • {horse.breeds[0]} • {horse.sex}
                     </p>
