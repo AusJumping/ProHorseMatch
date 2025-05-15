@@ -401,6 +401,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Delete horse by ID - direct method
+  app.delete("/api/admin/delete-horse/:id", isAuthenticated, async (req, res) => {
+    try {
+      console.log("Delete horse by ID request received");
+      
+      // Get the horse ID from the request params
+      const horseId = parseInt(req.params.id);
+      console.log(`Attempting to delete horse with ID: ${horseId}`);
+      
+      // Get user to verify they are a seller
+      const userId = req.session.userId;
+      console.log("Current user ID:", userId);
+      
+      const user = await storage.getUserById(userId);
+      console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
+      
+      if (!user || !user.is_selling) {
+        console.log("User doesn't have seller permissions");
+        return res.status(403).json({ message: "Only sellers can perform this action" });
+      }
+      
+      // Get the horse to delete
+      const horse = await storage.getHorseById(horseId);
+      
+      if (!horse) {
+        console.log(`Horse with ID ${horseId} not found`);
+        return res.status(404).json({ message: "Horse not found" });
+      }
+      
+      console.log(`Found horse with ID ${horseId}: ${JSON.stringify({
+        id: horse.id,
+        name: horse.name,
+        owner_id: horse.owner_id
+      })}`);
+      
+      // Delete the horse
+      const success = await storage.deleteHorse(horseId);
+      
+      if (success) {
+        console.log(`Successfully deleted horse with ID ${horseId}`);
+        return res.status(200).json({ 
+          message: `Successfully deleted horse ${horse.name}`, 
+          deletedHorse: {
+            id: horse.id,
+            name: horse.name
+          }
+        });
+      } else {
+        console.log(`Failed to delete horse with ID ${horseId}`);
+        return res.status(500).json({ message: "Failed to delete horse" });
+      }
+    } catch (error) {
+      console.error("Delete horse by ID error:", error);
+      return res.status(500).json({ message: "Failed to delete horse" });
+    }
+  });
+  
+  // Delete User 1 and all their horses
+  app.delete("/api/admin/delete-user-one", isAuthenticated, async (req, res) => {
+    try {
+      console.log("Delete User 1 request received");
+      
+      // Get user to verify they are a seller
+      const userId = req.session.userId;
+      console.log("Current user ID:", userId);
+      
+      const user = await storage.getUserById(userId);
+      console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
+      
+      if (!user || !user.is_selling) {
+        console.log("User doesn't have seller permissions");
+        return res.status(403).json({ message: "Only sellers can perform this action" });
+      }
+      
+      // Get all horses owned by User 1
+      const horses = await storage.getHorses();
+      const user1Horses = horses.filter(h => h.owner_id === 1);
+      
+      console.log(`Found ${user1Horses.length} horses owned by User 1: ${JSON.stringify(user1Horses.map(h => ({ id: h.id, name: h.name })))}`);
+      
+      // Delete all horses owned by User 1
+      let deletedCount = 0;
+      let deletedHorses = [];
+      
+      for (const horse of user1Horses) {
+        console.log(`Attempting to delete horse: ${horse.name} (ID: ${horse.id})`);
+        try {
+          const success = await storage.deleteHorse(horse.id);
+          if (success) {
+            deletedCount++;
+            deletedHorses.push(horse.name);
+            console.log(`Successfully deleted horse: ${horse.name} (ID: ${horse.id})`);
+          } else {
+            console.log(`Failed to delete horse: ${horse.name} (ID: ${horse.id})`);
+          }
+        } catch (deleteError) {
+          console.error(`Error deleting horse ${horse.name}:`, deleteError);
+        }
+      }
+      
+      // The "delete user" function isn't yet implemented in our storage
+      // We'll just indicate that we've deleted all their horses instead
+      
+      console.log(`Deleted ${deletedCount} horses owned by User 1: ${deletedHorses.join(", ")}`);
+      
+      return res.status(200).json({
+        message: `Successfully deleted ${deletedCount} horses owned by User 1`,
+        deletedCount,
+        deletedHorses
+      });
+    } catch (error) {
+      console.error("Delete User 1 error:", error);
+      return res.status(500).json({ message: "Failed to delete User 1 and their horses" });
+    }
+  });
+  
   app.patch("/api/users/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);

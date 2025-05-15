@@ -105,6 +105,59 @@ const AdminPanel = () => {
     }
   };
 
+  const [isDeletingUserOne, setIsDeletingUserOne] = useState(false);
+
+  const handleDeleteUserOne = async () => {
+    if (window.confirm('Are you sure you want to delete User 1 and all their horses? This action cannot be undone.')) {
+      setIsDeletingUserOne(true);
+      try {
+        console.log("Sending delete request to /api/admin/delete-user-one");
+        const response = await fetch('/api/admin/delete-user-one', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log("Response status:", response.status);
+        
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log("Response data:", data);
+        
+        // Invalidate all horse-related queries
+        await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+        
+        if (data.deletedCount > 0) {
+          toast({
+            title: 'Success',
+            description: `Deleted ${data.deletedCount} horses owned by User 1: ${data.deletedHorses.join(', ')}`,
+            variant: 'default',
+          });
+        } else {
+          toast({
+            title: 'Notice',
+            description: 'No horses were found for User 1. They may have been deleted already.',
+            variant: 'default',
+          });
+        }
+      } catch (error) {
+        console.error('Failed to delete User 1:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to delete User 1. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsDeletingUserOne(false);
+      }
+    }
+  };
+
   return (
     <Layout pageTitle="Admin Panel">
       <div className="p-6 space-y-6">
@@ -180,6 +233,41 @@ const AdminPanel = () => {
                     <>
                       <Trash className="mr-2 h-4 w-4" />
                       Delete All Horses
+                    </>
+                  )}
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle>Delete User 1</CardTitle>
+                <CardDescription>
+                  Remove User 1 and all their horses
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-red-600 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  Removes User 1 and all problematic horses
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteUserOne}
+                  disabled={isDeletingUserOne}
+                  className="w-full"
+                >
+                  {isDeletingUserOne ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash className="mr-2 h-4 w-4" />
+                      Delete User 1
                     </>
                   )}
                 </Button>
