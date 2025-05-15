@@ -131,30 +131,46 @@ const FilterPanel = ({
           
           {/* Price Range */}
           <div className="filter-group">
-            <div className="flex justify-between mb-2">
-              <Label className="block font-accent font-semibold text-neutral-800">Price Range</Label>
-              <span className="text-sm text-primary font-semibold">
-                {filters.price_min?.toLocaleString() || '0'} - {filters.price_max?.toLocaleString() || '100,000+'}
-              </span>
-            </div>
-            <div className="relative h-6 mb-2">
-              <Slider
-                value={[
-                  filters.price_min || 0,
-                  filters.price_max || 100000
-                ]}
-                min={0}
-                max={100000}
-                step={5000}
-                onValueChange={(value) => {
-                  handleChange('price_min', value[0]);
-                  handleChange('price_max', value[1]);
-                }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-neutral-800">
-              <span>€0</span>
-              <span>€100,000+</span>
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Price Range</Label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Select 
+                  value={filters.price_min?.toString() || "0"} 
+                  onValueChange={(value) => handleChange('price_min', parseInt(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    <SelectValue placeholder="Min Price" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No Min</SelectItem>
+                    <SelectItem value="5000">€5,000</SelectItem>
+                    <SelectItem value="10000">€10,000</SelectItem>
+                    <SelectItem value="15000">€15,000</SelectItem>
+                    <SelectItem value="25000">€25,000</SelectItem>
+                    <SelectItem value="50000">€50,000</SelectItem>
+                    <SelectItem value="75000">€75,000</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Select 
+                  value={filters.price_max?.toString() || "100000"} 
+                  onValueChange={(value) => handleChange('price_max', parseInt(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    <SelectValue placeholder="Max Price" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15000">€15,000</SelectItem>
+                    <SelectItem value="25000">€25,000</SelectItem>
+                    <SelectItem value="50000">€50,000</SelectItem>
+                    <SelectItem value="75000">€75,000</SelectItem>
+                    <SelectItem value="100000">€100,000</SelectItem>
+                    <SelectItem value="150000">€150,000</SelectItem>
+                    <SelectItem value="200000">€200,000+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           
