@@ -16,8 +16,7 @@ import { ChevronLeft, ArrowRight } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  userType: z.enum(["customer", "owner"])
+  password: z.string().min(8, { message: "Password must be at least 8 characters" })
 });
 
 const customerRegisterSchema = z.object({
@@ -52,8 +51,7 @@ export default function Auth() {
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
-      password: "",
-      userType: "customer"
+      password: ""
     }
   });
 
@@ -204,32 +202,7 @@ export default function Auth() {
               <CardContent>
                 <Form {...loginForm}>
                   <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                    <FormField
-                      control={loginForm.control}
-                      name="userType"
-                      render={({ field }) => (
-                        <FormItem className="space-y-1">
-                          <FormLabel>Account Type</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex space-x-2"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="customer" id="customer" />
-                                <Label htmlFor="customer">Searching</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="owner" id="owner" />
-                                <Label htmlFor="owner">Selling</Label>
-                              </div>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+
 
                     <FormField
                       control={loginForm.control}
