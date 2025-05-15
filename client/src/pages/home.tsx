@@ -119,11 +119,26 @@ export default function Home() {
   });
 
   const handleLike = async (horseId: number) => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to save this horse to your favorites.",
+        variant: "default",
+      });
+      // Optionally redirect to login page
+      // navigate('/login');
+      
+      // Still advance to the next horse
+      setSwipingIndex(prev => prev + 1);
+      return;
+    }
+    
     try {
       if (!horseId) return;
       
       await apiRequest('POST', '/api/matches', {
-        customer_id: 1, // In a real app, this would be the logged-in user ID
+        customer_id: user?.id, // Use the logged-in user's ID
         horse_id: horseId,
         is_liked: true
       });
@@ -144,11 +159,19 @@ export default function Home() {
   };
 
   const handleDislike = async (horseId: number) => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      // For dislikes, we won't show a login message
+      // Just advance to the next horse
+      setSwipingIndex(prev => prev + 1);
+      return;
+    }
+    
     try {
       if (!horseId) return;
       
       await apiRequest('POST', '/api/matches', {
-        customer_id: 1, // In a real app, this would be the logged-in user ID
+        customer_id: user?.id, // Use the logged-in user's ID
         horse_id: horseId,
         is_liked: false
       });
