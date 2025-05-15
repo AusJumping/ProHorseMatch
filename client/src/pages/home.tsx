@@ -108,7 +108,10 @@ export default function Home() {
         throw new Error('Failed to fetch horses');
       }
       
-      return response.json();
+      const result = await response.json();
+      // Reset the active index to 0 whenever we get new data
+      setSwipingIndex(0);
+      return result;
     }
   });
 
@@ -203,11 +206,13 @@ export default function Home() {
     }
     
     // Convert radius from string to number or null
-    if (cleanFilters.location_radius_km === "any_radius") {
+    if (typeof cleanFilters.location_radius_km === 'string' && cleanFilters.location_radius_km === "any_radius") {
       cleanFilters.location_radius_km = null;
     }
     
     console.log('Applying filters:', cleanFilters);
+    // Reset the swiping index to show the first horse in the new filtered results
+    setSwipingIndex(0);
     setActiveFilters(cleanFilters);
     setIsFilterOpen(false);
   };
