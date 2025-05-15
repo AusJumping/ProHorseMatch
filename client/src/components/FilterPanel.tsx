@@ -257,59 +257,93 @@ const FilterPanel = ({
           
           {/* Age Range */}
           <div className="filter-group">
-            <div className="flex justify-between mb-2">
-              <Label className="block font-accent font-semibold text-neutral-800">Age Range</Label>
-              <span className="text-sm text-primary font-semibold">
-                {filters.age_min || '0'} - {filters.age_max || '20+'} years
-              </span>
-            </div>
-            <div className="relative h-6 mb-2">
-              <Slider
-                value={[
-                  filters.age_min || 0,
-                  filters.age_max || 20
-                ]}
-                min={0}
-                max={20}
-                step={1}
-                onValueChange={(value) => {
-                  handleChange('age_min', value[0]);
-                  handleChange('age_max', value[1]);
-                }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-neutral-800">
-              <span>0</span>
-              <span>20+ years</span>
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Age Range</Label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Select 
+                  value={filters.age_min?.toString() || "0"} 
+                  onValueChange={(value) => handleChange('age_min', parseInt(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    <SelectValue placeholder="Min Age" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No Min</SelectItem>
+                    <SelectItem value="2">2 years</SelectItem>
+                    <SelectItem value="3">3 years</SelectItem>
+                    <SelectItem value="4">4 years</SelectItem>
+                    <SelectItem value="5">5 years</SelectItem>
+                    <SelectItem value="6">6 years</SelectItem>
+                    <SelectItem value="8">8 years</SelectItem>
+                    <SelectItem value="10">10 years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Select 
+                  value={filters.age_max?.toString() || "20"} 
+                  onValueChange={(value) => handleChange('age_max', parseInt(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    <SelectValue placeholder="Max Age" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 years</SelectItem>
+                    <SelectItem value="7">7 years</SelectItem>
+                    <SelectItem value="10">10 years</SelectItem>
+                    <SelectItem value="12">12 years</SelectItem>
+                    <SelectItem value="15">15 years</SelectItem>
+                    <SelectItem value="18">18 years</SelectItem>
+                    <SelectItem value="20">20+ years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           
           {/* Height Range */}
           <div className="filter-group">
-            <div className="flex justify-between mb-2">
-              <Label className="block font-accent font-semibold text-neutral-800">Height</Label>
-              <span className="text-sm text-primary font-semibold">
-                {filters.height_min || '13.0'} - {filters.height_max || '18.0'} hands
-              </span>
-            </div>
-            <div className="relative h-6 mb-2">
-              <Slider
-                value={[
-                  filters.height_min || 13.0,
-                  filters.height_max || 18.0
-                ]}
-                min={13.0}
-                max={18.0}
-                step={0.1}
-                onValueChange={(value) => {
-                  handleChange('height_min', value[0]);
-                  handleChange('height_max', value[1]);
-                }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-neutral-800">
-              <span>13.0 hh</span>
-              <span>18.0 hh</span>
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Height Range</Label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Select 
+                  value={filters.height_min?.toString() || "13.0"} 
+                  onValueChange={(value) => handleChange('height_min', parseFloat(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    <SelectValue placeholder="Min Height" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="13.0">13.0 hh</SelectItem>
+                    <SelectItem value="13.2">13.2 hh</SelectItem>
+                    <SelectItem value="14.0">14.0 hh</SelectItem>
+                    <SelectItem value="14.2">14.2 hh</SelectItem>
+                    <SelectItem value="15.0">15.0 hh</SelectItem>
+                    <SelectItem value="15.2">15.2 hh</SelectItem>
+                    <SelectItem value="16.0">16.0 hh</SelectItem>
+                    <SelectItem value="16.2">16.2 hh</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Select 
+                  value={filters.height_max?.toString() || "18.0"} 
+                  onValueChange={(value) => handleChange('height_max', parseFloat(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    <SelectValue placeholder="Max Height" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15.0">15.0 hh</SelectItem>
+                    <SelectItem value="15.2">15.2 hh</SelectItem>
+                    <SelectItem value="16.0">16.0 hh</SelectItem>
+                    <SelectItem value="16.2">16.2 hh</SelectItem>
+                    <SelectItem value="17.0">17.0 hh</SelectItem>
+                    <SelectItem value="17.2">17.2 hh</SelectItem>
+                    <SelectItem value="18.0">18.0 hh</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           
