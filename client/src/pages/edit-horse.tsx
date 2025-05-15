@@ -137,7 +137,15 @@ export default function EditHorse() {
     try {
       setIsSubmitting(true);
       
-      await apiRequest("PUT", `/api/horses/${horseId}`, data);
+      // Log all form data for debugging
+      console.log("Submitting form data:", JSON.stringify(data, null, 2));
+      
+      // Make the API request and store the response
+      const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, data);
+      console.log("Response from server:", updatedHorse);
+      
+      // Manually update the form with the response data to ensure consistency
+      form.reset(updatedHorse);
       
       toast({
         title: "Horse updated",
@@ -149,8 +157,11 @@ export default function EditHorse() {
       queryClient.invalidateQueries({ queryKey: [`/api/horses/${horseId}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
       
-      // Navigate back to My Horses page
-      navigate("/my-horses");
+      // Show a success message first before navigating
+      setTimeout(() => {
+        // Navigate back to My Horses page after a small delay
+        navigate("/my-horses");
+      }, 1000);
     } catch (error) {
       console.error("Error updating horse:", error);
       toast({
@@ -245,7 +256,11 @@ export default function EditHorse() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Sex</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              value={field.value}
+                              defaultValue={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select sex" />
@@ -349,7 +364,11 @@ export default function EditHorse() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Currency</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              value={field.value}
+                              defaultValue={field.value}
+                            >
                               <FormControl>
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select currency" />
