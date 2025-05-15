@@ -72,15 +72,13 @@ export class MemStorage implements IStorage {
   
   constructor() {
     this.horses = new Map();
-    this.owners = new Map();
-    this.customers = new Map();
+    this.users = new Map();
     this.matches = new Map();
     this.messages = new Map();
     this.conversations = new Map();
     
     this.horseId = 1;
-    this.ownerId = 1;
-    this.customerId = 1;
+    this.userId = 1;
     this.matchId = 1;
     this.messageId = 1;
     this.conversationId = 1;
@@ -90,20 +88,24 @@ export class MemStorage implements IStorage {
   
   // Seed some initial data
   private seedData() {
-    // Add an owner
-    const owner: InsertOwner = {
+    // Add a user with selling role (owner)
+    const owner: InsertUser = {
       business_name: "Elite Sporthorses",
       contact_name: "John Smith",
       email: "john@elitesporthorses.com",
-      password: "password123"
+      password: "password123",
+      is_selling: true,
+      is_searching: false
     };
-    this.createOwner(owner);
+    this.createUser(owner);
     
-    // Add a customer
-    const customer: InsertCustomer = {
+    // Add a user with searching role (customer)
+    const customer: InsertUser = {
       name: "Sarah Thompson",
       email: "sarah@example.com",
       password: "password123",
+      is_searching: true,
+      is_selling: false,
       location_country: "Germany",
       location_radius_km: 150,
       preferred_disciplines: ["Jumping"],
@@ -120,7 +122,7 @@ export class MemStorage implements IStorage {
       price_range_max: 100000,
       currency: "EUR"
     };
-    this.createCustomer(customer);
+    this.createUser(customer);
     
     // Add some horses
     const horse1: InsertHorse = {
@@ -336,53 +338,78 @@ export class MemStorage implements IStorage {
     return exists;
   }
   
-  // Owner methods
+  // User methods
+  async getUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+  
+  async getUserById(id: number): Promise<User | undefined> {
+    return this.users.get(id);
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
+  }
+  
+  async createUser(user: InsertUser): Promise<User> {
+    const id = this.userId++;
+    const newUser: User = { id, ...user, created_at: new Date() };
+    this.users.set(id, newUser);
+    return newUser;
+  }
+  
+  async updateUser(id: number, update: Partial<User>): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) throw new Error("User not found");
+    
+    const updatedUser = { ...user, ...update };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+  
+  // Legacy Owner methods
   async getOwners(): Promise<Owner[]> {
-    return Array.from(this.owners.values());
+    return Array.from(this.users.values()).filter(user => user.is_selling);
   }
   
   async getOwnerById(id: number): Promise<Owner | undefined> {
-    return this.owners.get(id);
+    const user = this.users.get(id);
+    return user && user.is_selling ? user : undefined;
   }
   
   async getOwnerByEmail(email: string): Promise<Owner | undefined> {
-    return Array.from(this.owners.values()).find(owner => owner.email === email);
+    const user = Array.from(this.users.values()).find(u => u.email === email && u.is_selling);
+    return user;
   }
   
   async createOwner(owner: InsertOwner): Promise<Owner> {
-    const id = this.ownerId++;
-    const newOwner: Owner = { id, ...owner, created_at: new Date() };
-    this.owners.set(id, newOwner);
-    return newOwner;
+    return this.createUser({ ...owner, is_selling: true });
   }
   
-  // Customer methods
+  // Legacy Customer methods
   async getCustomers(): Promise<Customer[]> {
-    return Array.from(this.customers.values());
+    return Array.from(this.users.values()).filter(user => user.is_searching);
   }
   
   async getCustomerById(id: number): Promise<Customer | undefined> {
-    return this.customers.get(id);
+    const user = this.users.get(id);
+    return user && user.is_searching ? user : undefined;
   }
   
   async getCustomerByEmail(email: string): Promise<Customer | undefined> {
-    return Array.from(this.customers.values()).find(customer => customer.email === email);
+    const user = Array.from(this.users.values()).find(u => u.email === email && u.is_searching);
+    return user;
   }
   
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
-    const id = this.customerId++;
-    const newCustomer: Customer = { id, ...customer, created_at: new Date() };
-    this.customers.set(id, newCustomer);
-    return newCustomer;
+    return this.createUser({ ...customer, is_searching: true });
   }
   
   async updateCustomer(id: number, update: Partial<Customer>): Promise<Customer> {
-    const customer = this.customers.get(id);
-    if (!customer) throw new Error("Customer not found");
+    const user = await this.getUserById(id);
+    if (!user || !user.is_searching) throw new Error("Customer not found");
     
-    const updatedCustomer = { ...customer, ...update };
-    this.customers.set(id, updatedCustomer);
-    return updatedCustomer;
+    return this.updateUser(id, update);
   }
   
   // Match methods
@@ -510,6 +537,35 @@ export class MemStorage implements IStorage {
 
 // Database-backed storage implementation
 export class DatabaseStorage implements IStorage {
+  // User methods for unified user model
+  async getUsers(): Promise<User[]> {
+    const result = await db.select().from(users);
+    return result;
+  }
+  
+  async getUserById(id: number): Promise<User | undefined> {
+    const [result] = await db.select().from(users).where(eq(users.id, id));
+    return result;
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [result] = await db.select().from(users).where(eq(users.email, email));
+    return result;
+  }
+  
+  async createUser(user: InsertUser): Promise<User> {
+    const [result] = await db.insert(users).values(user).returning();
+    return result;
+  }
+  
+  async updateUser(id: number, update: Partial<User>): Promise<User> {
+    const [result] = await db
+      .update(users)
+      .set(update)
+      .where(eq(users.id, id))
+      .returning();
+    return result;
+  }
   // Horse methods
   async getHorses(): Promise<Horse[]> {
     return await db.select().from(horses);
