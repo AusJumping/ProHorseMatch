@@ -46,7 +46,7 @@ export default function Home() {
     height_max: null,
     price_min: null,
     price_max: null,
-    currency: "EUR",
+    currency: "AUD",
   });
 
   // Debug log
