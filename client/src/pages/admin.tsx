@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { queryClient } from '@/lib/queryClient';
-import { Loader2, AlertCircle, Check, Trash, X } from 'lucide-react';
+import { Loader2, AlertCircle, Check, Trash, X, RefreshCw, Database } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useLocation } from 'wouter';
 
@@ -270,6 +270,68 @@ const AdminPanel = () => {
                       Delete User 1
                     </>
                   )}
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <Card className="bg-amber-50">
+              <CardHeader className="pb-2">
+                <CardTitle>Reset Database</CardTitle>
+                <CardDescription>
+                  Preserve your horses, remove all others
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-orange-600 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  Keeps only your horses, deletes everything else
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    if (window.confirm('WARNING: This will delete ALL horses except the ones you own. This action cannot be undone. Are you sure you want to continue?')) {
+                      const resetDatabase = async () => {
+                        try {
+                          const response = await fetch('/api/admin/reset-database', {
+                            method: 'DELETE',
+                            headers: {
+                              'Content-Type': 'application/json'
+                            }
+                          });
+                          
+                          if (!response.ok) {
+                            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                          }
+                          
+                          const data = await response.json();
+                          
+                          // Invalidate all horse-related queries
+                          await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+                          await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+                          
+                          toast({
+                            title: 'Success',
+                            description: data.message || 'Database reset successful. All problematic horses have been removed.',
+                            variant: 'default',
+                          });
+                        } catch (error) {
+                          console.error('Failed to reset database:', error);
+                          toast({
+                            title: 'Error',
+                            description: 'Failed to reset database. Please try again.',
+                            variant: 'destructive',
+                          });
+                        }
+                      };
+                      resetDatabase();
+                    }
+                  }}
+                  className="w-full"
+                >
+                  <Database className="mr-2 h-4 w-4" />
+                  Reset Database
                 </Button>
               </CardFooter>
             </Card>

@@ -458,10 +458,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete User 1 and all their horses - special direct method
-  app.delete("/api/admin/delete-user-one", isAuthenticated, async (req, res) => {
+  // Reset database but keep specific user's horses
+  app.delete("/api/admin/reset-database", isAuthenticated, async (req, res) => {
     try {
-      console.log("Delete User 1 request received");
+      console.log("Reset database request received");
       
       // Get user to verify they are a seller
       const userId = req.session.userId;
@@ -475,79 +475,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only sellers can perform this action" });
       }
       
-      // Special direct method for MemStorage - this will be different for DatabaseStorage
+      // Special direct method for MemStorage
       if (storage instanceof MemStorage) {
-        console.log("Using direct MemStorage access to delete User 1 horses");
+        console.log("Using direct MemStorage reset method");
         
-        // Get all horses before we modify anything (for reporting)
+        // Get all horses
         const allHorses = await storage.getHorses();
-        const user1Horses = allHorses.filter(h => h.owner_id === 1);
+        console.log(`Found ${allHorses.length} total horses in database`);
         
-        console.log(`Found ${user1Horses.length} horses owned by User 1: ${JSON.stringify(user1Horses.map(h => ({ id: h.id, name: h.name })))}`);
+        // Filter for user's horses (id 3)
+        const userHorses = allHorses.filter(h => h.owner_id === 3);
+        console.log(`Found ${userHorses.length} horses owned by user ID 3: ${JSON.stringify(userHorses.map(h => ({ id: h.id, name: h.name })))}`);
         
-        const horsesToDelete = user1Horses.map(h => h.id);
-        const horseNames = user1Horses.map(h => h.name);
+        // Count problematic horses
+        const problematicHorses = allHorses.filter(h => h.owner_id === 1);
+        const problematicHorseNames = problematicHorses.map(h => h.name);
+        console.log(`Found ${problematicHorses.length} problematic horses: ${problematicHorseNames.join(", ")}`);
         
-        // Direct access to the Map within MemStorage
-        const internalMap = (storage as MemStorage).getInternalHorsesMap();
+        // Create a completely new horses Map
+        const newHorsesMap = new Map();
         
-        // Delete directly from the map
-        let deletedCount = 0;
-        for (const id of horsesToDelete) {
-          if (internalMap.delete(id)) {
-            deletedCount++;
-            console.log(`Successfully deleted horse with ID: ${id} directly from map`);
-          } else {
-            console.log(`Failed to delete horse with ID: ${id} from map`);
-          }
+        // Re-add only user's horses
+        let preservedCount = 0;
+        for (const horse of userHorses) {
+          newHorsesMap.set(horse.id, horse);
+          preservedCount++;
+          console.log(`Preserved horse: ${horse.name} (ID: ${horse.id})`);
         }
         
-        console.log(`Directly deleted ${deletedCount} horses owned by User 1: ${horseNames.join(", ")}`);
-      
+        // Replace the old map with the new one
+        const oldMap = (storage as MemStorage).getInternalHorsesMap();
+        const oldSize = oldMap.size;
+        
+        // Clear the old map
+        oldMap.clear();
+        
+        // Add all preserved horses back
+        for (const [id, horse] of newHorsesMap.entries()) {
+          oldMap.set(id, horse);
+        }
+        
+        console.log(`Database reset complete. Removed ${oldSize - preservedCount} horses, preserved ${preservedCount} horses.`);
+        
         return res.status(200).json({
-          message: `Successfully deleted ${deletedCount} horses owned by User 1`,
-          deletedCount,
-          deletedHorses: horseNames
+          message: `Database reset successful. Removed all problematic horses (${problematicHorseNames.join(", ")}) and preserved your horses.`,
+          removedCount: oldSize - preservedCount,
+          preservedCount,
+          removedHorses: problematicHorseNames
         });
       } else {
-        // Fallback to standard method for other storage types
-        // Get all horses owned by User 1
-        const horses = await storage.getHorses();
-        const user1Horses = horses.filter(h => h.owner_id === 1);
-        
-        console.log(`Found ${user1Horses.length} horses owned by User 1: ${JSON.stringify(user1Horses.map(h => ({ id: h.id, name: h.name })))}`);
-        
-        // Delete all horses owned by User 1
-        let deletedCount = 0;
-        let deletedHorses = [];
-        
-        for (const horse of user1Horses) {
-          console.log(`Attempting to delete horse: ${horse.name} (ID: ${horse.id})`);
-          try {
-            const success = await storage.deleteHorse(horse.id);
-            if (success) {
-              deletedCount++;
-              deletedHorses.push(horse.name);
-              console.log(`Successfully deleted horse: ${horse.name} (ID: ${horse.id})`);
-            } else {
-              console.log(`Failed to delete horse: ${horse.name} (ID: ${horse.id})`);
-            }
-          } catch (deleteError) {
-            console.error(`Error deleting horse ${horse.name}:`, deleteError);
-          }
-        }
-        
-        console.log(`Deleted ${deletedCount} horses owned by User 1: ${deletedHorses.join(", ")}`);
-        
-        return res.status(200).json({
-          message: `Successfully deleted ${deletedCount} horses owned by User 1`,
-          deletedCount,
-          deletedHorses
+        // For other storage types (should implement similar functionality)
+        return res.status(501).json({ 
+          message: "Reset functionality not implemented for this storage type" 
         });
       }
     } catch (error) {
-      console.error("Delete User 1 error:", error);
-      return res.status(500).json({ message: "Failed to delete User 1 and their horses" });
+      console.error("Reset database error:", error);
+      return res.status(500).json({ message: "Failed to reset database" });
     }
   });
   
