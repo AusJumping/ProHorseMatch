@@ -18,7 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   isError: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, userType: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (userData: any, userType: string) => Promise<void>;
 }
@@ -63,9 +63,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Debug log for auth state
   console.log("Auth state:", { isAuthenticated: !!user });
 
-  const login = async (email: string, password: string, userType: string) => {
+  const login = async (email: string, password: string) => {
     try {
-      console.log("Attempting login for:", { email, userType });
+      console.log("Attempting login for:", { email });
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
