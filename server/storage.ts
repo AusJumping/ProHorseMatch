@@ -753,6 +753,15 @@ export class MemStorage implements IStorage {
     return newMatch;
   }
   
+  async updateMatch(id: number, update: Partial<Match>): Promise<Match> {
+    const match = this.matches.get(id);
+    if (!match) throw new Error("Match not found");
+    
+    const updatedMatch = { ...match, ...update };
+    this.matches.set(id, updatedMatch);
+    return updatedMatch;
+  }
+  
   // Message methods
   async getMessages(): Promise<Message[]> {
     return Array.from(this.messages.values());
@@ -1089,6 +1098,20 @@ export class DatabaseStorage implements IStorage {
   async createMatch(match: InsertMatch): Promise<Match> {
     const [newMatch] = await db.insert(matches).values(match).returning();
     return newMatch;
+  }
+  
+  async updateMatch(id: number, update: Partial<Match>): Promise<Match> {
+    const [updatedMatch] = await db
+      .update(matches)
+      .set(update)
+      .where(eq(matches.id, id))
+      .returning();
+    
+    if (!updatedMatch) {
+      throw new Error("Match not found");
+    }
+    
+    return updatedMatch;
   }
 
   // Message methods
