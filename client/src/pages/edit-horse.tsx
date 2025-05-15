@@ -503,57 +503,74 @@ export default function EditHorse() {
                     <FormField
                       control={form.control}
                       name="levels"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="mb-4">
-                            <FormLabel>Experience Levels</FormLabel>
-                            <FormDescription>Select all levels the horse has competed at</FormDescription>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {constants?.levels.map((level: string) => {
-                              // Ensure field.value is always an array
-                              const levels = Array.isArray(field.value) ? field.value : [];
-                              
-                              // Debug log to see what's happening
-                              console.log(`Level ${level} checked:`, levels.includes(level));
-                              
-                              return (
-                                <div
-                                  key={level}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <Checkbox
-                                    id={`level-${level}`}
-                                    checked={levels.includes(level)}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        // Add the level if it's not already in the array
-                                        if (!levels.includes(level)) {
-                                          const newLevels = [...levels, level];
-                                          console.log("Adding level:", newLevels);
+                      render={({ field }) => {
+                        // Ensure field.value is always an array
+                        const selectedLevels = Array.isArray(field.value) ? field.value : [];
+                        
+                        // Get the selected disciplines (or default to "Jumping")
+                        const selectedDisciplines = Array.isArray(form.getValues("disciplines")) && form.getValues("disciplines").length > 0 
+                          ? form.getValues("disciplines") 
+                          : ["Jumping"];
+                        
+                        // Get all relevant levels based on selected disciplines
+                        let availableLevels: string[] = [];
+                        selectedDisciplines.forEach(discipline => {
+                          if (constants?.levels && constants.levels[discipline]) {
+                            availableLevels = [...availableLevels, ...constants.levels[discipline]];
+                          }
+                        });
+                        
+                        return (
+                          <FormItem>
+                            <div className="mb-4">
+                              <FormLabel>Experience Levels</FormLabel>
+                              <FormDescription>Select all levels the horse has competed at</FormDescription>
+                            </div>
+                            
+                            {availableLevels.length === 0 ? (
+                              <div className="text-sm text-muted-foreground italic">
+                                Please select at least one discipline to see available levels
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-2 gap-2">
+                                {availableLevels.map((level: string) => (
+                                  <div
+                                    key={level}
+                                    className="flex flex-row items-start space-x-3 space-y-0"
+                                  >
+                                    <Checkbox
+                                      id={`level-${level}`}
+                                      checked={selectedLevels.includes(level)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          // Add the level if it's not already in the array
+                                          if (!selectedLevels.includes(level)) {
+                                            const newLevels = [...selectedLevels, level];
+                                            console.log("Adding level:", newLevels);
+                                            field.onChange(newLevels);
+                                          }
+                                        } else {
+                                          // Remove the level if it's in the array
+                                          const newLevels = selectedLevels.filter((value) => value !== level);
+                                          console.log("Removing level:", newLevels);
                                           field.onChange(newLevels);
                                         }
-                                      } else {
-                                        // Remove the level if it's in the array
-                                        const newLevels = levels.filter((value) => value !== level);
-                                        console.log("Removing level:", newLevels);
-                                        field.onChange(newLevels);
-                                      }
-                                    }}
-                                  />
-                                  <label 
-                                    htmlFor={`level-${level}`}
-                                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
-                                    {level}
-                                  </label>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                                      }}
+                                    />
+                                    <label 
+                                      htmlFor={`level-${level}`}
+                                      className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
+                                      {level}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                     
                     <FormField
