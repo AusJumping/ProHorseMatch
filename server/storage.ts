@@ -282,6 +282,11 @@ export class MemStorage implements IStorage {
     const horses = Array.from(this.horses.values());
     
     return horses.filter(horse => {
+      // Filter by owner_id if specified
+      if (filters.owner_id !== undefined && horse.owner_id !== filters.owner_id) {
+        return false;
+      }
+      
       // Filter by disciplines if specified
       if (filters.disciplines && filters.disciplines.length > 0) {
         if (!horse.disciplines.some(d => filters.disciplines!.includes(d))) {
@@ -614,9 +619,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getHorsesByFilters(filters: Partial<Horse>): Promise<Horse[]> {
-    // Basic implementation that just returns all horses
-    // In a real app, you would implement proper filtering here
-    return await db.select().from(horses);
+    let query = db.select().from(horses);
+    
+    // If filter by owner_id is specified
+    if (filters.owner_id !== undefined) {
+      query = query.where(eq(horses.owner_id, filters.owner_id));
+    }
+    
+    // Add other filters as needed for a complete implementation
+    // E.g., disciplines, breeds, age, etc.
+    
+    return await query;
   }
 
   async createHorse(horse: InsertHorse): Promise<Horse> {
