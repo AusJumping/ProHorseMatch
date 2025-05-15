@@ -12,12 +12,14 @@ import { Heart, MessageSquare, Share2, ChevronLeft, Loader2 } from "lucide-react
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/lib/auth";
 
 export default function HorseDetail() {
   const isMobile = useMobile();
   const [, params] = useRoute("/horse/:id");
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [messageContent, setMessageContent] = useState("");
@@ -49,8 +51,18 @@ export default function HorseDetail() {
 
   const handleSave = async () => {
     try {
+      if (!isAuthenticated || !user) {
+        toast({
+          title: "Login required",
+          description: "Please log in to save this horse to favorites.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+      
       await apiRequest("POST", "/api/matches", {
-        customer_id: 1, // In a real app, this would be the logged-in user ID
+        customer_id: user.id,
         horse_id: parseInt(params!.id),
         is_liked: true
       });
@@ -73,8 +85,18 @@ export default function HorseDetail() {
     if (!messageContent.trim()) return;
     
     try {
+      if (!isAuthenticated || !user) {
+        toast({
+          title: "Login required",
+          description: "Please log in to send messages.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+      
       await apiRequest("POST", "/api/messages", {
-        customer_id: 1, // In a real app, this would be the logged-in user ID
+        customer_id: user.id,
         owner_id: horse!.owner_id,
         horse_id: horse!.id,
         content: messageContent,
