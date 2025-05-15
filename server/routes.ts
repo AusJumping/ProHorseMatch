@@ -1,7 +1,10 @@
-import type { Express, Response } from "express";
+import type { Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -109,6 +112,39 @@ declare module "express-session" {
 }
 
 const SessionStore = MemoryStore(session);
+
+// Configure multer storage
+const storage_config = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // Make sure upload directory exists
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const extension = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + extension);
+  }
+});
+
+// Configure upload middleware
+const upload = multer({
+  storage: storage_config,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept images and videos
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image and video files are allowed'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session middleware
@@ -1355,6 +1391,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get constants error:", error);
       return res.status(500).json({ message: "Failed to get constants" });
+    }
+  });
+  
+  // File upload endpoint
+  app.post("/api/upload", upload.single("file"), (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      // Get file path relative to public directory
+      const relativePath = req.file.path.replace(/^.*[\\\/]public/, '');
+      const fileUrl = relativePath;
+      
+      res.json({ 
+        url: fileUrl,
+        fileType: req.file.mimetype.startsWith('image/') ? 'image' : 'video'
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      res.status(500).json({ error: "File upload failed" });
     }
   });
   
