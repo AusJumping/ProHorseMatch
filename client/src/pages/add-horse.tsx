@@ -109,7 +109,10 @@ export default function AddHorse() {
         owner_id: ownerID,
       };
       
-      console.log("Submitting data:", submissionData);
+      console.log("Submitting data with photos:", { 
+        ...submissionData, 
+        photoCount: photoUrls.length 
+      });
       
       // Convert height from hands to cm if needed
       if (submissionData.height_hands && !submissionData.height_cm) {
@@ -805,7 +808,13 @@ export default function AddHorse() {
                   </Button>
                   {activeTab === "media" ? (
                     <Button 
-                      type="submit"
+                      type="button"
+                      onClick={() => {
+                        // Manually validate form and submit
+                        form.setValue("photos", photoUrls);
+                        form.setValue("videos", videoUrls);
+                        form.handleSubmit(onSubmit)();
+                      }}
                       disabled={isSubmitting || photoUrls.length === 0}
                     >
                       {isSubmitting ? (
