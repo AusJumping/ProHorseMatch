@@ -101,7 +101,7 @@ export default function MyHorses() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {horses?.map((horse: Horse) => (
-              <div key={horse.id} className="relative">
+              <div key={horse.id} className="relative h-full">
                 <HorseCard horse={horse} onShowMore={() => navigate(`/horse/${horse.id}`)} />
                 <div className="absolute top-3 right-3 flex gap-2">
                   <Button 

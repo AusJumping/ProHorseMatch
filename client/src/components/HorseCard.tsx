@@ -32,7 +32,7 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
   };
 
   return (
-    <Card className="horse-card bg-white overflow-hidden shadow-md relative cursor-grab active:cursor-grabbing">
+    <Card className="horse-card bg-white overflow-hidden shadow-md relative cursor-grab active:cursor-grabbing h-full">
       {/* Media Section - Using MediaCarousel component with 16:9 aspect ratio */}
       <div className="relative w-full aspect-[16/9]">
         <MediaCarousel 
@@ -42,7 +42,7 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
       </div>
 
       {/* Horse Info Section */}
-      <CardContent className="p-4 flex flex-col">
+      <CardContent className="p-4 flex flex-col justify-between flex-grow">
         <div>
           <h2 className="font-accent font-bold text-xl mb-1">{horse.name}</h2>
           <p className="text-neutral-800 text-sm mb-3">
