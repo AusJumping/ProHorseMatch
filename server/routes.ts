@@ -356,14 +356,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Target specific horse names
       const targetNames = ['Maestro', 'Bella', 'Cassini'];
       
-      // Delete specific horses
+      console.log("Looking for horses with names:", targetNames);
+      console.log("All horses:", horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      
+      // Delete specific horses (regardless of owner)
       let deletedCount = 0;
       for (const horse of horses) {
         if (targetNames.includes(horse.name)) {
+          console.log(`Attempting to delete horse: ${horse.name} (ID: ${horse.id})`);
           const success = await storage.deleteHorse(horse.id);
           if (success) {
             deletedCount++;
-            console.log(`Deleted horse: ${horse.name}`);
+            console.log(`Successfully deleted horse: ${horse.name}`);
+          } else {
+            console.log(`Failed to delete horse: ${horse.name}`);
           }
         }
       }

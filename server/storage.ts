@@ -378,9 +378,19 @@ export class MemStorage implements IStorage {
   }
   
   async deleteHorse(id: number): Promise<boolean> {
+    console.log(`MemStorage.deleteHorse - Attempting to delete horse with ID: ${id}`);
     const exists = this.horses.has(id);
     if (exists) {
+      const horse = this.horses.get(id);
+      console.log(`MemStorage.deleteHorse - Found horse: ${JSON.stringify({
+        id: horse?.id,
+        name: horse?.name,
+        owner_id: horse?.owner_id
+      })}`);
       this.horses.delete(id);
+      console.log(`MemStorage.deleteHorse - Successfully deleted horse with ID: ${id}`);
+    } else {
+      console.log(`MemStorage.deleteHorse - Horse with ID ${id} not found`);
     }
     return exists;
   }
