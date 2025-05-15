@@ -113,19 +113,20 @@ const FilterPanel = ({
           {/* Disciplines */}
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Disciplines</Label>
-            <div className="flex flex-wrap gap-2">
-              {constants?.disciplines?.map((discipline: string) => (
-                <Button 
-                  key={discipline}
-                  type="button"
-                  variant={filters.disciplines.includes(discipline) ? "default" : "outline"}
-                  className={filters.disciplines.includes(discipline) ? "bg-primary text-white" : "bg-neutral-100 text-neutral-800"}
-                  onClick={() => toggleItem('disciplines', discipline)}
-                >
-                  {discipline}
-                </Button>
-              ))}
-            </div>
+            <Select 
+              value={filters.disciplines[0] || ""} 
+              onValueChange={(value) => handleChange('disciplines', [value])}
+            >
+              <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                <SelectValue placeholder="All Disciplines" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all_disciplines">All Disciplines</SelectItem>
+                {constants?.disciplines?.map((discipline: string) => (
+                  <SelectItem key={discipline} value={discipline}>{discipline}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           {/* Price Range */}

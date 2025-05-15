@@ -124,6 +124,11 @@ export default function Home() {
   };
 
   const handleApplyFilters = (newFilters: Filter) => {
+    // Clean up the disciplines array - remove "all_disciplines" value if present
+    if (newFilters.disciplines.includes("all_disciplines")) {
+      newFilters.disciplines = [];
+    }
+    
     setActiveFilters(newFilters);
     setIsFilterOpen(false);
   };
