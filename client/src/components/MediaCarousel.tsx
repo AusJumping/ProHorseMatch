@@ -73,7 +73,7 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
           />
         </div>
       ) : (
-        <div className="w-full aspect-[16/9] relative">
+        <div className="w-full h-full relative">
           <img 
             className="w-full h-full object-cover object-center"
             src={media[currentIndex]} 
