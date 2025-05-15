@@ -159,14 +159,14 @@ export default function HorseDetail() {
       onBackClick={handleBack}
     >
       <div className="w-full max-w-4xl mx-auto">
-        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} bg-white rounded-xl overflow-hidden shadow-md`}>
-          {/* Media Gallery */}
-          <div className={isMobile ? "w-full h-[40vh]" : "w-1/2 h-[600px]"}>
+        <div className="bg-white rounded-xl overflow-hidden shadow-md flex flex-col">
+          {/* Media Gallery - Now at the top in landscape format */}
+          <div className="w-full">
             <MediaCarousel media={horse.photos} />
           </div>
           
-          {/* Details Content */}
-          <div className={isMobile ? "w-full p-4" : "w-1/2 p-6"}>
+          {/* Details Content - Now below the image */}
+          <div className="p-6">
             <div className="flex justify-between items-start mb-2">
               <h2 className="font-accent font-bold text-2xl">{horse.name}</h2>
               <span className="text-lg font-accent font-semibold text-primary">
