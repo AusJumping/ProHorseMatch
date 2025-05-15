@@ -105,9 +105,9 @@
   }
 
   .like-button {
-    background-color: #f59e0b !important;
+    background-color: hsl(43, 68%, 59%) !important;
     color: white !important;
-    border-color: #f59e0b !important;
+    border-color: hsl(43, 68%, 59%) !important;
   }
 
   .like-button:hover {
