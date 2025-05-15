@@ -97,11 +97,23 @@
   }
 
   .swipe-buttons button {
-    transition: transform 0.2s;
+    transition: all 0.2s ease;
   }
   
   .swipe-buttons button:hover {
     transform: scale(1.05);
+  }
+
+  .like-button {
+    background-color: #f59e0b !important;
+    color: white !important;
+    border-color: #f59e0b !important;
+  }
+
+  .like-button:hover {
+    background-color: #10b981 !important;
+    color: white !important;
+    border-color: #10b981 !important;
   }
 
   .profile-stats-item {

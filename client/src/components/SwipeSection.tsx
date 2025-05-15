@@ -140,7 +140,7 @@ const SwipeSection = ({
         </Button>
         <Button
           size="icon"
-          className="bg-amber-500 text-white w-14 h-14 rounded-full"
+          className="like-button w-14 h-14 rounded-full"
           onClick={handleButtonLike}
         >
           <Heart className="h-6 w-6" />
