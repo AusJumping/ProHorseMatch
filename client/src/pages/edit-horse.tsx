@@ -321,44 +321,49 @@ export default function EditHorse() {
                       <FormField
                         control={form.control}
                         name="height_hands"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Height (hands)</FormLabel>
-                            <FormControl>
-                              <Select 
-                                value={field.value?.toString() || ""} 
-                                onValueChange={(value) => field.onChange(parseFloat(value))}
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select height" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="12.0">12.0 hh</SelectItem>
-                                  <SelectItem value="12.1">12.1 hh</SelectItem>
-                                  <SelectItem value="12.2">12.2 hh</SelectItem>
-                                  <SelectItem value="12.3">12.3 hh</SelectItem>
-                                  <SelectItem value="13.0">13.0 hh</SelectItem>
-                                  <SelectItem value="13.1">13.1 hh</SelectItem>
-                                  <SelectItem value="13.2">13.2 hh</SelectItem>
-                                  <SelectItem value="13.3">13.3 hh</SelectItem>
-                                  <SelectItem value="14.0">14.0 hh</SelectItem>
-                                  <SelectItem value="14.1">14.1 hh</SelectItem>
-                                  <SelectItem value="14.2">14.2 hh</SelectItem>
-                                  <SelectItem value="14.3">14.3 hh</SelectItem>
-                                  <SelectItem value="15.0">15.0 hh</SelectItem>
-                                  <SelectItem value="15.1">15.1 hh</SelectItem>
-                                  <SelectItem value="15.2">15.2 hh</SelectItem>
-                                  <SelectItem value="15.3">15.3 hh</SelectItem>
-                                  <SelectItem value="16.0">16.0 hh</SelectItem>
-                                  <SelectItem value="16.1">16.1 hh</SelectItem>
-                                  <SelectItem value="16.2">16.2 hh</SelectItem>
-                                  <SelectItem value="16.3">16.3 hh</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          // Format the height value to a string with one decimal place for comparison
+                          const formattedValue = field.value ? field.value.toFixed(1) : "";
+                          
+                          return (
+                            <FormItem>
+                              <FormLabel>Height (hands)</FormLabel>
+                              <FormControl>
+                                <Select 
+                                  value={formattedValue.toString()} 
+                                  onValueChange={(value) => field.onChange(parseFloat(value))}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select height" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="12.0">12.0 hh</SelectItem>
+                                    <SelectItem value="12.1">12.1 hh</SelectItem>
+                                    <SelectItem value="12.2">12.2 hh</SelectItem>
+                                    <SelectItem value="12.3">12.3 hh</SelectItem>
+                                    <SelectItem value="13.0">13.0 hh</SelectItem>
+                                    <SelectItem value="13.1">13.1 hh</SelectItem>
+                                    <SelectItem value="13.2">13.2 hh</SelectItem>
+                                    <SelectItem value="13.3">13.3 hh</SelectItem>
+                                    <SelectItem value="14.0">14.0 hh</SelectItem>
+                                    <SelectItem value="14.1">14.1 hh</SelectItem>
+                                    <SelectItem value="14.2">14.2 hh</SelectItem>
+                                    <SelectItem value="14.3">14.3 hh</SelectItem>
+                                    <SelectItem value="15.0">15.0 hh</SelectItem>
+                                    <SelectItem value="15.1">15.1 hh</SelectItem>
+                                    <SelectItem value="15.2">15.2 hh</SelectItem>
+                                    <SelectItem value="15.3">15.3 hh</SelectItem>
+                                    <SelectItem value="16.0">16.0 hh</SelectItem>
+                                    <SelectItem value="16.1">16.1 hh</SelectItem>
+                                    <SelectItem value="16.2">16.2 hh</SelectItem>
+                                    <SelectItem value="16.3">16.3 hh</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
                       
                       <FormField
