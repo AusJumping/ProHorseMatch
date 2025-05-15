@@ -529,6 +529,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Verify the operation
           console.log(`Map size after re-adding: ${oldMap.size}`);
           
+          // Double check that only horses with owner_id 3 remain
+          const allHorsesAfterReset = await storage.getHorses();
+          console.log(`Horses after reset: ${JSON.stringify(allHorsesAfterReset.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })))}`);
+          
+          // Verify no problematic horses remain
+          const problematicHorsesAfterReset = allHorsesAfterReset.filter(h => h.owner_id === 1);
+          if (problematicHorsesAfterReset.length > 0) {
+            console.error(`ERROR: Still found ${problematicHorsesAfterReset.length} problematic horses after reset!`);
+          } else {
+            console.log(`SUCCESS: No problematic horses remain after reset.`);
+          }
+          
           console.log(`Database reset complete. Removed ${oldSize - preservedCount} horses, preserved ${preservedCount} horses.`);
           
           return res.status(200).json({

@@ -336,10 +336,17 @@ const AdminPanel = () => {
                           variant: 'default',
                         });
                         
-                        // Reload the page to ensure everything is fresh
+                        // Force a complete refresh of the page (not just client-side)
+                        toast({
+                          title: 'Refreshing Page',
+                          description: 'Database reset successful. Refreshing page in 2 seconds...',
+                          variant: 'default',
+                        });
+                        
                         setTimeout(() => {
-                          window.location.reload();
-                        }, 1500);
+                          // Force a full page reload from server
+                          window.location.href = window.location.href;
+                        }, 2000);
                       } catch (error) {
                         console.error('Failed to reset database:', error);
                         toast({
