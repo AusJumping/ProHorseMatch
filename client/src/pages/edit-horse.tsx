@@ -376,6 +376,7 @@ export default function EditHorse() {
                                   <SelectValue placeholder="Select country" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                  <SelectItem value="Australia">Australia</SelectItem>
                                   <SelectItem value="Germany">Germany</SelectItem>
                                   <SelectItem value="Netherlands">Netherlands</SelectItem>
                                   <SelectItem value="Belgium">Belgium</SelectItem>
