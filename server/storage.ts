@@ -70,6 +70,9 @@ export class MemStorage implements IStorage {
   private messageId: number;
   private conversationId: number;
   
+  // Flag to check if seed data has already been run to prevent repopulating on app restart
+  private static hasInitialized = false;
+  
   constructor() {
     this.horses = new Map();
     this.users = new Map();
@@ -83,7 +86,14 @@ export class MemStorage implements IStorage {
     this.messageId = 1;
     this.conversationId = 1;
     
-    this.seedData();
+    // Only seed data if this is the first time the storage is being initialized
+    if (!MemStorage.hasInitialized) {
+      this.seedData();
+      MemStorage.hasInitialized = true;
+      console.log("MemStorage initialized with seed data for the first time");
+    } else {
+      console.log("MemStorage reused - skipping seed data to preserve existing database state");
+    }
     
     // Verify seeded users
     const users = Array.from(this.users.entries());
