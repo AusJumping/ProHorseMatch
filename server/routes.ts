@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage, MemStorage } from "./storage";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -16,6 +16,55 @@ import {
   dressageLevels,
   eventingLevels
 } from "@shared/schema";
+
+// Ensure we have test users available (For development only)
+(async () => {
+  console.log("Setting up test users...");
+  try {
+    // Check if the owner user exists
+    const ownerEmail = "owner@example.com";
+    let owner = await storage.getUserByEmail(ownerEmail);
+    
+    if (!owner) {
+      console.log(`Creating test owner user: ${ownerEmail}`);
+      owner = await storage.createUser({
+        email: ownerEmail,
+        password: "password123",
+        business_name: "Elite Sporthorses",
+        contact_name: "John Smith",
+        is_selling: true,
+        is_searching: false,
+        name: null
+      });
+      console.log("Created owner:", owner);
+    } else {
+      console.log("Test owner already exists:", owner);
+    }
+    
+    // Check if the customer user exists
+    const customerEmail = "customer@example.com";
+    let customer = await storage.getUserByEmail(customerEmail);
+    
+    if (!customer) {
+      console.log(`Creating test customer user: ${customerEmail}`);
+      customer = await storage.createUser({
+        email: customerEmail,
+        password: "password123",
+        name: "Sarah Thompson",
+        is_searching: true,
+        is_selling: false,
+        location_country: "Australia",
+        preferred_disciplines: ["Jumping"],
+        currency: "AUD"
+      });
+      console.log("Created customer:", customer);
+    } else {
+      console.log("Test customer already exists:", customer);
+    }
+  } catch (error) {
+    console.error("Error setting up test users:", error);
+  }
+})();
 import express from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
