@@ -6,8 +6,10 @@ interface User {
   id: number;
   name?: string;
   business_name?: string;
+  contact_name?: string;
   email: string;
-  type: "customer" | "owner";
+  is_searching: boolean;
+  is_selling: boolean;
   profile?: any;
 }
 
@@ -59,7 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const user = data === undefined ? null : data;
   
   // Debug log for auth state
-  console.log("Auth state:", { isAuthenticated: !!user, userType: user?.type });
+  console.log("Auth state:", { isAuthenticated: !!user });
 
   const login = async (email: string, password: string, userType: string) => {
     try {

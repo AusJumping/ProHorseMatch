@@ -3,8 +3,9 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertHorseSchema, 
-  insertOwnerSchema, 
-  insertCustomerSchema, 
+  insertUserSchema,
+  insertSellingUserSchema, 
+  insertSearchingUserSchema, 
   insertMatchSchema, 
   insertMessageSchema,
   disciplines,

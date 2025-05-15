@@ -2,30 +2,20 @@ import { pgTable, text, serial, integer, boolean, timestamp, jsonb, real } from 
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Owner Model
-export const owners = pgTable("owners", {
+// Unified User Model
+export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  business_name: text("business_name").notNull(),
-  contact_name: text("contact_name").notNull(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  created_at: timestamp("created_at").defaultNow(),
-});
-
-export const insertOwnerSchema = createInsertSchema(owners).omit({
-  id: true,
-  created_at: true,
-});
-
-export type InsertOwner = z.infer<typeof insertOwnerSchema>;
-export type Owner = typeof owners.$inferSelect;
-
-// Customer (Rider) Model
-export const customers = pgTable("customers", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
+  name: text("name"),
+  business_name: text("business_name"),
+  contact_name: text("contact_name"),
+  
+  // Roles - can be both
+  is_searching: boolean("is_searching").default(false),
+  is_selling: boolean("is_selling").default(false),
+  
+  // For searching role (previously customer)
   location_country: text("location_country"),
   location_radius_km: integer("location_radius_km"),
   preferred_disciplines: text("preferred_disciplines").array(),
@@ -41,16 +31,43 @@ export const customers = pgTable("customers", {
   price_range_min: integer("price_range_min"),
   price_range_max: integer("price_range_max"),
   currency: text("currency"),
+  
   created_at: timestamp("created_at").defaultNow(),
 });
 
-export const insertCustomerSchema = createInsertSchema(customers).omit({
+export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   created_at: true,
 });
 
-export type InsertCustomer = z.infer<typeof insertCustomerSchema>;
-export type Customer = typeof customers.$inferSelect;
+// For backward compatibility - schema for searching role registration
+export const insertSearchingUserSchema = insertUserSchema.omit({
+  business_name: true,
+  contact_name: true,
+}).extend({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  is_searching: z.literal(true).default(true),
+});
+
+// For backward compatibility - schema for selling role registration 
+export const insertSellingUserSchema = insertUserSchema.omit({
+  name: true,
+}).extend({
+  business_name: z.string().min(2, { message: "Business name must be at least 2 characters" }),
+  contact_name: z.string().min(2, { message: "Contact name must be at least 2 characters" }),
+  is_selling: z.literal(true).default(true),
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertSearchingUser = z.infer<typeof insertSearchingUserSchema>;
+export type InsertSellingUser = z.infer<typeof insertSellingUserSchema>;
+export type User = typeof users.$inferSelect;
+
+// Legacy types for backward compatibility
+export type InsertOwner = InsertSellingUser;
+export type Owner = User;
+export type InsertCustomer = InsertSearchingUser;
+export type Customer = User;
 
 // Horse Model
 export const horses = pgTable("horses", {

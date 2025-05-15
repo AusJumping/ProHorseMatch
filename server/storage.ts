@@ -1,7 +1,7 @@
 import { 
   horses, type Horse, type InsertHorse,
-  owners, type Owner, type InsertOwner,
-  customers, type Customer, type InsertCustomer,
+  users, type User, type InsertUser, type Owner, type InsertOwner,
+  type Customer, type InsertCustomer,
   matches, type Match, type InsertMatch,
   messages, type Message, type InsertMessage,
   conversations, type Conversation, type InsertConversation
@@ -18,14 +18,18 @@ export interface IStorage {
   updateHorse(id: number, horse: Partial<Horse>): Promise<Horse | undefined>;
   deleteHorse(id: number): Promise<boolean>;
   
-  // Owner methods
-  getOwners(): Promise<Owner[]>;
+  // User methods
+  getUsers(): Promise<User[]>;
+  getUserById(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<User>): Promise<User>;
+  
+  // Legacy methods for backward compatibility
   getOwnerById(id: number): Promise<Owner | undefined>;
   getOwnerByEmail(email: string): Promise<Owner | undefined>;
   createOwner(owner: InsertOwner): Promise<Owner>;
   
-  // Customer methods
-  getCustomers(): Promise<Customer[]>;
   getCustomerById(id: number): Promise<Customer | undefined>;
   getCustomerByEmail(email: string): Promise<Customer | undefined>;
   createCustomer(customer: InsertCustomer): Promise<Customer>;
@@ -55,15 +59,13 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private horses: Map<number, Horse>;
-  private owners: Map<number, Owner>;
-  private customers: Map<number, Customer>;
+  private users: Map<number, User>;
   private matches: Map<number, Match>;
   private messages: Map<number, Message>;
   private conversations: Map<number, Conversation>;
   
   private horseId: number;
-  private ownerId: number;
-  private customerId: number;
+  private userId: number;
   private matchId: number;
   private messageId: number;
   private conversationId: number;
@@ -568,51 +570,108 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
-  // Owner methods
+  // User methods
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+  
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+  
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values({
+      ...user,
+      // Set defaults for role flags if not provided
+      is_searching: user.is_searching ?? false,
+      is_selling: user.is_selling ?? false
+    }).returning();
+    return newUser;
+  }
+  
+  async updateUser(id: number, update: Partial<User>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(update)
+      .where(eq(users.id, id))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+    
+    return updatedUser;
+  }
+  
+  // Legacy methods for backward compatibility
   async getOwners(): Promise<Owner[]> {
-    return await db.select().from(owners);
+    return await db.select().from(users).where(eq(users.is_selling, true));
   }
-
+  
   async getOwnerById(id: number): Promise<Owner | undefined> {
-    const [owner] = await db.select().from(owners).where(eq(owners.id, id));
+    // Get user with is_selling = true
+    const [owner] = await db.select().from(users)
+      .where(and(eq(users.id, id), eq(users.is_selling, true)));
     return owner;
   }
-
+  
   async getOwnerByEmail(email: string): Promise<Owner | undefined> {
-    const [owner] = await db.select().from(owners).where(eq(owners.email, email));
+    // Get user with is_selling = true
+    const [owner] = await db.select().from(users)
+      .where(and(eq(users.email, email), eq(users.is_selling, true)));
     return owner;
   }
-
+  
   async createOwner(owner: InsertOwner): Promise<Owner> {
-    const [newOwner] = await db.insert(owners).values(owner).returning();
+    // Create user with is_selling = true
+    const [newOwner] = await db.insert(users).values({
+      ...owner,
+      is_selling: true,
+      is_searching: owner.is_searching ?? false
+    }).returning();
     return newOwner;
   }
-
+  
   // Customer methods
   async getCustomers(): Promise<Customer[]> {
-    return await db.select().from(customers);
+    return await db.select().from(users).where(eq(users.is_searching, true));
   }
-
+  
   async getCustomerById(id: number): Promise<Customer | undefined> {
-    const [customer] = await db.select().from(customers).where(eq(customers.id, id));
+    // Get user with is_searching = true
+    const [customer] = await db.select().from(users)
+      .where(and(eq(users.id, id), eq(users.is_searching, true)));
     return customer;
   }
-
+  
   async getCustomerByEmail(email: string): Promise<Customer | undefined> {
-    const [customer] = await db.select().from(customers).where(eq(customers.email, email));
+    // Get user with is_searching = true
+    const [customer] = await db.select().from(users)
+      .where(and(eq(users.email, email), eq(users.is_searching, true)));
     return customer;
   }
-
+  
   async createCustomer(customer: InsertCustomer): Promise<Customer> {
-    const [newCustomer] = await db.insert(customers).values(customer).returning();
+    // Create user with is_searching = true
+    const [newCustomer] = await db.insert(users).values({
+      ...customer,
+      is_searching: true,
+      is_selling: customer.is_selling ?? false
+    }).returning();
     return newCustomer;
   }
-
-  async updateCustomer(id: number, customer: Partial<Customer>): Promise<Customer> {
+  
+  async updateCustomer(id: number, update: Partial<Customer>): Promise<Customer> {
     const [updatedCustomer] = await db
-      .update(customers)
-      .set(customer)
-      .where(eq(customers.id, id))
+      .update(users)
+      .set(update)
+      .where(and(eq(users.id, id), eq(users.is_searching, true)))
       .returning();
     
     if (!updatedCustomer) {

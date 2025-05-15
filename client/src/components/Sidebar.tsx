@@ -11,7 +11,7 @@ const Sidebar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   
   // Debug log
-  console.log("Sidebar - Auth state:", { isAuthenticated, userType: user?.type });
+  console.log("Sidebar - Auth state:", { isAuthenticated });
 
   const handleLogout = async () => {
     try {
