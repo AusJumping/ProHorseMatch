@@ -12,6 +12,7 @@ const AdminPanel = () => {
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingSpecific, setIsDeletingSpecific] = useState(false);
+  const [isResettingDb, setIsResettingDb] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const [_, navigate] = useLocation();
 
@@ -290,48 +291,80 @@ const AdminPanel = () => {
               <CardFooter>
                 <Button
                   variant="default"
-                  onClick={() => {
+                  disabled={isResettingDb}
+                  onClick={async () => {
+                    if (isResettingDb) return;
+                    
                     if (window.confirm('WARNING: This will delete ALL horses except the ones you own. This action cannot be undone. Are you sure you want to continue?')) {
-                      const resetDatabase = async () => {
-                        try {
-                          const response = await fetch('/api/admin/reset-database', {
-                            method: 'DELETE',
-                            headers: {
-                              'Content-Type': 'application/json'
-                            }
-                          });
-                          
-                          if (!response.ok) {
-                            throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                      setIsResettingDb(true);
+                      
+                      try {
+                        console.log("Sending reset database request...");
+                        const response = await fetch('/api/admin/reset-database', {
+                          method: 'DELETE',
+                          headers: {
+                            'Content-Type': 'application/json'
                           }
-                          
-                          const data = await response.json();
-                          
-                          // Invalidate all horse-related queries
-                          await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
-                          await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
-                          
-                          toast({
-                            title: 'Success',
-                            description: data.message || 'Database reset successful. All problematic horses have been removed.',
-                            variant: 'default',
-                          });
-                        } catch (error) {
-                          console.error('Failed to reset database:', error);
-                          toast({
-                            title: 'Error',
-                            description: 'Failed to reset database. Please try again.',
-                            variant: 'destructive',
-                          });
+                        });
+                        
+                        console.log("Server response status:", response.status);
+                        
+                        // Even if we get a 200 response, let's try to parse the JSON
+                        let data;
+                        try {
+                          const textResponse = await response.text();
+                          console.log("Raw response:", textResponse);
+                          data = JSON.parse(textResponse);
+                        } catch (parseError) {
+                          console.error("Error parsing response:", parseError);
+                          throw new Error("Invalid response from server");
                         }
-                      };
-                      resetDatabase();
+                        
+                        console.log("Parsed response data:", data);
+                        
+                        if (!response.ok || data.success === false) {
+                          throw new Error(data.message || `Server returned ${response.status}`);
+                        }
+                        
+                        // Invalidate all horse-related queries
+                        await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+                        await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+                        
+                        toast({
+                          title: 'Success',
+                          description: data.message || 'Database reset successful. All problematic horses have been removed.',
+                          variant: 'default',
+                        });
+                        
+                        // Reload the page to ensure everything is fresh
+                        setTimeout(() => {
+                          window.location.reload();
+                        }, 1500);
+                      } catch (error) {
+                        console.error('Failed to reset database:', error);
+                        toast({
+                          title: 'Error',
+                          description: 'Failed to reset database. Please try again.',
+                          variant: 'destructive',
+                        });
+                      } finally {
+                        setIsResettingDb(false);
+                      }
                     }
                   }}
                   className="w-full"
                 >
-                  <Database className="mr-2 h-4 w-4" />
-                  Reset Database
+                  {isResettingDb ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    <>
+                      <Database className="mr-2 h-4 w-4" />
+                      Reset Database
+                    </>
+                  )}
                 </Button>
               </CardFooter>
             </Card>

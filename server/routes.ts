@@ -479,59 +479,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (storage instanceof MemStorage) {
         console.log("Using direct MemStorage reset method");
         
-        // Get all horses
-        const allHorses = await storage.getHorses();
-        console.log(`Found ${allHorses.length} total horses in database`);
-        
-        // Filter for user's horses (id 3)
-        const userHorses = allHorses.filter(h => h.owner_id === 3);
-        console.log(`Found ${userHorses.length} horses owned by user ID 3: ${JSON.stringify(userHorses.map(h => ({ id: h.id, name: h.name })))}`);
-        
-        // Count problematic horses
-        const problematicHorses = allHorses.filter(h => h.owner_id === 1);
-        const problematicHorseNames = problematicHorses.map(h => h.name);
-        console.log(`Found ${problematicHorses.length} problematic horses: ${problematicHorseNames.join(", ")}`);
-        
-        // Create a completely new horses Map
-        const newHorsesMap = new Map();
-        
-        // Re-add only user's horses
-        let preservedCount = 0;
-        for (const horse of userHorses) {
-          newHorsesMap.set(horse.id, horse);
-          preservedCount++;
-          console.log(`Preserved horse: ${horse.name} (ID: ${horse.id})`);
+        try {
+          // Get all horses
+          const allHorses = await storage.getHorses();
+          console.log(`Found ${allHorses.length} total horses in database`);
+          
+          // Filter for user's horses (id 3)
+          const userHorses = allHorses.filter(h => h.owner_id === 3);
+          console.log(`Found ${userHorses.length} horses owned by user ID 3: ${JSON.stringify(userHorses.map(h => ({ id: h.id, name: h.name })))}`);
+          
+          // Count problematic horses
+          const problematicHorses = allHorses.filter(h => h.owner_id === 1);
+          const problematicHorseNames = problematicHorses.map(h => h.name);
+          console.log(`Found ${problematicHorses.length} problematic horses: ${problematicHorseNames.join(", ")}`);
+          
+          // Create a completely new horses Map
+          const newHorsesMap = new Map();
+          
+          // Re-add only user's horses
+          let preservedCount = 0;
+          for (const horse of userHorses) {
+            newHorsesMap.set(horse.id, horse);
+            preservedCount++;
+            console.log(`Preserved horse: ${horse.name} (ID: ${horse.id})`);
+          }
+          
+          // Get direct access to the internal map
+          const oldMap = (storage as MemStorage).getInternalHorsesMap();
+          if (!oldMap) {
+            console.error("Could not access internal horses map");
+            return res.status(500).json({ message: "Failed to access storage" });
+          }
+          
+          const oldSize = oldMap.size;
+          console.log(`Old map size: ${oldSize}`);
+          
+          // Clear the old map
+          console.log("Clearing old map...");
+          oldMap.clear();
+          console.log(`Map size after clear: ${oldMap.size}`);
+          
+          // Add all preserved horses back
+          console.log("Re-adding preserved horses...");
+          for (const horse of userHorses) {
+            oldMap.set(horse.id, horse);
+            console.log(`Re-added horse: ${horse.name} (ID: ${horse.id})`);
+          }
+          
+          // Verify the operation
+          console.log(`Map size after re-adding: ${oldMap.size}`);
+          
+          console.log(`Database reset complete. Removed ${oldSize - preservedCount} horses, preserved ${preservedCount} horses.`);
+          
+          return res.status(200).json({
+            success: true,
+            message: `Database reset successful. Removed all problematic horses (${problematicHorseNames.join(", ")}) and preserved your horses.`,
+            removedCount: oldSize - preservedCount,
+            preservedCount,
+            removedHorses: problematicHorseNames
+          });
+        } catch (innerError) {
+          console.error("Error during map operations:", innerError);
+          return res.status(500).json({ 
+            success: false,
+            message: "Failed during database reset operation",
+            error: innerError.toString()
+          });
         }
-        
-        // Replace the old map with the new one
-        const oldMap = (storage as MemStorage).getInternalHorsesMap();
-        const oldSize = oldMap.size;
-        
-        // Clear the old map
-        oldMap.clear();
-        
-        // Add all preserved horses back
-        for (const [id, horse] of newHorsesMap.entries()) {
-          oldMap.set(id, horse);
-        }
-        
-        console.log(`Database reset complete. Removed ${oldSize - preservedCount} horses, preserved ${preservedCount} horses.`);
-        
-        return res.status(200).json({
-          message: `Database reset successful. Removed all problematic horses (${problematicHorseNames.join(", ")}) and preserved your horses.`,
-          removedCount: oldSize - preservedCount,
-          preservedCount,
-          removedHorses: problematicHorseNames
-        });
       } else {
         // For other storage types (should implement similar functionality)
         return res.status(501).json({ 
+          success: false,
           message: "Reset functionality not implemented for this storage type" 
         });
       }
     } catch (error) {
       console.error("Reset database error:", error);
-      return res.status(500).json({ message: "Failed to reset database" });
+      return res.status(500).json({ 
+        success: false,
+        message: "Failed to reset database", 
+        error: error.toString() 
+      });
     }
   });
   
