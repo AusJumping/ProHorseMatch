@@ -168,6 +168,6 @@ export const characteristics = [
   "Sensitive",
   "Calm"
 ];
-export const jumpingLevels = ["1.00m", "1.10m", "1.20m", "1.30m", "1.40m", "1.50m", "1.60m"];
-export const dressageLevels = ["Novice", "Elementary", "Medium", "Advanced", "PSG", "Inter I", "Inter II", "Grand Prix"];
-export const eventingLevels = ["Intro", "Preliminary", "Intermediate", "Advanced", "CCI1*", "CCI2*", "CCI3*", "CCI4*", "CCI5*"];
+export const jumpingLevels = ["Children", "Junior", "Amateur", "Young Rider", "Mini Prix", "Grand Prix"];
+export const dressageLevels = ["Preliminary", "Novice", "Elementary", "Medium", "Advanced", "Prix St. Georges", "Intermediate I", "Intermediate II", "Grand Prix"];
+export const eventingLevels = ["EvA60", "EvA80", "EvA95", "1*", "2*", "3*", "4*", "5*"];
