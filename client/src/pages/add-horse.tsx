@@ -321,44 +321,29 @@ export default function AddHorse() {
                         <FormField
                           control={form.control}
                           name="disciplines"
-                          render={() => (
+                          render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Disciplines</FormLabel>
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                {constants?.disciplines?.map((discipline: string) => (
-                                  <FormField
-                                    key={discipline}
-                                    control={form.control}
-                                    name="disciplines"
-                                    render={({ field }) => {
-                                      return (
-                                        <FormItem
-                                          key={discipline}
-                                          className="flex flex-row items-start space-x-2"
-                                        >
-                                          <FormControl>
-                                            <Checkbox
-                                              checked={field.value?.includes(discipline)}
-                                              onCheckedChange={(checked) => {
-                                                return checked
-                                                  ? field.onChange([...field.value, discipline])
-                                                  : field.onChange(
-                                                      field.value?.filter(
-                                                        (value) => value !== discipline
-                                                      )
-                                                    )
-                                              }}
-                                            />
-                                          </FormControl>
-                                          <FormLabel className="font-normal cursor-pointer">
-                                            {discipline}
-                                          </FormLabel>
-                                        </FormItem>
-                                      )
-                                    }}
-                                  />
-                                ))}
-                              </div>
+                              <FormLabel>Discipline</FormLabel>
+                              <Select 
+                                onValueChange={(value) => field.onChange([value])} 
+                                value={field.value?.length ? field.value[0] : undefined}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a discipline" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {constants?.disciplines?.map((discipline: string) => (
+                                    <SelectItem key={discipline} value={discipline}>
+                                      {discipline}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                Choose the primary discipline for this horse
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -367,88 +352,40 @@ export default function AddHorse() {
                         <FormField
                           control={form.control}
                           name="levels"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Performance Level</FormLabel>
-                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                                {form.watch("disciplines").includes("Jumping") && constants?.levels?.Jumping?.map((level: string) => (
-                                  <FormItem
-                                    key={level}
-                                    className="flex flex-row items-start space-x-2"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(level)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, level])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== level
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">
-                                      {level}
-                                    </FormLabel>
-                                  </FormItem>
-                                ))}
-                                
-                                {form.watch("disciplines").includes("Dressage") && constants?.levels?.Dressage?.map((level: string) => (
-                                  <FormItem
-                                    key={level}
-                                    className="flex flex-row items-start space-x-2"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(level)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, level])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== level
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">
-                                      {level}
-                                    </FormLabel>
-                                  </FormItem>
-                                ))}
-                                
-                                {form.watch("disciplines").includes("Eventing") && constants?.levels?.Eventing?.map((level: string) => (
-                                  <FormItem
-                                    key={level}
-                                    className="flex flex-row items-start space-x-2"
-                                  >
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value?.includes(level)}
-                                        onCheckedChange={(checked) => {
-                                          return checked
-                                            ? field.onChange([...field.value, level])
-                                            : field.onChange(
-                                                field.value?.filter(
-                                                  (value) => value !== level
-                                                )
-                                              )
-                                        }}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">
-                                      {level}
-                                    </FormLabel>
-                                  </FormItem>
-                                ))}
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                          render={({ field }) => {
+                            // Get the selected discipline (or default to empty array)
+                            const selectedDiscipline = form.watch("disciplines")[0] || "";
+                            // Get all available levels for the selected discipline
+                            const availableLevels = selectedDiscipline && constants?.levels?.[selectedDiscipline] || [];
+
+                            return (
+                              <FormItem>
+                                <FormLabel>Performance Level</FormLabel>
+                                <Select 
+                                  onValueChange={(value) => field.onChange([value])} 
+                                  value={field.value?.length ? field.value[0] : undefined}
+                                  disabled={!selectedDiscipline}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={selectedDiscipline ? "Select a performance level" : "Please select a discipline first"} />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {availableLevels.map((level: string) => (
+                                      <SelectItem key={level} value={level}>
+                                        {level}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormDescription>
+                                  Choose the current performance level for this horse
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
                         />
                       </div>
                     </TabsContent>

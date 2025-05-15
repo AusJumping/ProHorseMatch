@@ -509,126 +509,82 @@ export default function EditHorse() {
                     <FormField
                       control={form.control}
                       name="disciplines"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="mb-4">
-                            <FormLabel>Disciplines</FormLabel>
-                            <FormDescription>Select all that apply</FormDescription>
-                          </div>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                            {constants?.disciplines.map((discipline: string) => {
-                              // Ensure field.value is always an array
-                              const disciplines = Array.isArray(field.value) ? field.value : [];
-                              
-                              // Debug log to see what's happening
-                              console.log(`Discipline ${discipline} checked:`, disciplines.includes(discipline));
-                              
-                              return (
-                                <div
-                                  key={discipline}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <Checkbox
-                                    id={`discipline-${discipline}`}
-                                    checked={disciplines.includes(discipline)}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        // Add the discipline if it's not already in the array
-                                        if (!disciplines.includes(discipline)) {
-                                          const newDisciplines = [...disciplines, discipline];
-                                          console.log("Adding discipline:", newDisciplines);
-                                          field.onChange(newDisciplines);
-                                        }
-                                      } else {
-                                        // Remove the discipline if it's in the array
-                                        const newDisciplines = disciplines.filter((value) => value !== discipline);
-                                        console.log("Removing discipline:", newDisciplines);
-                                        field.onChange(newDisciplines);
-                                      }
-                                    }}
-                                  />
-                                  <label 
-                                    htmlFor={`discipline-${discipline}`}
-                                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                  >
+                      render={({ field }) => {
+                        // Ensure field.value is always an array
+                        const selectedDiscipline = Array.isArray(field.value) && field.value.length > 0 
+                          ? field.value[0] 
+                          : undefined;
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel>Discipline</FormLabel>
+                            <Select 
+                              onValueChange={(value) => field.onChange([value])} 
+                              value={selectedDiscipline}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a discipline" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {constants?.disciplines?.map((discipline: string) => (
+                                  <SelectItem key={discipline} value={discipline}>
                                     {discipline}
-                                  </label>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Choose the primary discipline for this horse
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
                     />
                     
                     <FormField
                       control={form.control}
                       name="levels"
                       render={({ field }) => {
-                        // Ensure field.value is always an array
-                        const selectedLevels = Array.isArray(field.value) ? field.value : [];
+                        // Get the selected discipline (or default to empty array)
+                        const selectedDiscipline = Array.isArray(form.getValues("disciplines")) && form.getValues("disciplines").length > 0 
+                          ? form.getValues("disciplines")[0] 
+                          : "";
                         
-                        // Get the selected disciplines (or default to "Jumping")
-                        const selectedDisciplines = Array.isArray(form.getValues("disciplines")) && form.getValues("disciplines").length > 0 
-                          ? form.getValues("disciplines") 
-                          : ["Jumping"];
+                        // Get available levels for the selected discipline
+                        const availableLevels = selectedDiscipline && constants?.levels?.[selectedDiscipline] || [];
                         
-                        // Get all relevant levels based on selected disciplines
-                        let availableLevels: string[] = [];
-                        selectedDisciplines.forEach(discipline => {
-                          if (constants?.levels && constants.levels[discipline]) {
-                            availableLevels = [...availableLevels, ...constants.levels[discipline]];
-                          }
-                        });
+                        // Get the current selected level (if any)
+                        const selectedLevel = Array.isArray(field.value) && field.value.length > 0 
+                          ? field.value[0] 
+                          : undefined;
                         
                         return (
                           <FormItem>
-                            <div className="mb-4">
-                              <FormLabel>Experience Levels</FormLabel>
-                              <FormDescription>Select all levels the horse has competed at</FormDescription>
-                            </div>
-                            
-                            {availableLevels.length === 0 ? (
-                              <div className="text-sm text-muted-foreground italic">
-                                Please select at least one discipline to see available levels
-                              </div>
-                            ) : (
-                              <div className="grid grid-cols-2 gap-2">
+                            <FormLabel>Performance Level</FormLabel>
+                            <Select 
+                              onValueChange={(value) => field.onChange([value])} 
+                              value={selectedLevel}
+                              disabled={!selectedDiscipline}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={selectedDiscipline ? "Select a performance level" : "Please select a discipline first"} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
                                 {availableLevels.map((level: string) => (
-                                  <div
-                                    key={level}
-                                    className="flex flex-row items-start space-x-3 space-y-0"
-                                  >
-                                    <Checkbox
-                                      id={`level-${level}`}
-                                      checked={selectedLevels.includes(level)}
-                                      onCheckedChange={(checked) => {
-                                        if (checked) {
-                                          // Add the level if it's not already in the array
-                                          if (!selectedLevels.includes(level)) {
-                                            const newLevels = [...selectedLevels, level];
-                                            console.log("Adding level:", newLevels);
-                                            field.onChange(newLevels);
-                                          }
-                                        } else {
-                                          // Remove the level if it's in the array
-                                          const newLevels = selectedLevels.filter((value) => value !== level);
-                                          console.log("Removing level:", newLevels);
-                                          field.onChange(newLevels);
-                                        }
-                                      }}
-                                    />
-                                    <label 
-                                      htmlFor={`level-${level}`}
-                                      className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                    >
-                                      {level}
-                                    </label>
-                                  </div>
+                                  <SelectItem key={level} value={level}>
+                                    {level}
+                                  </SelectItem>
                                 ))}
-                              </div>
-                            )}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Choose the current performance level for this horse
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         );
