@@ -79,7 +79,7 @@ const FilterPanel = ({
       location_radius_km: null,
       age_min: 0,
       age_max: 20,
-      height_min: 13,
+      height_min: 0,
       height_max: 18,
       price_min: 0,
       price_max: 100000
@@ -348,13 +348,14 @@ const FilterPanel = ({
             <div className="flex gap-3">
               <div className="flex-1">
                 <Select 
-                  value={filters.height_min?.toString() || "15.0"} 
+                  value={filters.height_min?.toString() || "0"} 
                   onValueChange={(value) => handleChange('height_min', parseFloat(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     <SelectValue placeholder="Min Height" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="0">No Min</SelectItem>
                     <SelectItem value="12.0">12.0 hh</SelectItem>
                     <SelectItem value="12.1">12.1 hh</SelectItem>
                     <SelectItem value="12.2">12.2 hh</SelectItem>
