@@ -1,0 +1,726 @@
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useLocation, useParams } from "wouter";
+import Layout from "@/components/Layout";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Loader2, Plus, X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQuery } from "@tanstack/react-query";
+import { Separator } from "@/components/ui/separator";
+import { useMobile } from "@/hooks/use-mobile";
+
+// Form schema for editing a horse
+const horseFormSchema = z.object({
+  id: z.number(),
+  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
+  owner_id: z.number(),
+  location_country: z.string().min(1, "Country is required"),
+  location_radius_km: z.number().optional(),
+  disciplines: z.array(z.string()).min(1, "Select at least one discipline"),
+  levels: z.array(z.string()).min(1, "Select at least one level"),
+  breeds: z.array(z.string()).min(1, "Select at least one breed"),
+  age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
+  height_hands: z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+  height_cm: z.number().optional(),
+  sex: z.string().min(1, "Sex is required"),
+  sire: z.string().optional(),
+  dam: z.string().optional(),
+  dam_sire: z.string().optional(),
+  characteristics: z.array(z.string()).optional(),
+  price: z.number().min(1, "Price must be at least 1"),
+  currency: z.string().min(1, "Currency is required"),
+  description: z.string().optional(),
+  photos: z.array(z.string()).optional(),
+  videos: z.array(z.string()).optional(),
+});
+
+type HorseFormValues = z.infer<typeof horseFormSchema>;
+
+export default function EditHorse() {
+  const { toast } = useToast();
+  const [_, navigate] = useLocation();
+  const { id } = useParams();
+  const horseId = parseInt(id);
+  
+  const [activeTab, setActiveTab] = useState("details");
+  const [photoUrl, setPhotoUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useMobile();
+
+  // Fetch user data
+  const { data: user, isLoading: userLoading } = useQuery({
+    queryKey: ['/api/auth/me'],
+  });
+  
+  // Fetch constants for dropdowns
+  const { data: constants, isLoading: constantsLoading } = useQuery({
+    queryKey: ['/api/constants'],
+  });
+
+  // Fetch horse data
+  const { data: horse, isLoading: horseLoading } = useQuery({
+    queryKey: [`/api/horses/${horseId}`],
+    enabled: !!horseId
+  });
+
+  const form = useForm<HorseFormValues>({
+    resolver: zodResolver(horseFormSchema),
+    defaultValues: {
+      id: 0,
+      name: "",
+      owner_id: 0,
+      location_country: "",
+      location_radius_km: 0,
+      disciplines: [],
+      levels: [],
+      breeds: ["Warmblood"],
+      age: 0,
+      height_hands: 0,
+      height_cm: 0,
+      sex: "",
+      sire: "",
+      dam: "",
+      dam_sire: "",
+      characteristics: [],
+      price: 0,
+      currency: "EUR",
+      description: "",
+      photos: [],
+      videos: [],
+    }
+  });
+
+  // Update form values when horse data is loaded
+  useEffect(() => {
+    if (horse) {
+      form.reset({
+        id: horse.id,
+        name: horse.name,
+        owner_id: horse.owner_id,
+        location_country: horse.location_country,
+        location_radius_km: horse.location_radius_km || 0,
+        disciplines: horse.disciplines,
+        levels: horse.levels,
+        breeds: horse.breeds,
+        age: horse.age,
+        height_hands: horse.height_hands || 0,
+        height_cm: horse.height_cm || 0,
+        sex: horse.sex,
+        sire: horse.sire || "",
+        dam: horse.dam || "",
+        dam_sire: horse.dam_sire || "",
+        characteristics: horse.characteristics || [],
+        price: horse.price,
+        currency: horse.currency,
+        description: horse.description || "",
+        photos: horse.photos || [],
+        videos: horse.videos || [],
+      });
+    }
+  }, [horse, form]);
+
+  // This function is called when the form is submitted
+  const onSubmit = async (data: HorseFormValues) => {
+    console.log("Form submission started", data);
+    try {
+      setIsSubmitting(true);
+      
+      await apiRequest("PUT", `/api/horses/${horseId}`, data);
+      
+      toast({
+        title: "Horse updated",
+        description: "Your horse has been updated successfully",
+      });
+      
+      // Invalidate cached horse data
+      queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/horses/${horseId}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+      
+      // Navigate back to My Horses page
+      navigate("/my-horses");
+    } catch (error) {
+      console.error("Error updating horse:", error);
+      toast({
+        title: "Error",
+        description: "There was an error updating your horse",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const addPhoto = () => {
+    if (!photoUrl) return;
+    
+    const currentPhotos = form.getValues("photos") || [];
+    form.setValue("photos", [...currentPhotos, photoUrl]);
+    setPhotoUrl("");
+  };
+
+  const removePhoto = (index: number) => {
+    const currentPhotos = form.getValues("photos") || [];
+    form.setValue("photos", currentPhotos.filter((_, i) => i !== index));
+  };
+
+  const addVideo = () => {
+    if (!videoUrl) return;
+    
+    const currentVideos = form.getValues("videos") || [];
+    form.setValue("videos", [...currentVideos, videoUrl]);
+    setVideoUrl("");
+  };
+
+  const removeVideo = (index: number) => {
+    const currentVideos = form.getValues("videos") || [];
+    form.setValue("videos", currentVideos.filter((_, i) => i !== index));
+  };
+
+  if (userLoading || constantsLoading || horseLoading) {
+    return (
+      <Layout pageTitle="Edit Horse">
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2 text-lg">Loading...</span>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout 
+      pageTitle="Edit Horse" 
+      showBackButton 
+      onBackClick={() => navigate('/my-horses')}
+    >
+      <div className="container max-w-4xl">
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle className="font-accent">Edit Horse</CardTitle>
+            <CardDescription>Update details for your horse listing</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="w-full justify-start">
+                    <TabsTrigger value="details">Basic Details</TabsTrigger>
+                    <TabsTrigger value="performance">Performance</TabsTrigger>
+                    <TabsTrigger value="pedigree">Pedigree</TabsTrigger>
+                    <TabsTrigger value="media">Media</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="details" className="space-y-6 pt-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Horse Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter horse name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="sex"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Sex</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select sex" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {constants?.sexes.map((sex: string) => (
+                                  <SelectItem key={sex} value={sex}>{sex}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="age"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Age (years)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="Enter age" 
+                                min={0} 
+                                max={30} 
+                                {...field} 
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="height_hands"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Height (hands)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="Height in hands" 
+                                min={10} 
+                                max={20} 
+                                step={0.1} 
+                                {...field} 
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="location_country"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Country</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Enter country" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Price</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                placeholder="Enter price" 
+                                min={1} 
+                                {...field} 
+                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="currency"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Currency</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select currency" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="AUD">AUD</SelectItem>
+                                <SelectItem value="EUR">EUR</SelectItem>
+                                <SelectItem value="USD">USD</SelectItem>
+                                <SelectItem value="GBP">GBP</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="breeds"
+                      render={() => (
+                        <FormItem>
+                          <div className="mb-4">
+                            <FormLabel>Breed</FormLabel>
+                            <FormDescription>Select all that apply</FormDescription>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {constants?.breeds.map((breed: string) => (
+                              <FormField
+                                key={breed}
+                                control={form.control}
+                                name="breeds"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={breed}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(breed)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value, breed])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== breed
+                                                  )
+                                                )
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">
+                                        {breed}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter horse description" 
+                              className="min-h-32" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="performance" className="space-y-6 pt-4">
+                    <FormField
+                      control={form.control}
+                      name="disciplines"
+                      render={() => (
+                        <FormItem>
+                          <div className="mb-4">
+                            <FormLabel>Disciplines</FormLabel>
+                            <FormDescription>Select all that apply</FormDescription>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            {constants?.disciplines.map((discipline: string) => (
+                              <FormField
+                                key={discipline}
+                                control={form.control}
+                                name="disciplines"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={discipline}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(discipline)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value, discipline])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== discipline
+                                                  )
+                                                )
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">
+                                        {discipline}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="levels"
+                      render={() => (
+                        <FormItem>
+                          <div className="mb-4">
+                            <FormLabel>Experience Levels</FormLabel>
+                            <FormDescription>Select all levels the horse has competed at</FormDescription>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {constants?.levels.map((level: string) => (
+                              <FormField
+                                key={level}
+                                control={form.control}
+                                name="levels"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={level}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(level)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value, level])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== level
+                                                  )
+                                                )
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">
+                                        {level}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="characteristics"
+                      render={() => (
+                        <FormItem>
+                          <div className="mb-4">
+                            <FormLabel>Characteristics</FormLabel>
+                            <FormDescription>Select all that apply</FormDescription>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {constants?.characteristics.map((trait: string) => (
+                              <FormField
+                                key={trait}
+                                control={form.control}
+                                name="characteristics"
+                                render={({ field }) => {
+                                  return (
+                                    <FormItem
+                                      key={trait}
+                                      className="flex flex-row items-start space-x-3 space-y-0"
+                                    >
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(trait)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...field.value || [], trait])
+                                              : field.onChange(
+                                                  field.value?.filter(
+                                                    (value) => value !== trait
+                                                  )
+                                                )
+                                          }}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">
+                                        {trait}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )
+                                }}
+                              />
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="pedigree" className="space-y-6 pt-4">
+                    <FormField
+                      control={form.control}
+                      name="sire"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Sire (Father)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter sire's name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="dam"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Dam (Mother)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter dam's name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="dam_sire"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Dam's Sire (Maternal Grandfather)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter dam's sire's name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="media" className="space-y-6 pt-4">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Photos</h3>
+                      <div className="flex flex-col md:flex-row gap-2">
+                        <Input 
+                          placeholder="Enter photo URL" 
+                          value={photoUrl} 
+                          onChange={(e) => setPhotoUrl(e.target.value)} 
+                          className="flex-1"
+                        />
+                        <Button type="button" onClick={addPhoto} variant="outline">
+                          <Plus className="h-4 w-4 mr-2" /> Add Photo
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                        {form.watch("photos")?.map((photo, index) => (
+                          <div key={index} className="relative group">
+                            <img 
+                              src={photo} 
+                              alt={`Horse photo ${index + 1}`} 
+                              className="w-full h-40 object-cover rounded-md"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = "https://via.placeholder.com/300x200?text=Image+Error";
+                              }}
+                            />
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="destructive"
+                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => removePhoto(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <Separator className="my-6" />
+                      
+                      <h3 className="text-lg font-medium">Videos</h3>
+                      <div className="flex flex-col md:flex-row gap-2">
+                        <Input 
+                          placeholder="Enter video URL" 
+                          value={videoUrl} 
+                          onChange={(e) => setVideoUrl(e.target.value)} 
+                          className="flex-1"
+                        />
+                        <Button type="button" onClick={addVideo} variant="outline">
+                          <Plus className="h-4 w-4 mr-2" /> Add Video
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2 mt-4">
+                        {form.watch("videos")?.map((video, index) => (
+                          <div key={index} className="flex items-center justify-between bg-muted p-2 rounded-md">
+                            <span className="truncate flex-1">{video}</span>
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => removeVideo(index)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+                
+                <div className="flex justify-end gap-4">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    onClick={() => navigate('/my-horses')}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Update Horse
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
+  );
+}

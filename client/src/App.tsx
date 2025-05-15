@@ -11,6 +11,7 @@ import Messages from "@/pages/messages";
 import Profile from "@/pages/profile";
 import AddHorse from "@/pages/add-horse";
 import MyHorses from "@/pages/my-horses";
+import EditHorse from "@/pages/edit-horse";
 import { AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/profile" component={Profile} />
       <Route path="/add-horse" component={AddHorse} />
       <Route path="/my-horses" component={MyHorses} />
+      <Route path="/edit-horse/:id" component={EditHorse} />
       <Route component={NotFound} />
     </Switch>
   );
