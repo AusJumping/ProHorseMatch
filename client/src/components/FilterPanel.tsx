@@ -343,6 +343,9 @@ const FilterPanel = ({
                     <SelectItem value="15.2">15.2 hh</SelectItem>
                     <SelectItem value="15.3">15.3 hh</SelectItem>
                     <SelectItem value="16.0">16.0 hh</SelectItem>
+                    <SelectItem value="16.1">16.1 hh</SelectItem>
+                    <SelectItem value="16.2">16.2 hh</SelectItem>
+                    <SelectItem value="16.3">16.3 hh</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
