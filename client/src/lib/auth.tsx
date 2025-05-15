@@ -50,8 +50,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Don't cache authentication state
     refetchOnWindowFocus: true, // Change to true to ensure we keep auth state updated
+    refetchInterval: 30000, // Refetch every 30 seconds to keep session fresh
   });
   
   // Ensure user is either User object or null, never undefined
@@ -62,6 +63,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string, userType: string) => {
     try {
+      console.log("Attempting login for:", { email, userType });
+      
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -74,8 +77,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(error.message || 'Login failed');
       }
 
-      await refetch();
-      navigate('/');
+      const userData = await response.json();
+      console.log("Login successful, user data:", userData);
+      
+      // Force a full page reload for reliable auth state reset
+      window.location.href = '/';
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -89,11 +95,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         credentials: 'include',
       });
 
-      // Reset auth state and invalidate queries
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-      await refetch();
-      
-      // Do not navigate here - let the component handle navigation
+      // Force a full page reload for reliable auth state reset
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
@@ -114,8 +117,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(error.message || 'Registration failed');
       }
 
-      await refetch();
-      navigate(userType === 'owner' ? '/add-horse' : '/');
+      // Force a full page reload to ensure auth state is properly updated
+      window.location.href = userType === 'owner' ? '/add-horse' : '/';
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
