@@ -87,7 +87,7 @@ const Sidebar = () => {
               <span>Recently Viewed</span>
             </Button>
           </li>
-          {user?.type === "owner" && (
+          {user?.is_selling && (
             <>
               <li>
                 <Button
@@ -130,7 +130,9 @@ const Sidebar = () => {
                   {user.name || user.business_name || "User"}
                 </p>
                 <p className="text-sm text-neutral-500">
-                  {user.type === "customer" ? "Searching Account" : "Selling Account"}
+                  {user.is_searching && user.is_selling ? "Searching & Selling Account" : 
+                   user.is_searching ? "Searching Account" : 
+                   user.is_selling ? "Selling Account" : "Account"}
                 </p>
               </div>
             </div>

@@ -62,59 +62,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/register/customer", async (req, res) => {
     try {
-      const validatedData = insertCustomerSchema.parse(req.body);
+      const validatedData = insertSearchingUserSchema.parse(req.body);
       
       // Check if email is already taken
-      const existingUser = await storage.getCustomerByEmail(validatedData.email);
+      const existingUser = await storage.getUserByEmail(validatedData.email);
       if (existingUser) {
         return res.status(400).json({ message: "Email already in use" });
       }
       
       // In a real app, we would hash the password here
-      const customer = await storage.createCustomer(validatedData);
+      const user = await storage.createUser({
+        ...validatedData,
+        is_searching: true
+      });
       
       // Set user session
-      req.session.userId = customer.id;
-      req.session.userType = "customer";
+      req.session.userId = user.id;
       
       return res.status(201).json({ 
-        id: customer.id,
-        name: customer.name,
-        email: customer.email,
-        type: "customer"
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        is_searching: true,
+        is_selling: false
       });
     } catch (error) {
-      console.error("Register customer error:", error);
+      console.error("Register searching user error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
   });
 
   app.post("/api/auth/register/owner", async (req, res) => {
     try {
-      const validatedData = insertOwnerSchema.parse(req.body);
+      const validatedData = insertSellingUserSchema.parse(req.body);
       
       // Check if email is already taken
-      const existingUser = await storage.getOwnerByEmail(validatedData.email);
+      const existingUser = await storage.getUserByEmail(validatedData.email);
       if (existingUser) {
         return res.status(400).json({ message: "Email already in use" });
       }
       
       // In a real app, we would hash the password here
-      const owner = await storage.createOwner(validatedData);
+      const user = await storage.createUser({
+        ...validatedData,
+        is_selling: true
+      });
       
       // Set user session
-      req.session.userId = owner.id;
-      req.session.userType = "owner";
+      req.session.userId = user.id;
       
       return res.status(201).json({ 
-        id: owner.id,
-        business_name: owner.business_name,
-        contact_name: owner.contact_name,
-        email: owner.email,
-        type: "owner"
+        id: user.id,
+        business_name: user.business_name,
+        contact_name: user.contact_name,
+        email: user.email,
+        is_searching: false,
+        is_selling: true
       });
     } catch (error) {
-      console.error("Register owner error:", error);
+      console.error("Register selling user error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
   });
@@ -122,100 +128,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       console.log("Login attempt:", req.body);
-      const { email, password, userType } = req.body;
+      const { email, password } = req.body;
       
-      if (!email || !password || !userType) {
+      if (!email || !password) {
         console.log("Login failed - Missing required fields");
-        return res.status(400).json({ message: "Email, password and user type are required" });
+        return res.status(400).json({ message: "Email and password are required" });
       }
       
-      if (userType === "customer") {
-        console.log("Login attempt as customer:", email);
-        const customer = await storage.getCustomerByEmail(email);
-        
-        if (!customer) {
-          console.log("Login failed - Customer not found:", email);
-          return res.status(401).json({ message: "Invalid credentials" });
-        }
-        
-        if (customer.password !== password) {
-          console.log("Login failed - Invalid password for customer:", email);
-          return res.status(401).json({ message: "Invalid credentials" });
-        }
-        
-        console.log("Login successful - Setting customer session:", {
-          id: customer.id,
-          type: "customer",
-          sessionId: req.sessionID
-        });
-        
-        req.session.userId = customer.id;
-        req.session.userType = "customer";
-        
-        // Save session explicitly
-        await new Promise<void>((resolve) => {
-          req.session.save((err) => {
-            if (err) {
-              console.error("Session save error:", err);
-            } else {
-              console.log("Session saved successfully");
-            }
-            resolve();
-          });
-        });
-        
-        return res.json({ 
-          id: customer.id,
-          name: customer.name,
-          email: customer.email,
-          type: "customer"
-        });
-      } else if (userType === "owner") {
-        console.log("Login attempt as owner:", email);
-        const owner = await storage.getOwnerByEmail(email);
-        
-        if (!owner) {
-          console.log("Login failed - Owner not found:", email);
-          return res.status(401).json({ message: "Invalid credentials" });
-        }
-        
-        if (owner.password !== password) {
-          console.log("Login failed - Invalid password for owner:", email);
-          return res.status(401).json({ message: "Invalid credentials" });
-        }
-        
-        console.log("Login successful - Setting owner session:", {
-          id: owner.id,
-          type: "owner",
-          sessionId: req.sessionID
-        });
-        
-        req.session.userId = owner.id;
-        req.session.userType = "owner";
-        
-        // Save session explicitly
-        await new Promise<void>((resolve) => {
-          req.session.save((err) => {
-            if (err) {
-              console.error("Session save error:", err);
-            } else {
-              console.log("Session saved successfully");
-            }
-            resolve();
-          });
-        });
-        
-        return res.json({ 
-          id: owner.id,
-          business_name: owner.business_name,
-          contact_name: owner.contact_name,
-          email: owner.email,
-          type: "owner"
-        });
-      } else {
-        console.log("Login failed - Invalid user type:", userType);
-        return res.status(400).json({ message: "Invalid user type" });
+      console.log("Login attempt for:", email);
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        console.log("Login failed - User not found:", email);
+        return res.status(401).json({ message: "Invalid credentials" });
       }
+      
+      if (user.password !== password) {
+        console.log("Login failed - Invalid password for user:", email);
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      console.log("Login successful - Setting user session:", {
+        id: user.id,
+        is_searching: user.is_searching,
+        is_selling: user.is_selling,
+        sessionId: req.sessionID
+      });
+      
+      req.session.userId = user.id;
+      
+      // Save session explicitly
+      await new Promise<void>((resolve) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+          } else {
+            console.log("Session saved successfully");
+          }
+          resolve();
+        });
+      });
+      
+      return res.json({ 
+        id: user.id,
+        name: user.name,
+        business_name: user.business_name,
+        contact_name: user.contact_name,
+        email: user.email,
+        is_searching: user.is_searching,
+        is_selling: user.is_selling
+      });
     } catch (error: any) {
       console.error("Login error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
@@ -236,60 +198,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("Auth check - Session:", {
       sessionId: req.sessionID,
       userId: req.session.userId,
-      userType: req.session.userType,
       sessionContent: req.session
     });
     
-    if (!req.session.userId || !req.session.userType) {
+    if (!req.session.userId) {
       console.log("Auth check failed - Not authenticated");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
     try {
-      console.log(`Auth check - Looking up ${req.session.userType} with ID ${req.session.userId}`);
-      if (req.session.userType === "customer") {
-        const customer = await storage.getCustomerById(req.session.userId);
-        if (!customer) {
-          return res.status(404).json({ message: "Customer not found" });
-        }
-        
-        return res.json({ 
-          id: customer.id,
-          name: customer.name,
-          email: customer.email,
-          type: "customer",
-          profile: {
-            location_country: customer.location_country,
-            location_radius_km: customer.location_radius_km,
-            preferred_disciplines: customer.preferred_disciplines,
-            preferred_levels: customer.preferred_levels,
-            preferred_breeds: customer.preferred_breeds,
-            age_range_min: customer.age_range_min,
-            age_range_max: customer.age_range_max,
-            height_range_min: customer.height_range_min,
-            height_range_max: customer.height_range_max,
-            preferred_sexes: customer.preferred_sexes,
-            breeding_preferences: customer.breeding_preferences,
-            preferred_characteristics: customer.preferred_characteristics,
-            price_range_min: customer.price_range_min,
-            price_range_max: customer.price_range_max,
-            currency: customer.currency
-          }
-        });
-      } else if (req.session.userType === "owner") {
-        const owner = await storage.getOwnerById(req.session.userId);
-        if (!owner) {
-          return res.status(404).json({ message: "Owner not found" });
-        }
-        
-        return res.json({ 
-          id: owner.id,
-          business_name: owner.business_name,
-          contact_name: owner.contact_name,
-          email: owner.email,
-          type: "owner"
-        });
+      console.log(`Auth check - Looking up user with ID ${req.session.userId}`);
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
+      
+      // Create profile object based on user roles
+      const profile: any = {};
+      
+      if (user.is_searching) {
+        // Add searching-specific profile data
+        profile.location_country = user.location_country;
+        profile.location_radius_km = user.location_radius_km;
+        profile.preferred_disciplines = user.preferred_disciplines;
+        profile.preferred_levels = user.preferred_levels;
+        profile.preferred_breeds = user.preferred_breeds;
+        profile.age_range_min = user.age_range_min;
+        profile.age_range_max = user.age_range_max;
+        profile.height_range_min = user.height_range_min;
+        profile.height_range_max = user.height_range_max;
+        profile.preferred_sexes = user.preferred_sexes;
+        profile.breeding_preferences = user.breeding_preferences;
+        profile.preferred_characteristics = user.preferred_characteristics;
+        profile.price_range_min = user.price_range_min;
+        profile.price_range_max = user.price_range_max;
+        profile.currency = user.currency;
+      }
+      
+      return res.json({ 
+        id: user.id,
+        name: user.name,
+        business_name: user.business_name,
+        contact_name: user.contact_name,
+        email: user.email,
+        is_searching: user.is_searching,
+        is_selling: user.is_selling,
+        profile
+      });
     } catch (error) {
       console.error("Get user error:", error);
       return res.status(500).json({ message: "Failed to get user" });
