@@ -73,7 +73,7 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
               <Button
                 size="sm"
                 variant="outline"
-                className="bg-destructive bg-opacity-10 text-destructive"
+                className="bg-black text-white border-black"
                 onClick={() => onDislike(horse.id)}
               >
                 <X className="h-4 w-4 mr-1" />

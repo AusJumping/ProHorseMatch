@@ -125,7 +125,7 @@ const SwipeSection = ({
       <div className="swipe-buttons flex justify-center gap-4 mt-5">
         <Button
           size="icon"
-          className="bg-destructive bg-opacity-10 text-destructive w-14 h-14 rounded-full"
+          className="bg-black text-white w-14 h-14 rounded-full"
           onClick={handleButtonDislike}
         >
           <X className="h-6 w-6" />
