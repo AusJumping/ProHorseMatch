@@ -13,6 +13,7 @@ const AdminPanel = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeletingSpecific, setIsDeletingSpecific] = useState(false);
   const [isResettingDb, setIsResettingDb] = useState(false);
+  const [isAddingSampleHorses, setIsAddingSampleHorses] = useState(false);
   const { user, isAuthenticated } = useAuth();
   const [_, navigate] = useLocation();
 

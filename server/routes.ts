@@ -792,6 +792,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Add sample horses
+  app.post("/api/admin/add-sample-horses", isAuthenticated, async (req, res) => {
+    try {
+      // Get user to verify they are a seller
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only sellers can perform this action" });
+      }
+      
+      // Create sample horses
+      const sampleHorses = [
+        {
+          owner_id: userId,
+          name: "Pegasus",
+          location_country: "Australia",
+          location_radius_km: 0,
+          disciplines: ["Jumping"],
+          levels: ["Young Rider"],
+          breeds: ["Warmblood"],
+          age: 8,
+          height_hands: 16.2,
+          height_cm: 168,
+          sex: "Gelding",
+          sire: "Cornet Obolensky",
+          dam: "Diamant's Girl",
+          dam_sire: "Diamant de Semilly",
+          characteristics: ["Brave", "Careful"],
+          price: 35000,
+          currency: "AUD",
+          description: "Talented jumper with a great temperament",
+          photos: [
+            "https://www.australianjumping.com.au/wp-content/uploads/2025/05/images.jpeg",
+            "https://www.australianjumping.com.au/wp-content/uploads/2025/05/images-1.jpeg"
+          ],
+          videos: []
+        },
+        {
+          owner_id: userId,
+          name: "Thunder",
+          location_country: "Australia",
+          location_radius_km: 0,
+          disciplines: ["Dressage"],
+          levels: ["Elementary"],
+          breeds: ["Hanoverian"],
+          age: 6,
+          height_hands: 17,
+          height_cm: 173,
+          sex: "Stallion",
+          sire: "Totilas",
+          dam: "Dancing Queen",
+          dam_sire: "De Niro",
+          characteristics: ["Expressive", "Powerful"],
+          price: 45000,
+          currency: "AUD",
+          description: "Impressive young dressage prospect with three excellent gaits",
+          photos: [
+            "https://www.australianjumping.com.au/wp-content/uploads/2025/05/images.jpeg",
+            "https://www.australianjumping.com.au/wp-content/uploads/2025/05/images-1.jpeg"
+          ],
+          videos: []
+        }
+      ];
+      
+      // Add horses to the database
+      const createdHorses = [];
+      for (const horse of sampleHorses) {
+        const createdHorse = await storage.createHorse(horse);
+        createdHorses.push(createdHorse);
+      }
+      
+      return res.status(201).json({ 
+        message: `Successfully added ${createdHorses.length} sample horses`,
+        horses: createdHorses
+      });
+    } catch (error) {
+      console.error("Add sample horses error:", error);
+      return res.status(500).json({ message: "Failed to add sample horses", error: error.toString() });
+    }
+  });
+
   app.patch("/api/users/:id", isAuthenticated, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
