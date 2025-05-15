@@ -269,6 +269,11 @@ export class MemStorage implements IStorage {
     this.createHorse(horse4);
   }
   
+  // Special direct access method for admin purposes
+  getInternalHorsesMap(): Map<number, Horse> {
+    return this.horses;
+  }
+
   // Horse methods
   async getHorses(): Promise<Horse[]> {
     return Array.from(this.horses.values());

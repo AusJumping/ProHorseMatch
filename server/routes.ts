@@ -458,7 +458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete User 1 and all their horses
+  // Delete User 1 and all their horses - special direct method
   app.delete("/api/admin/delete-user-one", isAuthenticated, async (req, res) => {
     try {
       console.log("Delete User 1 request received");
@@ -475,42 +475,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only sellers can perform this action" });
       }
       
-      // Get all horses owned by User 1
-      const horses = await storage.getHorses();
-      const user1Horses = horses.filter(h => h.owner_id === 1);
-      
-      console.log(`Found ${user1Horses.length} horses owned by User 1: ${JSON.stringify(user1Horses.map(h => ({ id: h.id, name: h.name })))}`);
-      
-      // Delete all horses owned by User 1
-      let deletedCount = 0;
-      let deletedHorses = [];
-      
-      for (const horse of user1Horses) {
-        console.log(`Attempting to delete horse: ${horse.name} (ID: ${horse.id})`);
-        try {
-          const success = await storage.deleteHorse(horse.id);
-          if (success) {
+      // Special direct method for MemStorage - this will be different for DatabaseStorage
+      if (storage instanceof MemStorage) {
+        console.log("Using direct MemStorage access to delete User 1 horses");
+        
+        // Get all horses before we modify anything (for reporting)
+        const allHorses = await storage.getHorses();
+        const user1Horses = allHorses.filter(h => h.owner_id === 1);
+        
+        console.log(`Found ${user1Horses.length} horses owned by User 1: ${JSON.stringify(user1Horses.map(h => ({ id: h.id, name: h.name })))}`);
+        
+        const horsesToDelete = user1Horses.map(h => h.id);
+        const horseNames = user1Horses.map(h => h.name);
+        
+        // Direct access to the Map within MemStorage
+        const internalMap = (storage as MemStorage).getInternalHorsesMap();
+        
+        // Delete directly from the map
+        let deletedCount = 0;
+        for (const id of horsesToDelete) {
+          if (internalMap.delete(id)) {
             deletedCount++;
-            deletedHorses.push(horse.name);
-            console.log(`Successfully deleted horse: ${horse.name} (ID: ${horse.id})`);
+            console.log(`Successfully deleted horse with ID: ${id} directly from map`);
           } else {
-            console.log(`Failed to delete horse: ${horse.name} (ID: ${horse.id})`);
+            console.log(`Failed to delete horse with ID: ${id} from map`);
           }
-        } catch (deleteError) {
-          console.error(`Error deleting horse ${horse.name}:`, deleteError);
         }
+        
+        console.log(`Directly deleted ${deletedCount} horses owned by User 1: ${horseNames.join(", ")}`);
+      
+        return res.status(200).json({
+          message: `Successfully deleted ${deletedCount} horses owned by User 1`,
+          deletedCount,
+          deletedHorses: horseNames
+        });
+      } else {
+        // Fallback to standard method for other storage types
+        // Get all horses owned by User 1
+        const horses = await storage.getHorses();
+        const user1Horses = horses.filter(h => h.owner_id === 1);
+        
+        console.log(`Found ${user1Horses.length} horses owned by User 1: ${JSON.stringify(user1Horses.map(h => ({ id: h.id, name: h.name })))}`);
+        
+        // Delete all horses owned by User 1
+        let deletedCount = 0;
+        let deletedHorses = [];
+        
+        for (const horse of user1Horses) {
+          console.log(`Attempting to delete horse: ${horse.name} (ID: ${horse.id})`);
+          try {
+            const success = await storage.deleteHorse(horse.id);
+            if (success) {
+              deletedCount++;
+              deletedHorses.push(horse.name);
+              console.log(`Successfully deleted horse: ${horse.name} (ID: ${horse.id})`);
+            } else {
+              console.log(`Failed to delete horse: ${horse.name} (ID: ${horse.id})`);
+            }
+          } catch (deleteError) {
+            console.error(`Error deleting horse ${horse.name}:`, deleteError);
+          }
+        }
+        
+        console.log(`Deleted ${deletedCount} horses owned by User 1: ${deletedHorses.join(", ")}`);
+        
+        return res.status(200).json({
+          message: `Successfully deleted ${deletedCount} horses owned by User 1`,
+          deletedCount,
+          deletedHorses
+        });
       }
-      
-      // The "delete user" function isn't yet implemented in our storage
-      // We'll just indicate that we've deleted all their horses instead
-      
-      console.log(`Deleted ${deletedCount} horses owned by User 1: ${deletedHorses.join(", ")}`);
-      
-      return res.status(200).json({
-        message: `Successfully deleted ${deletedCount} horses owned by User 1`,
-        deletedCount,
-        deletedHorses
-      });
     } catch (error) {
       console.error("Delete User 1 error:", error);
       return res.status(500).json({ message: "Failed to delete User 1 and their horses" });
