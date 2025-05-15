@@ -36,7 +36,7 @@ export default function Home() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: ["Jumping"],
-    breeds: ["Hanoverian"],
+    breeds: ["Warmblood"],
     sexes: ["Gelding"],
     location_country: null,
     location_radius_km: null,
