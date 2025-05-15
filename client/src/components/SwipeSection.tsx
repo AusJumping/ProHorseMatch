@@ -133,14 +133,14 @@ const SwipeSection = ({
         <Button
           size="icon"
           variant="outline"
-          className="bg-neutral-200 text-neutral-800 w-12 h-12 rounded-full"
+          className="bg-white text-black border-gray-300 w-12 h-12 rounded-full"
           onClick={() => onShowMore(currentHorse.id)}
         >
           <Info className="h-5 w-5" />
         </Button>
         <Button
           size="icon"
-          className="bg-success bg-opacity-10 text-success w-14 h-14 rounded-full"
+          className="bg-amber-500 text-white w-14 h-14 rounded-full"
           onClick={handleButtonLike}
         >
           <Heart className="h-6 w-6" />
