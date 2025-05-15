@@ -150,6 +150,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session middleware
   const isProduction = process.env.NODE_ENV === "production";
   
+  // Serve static files from the uploads directory
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
+  
   app.use(
     session({
       cookie: { 
