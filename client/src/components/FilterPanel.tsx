@@ -327,7 +327,7 @@ const FilterPanel = ({
             <div className="flex gap-3">
               <div className="flex-1">
                 <Select 
-                  value={filters.height_min?.toString() || "13.0"} 
+                  value={filters.height_min?.toString() || "15.0"} 
                   onValueChange={(value) => handleChange('height_min', parseFloat(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
