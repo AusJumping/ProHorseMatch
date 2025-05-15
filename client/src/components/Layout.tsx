@@ -62,7 +62,7 @@ const Layout = ({
                   <ArrowLeft size={18} />
                 </Button>
               )}
-              <h2 className="font-display font-bold text-xl">{pageTitle}</h2>
+              <h2 className="font-accent font-bold text-xl">{pageTitle}</h2>
             </div>
 
             <div className="flex items-center gap-2">

@@ -102,7 +102,7 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
       {/* Horse Info Section */}
       <CardContent className="p-4 h-2/5 flex flex-col justify-between">
         <div>
-          <h2 className="font-display font-bold text-xl mb-1">{horse.name}</h2>
+          <h2 className="font-accent font-bold text-xl mb-1">{horse.name}</h2>
           <p className="text-neutral-800 text-sm mb-3">
             {horse.age}yo {horse.breeds[0]} {horse.sex} • {horse.height_hands} hands
           </p>

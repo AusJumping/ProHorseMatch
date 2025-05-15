@@ -230,7 +230,7 @@ export default function Home() {
         {!isMobile && (
           <div className="w-72 bg-white rounded-xl p-5 shadow-sm h-fit ml-6">
             <h3 
-              className="font-display font-bold text-lg mb-4 flex items-center cursor-pointer hover:text-primary transition-colors" 
+              className="font-accent font-bold text-lg mb-4 flex items-center cursor-pointer hover:text-primary transition-colors" 
               onClick={() => navigate('/horses')}
             >
               <span>Recently Viewed</span>

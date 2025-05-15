@@ -96,7 +96,7 @@ const FilterPanel = ({
           : 'h-full'}
       `}>
         <div className="flex justify-between items-center mb-5">
-          <h2 className="font-display font-bold text-xl">Filter Horses</h2>
+          <h2 className="font-accent font-bold text-xl">Filter Horses</h2>
           {isMobile && (
             <Button 
               variant="ghost" 
