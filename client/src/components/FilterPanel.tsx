@@ -141,10 +141,10 @@ const FilterPanel = ({
                   <SelectValue placeholder="Currency" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="AUD">Australian Dollar (A$)</SelectItem>
-                  <SelectItem value="EUR">Euro (€)</SelectItem>
-                  <SelectItem value="USD">US Dollar ($)</SelectItem>
-                  <SelectItem value="GBP">British Pound (£)</SelectItem>
+                  <SelectItem value="AUD">AUD (A$)</SelectItem>
+                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                  <SelectItem value="USD">USD ($)</SelectItem>
+                  <SelectItem value="GBP">GBP (£)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
