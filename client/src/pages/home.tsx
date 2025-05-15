@@ -186,19 +186,6 @@ export default function Home() {
       onFilterClick={toggleFilterPanel}
     >
       <div className="flex w-full h-full">
-        {/* Additional Action button for owners - shown at top of main content on all screen sizes */}
-        {isOwner && (
-          <div className="w-full mb-4">
-            <Button 
-              onClick={() => navigate("/add-horse")}
-              variant="outline" 
-              className="bg-primary-light text-primary border-primary-light"
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Horse
-            </Button>
-          </div>
-        )}
         {/* Filter sidebar - desktop only */}
         {!isMobile && (
           <div className="w-72 bg-white rounded-xl p-5 shadow-sm h-fit mr-6">
