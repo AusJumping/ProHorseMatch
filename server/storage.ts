@@ -89,19 +89,40 @@ export class MemStorage implements IStorage {
   // Seed some initial data
   private seedData() {
     // Add a user with selling role (owner)
-    const owner: InsertUser = {
+    const ownerUser: User = {
+      id: 1,
       business_name: "Elite Sporthorses",
       contact_name: "John Smith",
+      name: null,
       email: "john@elitesporthorses.com",
       password: "password123",
       is_selling: true,
-      is_searching: false
+      is_searching: false,
+      location_country: null,
+      location_radius_km: null,
+      preferred_disciplines: null,
+      preferred_levels: null,
+      preferred_breeds: null,
+      age_range_min: null,
+      age_range_max: null,
+      height_range_min: null,
+      height_range_max: null,
+      preferred_sexes: null,
+      breeding_preferences: null,
+      preferred_characteristics: null,
+      price_range_min: null,
+      price_range_max: null,
+      currency: null,
+      created_at: new Date()
     };
-    this.createUser(owner);
+    this.users.set(1, ownerUser);
     
     // Add a user with searching role (customer)
-    const customer: InsertUser = {
+    const customerUser: User = {
+      id: 2,
       name: "Sarah Thompson",
+      business_name: null,
+      contact_name: null,
       email: "sarah@example.com",
       password: "password123",
       is_searching: true,
@@ -120,9 +141,13 @@ export class MemStorage implements IStorage {
       preferred_characteristics: ["Forward", "Brave", "Careful"],
       price_range_min: 30000,
       price_range_max: 100000,
-      currency: "EUR"
+      currency: "EUR",
+      created_at: new Date()
     };
-    this.createUser(customer);
+    this.users.set(2, customerUser);
+    
+    // Set next ID
+    this.userId = 3;
     
     // Add some horses
     const horse1: InsertHorse = {
