@@ -82,13 +82,29 @@ export default function Auth() {
 
   const onLoginSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
-      await apiRequest("POST", "/api/auth/login", data);
+      console.log("Submitting login form with data:", data);
+      
+      // Use the more direct fetch approach for login to ensure cookies are set properly
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+      
       toast({
         title: "Login successful",
         description: "Welcome back to ProHorseMatch",
       });
-      navigate("/");
-    } catch (error) {
+      
+      // Force full page reload to ensure auth state is picked up
+      window.location.href = "/";
+    } catch (error: any) {
       toast({
         title: "Login failed",
         description: error.message || "Please check your credentials",
@@ -100,13 +116,27 @@ export default function Auth() {
   const onCustomerRegisterSubmit = async (data: z.infer<typeof customerRegisterSchema>) => {
     try {
       const { confirmPassword, ...registerData } = data;
-      await apiRequest("POST", "/api/auth/register/customer", registerData);
+      
+      const response = await fetch('/api/auth/register/customer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerData),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
+      }
+      
       toast({
         title: "Registration successful",
         description: "Welcome to ProHorseMatch",
       });
-      navigate("/");
-    } catch (error) {
+      
+      // Force full page reload to ensure auth state is picked up
+      window.location.href = "/";
+    } catch (error: any) {
       toast({
         title: "Registration failed",
         description: error.message || "Please try again",
@@ -118,13 +148,27 @@ export default function Auth() {
   const onOwnerRegisterSubmit = async (data: z.infer<typeof ownerRegisterSchema>) => {
     try {
       const { confirmPassword, ...registerData } = data;
-      await apiRequest("POST", "/api/auth/register/owner", registerData);
+      
+      const response = await fetch('/api/auth/register/owner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(registerData),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Registration failed');
+      }
+      
       toast({
         title: "Registration successful",
         description: "Welcome to ProHorseMatch",
       });
-      navigate("/add-horse");
-    } catch (error) {
+      
+      // Force full page reload to ensure auth state is picked up
+      window.location.href = "/add-horse";
+    } catch (error: any) {
       toast({
         title: "Registration failed",
         description: error.message || "Please try again",
