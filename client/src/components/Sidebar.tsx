@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCircle } from "lucide-react";
+import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCircle, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 const Sidebar = () => {
@@ -111,6 +111,18 @@ const Sidebar = () => {
                 >
                   <PlusCircle className="mr-3 h-5 w-5" />
                   <span>Add Horse</span>
+                </Button>
+              </li>
+              <li>
+                <Button
+                  variant={location === "/admin" ? "default" : "ghost"}
+                  className={`w-full justify-start px-5 py-3 ${
+                    location === "/admin" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                  }`}
+                  onClick={() => navigate("/admin")}
+                >
+                  <ShieldAlert className="mr-3 h-5 w-5" />
+                  <span>Admin Panel</span>
                 </Button>
               </li>
             </>

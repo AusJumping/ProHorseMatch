@@ -737,6 +737,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Admin endpoint to delete all horses
+  app.delete("/api/admin/horses", isAuthenticated, async (req, res) => {
+    try {
+      // Only allow for logged-in sellers
+      const user = await storage.getUserById(req.session.userId);
+      
+      console.log(`DELETE /api/admin/horses - Requested by user:`, user);
+      
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only users with selling permission can perform this operation" });
+      }
+      
+      // Get all horses first
+      const allHorses = await storage.getHorses();
+      console.log(`DELETE /api/admin/horses - Found ${allHorses.length} horses to delete`);
+      
+      // Keep track of deleted horses
+      const deletedHorses = [];
+      
+      // Delete each horse
+      for (const horse of allHorses) {
+        console.log(`DELETE /api/admin/horses - Deleting horse ${horse.id} (${horse.name})`);
+        const success = await storage.deleteHorse(horse.id);
+        if (success) {
+          deletedHorses.push({ id: horse.id, name: horse.name });
+        } else {
+          console.error(`DELETE /api/admin/horses - Failed to delete horse ${horse.id}`);
+        }
+      }
+      
+      // Verify the deletion by getting horses again
+      const horsesAfter = await storage.getHorses();
+      
+      return res.json({ 
+        message: `Successfully deleted ${deletedHorses.length} horses`,
+        deletedHorses,
+        remainingHorses: horsesAfter.length
+      });
+    } catch (error) {
+      console.error("Delete horses error:", error);
+      return res.status(500).json({ message: "Failed to delete horses" });
+    }
+  });
+  
   // Temporary admin endpoint to reassign horses to current user
   app.post("/api/admin/reassign-horses", isAuthenticated, async (req, res) => {
     try {
