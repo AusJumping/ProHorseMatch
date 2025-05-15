@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import Layout from "@/components/Layout";
 import HorseCard from "@/components/HorseCard";
@@ -16,6 +16,8 @@ export default function MyHorses() {
   const { toast } = useToast();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedHorseId, setSelectedHorseId] = useState<number | null>(null);
+  const queryClient = useQueryClient();
+  const [prevLocation, setPrevLocation] = useState(location);
 
   // Fetch horses owned by the current user
   const { data: horses, isLoading, refetch } = useQuery<Horse[]>({
@@ -26,6 +28,20 @@ export default function MyHorses() {
     },
     enabled: !!user
   });
+  
+  // Effect to detect when returning back to this page
+  useEffect(() => {
+    // If we've changed location (returned to this page) from edit-horse
+    if (prevLocation.includes('/edit-horse/') && location === '/my-horses') {
+      console.log('Returned from edit page, refreshing horse data');
+      // Invalidate and refetch horses
+      queryClient.invalidateQueries({ queryKey: ["/api/my-horses"] });
+      refetch();
+    }
+    
+    // Update previous location
+    setPrevLocation(location);
+  }, [location, prevLocation, queryClient, refetch]);
 
   const handleEdit = (horseId: number) => {
     // Navigate to the edit horse page
