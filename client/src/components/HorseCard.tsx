@@ -42,7 +42,7 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
       </div>
 
       {/* Horse Info Section */}
-      <CardContent className="p-4 h-2/5 flex flex-col justify-between">
+      <CardContent className="p-4 flex flex-col">
         <div>
           <h2 className="font-accent font-bold text-xl mb-1">{horse.name}</h2>
           <p className="text-neutral-800 text-sm mb-3">
@@ -77,14 +77,14 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
         </div>
 
         {/* Price Badge */}
-        <div className="text-right mb-2">
+        <div className="text-left mb-2">
           <span className="bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full inline-block">
             {horse.currency} {horse.price.toLocaleString()}
           </span>
         </div>
         
         {/* Quick Actions */}
-        <div className="flex gap-2 mt-auto">
+        <div className="flex gap-2">
           <Button
             className="flex-1 bg-primary hover:bg-primary/90 text-white font-accent font-semibold"
             onClick={() => onShowMore(horse.id)}
