@@ -996,34 +996,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Horse routes
   app.get("/api/horses", async (req, res) => {
     try {
+      console.log("GET /api/horses - query params:", req.query);
+      
       // Convert query params to filters
       const filters: any = {};
       
-      if (req.query.disciplines) {
+      // Only add filter parameters if they have values to avoid filtering by empty values
+      if (req.query.disciplines && Array.isArray(req.query.disciplines) ? req.query.disciplines.length > 0 : req.query.disciplines) {
         filters.disciplines = Array.isArray(req.query.disciplines) 
           ? req.query.disciplines 
           : [req.query.disciplines];
       }
       
-      if (req.query.breeds) {
+      if (req.query.breeds && Array.isArray(req.query.breeds) ? req.query.breeds.length > 0 : req.query.breeds) {
         filters.breeds = Array.isArray(req.query.breeds) 
           ? req.query.breeds 
           : [req.query.breeds];
       }
       
-      if (req.query.sex) {
-        filters.sex = req.query.sex as string;
+      if (req.query.sexes && Array.isArray(req.query.sexes) ? req.query.sexes.length > 0 : req.query.sexes) {
+        filters.sexes = Array.isArray(req.query.sexes) 
+          ? req.query.sexes 
+          : [req.query.sexes];
       }
       
-      if (req.query.location_country) {
+      if (req.query.location_country && req.query.location_country !== 'null') {
         filters.location_country = req.query.location_country as string;
       }
       
-      if (req.query.min_price || req.query.max_price) {
-        filters.price = parseInt(req.query.max_price as string);
+      if (req.query.min_price && req.query.min_price !== '0' && req.query.min_price !== 'null') {
+        filters.price_min = parseInt(req.query.min_price as string);
       }
       
+      if (req.query.max_price && req.query.max_price !== '999999999' && req.query.max_price !== 'null') {
+        filters.price_max = parseInt(req.query.max_price as string);
+      }
+      
+      console.log("GET /api/horses - parsed filters:", filters);
+      
       const horses = await storage.getHorsesByFilters(filters);
+      console.log(`GET /api/horses - returning ${horses.length} horses`);
       return res.json(horses);
     } catch (error) {
       console.error("Get horses error:", error);
