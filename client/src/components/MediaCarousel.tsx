@@ -73,11 +73,14 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
           />
         </div>
       ) : (
-        <img 
-          className="w-full h-full object-cover"
-          src={media[currentIndex]} 
-          alt="Horse" 
-        />
+        <div className="w-full aspect-[16/9] relative">
+          <img 
+            className="w-full h-full object-cover object-center"
+            src={media[currentIndex]} 
+            alt="Horse" 
+            style={{ objectPosition: "center 35%" }}
+          />
+        </div>
       )}
 
       {/* Media type toggle */}

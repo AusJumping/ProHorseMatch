@@ -1,9 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight, Info, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { useMobile } from "@/hooks/use-mobile";
+import MediaCarousel from "@/components/MediaCarousel";
 
 interface HorseCardProps {
   horse: Horse;
@@ -12,25 +12,6 @@ interface HorseCardProps {
 
 const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
   const isMobile = useMobile();
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const nextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (currentImageIndex < horse.photos.length - 1) {
-      setCurrentImageIndex(currentImageIndex + 1);
-    } else {
-      setCurrentImageIndex(0);
-    }
-  };
-
-  const prevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(currentImageIndex - 1);
-    } else {
-      setCurrentImageIndex(horse.photos.length - 1);
-    }
-  };
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -52,49 +33,15 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
 
   return (
     <Card className="horse-card bg-white overflow-hidden shadow-md relative cursor-grab active:cursor-grabbing">
-      {/* Media Section */}
-      <div className="relative h-3/5">
-        <img
-          src={horse.photos[currentImageIndex]}
-          alt={`${horse.name}`}
-          className="w-full h-full object-cover"
+      {/* Media Section - Using MediaCarousel component with 16:9 aspect ratio */}
+      <div className="relative w-full aspect-[16/9]">
+        <MediaCarousel 
+          media={horse.photos || []} 
+          videos={horse.videos || []} 
         />
-
-        {/* Carousel Navigation */}
-        {!isMobile && (
-          <div className="absolute top-1/2 transform -translate-y-1/2 flex justify-between w-full px-4">
-            <Button
-              size="icon"
-              variant="ghost"
-              className="bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full w-8 h-8"
-              onClick={prevImage}
-            >
-              <ChevronLeft size={16} />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full w-8 h-8"
-              onClick={nextImage}
-            >
-              <ChevronRight size={16} />
-            </Button>
-          </div>
-        )}
-
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1">
-          {horse.photos.map((_, index) => (
-            <div
-              key={index}
-              className={`carousel-dot bg-white rounded-full w-2 h-2 opacity-70 ${
-                index === currentImageIndex ? "active w-2.5 h-2.5 opacity-100" : ""
-              }`}
-            />
-          ))}
-        </div>
-
+        
         {/* Price Badge */}
-        <div className="absolute top-4 right-4 bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full">
+        <div className="absolute top-4 right-4 z-10 bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full">
           {horse.currency} {horse.price.toLocaleString()}
         </div>
       </div>
