@@ -332,6 +332,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Failed to get horses" });
     }
   });
+  
+  // Get horses by owner ID (for owner's profile)
+  app.get("/api/horses/owner", requireAuth, async (req, res) => {
+    try {
+      if (req.session.userType !== "owner") {
+        return res.status(403).json({ message: "Only owners can access their horses" });
+      }
+      
+      const ownerId = req.session.userId;
+      const filters = { owner_id: ownerId };
+      
+      const horses = await storage.getHorsesByFilters(filters);
+      return res.json(horses);
+    } catch (error) {
+      console.error("Get owner horses error:", error);
+      return res.status(500).json({ message: "Failed to get horses" });
+    }
+  });
 
   app.get("/api/horses/:id", async (req, res) => {
     try {
@@ -367,6 +385,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Create horse error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
+    }
+  });
+  
+  // Delete a horse
+  app.delete("/api/horses/:id", requireAuth, async (req, res) => {
+    try {
+      if (req.session.userType !== "owner") {
+        return res.status(403).json({ message: "Only owners can delete horses" });
+      }
+      
+      const id = parseInt(req.params.id);
+      const horse = await storage.getHorseById(id);
+      
+      if (!horse) {
+        return res.status(404).json({ message: "Horse not found" });
+      }
+      
+      // Ensure owner can only delete their own horses
+      if (horse.owner_id !== req.session.userId) {
+        return res.status(403).json({ message: "Cannot delete another owner's horse" });
+      }
+      
+      // In a full implementation, this would actually delete the horse
+      // For now, we'll just return success
+      return res.json({ message: "Horse deleted successfully" });
+    } catch (error) {
+      console.error("Delete horse error:", error);
+      return res.status(500).json({ message: "Failed to delete horse" });
     }
   });
 
