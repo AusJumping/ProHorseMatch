@@ -1203,16 +1203,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Match routes
   app.post("/api/matches", isAuthenticated, async (req, res) => {
     try {
-      // Get the user with their roles
+      // Get the user
       const user = await storage.getUserById(req.session.userId);
       
-      if (!user || !user.is_searching) {
-        return res.status(403).json({ message: "Only users with searching permission can create matches" });
+      if (!user) {
+        return res.status(403).json({ message: "User not found" });
       }
+      
+      // Allow any authenticated user to create matches
+      // regardless of their user type (selling or searching)
       
       const validatedData = insertMatchSchema.parse(req.body);
       
-      // Ensure customer_id matches the logged-in customer
+      // Ensure customer_id matches the logged-in user
       if (validatedData.customer_id !== req.session.userId) {
         return res.status(403).json({ message: "Cannot create match for another user" });
       }

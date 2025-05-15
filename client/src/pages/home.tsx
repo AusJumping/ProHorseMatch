@@ -53,7 +53,7 @@ export default function Home() {
   });
 
   // Debug log
-  console.log("Home - Auth state:", { isAuthenticated, userType: user?.type });
+  console.log("Home - Auth state:", { isAuthenticated, is_selling: user?.is_selling, is_searching: user?.is_searching });
 
   const [swipingIndex, setSwipingIndex] = useState(0);
 
@@ -291,8 +291,8 @@ export default function Home() {
     );
   };
 
-  // Make sure we explicitly identify owner accounts for the "Add Horse" button
-  const isOwner = user?.type === "owner";
+  // Check if user has selling permission
+  const isOwner = user?.is_selling === true;
   
   return (
     <Layout 

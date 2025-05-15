@@ -1,0 +1,187 @@
+import { useEffect, useState } from "react";
+import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
+import { Layout } from "@/components/Layout";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Info, Heart } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { MediaCarousel } from "@/components/MediaCarousel";
+import type { Horse, Match } from "@shared/schema";
+
+export default function Favorites() {
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
+  const [favoriteHorses, setFavoriteHorses] = useState<Horse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch user's matches
+  const { data: matches, isLoading: matchesLoading } = useQuery<Match[]>({
+    queryKey: ['/api/matches'],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch all horses
+  const { data: horses, isLoading: horsesLoading } = useQuery<Horse[]>({
+    queryKey: ['/api/horses'],
+    enabled: isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "You need to log in to view your favorites.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    // Once we have both matches and horses, filter out the favorite horses
+    if (matches && horses && !matchesLoading && !horsesLoading) {
+      // Filter matches to only include liked ones
+      const likedMatches = matches.filter(match => match.is_liked);
+      
+      // Get the corresponding horses
+      const likedHorses = likedMatches.map(match => {
+        return horses.find(horse => horse.id === match.horse_id);
+      }).filter(Boolean) as Horse[];
+      
+      setFavoriteHorses(likedHorses);
+      setIsLoading(false);
+    }
+  }, [matches, horses, matchesLoading, horsesLoading, isAuthenticated, navigate, toast]);
+
+  const handleRemoveFromFavorites = async (horseId: number) => {
+    try {
+      // Get the match ID for this horse
+      const match = matches?.find(m => m.horse_id === horseId && m.is_liked);
+      
+      if (match) {
+        // Option 1: Delete the match completely
+        // await apiRequest('DELETE', `/api/matches/${match.id}`);
+        
+        // Option 2: Update is_liked to false (we'll use this approach)
+        await fetch(`/api/matches/${match.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ is_liked: false }),
+          credentials: 'include'
+        });
+        
+        // Remove this horse from the local state
+        setFavoriteHorses(prev => prev.filter(horse => horse.id !== horseId));
+        
+        toast({
+          title: "Removed from favorites",
+          description: "Horse has been removed from your favorites.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to remove horse from favorites.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleShowDetails = (horseId: number) => {
+    navigate(`/horse/${horseId}`);
+  };
+
+  if (!isAuthenticated) {
+    return null; // Already redirected in useEffect
+  }
+
+  return (
+    <Layout pageTitle="My Favorites" showBackButton onBackClick={() => navigate("/")}>
+      <div className="container px-4 py-8 mx-auto">
+        <h1 className="text-3xl font-bold mb-6 font-accent">My Favorites</h1>
+        
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-video w-full" />
+                <CardContent className="p-4">
+                  <Skeleton className="h-8 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2 mb-2" />
+                  <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : favoriteHorses.length === 0 ? (
+          <div className="text-center py-10">
+            <Heart className="mx-auto mb-4 h-16 w-16 text-gray-300" />
+            <h2 className="text-xl font-semibold mb-2">No favorites yet</h2>
+            <p className="text-gray-500 mb-6">You haven't added any horses to your favorites.</p>
+            <Button onClick={() => navigate("/")}>
+              Discover Horses
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {favoriteHorses.map(horse => (
+              <Card key={horse.id} className="overflow-hidden horse-card-grid">
+                <div className="relative h-48 bg-gray-100">
+                  <MediaCarousel media={horse.photos || []} />
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="text-xl font-semibold mb-1 font-accent">{horse.name}</h3>
+                  <div className="text-sm text-gray-500 mb-2">
+                    {horse.sire && horse.dam_sire ? 
+                      `${horse.sire} x ${horse.dam_sire}` : 
+                      horse.breeds.join(", ")}
+                  </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-lg font-bold">
+                      {new Intl.NumberFormat('en-AU', { 
+                        style: 'currency', 
+                        currency: horse.currency,
+                        maximumFractionDigits: 0 
+                      }).format(horse.price)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {horse.age} yrs &bull; {horse.sex}
+                    </div>
+                  </div>
+                  <div className="text-sm flex items-center text-gray-500">
+                    <span>{horse.location_country}</span>
+                    <span className="mx-2">&bull;</span>
+                    <span>{horse.disciplines.join(", ")}</span>
+                  </div>
+                </CardContent>
+                <CardFooter className="px-4 py-3 border-t flex justify-between">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="w-full mr-2"
+                    onClick={() => handleShowDetails(horse.id)}
+                  >
+                    <Info className="mr-1 h-4 w-4" /> Details
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    className="w-full"
+                    onClick={() => handleRemoveFromFavorites(horse.id)}
+                  >
+                    <Heart className="mr-1 h-4 w-4" /> Remove
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+}

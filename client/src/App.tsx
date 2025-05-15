@@ -15,6 +15,7 @@ import EditHorse from "@/pages/edit-horse";
 import AccountSettings from "@/pages/account-settings";
 import MigrateHorses from "@/pages/migrate-horses";
 import AdminPanel from "@/pages/admin";
+import Favorites from "@/pages/favorites";
 import { AuthProvider } from "@/lib/auth";
 
 function Router() {
