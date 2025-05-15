@@ -116,6 +116,18 @@
     border-color: hsl(142, 52%, 24%) !important;
   }
 
+  .pass-button {
+    background-color: black !important;
+    color: white !important;
+    border-color: black !important;
+  }
+  
+  .pass-button:hover {
+    background-color: #333 !important;
+    color: white !important;
+    border-color: #333 !important;
+  }
+
   .profile-stats-item {
     position: relative;
   }
