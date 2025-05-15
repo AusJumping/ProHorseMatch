@@ -298,6 +298,10 @@ const FilterPanel = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999">No Max</SelectItem>
+                    <SelectItem value="1">1 year</SelectItem>
+                    <SelectItem value="2">2 years</SelectItem>
+                    <SelectItem value="3">3 years</SelectItem>
+                    <SelectItem value="4">4 years</SelectItem>
                     <SelectItem value="5">5 years</SelectItem>
                     <SelectItem value="6">6 years</SelectItem>
                     <SelectItem value="7">7 years</SelectItem>
@@ -310,10 +314,6 @@ const FilterPanel = ({
                     <SelectItem value="14">14 years</SelectItem>
                     <SelectItem value="15">15 years</SelectItem>
                     <SelectItem value="16">16 years</SelectItem>
-                    <SelectItem value="17">17 years</SelectItem>
-                    <SelectItem value="18">18 years</SelectItem>
-                    <SelectItem value="19">19 years</SelectItem>
-                    <SelectItem value="20">20+ years</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
