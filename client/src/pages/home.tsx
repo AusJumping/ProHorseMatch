@@ -25,6 +25,7 @@ interface Filter {
   height_max: number | null;
   price_min: number | null;
   price_max: number | null;
+  currency: string | null;
 }
 
 export default function Home() {
@@ -45,6 +46,7 @@ export default function Home() {
     height_max: null,
     price_min: null,
     price_max: null,
+    currency: "EUR",
   });
 
   // Debug log
