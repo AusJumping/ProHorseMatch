@@ -18,10 +18,40 @@ import {
   eventingLevels
 } from "@shared/schema";
 
-// Ensure we have test users available (For development only)
+// Ensure we have test users available but NOT test horses
+// We remove the default horses completely from our application
 (async () => {
-  console.log("Setting up test users...");
+  console.log("Setting up test users only (no default horses)...");
   try {
+    // Remove all horses owned by user ID 1 (problematic seed horses)
+    if (storage instanceof MemStorage) {
+      const internalHorsesMap = storage.getInternalHorsesMap();
+      if (internalHorsesMap) {
+        console.log("Checking for seed horses with owner_id: 1 to prevent them from appearing...");
+        const horsesToRemove = [];
+        
+        // Find all problematic horses (owned by user 1)
+        internalHorsesMap.forEach((horse) => {
+          if (horse.owner_id === 1) {
+            horsesToRemove.push(horse.id);
+            console.log(`Found problematic horse: ${horse.name} (ID: ${horse.id}) to remove`);
+          }
+        });
+        
+        // Delete all problematic horses
+        for (const horseId of horsesToRemove) {
+          internalHorsesMap.delete(horseId);
+          console.log(`Removed problematic horse with ID ${horseId}`);
+        }
+        
+        if (horsesToRemove.length > 0) {
+          console.log(`Successfully removed ${horsesToRemove.length} problematic horses`);
+        } else {
+          console.log("No problematic horses found - system is clean");
+        }
+      }
+    }
+    
     // Check if the owner user exists
     const ownerEmail = "owner@example.com";
     let owner = await storage.getUserByEmail(ownerEmail);
