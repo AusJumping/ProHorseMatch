@@ -388,6 +388,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Update a horse
+  app.put("/api/horses/:id", requireAuth, async (req, res) => {
+    try {
+      if (req.session.userType !== "owner") {
+        return res.status(403).json({ message: "Only owners can update horses" });
+      }
+      
+      const id = parseInt(req.params.id);
+      
+      // Get the horse first to check ownership
+      const horse = await storage.getHorseById(id);
+      
+      if (!horse) {
+        return res.status(404).json({ message: "Horse not found" });
+      }
+      
+      // Ensure owner can only update their own horses
+      if (horse.owner_id !== req.session.userId) {
+        return res.status(403).json({ message: "Cannot update another owner's horse" });
+      }
+      
+      // Validate the update data
+      const validatedData = {
+        ...req.body,
+        owner_id: horse.owner_id, // Ensure owner_id cannot be changed
+        id: horse.id // Ensure id cannot be changed
+      };
+      
+      // Update the horse using the storage method
+      const updatedHorse = await storage.updateHorse(id, validatedData);
+      
+      if (!updatedHorse) {
+        return res.status(500).json({ message: "Failed to update horse" });
+      }
+      
+      return res.json(updatedHorse);
+    } catch (error) {
+      console.error("Update horse error:", error);
+      return res.status(400).json({ message: "Failed to update horse" });
+    }
+  });
+  
   // Delete a horse
   app.delete("/api/horses/:id", requireAuth, async (req, res) => {
     try {

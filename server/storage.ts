@@ -15,6 +15,7 @@ export interface IStorage {
   getHorseById(id: number): Promise<Horse | undefined>;
   getHorsesByFilters(filters: Partial<Horse>): Promise<Horse[]>;
   createHorse(horse: InsertHorse): Promise<Horse>;
+  updateHorse(id: number, horse: Partial<Horse>): Promise<Horse | undefined>;
   deleteHorse(id: number): Promise<boolean>;
   
   // Owner methods
@@ -296,6 +297,17 @@ export class MemStorage implements IStorage {
     return newHorse;
   }
   
+  async updateHorse(id: number, update: Partial<Horse>): Promise<Horse | undefined> {
+    const horse = this.horses.get(id);
+    if (!horse) {
+      return undefined;
+    }
+    
+    const updatedHorse = { ...horse, ...update };
+    this.horses.set(id, updatedHorse);
+    return updatedHorse;
+  }
+  
   async deleteHorse(id: number): Promise<boolean> {
     const exists = this.horses.has(id);
     if (exists) {
@@ -497,6 +509,16 @@ export class DatabaseStorage implements IStorage {
   async createHorse(horse: InsertHorse): Promise<Horse> {
     const [newHorse] = await db.insert(horses).values(horse).returning();
     return newHorse;
+  }
+
+  async updateHorse(id: number, update: Partial<Horse>): Promise<Horse | undefined> {
+    const [updatedHorse] = await db
+      .update(horses)
+      .set(update)
+      .where(eq(horses.id, id))
+      .returning();
+      
+    return updatedHorse;
   }
 
   async deleteHorse(id: number): Promise<boolean> {
