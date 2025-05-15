@@ -84,6 +84,11 @@ export class MemStorage implements IStorage {
     this.conversationId = 1;
     
     this.seedData();
+    
+    // Verify seeded users
+    const users = Array.from(this.users.entries());
+    console.log("MemStorage constructor - Seeded users count:", users.length);
+    console.log("MemStorage constructor - Seeded users:", JSON.stringify(users, null, 2));
   }
   
   // Seed some initial data
@@ -373,7 +378,14 @@ export class MemStorage implements IStorage {
   }
   
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email === email);
+    const allUsers = Array.from(this.users.values());
+    console.log("MemStorage.getUserByEmail - all users:", JSON.stringify(allUsers, null, 2));
+    console.log("MemStorage.getUserByEmail - searching for email:", email);
+    
+    const found = allUsers.find(user => user.email === email);
+    console.log("MemStorage.getUserByEmail - found user:", found ? "Yes" : "No");
+    
+    return found;
   }
   
   async createUser(user: InsertUser): Promise<User> {
