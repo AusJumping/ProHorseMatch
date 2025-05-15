@@ -5,7 +5,7 @@ import MobileNavbar from "./MobileNavbar";
 import { ArrowLeft, Filter, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
-import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth";
 
 interface LayoutProps {
   children: ReactNode;
@@ -26,20 +26,10 @@ const Layout = ({
 }: LayoutProps) => {
   const isMobile = useMobile();
   const [location, navigate] = useLocation();
-
-  // Fetch user data to determine if user is an owner
-  const { data: user } = useQuery({
-    queryKey: ['/api/auth/me'],
-    queryFn: async () => {
-      try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
-        if (res.status === 401) return null;
-        return await res.json();
-      } catch (error) {
-        return null;
-      }
-    }
-  });
+  const { user, isAuthenticated } = useAuth();
+  
+  // Debug log
+  console.log("Layout - Auth state:", { isAuthenticated, userType: user?.type });
 
   const isOwner = user?.type === "owner";
 

@@ -11,6 +11,7 @@ import { X } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/lib/auth";
 
 interface Filter {
   disciplines: string[];
@@ -30,6 +31,7 @@ export default function Home() {
   const isMobile = useMobile();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: ["Jumping"],
@@ -44,6 +46,9 @@ export default function Home() {
     price_min: null,
     price_max: null,
   });
+
+  // Debug log
+  console.log("Home - Auth state:", { isAuthenticated, userType: user?.type });
 
   const [swipingIndex, setSwipingIndex] = useState(0);
 
@@ -171,9 +176,29 @@ export default function Home() {
     );
   };
 
+  // Make sure we explicitly identify owner accounts for the "Add Horse" button
+  const isOwner = user?.type === "owner";
+  
   return (
-    <Layout pageTitle="Discover Horses" showFilterButton onFilterClick={toggleFilterPanel}>
+    <Layout 
+      pageTitle="Discover Horses" 
+      showFilterButton 
+      onFilterClick={toggleFilterPanel}
+    >
       <div className="flex w-full h-full">
+        {/* Additional Action button for owners - shown at top of main content on all screen sizes */}
+        {isOwner && (
+          <div className="w-full mb-4">
+            <Button 
+              onClick={() => navigate("/add-horse")}
+              variant="outline" 
+              className="bg-primary-light text-primary border-primary-light"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Horse
+            </Button>
+          </div>
+        )}
         {/* Filter sidebar - desktop only */}
         {!isMobile && (
           <div className="w-72 bg-white rounded-xl p-5 shadow-sm h-fit mr-6">
