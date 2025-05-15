@@ -28,14 +28,13 @@ export default function MyHorses() {
   });
 
   const handleEdit = (horseId: number) => {
-    // For now, redirect to add-horse page with a message
+    // Show modal with information instead of redirecting
     toast({
       title: "Edit feature coming soon",
-      description: "The edit feature is under development. Redirecting to Add Horse page instead.",
+      description: "The edit feature is under development. For now, you can create a new listing or delete this one.",
+      variant: "default",
+      duration: 5000,
     });
-    setTimeout(() => {
-      navigate("/add-horse");
-    }, 1500);
   };
 
   const handleDelete = async (horseId: number) => {
