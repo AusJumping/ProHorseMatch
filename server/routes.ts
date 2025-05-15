@@ -344,41 +344,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get user to verify they are a seller
       const userId = req.session.userId;
+      console.log("Current user ID:", userId);
+      
       const user = await storage.getUserById(userId);
+      console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
       
       if (!user || !user.is_selling) {
+        console.log("User doesn't have seller permissions");
         return res.status(403).json({ message: "Only sellers can perform this action" });
       }
       
       // Get all horses
       const horses = await storage.getHorses();
+      console.log(`Found ${horses.length} total horses in database`);
       
       // Target specific horse names
       const targetNames = ['Maestro', 'Bella', 'Cassini'];
       
       console.log("Looking for horses with names:", targetNames);
-      console.log("All horses:", horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      const horseSummary = horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id }));
+      console.log("All horses:", JSON.stringify(horseSummary));
       
       // Delete specific horses (regardless of owner)
       let deletedCount = 0;
+      let deletedHorses = [];
+      
       for (const horse of horses) {
         if (targetNames.includes(horse.name)) {
           console.log(`Attempting to delete horse: ${horse.name} (ID: ${horse.id})`);
-          const success = await storage.deleteHorse(horse.id);
-          if (success) {
-            deletedCount++;
-            console.log(`Successfully deleted horse: ${horse.name}`);
-          } else {
-            console.log(`Failed to delete horse: ${horse.name}`);
+          try {
+            const success = await storage.deleteHorse(horse.id);
+            if (success) {
+              deletedCount++;
+              deletedHorses.push(horse.name);
+              console.log(`Successfully deleted horse: ${horse.name} (ID: ${horse.id})`);
+            } else {
+              console.log(`Failed to delete horse: ${horse.name} (ID: ${horse.id})`);
+            }
+          } catch (deleteError) {
+            console.error(`Error deleting horse ${horse.name}:`, deleteError);
           }
         }
       }
       
-      console.log(`Deleted ${deletedCount} specified horses`);
+      console.log(`Deleted ${deletedCount} specified horses:`, deletedHorses);
       
+      // Return the result
       return res.status(200).json({ 
         message: `Successfully deleted ${deletedCount} horses`, 
-        deletedCount 
+        deletedCount,
+        deletedHorses
       });
     } catch (error) {
       console.error("Delete specific horses error:", error);

@@ -58,6 +58,7 @@ const AdminPanel = () => {
     if (window.confirm('Are you sure you want to delete Maestro, Bella, and Cassini? This action cannot be undone.')) {
       setIsDeletingSpecific(true);
       try {
+        console.log("Sending delete request to /api/admin/delete-specific-horses");
         const response = await fetch('/api/admin/delete-specific-horses', {
           method: 'DELETE',
           headers: {
@@ -65,24 +66,39 @@ const AdminPanel = () => {
           }
         });
         
+        console.log("Response status:", response.status);
+        
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
+        console.log("Response data:", data);
         
         // Invalidate all horse-related queries
         await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
         await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
         
-        toast({
-          title: 'Success',
-          description: `${data.deletedCount} horses (Maestro, Bella, Cassini) have been deleted.`,
-          variant: 'default',
-        });
+        if (data.deletedCount > 0) {
+          toast({
+            title: 'Success',
+            description: `${data.deletedCount} horses (${data.deletedHorses?.join(', ') || 'Maestro, Bella, Cassini'}) have been deleted.`,
+            variant: 'default',
+          });
+        } else {
+          toast({
+            title: 'Notice',
+            description: 'No horses were found to delete. They may have been deleted already.',
+            variant: 'default',
+          });
+        }
       } catch (error) {
+        console.error('Failed to delete specific horses:', error);
         toast({
           title: 'Error',
           description: 'Failed to delete specific horses. Please try again.',
           variant: 'destructive',
         });
-        console.error('Failed to delete specific horses:', error);
       } finally {
         setIsDeletingSpecific(false);
       }
