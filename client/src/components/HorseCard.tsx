@@ -39,11 +39,6 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
           media={horse.photos || []} 
           videos={horse.videos || []} 
         />
-        
-        {/* Price Badge */}
-        <div className="absolute top-4 right-4 z-10 bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full">
-          {horse.currency} {horse.price.toLocaleString()}
-        </div>
       </div>
 
       {/* Horse Info Section */}
@@ -81,6 +76,13 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
           </div>
         </div>
 
+        {/* Price Badge */}
+        <div className="text-right mb-2">
+          <span className="bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full inline-block">
+            {horse.currency} {horse.price.toLocaleString()}
+          </span>
+        </div>
+        
         {/* Quick Actions */}
         <div className="flex gap-2 mt-auto">
           <Button
