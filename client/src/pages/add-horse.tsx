@@ -482,14 +482,42 @@ export default function AddHorse() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Height (hands)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  step="0.1"
-                                  {...field}
-                                  onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
-                                />
-                              </FormControl>
+                              <Select 
+                                onValueChange={value => {
+                                  field.onChange(parseFloat(value));
+                                  // Calculate cm equivalent for height_cm field
+                                  form.setValue("height_cm", Math.round(parseFloat(value) * 10.16));
+                                }} 
+                                defaultValue={field.value?.toString()}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select height" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="14.0">14.0 hh (142 cm)</SelectItem>
+                                  <SelectItem value="14.1">14.1 hh (144 cm)</SelectItem>
+                                  <SelectItem value="14.2">14.2 hh (147 cm)</SelectItem>
+                                  <SelectItem value="14.3">14.3 hh (150 cm)</SelectItem>
+                                  <SelectItem value="15.0">15.0 hh (152 cm)</SelectItem>
+                                  <SelectItem value="15.1">15.1 hh (155 cm)</SelectItem>
+                                  <SelectItem value="15.2">15.2 hh (157 cm)</SelectItem>
+                                  <SelectItem value="15.3">15.3 hh (160 cm)</SelectItem>
+                                  <SelectItem value="16.0">16.0 hh (163 cm)</SelectItem>
+                                  <SelectItem value="16.1">16.1 hh (165 cm)</SelectItem>
+                                  <SelectItem value="16.2">16.2 hh (168 cm)</SelectItem>
+                                  <SelectItem value="16.3">16.3 hh (170 cm)</SelectItem>
+                                  <SelectItem value="17.0">17.0 hh (173 cm)</SelectItem>
+                                  <SelectItem value="17.1">17.1 hh (175 cm)</SelectItem>
+                                  <SelectItem value="17.2">17.2 hh (178 cm)</SelectItem>
+                                  <SelectItem value="17.3">17.3 hh (180 cm)</SelectItem>
+                                  <SelectItem value="18.0">18.0 hh (183 cm)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormDescription>
+                                Standard measurement for horses (hands high)
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
