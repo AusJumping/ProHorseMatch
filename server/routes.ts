@@ -409,6 +409,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Cannot update another owner's horse" });
       }
       
+      // Log the incoming data for debugging
+      console.log("Update horse - request body:", req.body);
+      
       // Validate the update data
       const validatedData = {
         ...req.body,
@@ -423,6 +426,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to update horse" });
       }
       
+      console.log("Horse updated successfully:", updatedHorse);
       return res.json(updatedHorse);
     } catch (error) {
       console.error("Update horse error:", error);

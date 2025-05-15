@@ -298,13 +298,31 @@ export class MemStorage implements IStorage {
   }
   
   async updateHorse(id: number, update: Partial<Horse>): Promise<Horse | undefined> {
+    // Log incoming update data
+    console.log("MemStorage.updateHorse - update data:", JSON.stringify(update, null, 2));
+    
     const horse = this.horses.get(id);
     if (!horse) {
       return undefined;
     }
     
-    const updatedHorse = { ...horse, ...update };
+    // Ensure array fields are handled properly
+    const updateData = {
+      ...update,
+      disciplines: update.disciplines || horse.disciplines,
+      levels: update.levels || horse.levels,
+      breeds: update.breeds || horse.breeds,
+      characteristics: update.characteristics || horse.characteristics,
+      photos: update.photos || horse.photos,
+      videos: update.videos || horse.videos
+    };
+    
+    const updatedHorse = { ...horse, ...updateData };
     this.horses.set(id, updatedHorse);
+    
+    // Log the result
+    console.log("MemStorage.updateHorse - result:", JSON.stringify(updatedHorse, null, 2));
+    
     return updatedHorse;
   }
   
@@ -512,12 +530,36 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateHorse(id: number, update: Partial<Horse>): Promise<Horse | undefined> {
+    // Log the incoming update data
+    console.log("DatabaseStorage.updateHorse - update data:", JSON.stringify(update, null, 2));
+    
+    // Get the current horse data
+    const [currentHorse] = await db.select().from(horses).where(eq(horses.id, id));
+    if (!currentHorse) {
+      return undefined;
+    }
+    
+    // Ensure array fields are handled properly (if they're not provided, use the existing values)
+    const updateData = {
+      ...update,
+      disciplines: update.disciplines || currentHorse.disciplines,
+      levels: update.levels || currentHorse.levels,
+      breeds: update.breeds || currentHorse.breeds,
+      characteristics: update.characteristics || currentHorse.characteristics,
+      photos: update.photos || currentHorse.photos,
+      videos: update.videos || currentHorse.videos
+    };
+    
+    // Perform the update
     const [updatedHorse] = await db
       .update(horses)
-      .set(update)
+      .set(updateData)
       .where(eq(horses.id, id))
       .returning();
-      
+    
+    // Log the resulting updated horse
+    console.log("DatabaseStorage.updateHorse - result:", JSON.stringify(updatedHorse, null, 2));
+    
     return updatedHorse;
   }
 
