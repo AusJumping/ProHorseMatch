@@ -392,7 +392,7 @@ const FilterPanel = ({
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Breed</Label>
             <Select 
-              value={filters.breeds[0] || ""} 
+              value={filters.breeds[0] || "Warmblood"} 
               onValueChange={(value) => handleChange('breeds', [value])}
             >
               <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">

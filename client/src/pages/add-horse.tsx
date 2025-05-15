@@ -78,7 +78,7 @@ export default function AddHorse() {
       location_radius_km: 0,
       disciplines: [],
       levels: [],
-      breeds: [],
+      breeds: ["Warmblood"],
       age: 0,
       height_hands: 0,
       height_cm: 0,
@@ -567,7 +567,7 @@ export default function AddHorse() {
                               <FormLabel>Breed</FormLabel>
                               <Select 
                                 onValueChange={(value) => field.onChange([value])} 
-                                defaultValue={field.value[0] || ""}
+                                defaultValue={field.value[0] || "Warmblood"}
                               >
                                 <FormControl>
                                   <SelectTrigger>
