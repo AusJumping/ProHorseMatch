@@ -296,6 +296,14 @@ export class MemStorage implements IStorage {
     return newHorse;
   }
   
+  async deleteHorse(id: number): Promise<boolean> {
+    const exists = this.horses.has(id);
+    if (exists) {
+      this.horses.delete(id);
+    }
+    return exists;
+  }
+  
   // Owner methods
   async getOwners(): Promise<Owner[]> {
     return Array.from(this.owners.values());
@@ -489,6 +497,11 @@ export class DatabaseStorage implements IStorage {
   async createHorse(horse: InsertHorse): Promise<Horse> {
     const [newHorse] = await db.insert(horses).values(horse).returning();
     return newHorse;
+  }
+
+  async deleteHorse(id: number): Promise<boolean> {
+    const result = await db.delete(horses).where(eq(horses.id, id)).returning({ id: horses.id });
+    return result.length > 0;
   }
 
   // Owner methods

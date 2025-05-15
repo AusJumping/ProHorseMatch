@@ -407,8 +407,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Cannot delete another owner's horse" });
       }
       
-      // In a full implementation, this would actually delete the horse
-      // For now, we'll just return success
+      // Delete the horse using the storage method
+      const deleted = await storage.deleteHorse(id);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete horse" });
+      }
+      
       return res.json({ message: "Horse deleted successfully" });
     } catch (error) {
       console.error("Delete horse error:", error);
