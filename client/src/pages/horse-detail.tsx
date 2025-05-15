@@ -191,7 +191,7 @@ export default function HorseDetail() {
               <div className="bg-neutral-50 p-3 rounded-lg">
                 <p className="text-sm text-neutral-500">Breeding</p>
                 <p className="font-medium">
-                  {horse.sire && horse.dam ? `${horse.sire} x ${horse.dam}` : "Not specified"}
+                  {horse.sire && horse.dam ? `${horse.dam} x ${horse.sire}` : "Not specified"}
                 </p>
               </div>
               <div className="bg-neutral-50 p-3 rounded-lg">
