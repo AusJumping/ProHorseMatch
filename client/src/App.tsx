@@ -12,6 +12,7 @@ import Profile from "@/pages/profile";
 import AddHorse from "@/pages/add-horse";
 import MyHorses from "@/pages/my-horses";
 import EditHorse from "@/pages/edit-horse";
+import AccountSettings from "@/pages/account-settings";
 import { AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/horse/:id" component={HorseDetail} />
       <Route path="/messages" component={Messages} />
       <Route path="/profile" component={Profile} />
+      <Route path="/account-settings" component={AccountSettings} />
       <Route path="/add-horse" component={AddHorse} />
       <Route path="/my-horses" component={MyHorses} />
       <Route path="/edit-horse/:id" component={EditHorse} />
