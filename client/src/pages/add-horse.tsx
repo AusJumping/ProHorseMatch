@@ -268,6 +268,7 @@ export default function AddHorse() {
                                   <SelectItem value="EUR">Euro (EUR)</SelectItem>
                                   <SelectItem value="USD">US Dollar (USD)</SelectItem>
                                   <SelectItem value="GBP">British Pound (GBP)</SelectItem>
+                                  <SelectItem value="AUD">Australian Dollar (AUD)</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -288,10 +289,11 @@ export default function AddHorse() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="Germany">Germany</SelectItem>
-                                  <SelectItem value="Netherlands">Netherlands</SelectItem>
+                                  <SelectItem value="Australia">Australia</SelectItem>
                                   <SelectItem value="Belgium">Belgium</SelectItem>
                                   <SelectItem value="France">France</SelectItem>
+                                  <SelectItem value="Germany">Germany</SelectItem>
+                                  <SelectItem value="Netherlands">Netherlands</SelectItem>
                                   <SelectItem value="United Kingdom">United Kingdom</SelectItem>
                                   <SelectItem value="United States">United States</SelectItem>
                                 </SelectContent>
