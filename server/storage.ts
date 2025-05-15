@@ -927,26 +927,35 @@ export class DatabaseStorage implements IStorage {
 // Choose which storage implementation to use
 const useDatabase = process.env.NODE_ENV === 'production';
 console.log(`Using ${useDatabase ? 'DatabaseStorage' : 'MemStorage'} implementation`);
-// Create a flag for seeding status that persists across hot reloads
-let hasPerformedInitialSeed = false;
+
+// Use a more persistent storage singleton approach
+let storageInstance: IStorage | null = null;
 
 // Export a function to create storage with ability to skip seeding
 export function createStorage(skipSeed = false) {
-  if (useDatabase) {
-    return new DatabaseStorage();
-  } else {
-    return new MemStorage(skipSeed || hasPerformedInitialSeed);
+  // If we already have a storage instance, return it to preserve state
+  if (storageInstance) {
+    console.log("Reusing existing storage instance to preserve state");
+    return storageInstance;
   }
+  
+  console.log("Creating new storage instance");
+  if (useDatabase) {
+    storageInstance = new DatabaseStorage();
+  } else {
+    storageInstance = new MemStorage(skipSeed);
+  }
+  
+  return storageInstance;
 }
 
-// Set the flag after first seed
+// Create storage once
 export const storage = createStorage(false);
-hasPerformedInitialSeed = true;
 
 // Add a function to completely reset to no horses for clean database functionality
 export function resetStorageToEmpty() {
-  if (!useDatabase) {
-    const memStorage = storage as MemStorage;
+  if (!useDatabase && storageInstance) {
+    const memStorage = storageInstance as MemStorage;
     const horsesMap = memStorage.getInternalHorsesMap();
     horsesMap.clear();
     console.log("Completely reset storage - all horses removed");
