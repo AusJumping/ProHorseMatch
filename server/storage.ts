@@ -407,11 +407,20 @@ export class MemStorage implements IStorage {
   async createHorse(horse: InsertHorse): Promise<Horse> {
     const id = this.horseId++;
     const newHorse: Horse = { id, ...horse, created_at: new Date() };
+    
+    // Update the local map
     this.horses.set(id, newHorse);
     
-    // Update global storage counters to persist across restarts
+    // Make sure global storage is correctly synchronized with our local state
     if (global.__persistent_storage) {
+      // Update both the counter and the actual horses map in global storage
       global.__persistent_storage.horseId = this.horseId;
+      global.__persistent_storage.horses = this.horses;
+      
+      console.log(`MemStorage: Synchronized global storage, now has ${global.__persistent_storage.horses.size} horses`);
+      console.log(`MemStorage: Global horse IDs:`, Array.from(global.__persistent_storage.horses.keys()));
+    } else {
+      console.warn("MemStorage: Warning - global.__persistent_storage is not initialized!");
     }
     
     console.log(`MemStorage: Created new horse with ID ${id}, name: ${horse.name}`);
@@ -442,6 +451,15 @@ export class MemStorage implements IStorage {
     const updatedHorse = { ...horse, ...updateData };
     this.horses.set(id, updatedHorse);
     
+    // Make sure global storage is synced with our local state
+    if (global.__persistent_storage) {
+      // Direct reference update to ensure global storage stays in sync
+      global.__persistent_storage.horses = this.horses;
+      console.log(`MemStorage: Synchronized global storage after update, now has ${global.__persistent_storage.horses.size} horses`);
+    } else {
+      console.warn("MemStorage: Warning - global.__persistent_storage is not initialized!");
+    }
+    
     // Log the result
     console.log("MemStorage.updateHorse - result:", JSON.stringify(updatedHorse, null, 2));
     
@@ -458,7 +476,20 @@ export class MemStorage implements IStorage {
         name: horse?.name,
         owner_id: horse?.owner_id
       })}`);
+      
+      // Delete from local map
       this.horses.delete(id);
+      
+      // Make sure global storage is synced with our local state
+      if (global.__persistent_storage) {
+        // Direct reference update to ensure global storage stays in sync
+        global.__persistent_storage.horses = this.horses;
+        console.log(`MemStorage: Synchronized global storage after deletion, now has ${global.__persistent_storage.horses.size} horses`);
+        console.log(`MemStorage: Global horse IDs after deletion:`, Array.from(global.__persistent_storage.horses.keys()));
+      } else {
+        console.warn("MemStorage: Warning - global.__persistent_storage is not initialized!");
+      }
+      
       console.log(`MemStorage.deleteHorse - Successfully deleted horse with ID: ${id}`);
       console.log(`MemStorage: Total horses after deletion: ${this.horses.size}`);
       console.log(`MemStorage: Remaining horse IDs:`, Array.from(this.horses.keys()));
