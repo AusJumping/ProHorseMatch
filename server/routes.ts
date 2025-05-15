@@ -726,6 +726,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Failed to get constants" });
     }
   });
+  
+  // Temporary admin endpoint to reassign horses to current user
+  app.post("/api/admin/reassign-horses", isAuthenticated, async (req, res) => {
+    try {
+      // Only allow for logged-in sellers
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only users with selling permission can reassign horses" });
+      }
+      
+      const horses = await storage.getHorses();
+      const userId = req.session.userId;
+      
+      // Update each horse to be owned by the current user
+      for (const horse of horses) {
+        await storage.updateHorse(horse.id, { owner_id: userId });
+      }
+      
+      return res.json({ message: `Successfully reassigned ${horses.length} horses to user ${userId}` });
+    } catch (error) {
+      console.error("Reassign horses error:", error);
+      return res.status(500).json({ message: "Failed to reassign horses" });
+    }
+  });
 
   // Create HTTP server
   const httpServer = createServer(app);

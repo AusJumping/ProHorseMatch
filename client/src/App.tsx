@@ -13,6 +13,7 @@ import AddHorse from "@/pages/add-horse";
 import MyHorses from "@/pages/my-horses";
 import EditHorse from "@/pages/edit-horse";
 import AccountSettings from "@/pages/account-settings";
+import MigrateHorses from "@/pages/migrate-horses";
 import { AuthProvider } from "@/lib/auth";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/add-horse" component={AddHorse} />
       <Route path="/my-horses" component={MyHorses} />
       <Route path="/edit-horse/:id" component={EditHorse} />
+      <Route path="/migrate-horses" component={MigrateHorses} />
       <Route component={NotFound} />
     </Switch>
   );
