@@ -456,14 +456,20 @@ export class MemStorage implements IStorage {
     return this.horses.get(id);
   }
   
-  async getHorsesByFilters(filters: Partial<Horse>): Promise<Horse[]> {
+  async getHorsesByFilters(filters: any): Promise<Horse[]> {
     console.log("MemStorage.getHorsesByFilters - filters:", JSON.stringify(filters, null, 2));
     
     const horses = Array.from(this.horses.values());
     console.log("MemStorage.getHorsesByFilters - all horses:", horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
     
-    if (filters.owner_id !== undefined) {
-      // Special case when filtering by owner_id only, which is a common pattern
+    // If no filters are provided (empty object), return all horses
+    if (Object.keys(filters).length === 0) {
+      console.log("MemStorage.getHorsesByFilters - no filters provided, returning all horses");
+      return horses;
+    }
+    
+    if (filters.owner_id !== undefined && Object.keys(filters).length === 1) {
+      // Special case when filtering by owner_id only
       console.log(`MemStorage.getHorsesByFilters - filtering by owner_id ${filters.owner_id} specifically`);
       
       const ownerHorses = horses.filter(horse => horse.owner_id === filters.owner_id);
@@ -481,26 +487,34 @@ export class MemStorage implements IStorage {
       
       // Filter by disciplines if specified
       if (filters.disciplines && filters.disciplines.length > 0) {
-        if (!horse.disciplines.some(d => filters.disciplines!.includes(d))) {
+        if (!horse.disciplines.some(d => filters.disciplines.includes(d))) {
           return false;
         }
       }
       
       // Filter by breeds if specified
       if (filters.breeds && filters.breeds.length > 0) {
-        if (!horse.breeds.some(b => filters.breeds!.includes(b))) {
+        if (!horse.breeds.some(b => filters.breeds.includes(b))) {
           return false;
         }
       }
       
-      // Filter by sex if specified
-      if (filters.sex && horse.sex !== filters.sex) {
-        return false;
+      // Filter by sexes if specified (renamed from sex to sexes to match client)
+      if (filters.sexes && filters.sexes.length > 0) {
+        if (!filters.sexes.includes(horse.sex)) {
+          return false;
+        }
       }
       
       // Filter by age range if specified
-      if (filters.age) {
-        if (horse.age !== filters.age) {
+      if (filters.age_min !== undefined && filters.age_min !== null) {
+        if (horse.age < filters.age_min) {
+          return false;
+        }
+      }
+      
+      if (filters.age_max !== undefined && filters.age_max !== null) {
+        if (horse.age > filters.age_max) {
           return false;
         }
       }
@@ -511,8 +525,16 @@ export class MemStorage implements IStorage {
       }
       
       // Filter by price range if specified
-      if (filters.price && horse.price > filters.price) {
-        return false;
+      if (filters.price_min !== undefined && filters.price_min !== null) {
+        if (horse.price < filters.price_min) {
+          return false;
+        }
+      }
+      
+      if (filters.price_max !== undefined && filters.price_max !== null) {
+        if (horse.price > filters.price_max) {
+          return false;
+        }
       }
       
       return true;

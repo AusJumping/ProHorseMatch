@@ -54,9 +54,62 @@ export default function Home() {
 
   const [swipingIndex, setSwipingIndex] = useState(0);
 
-  // Query for horses
+  // Query for horses with filters
   const { data: horses, isLoading, isError } = useQuery<Horse[]>({
-    queryKey: ['/api/horses'],
+    queryKey: ['/api/horses', activeFilters],
+    queryFn: async () => {
+      // Build query parameters from activeFilters
+      const params = new URLSearchParams();
+      
+      // Only add non-empty array filters or non-null values
+      if (activeFilters.disciplines && activeFilters.disciplines.length > 0) {
+        activeFilters.disciplines.forEach((d: string) => params.append('disciplines', d));
+      }
+      
+      if (activeFilters.breeds && activeFilters.breeds.length > 0) {
+        activeFilters.breeds.forEach((b: string) => params.append('breeds', b));
+      }
+      
+      if (activeFilters.sexes && activeFilters.sexes.length > 0) {
+        activeFilters.sexes.forEach((s: string) => params.append('sexes', s));
+      }
+      
+      if (activeFilters.location_country) {
+        params.append('location_country', activeFilters.location_country);
+      }
+      
+      if (activeFilters.age_min !== null) {
+        params.append('min_age', activeFilters.age_min?.toString() || '0');
+      }
+      
+      if (activeFilters.age_max !== null) {
+        params.append('max_age', activeFilters.age_max?.toString() || '999');
+      }
+      
+      if (activeFilters.price_min !== null) {
+        params.append('min_price', activeFilters.price_min?.toString() || '0');
+      }
+      
+      if (activeFilters.price_max !== null) {
+        params.append('max_price', activeFilters.price_max?.toString() || '999999999');
+      }
+      
+      if (activeFilters.currency) {
+        params.append('currency', activeFilters.currency);
+      }
+      
+      console.log('Filter params:', params.toString());
+      
+      // Fetch horses with the filter parameters
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await fetch(`/api/horses${queryString}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch horses');
+      }
+      
+      return response.json();
+    }
   });
 
   const handleLike = async (horseId: number) => {
@@ -126,17 +179,36 @@ export default function Home() {
   };
 
   const handleApplyFilters = (newFilters: Filter) => {
+    // Create a clean copy of the filters to avoid mutation issues
+    const cleanFilters = { ...newFilters };
+    
     // Clean up the disciplines array - remove "all_disciplines" value if present
-    if (newFilters.disciplines.includes("all_disciplines")) {
-      newFilters.disciplines = [];
+    if (cleanFilters.disciplines?.includes("all_disciplines")) {
+      cleanFilters.disciplines = [];
+    }
+    
+    // Clean up the breeds array - empty array means all breeds
+    if (cleanFilters.breeds?.includes("all_breeds")) {
+      cleanFilters.breeds = [];
     }
     
     // Clean up the sexes array - remove "any_sex" value if present
-    if (newFilters.sexes.includes("any_sex")) {
-      newFilters.sexes = [];
+    if (cleanFilters.sexes?.includes("any_sex")) {
+      cleanFilters.sexes = [];
     }
     
-    setActiveFilters(newFilters);
+    // Handle location - "any_location" or null means no location filter
+    if (cleanFilters.location_country === "any_location") {
+      cleanFilters.location_country = null;
+    }
+    
+    // Convert radius from string to number or null
+    if (cleanFilters.location_radius_km === "any_radius") {
+      cleanFilters.location_radius_km = null;
+    }
+    
+    console.log('Applying filters:', cleanFilters);
+    setActiveFilters(cleanFilters);
     setIsFilterOpen(false);
   };
 
