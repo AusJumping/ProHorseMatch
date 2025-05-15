@@ -212,10 +212,7 @@ export default function Home() {
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col items-center">
-          {/* Filter pills */}
-          {renderFilterPills()}
-
-          {/* Horse swiping area */}
+          {/* Horse swiping area - Removed filter pills */}
           <SwipeSection 
             horses={horses || []}
             isLoading={isLoading}
