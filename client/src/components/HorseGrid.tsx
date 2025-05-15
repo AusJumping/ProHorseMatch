@@ -49,15 +49,14 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
           <CardContent className="flex flex-col flex-grow p-4">
             <div className="flex-grow">
               <h3 className="text-lg font-display font-bold">{horse.name}</h3>
-              <div className="flex flex-wrap gap-1 mt-1">
-                {horse.breeds.map((breed, index) => (
-                  <span
-                    key={index}
-                    className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full"
-                  >
-                    {breed}
-                  </span>
-                ))}
+              <div className="mt-1 text-sm text-gray-600">
+                {horse.sire && horse.dam_sire ? (
+                  <p>{horse.sire} x {horse.dam_sire}</p>
+                ) : horse.sire ? (
+                  <p>{horse.sire}</p>
+                ) : (
+                  <p className="text-gray-400">Breeding not specified</p>
+                )}
               </div>
               <div className="mt-2 text-sm text-gray-600">
                 <p>
