@@ -251,6 +251,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Failed to get user" });
     }
   });
+  
+  // Middleware to check if a user is authenticated
+  const isAuthenticated = (req: any, res: Response, next: any) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  };
+  
+  app.patch("/api/users/:id", isAuthenticated, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      // Verify user can only update their own account
+      const sessionUserId = typeof req.session.userId === 'string' ? 
+        parseInt(req.session.userId) : req.session.userId;
+        
+      if (userId !== sessionUserId) {
+        return res.status(403).json({ message: "You can only update your own account" });
+      }
+      
+      const { is_searching, is_selling } = req.body;
+      
+      // Validate that at least one role is enabled
+      if (is_searching === false && is_selling === false) {
+        return res.status(400).json({ message: "You must have at least one role enabled" });
+      }
+      
+      const updatedUser = await storage.updateUser(userId, {
+        is_searching,
+        is_selling
+      });
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Update user error:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
 
   // Horse routes
   app.get("/api/horses", async (req, res) => {

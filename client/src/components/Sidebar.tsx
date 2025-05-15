@@ -136,18 +136,26 @@ const Sidebar = () => {
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button 
                 variant="outline" 
                 className="flex-1"
                 onClick={() => navigate("/profile")}
               >
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
+                <User className="mr-2 h-4 w-4" />
+                Profile
               </Button>
               <Button 
-                variant="outline" 
-                className="flex-1"
+                variant="outline"
+                className="flex-1" 
+                onClick={() => navigate("/account-settings")}
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Account
+              </Button>
+              <Button 
+                variant="outline"
+                className="flex-1 col-span-2"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />

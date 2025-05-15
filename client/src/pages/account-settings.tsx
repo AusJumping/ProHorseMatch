@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import Layout from "@/components/Layout";
@@ -6,15 +7,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { apiRequest } from "@/lib/queryClient";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Loader2 } from "lucide-react";
 
+// Zod schema for account settings
 const accountSettingsSchema = z.object({
   is_searching: z.boolean().optional(),
   is_selling: z.boolean().optional(),
+}).refine(data => data.is_searching || data.is_selling, {
+  message: "You must enable at least one role",
+  path: ["is_searching"],
 });
 
 export default function AccountSettings() {
@@ -50,6 +54,9 @@ export default function AccountSettings() {
         title: "Settings updated",
         description: "Your account settings have been updated successfully.",
       });
+      
+      // Force refresh to update navigation sidebar
+      window.location.reload();
     } catch (error) {
       console.error("Failed to update settings:", error);
       toast({
@@ -63,88 +70,107 @@ export default function AccountSettings() {
   }
 
   // Update form when user data loads
-  if (user && !form.formState.isDirty) {
-    form.reset({
-      is_searching: user.is_searching || false,
-      is_selling: user.is_selling || false,
-    });
-  }
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        is_searching: user.is_searching,
+        is_selling: user.is_selling,
+      });
+    }
+  }, [user, form]);
 
-  if (isLoading) {
-    return (
-      <Layout pageTitle="Account Settings">
-        <div className="flex items-center justify-center h-full">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!isAuthenticated) {
-    navigate("/login");
+  if (!isAuthenticated && !isLoading) {
+    navigate("/auth");
     return null;
   }
 
   return (
-    <Layout pageTitle="Account Settings" showBackButton>
-      <div className="max-w-3xl mx-auto">
+    <Layout pageTitle="Account Settings" showBackButton onBackClick={() => navigate("/")}>
+      <div className="container max-w-3xl mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Account Roles</CardTitle>
+            <CardTitle className="text-2xl font-accent">Account Roles</CardTitle>
             <CardDescription>
-              Configure what you want to do on ProHorseMatch. You can search for horses, sell horses, or do both.
+              Choose how you want to use ProHorseMatch. You can enable one or both roles.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="is_searching"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Search for Horses</FormLabel>
-                        <FormDescription>
-                          Enables browsing and matching with horses for sale
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="is_selling"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Sell Horses</FormLabel>
-                        <FormDescription>
-                          Enables listing horses for sale and managing your stable
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <div className="flex justify-end">
-                  <Button type="submit" disabled={isSaving || !form.formState.isDirty}>
-                    {isSaving ? "Saving..." : "Save Changes"}
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="is_searching"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-lg font-semibold">Searching Role</FormLabel>
+                          <FormDescription>
+                            Enable this role to search and browse horses
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                              // If both are unchecked, force the other one to be checked
+                              if (!checked && !form.getValues("is_selling")) {
+                                form.setValue("is_selling", true);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="is_selling"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-lg font-semibold">Selling Role</FormLabel>
+                          <FormDescription>
+                            Enable this role to list horses for sale
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                              // If both are unchecked, force the other one to be checked
+                              if (!checked && !form.getValues("is_searching")) {
+                                form.setValue("is_searching", true);
+                              }
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button 
+                    type="submit" 
+                    className="w-full"
+                    disabled={!form.formState.isDirty || isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : "Save Changes"}
                   </Button>
-                </div>
-              </form>
-            </Form>
+                </form>
+              </Form>
+            )}
           </CardContent>
         </Card>
       </div>
