@@ -90,7 +90,7 @@ export default function MyHorses() {
                   <Button 
                     size="icon" 
                     variant="secondary" 
-                    className="bg-white shadow-md hover:bg-neutral-100 h-8 w-8"
+                    className="bg-white shadow-md hover:bg-green-50 text-green-600 hover:text-green-700 h-8 w-8"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleEdit(horse.id);
