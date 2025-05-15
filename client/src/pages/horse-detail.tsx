@@ -214,7 +214,7 @@ export default function HorseDetail() {
                 <h3 className="font-accent font-semibold mb-2">Characteristics</h3>
                 <div className="flex flex-wrap gap-2">
                   {horse.characteristics.map((characteristic, index) => (
-                    <Badge key={index} variant="outline" className="bg-primary bg-opacity-10 text-primary border-transparent">
+                    <Badge key={index} variant="outline" className="bg-primary text-white border-transparent">
                       {characteristic}
                     </Badge>
                   ))}
