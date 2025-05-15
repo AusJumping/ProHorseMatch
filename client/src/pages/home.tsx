@@ -193,7 +193,7 @@ export default function Home() {
   
   return (
     <Layout 
-      pageTitle="Horses" 
+      pageTitle="" 
       showFilterButton 
       onFilterClick={toggleFilterPanel}
     >
