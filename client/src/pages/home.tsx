@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import SwipeSection from "@/components/SwipeSection";
+import HorseGrid from "@/components/HorseGrid";
 import FilterPanel from "@/components/FilterPanel";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { Horse } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
+import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 
 interface Filter {
   disciplines: string[];
@@ -30,6 +32,7 @@ interface Filter {
 
 export default function Home() {
   const isMobile = useMobile();
+  const isTouchDevice = useIsTouchDevice();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
@@ -289,15 +292,25 @@ export default function Home() {
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col items-center">
-          {/* Horse swiping area - Removed filter pills */}
-          <SwipeSection 
-            horses={horses || []}
-            isLoading={isLoading}
-            activeIndex={swipingIndex}
-            onLike={handleLike}
-            onDislike={handleDislike}
-            onShowMore={handleShowMore}
-          />
+          {isTouchDevice ? (
+            /* Horse swiping area for touch devices */
+            <SwipeSection 
+              horses={horses || []}
+              isLoading={isLoading}
+              activeIndex={swipingIndex}
+              onLike={handleLike}
+              onDislike={handleDislike}
+              onShowMore={handleShowMore}
+            />
+          ) : (
+            /* Horse grid for non-touch devices */
+            <HorseGrid
+              horses={horses || []}
+              onLike={handleLike}
+              onDislike={handleDislike}
+              onShowMore={handleShowMore}
+            />
+          )}
         </div>
 
         {/* Right sidebar - recently viewed (desktop only) */}
