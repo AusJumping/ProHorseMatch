@@ -100,14 +100,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })
   );
 
-  // Auth middleware
-  const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    if (!req.session.userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    next();
-  };
-
   // Auth routes
   app.post("/api/auth/register/customer", async (req, res) => {
     try {
@@ -379,10 +371,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get horses by owner ID (for owner's profile)
-  app.get("/api/horses/owner", requireAuth, async (req, res) => {
+  app.get("/api/horses/owner", isAuthenticated, async (req, res) => {
     try {
-      if (req.session.userType !== "owner") {
-        return res.status(403).json({ message: "Only owners can access their horses" });
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      // Check if the user has selling permission
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only users with selling permission can access their horses" });
       }
       
       const ownerId = req.session.userId;
@@ -412,10 +408,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/horses", requireAuth, async (req, res) => {
+  app.post("/api/horses", isAuthenticated, async (req, res) => {
     try {
-      if (req.session.userType !== "owner") {
-        return res.status(403).json({ message: "Only owners can create horses" });
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only users with selling permission can create horses" });
       }
       
       const validatedData = insertHorseSchema.parse(req.body);
@@ -434,10 +433,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update a horse
-  app.put("/api/horses/:id", requireAuth, async (req, res) => {
+  app.put("/api/horses/:id", isAuthenticated, async (req, res) => {
     try {
-      if (req.session.userType !== "owner") {
-        return res.status(403).json({ message: "Only owners can update horses" });
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only users with selling permission can update horses" });
       }
       
       const id = parseInt(req.params.id);
@@ -480,10 +482,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Delete a horse
-  app.delete("/api/horses/:id", requireAuth, async (req, res) => {
+  app.delete("/api/horses/:id", isAuthenticated, async (req, res) => {
     try {
-      if (req.session.userType !== "owner") {
-        return res.status(403).json({ message: "Only owners can delete horses" });
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user || !user.is_selling) {
+        return res.status(403).json({ message: "Only users with selling permission can delete horses" });
       }
       
       const id = parseInt(req.params.id);
@@ -513,17 +518,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Match routes
-  app.post("/api/matches", requireAuth, async (req, res) => {
+  app.post("/api/matches", isAuthenticated, async (req, res) => {
     try {
-      if (req.session.userType !== "customer") {
-        return res.status(403).json({ message: "Only customers can create matches" });
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user || !user.is_searching) {
+        return res.status(403).json({ message: "Only users with searching permission can create matches" });
       }
       
       const validatedData = insertMatchSchema.parse(req.body);
       
       // Ensure customer_id matches the logged-in customer
       if (validatedData.customer_id !== req.session.userId) {
-        return res.status(403).json({ message: "Cannot create match for another customer" });
+        return res.status(403).json({ message: "Cannot create match for another user" });
       }
       
       const match = await storage.createMatch(validatedData);
@@ -534,14 +542,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/matches", requireAuth, async (req, res) => {
+  app.get("/api/matches", isAuthenticated, async (req, res) => {
     try {
       let matches;
       
-      if (req.session.userType === "customer") {
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      if (user.is_searching) {
+        // User is a customer/searcher
         matches = await storage.getMatchesByCustomerId(req.session.userId);
-      } else if (req.session.userType === "owner") {
-        // For owners, get all matches for their horses
+      } else if (user.is_selling) {
+        // User is a seller/owner
         const horses = await storage.getHorses();
         const ownerHorses = horses.filter(horse => horse.owner_id === req.session.userId);
         
@@ -562,18 +578,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Message routes
-  app.post("/api/messages", requireAuth, async (req, res) => {
+  app.post("/api/messages", isAuthenticated, async (req, res) => {
     try {
       const validatedData = insertMessageSchema.parse(req.body);
       
-      // Ensure sender_type and ID match the logged-in user
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure sender_type and ID match the logged-in user's roles
+      const isSenderCustomer = validatedData.sender_type === "customer";
+      const isSenderOwner = validatedData.sender_type === "owner";
+      
       if (
-        (req.session.userType === "customer" && 
-         (validatedData.sender_type !== "customer" || validatedData.customer_id !== req.session.userId)) ||
-        (req.session.userType === "owner" && 
-         (validatedData.sender_type !== "owner" || validatedData.owner_id !== req.session.userId))
+        (isSenderCustomer && (!user.is_searching || validatedData.customer_id !== req.session.userId)) ||
+        (isSenderOwner && (!user.is_selling || validatedData.owner_id !== req.session.userId))
       ) {
-        return res.status(403).json({ message: "Sender type and ID must match your account" });
+        return res.status(403).json({ message: "Sender type and ID must match your account roles" });
       }
       
       const message = await storage.createMessage(validatedData);
@@ -584,16 +608,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/messages/:customerId/:ownerId/:horseId", requireAuth, async (req, res) => {
+  app.get("/api/messages/:customerId/:ownerId/:horseId", isAuthenticated, async (req, res) => {
     try {
       const customerId = parseInt(req.params.customerId);
       const ownerId = parseInt(req.params.ownerId);
       const horseId = parseInt(req.params.horseId);
       
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
       // Ensure the logged-in user is part of the conversation
       if (
-        (req.session.userType === "customer" && customerId !== req.session.userId) ||
-        (req.session.userType === "owner" && ownerId !== req.session.userId)
+        (user.is_searching && customerId !== req.session.userId) ||
+        (user.is_selling && ownerId !== req.session.userId)
       ) {
         return res.status(403).json({ message: "Cannot access messages of other users" });
       }
@@ -607,16 +638,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Conversation routes
-  app.get("/api/conversations", requireAuth, async (req, res) => {
+  app.get("/api/conversations", isAuthenticated, async (req, res) => {
     try {
-      let conversations;
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
       
-      if (req.session.userType === "customer") {
-        conversations = await storage.getConversationsByCustomerId(req.session.userId);
-      } else if (req.session.userType === "owner") {
-        conversations = await storage.getConversationsByOwnerId(req.session.userId);
-      } else {
+      if (!user) {
         return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      let conversations = [];
+      
+      // Users can access conversations based on their active roles
+      if (user.is_searching) {
+        const customerConversations = await storage.getConversationsByCustomerId(req.session.userId);
+        conversations = [...conversations, ...customerConversations];
+      }
+      
+      if (user.is_selling) {
+        const ownerConversations = await storage.getConversationsByOwnerId(req.session.userId);
+        conversations = [...conversations, ...ownerConversations];
+      }
+      
+      if (conversations.length === 0 && !user.is_searching && !user.is_selling) {
+        return res.status(403).json({ message: "No active roles to access conversations" });
       }
       
       // Enrich conversations with horse and user data
@@ -624,7 +669,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const horse = await storage.getHorseById(conv.horse_id);
         let otherParty;
         
-        if (req.session.userType === "customer") {
+        // Determine other party based on conversation context
+        const isUserCustomer = conv.customer_id === req.session.userId;
+        
+        if (isUserCustomer) {
           otherParty = await storage.getOwnerById(conv.owner_id);
         } else {
           otherParty = await storage.getCustomerById(conv.customer_id);
