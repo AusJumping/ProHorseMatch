@@ -226,14 +226,27 @@ export default function AddHorse() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Price</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  placeholder="Enter price" 
-                                  {...field}
-                                  onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                                />
-                              </FormControl>
+                              <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select price range" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="5000">€5,000</SelectItem>
+                                  <SelectItem value="10000">€10,000</SelectItem>
+                                  <SelectItem value="15000">€15,000</SelectItem>
+                                  <SelectItem value="20000">€20,000</SelectItem>
+                                  <SelectItem value="25000">€25,000</SelectItem>
+                                  <SelectItem value="30000">€30,000</SelectItem>
+                                  <SelectItem value="40000">€40,000</SelectItem>
+                                  <SelectItem value="50000">€50,000</SelectItem>
+                                  <SelectItem value="75000">€75,000</SelectItem>
+                                  <SelectItem value="100000">€100,000</SelectItem>
+                                  <SelectItem value="150000">€150,000</SelectItem>
+                                  <SelectItem value="200000">€200,000+</SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -435,13 +448,29 @@ export default function AddHorse() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Age (years)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  {...field}
-                                  onChange={e => field.onChange(parseInt(e.target.value) || 0)}
-                                />
-                              </FormControl>
+                              <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select age" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="3">3 years</SelectItem>
+                                  <SelectItem value="4">4 years</SelectItem>
+                                  <SelectItem value="5">5 years</SelectItem>
+                                  <SelectItem value="6">6 years</SelectItem>
+                                  <SelectItem value="7">7 years</SelectItem>
+                                  <SelectItem value="8">8 years</SelectItem>
+                                  <SelectItem value="9">9 years</SelectItem>
+                                  <SelectItem value="10">10 years</SelectItem>
+                                  <SelectItem value="11">11 years</SelectItem>
+                                  <SelectItem value="12">12 years</SelectItem>
+                                  <SelectItem value="13">13 years</SelectItem>
+                                  <SelectItem value="14">14 years</SelectItem>
+                                  <SelectItem value="15">15 years</SelectItem>
+                                  <SelectItem value="16">16+ years</SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
