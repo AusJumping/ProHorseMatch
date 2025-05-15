@@ -111,9 +111,9 @@
   }
 
   .like-button:hover {
-    background-color: #10b981 !important;
+    background-color: hsl(142, 52%, 24%) !important;
     color: white !important;
-    border-color: #10b981 !important;
+    border-color: hsl(142, 52%, 24%) !important;
   }
 
   .profile-stats-item {
