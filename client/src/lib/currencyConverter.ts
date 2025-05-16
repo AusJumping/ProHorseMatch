@@ -34,11 +34,12 @@ export const fetchExchangeRates = async (baseCurrency: string = 'USD'): Promise<
 
     if (response.data && response.data.rates) {
       // Update cache with timestamp
-      ratesCache = {
+      const newRates: ExchangeRates = {
         ...response.data.rates,
         timestamp: Date.now()
       };
-      return ratesCache;
+      ratesCache = newRates;
+      return newRates;
     }
 
     throw new Error('Invalid API response');

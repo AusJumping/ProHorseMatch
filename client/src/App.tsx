@@ -17,6 +17,7 @@ import MigrateHorses from "@/pages/migrate-horses";
 import AdminPanel from "@/pages/admin";
 import Favorites from "@/pages/favorites";
 import { AuthProvider } from "@/lib/auth";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 function Router() {
   return (
@@ -42,10 +43,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <CurrencyProvider defaultCurrency="AUD">
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </CurrencyProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
