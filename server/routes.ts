@@ -1220,6 +1220,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Cannot create match for another user" });
       }
       
+      // Check if a match already exists for this user and horse
+      const existingMatches = await storage.getMatchesByCustomerId(req.session.userId);
+      const matchExists = existingMatches.some(match => 
+        match.horse_id === validatedData.horse_id
+      );
+      
+      if (matchExists) {
+        const existingMatch = existingMatches.find(match => 
+          match.horse_id === validatedData.horse_id
+        );
+        
+        // If match exists, update it instead of creating a new one
+        const updatedMatch = await storage.updateMatch(existingMatch!.id, { is_liked: validatedData.is_liked });
+        return res.status(200).json(updatedMatch);
+      }
+      
+      // Create a new match if none exists
       const match = await storage.createMatch(validatedData);
       return res.status(201).json(match);
     } catch (error) {

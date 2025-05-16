@@ -60,19 +60,60 @@ export default function HorseDetail() {
         navigate("/auth");
         return;
       }
+
+      // If already saved, inform user and don't create duplicate
+      if (isSaved) {
+        toast({
+          title: "Already in favorites",
+          description: "This horse is already in your favorites.",
+        });
+        return;
+      }
       
-      await apiRequest("POST", "/api/matches", {
-        customer_id: user.id,
-        horse_id: parseInt(params!.id),
-        is_liked: true
-      });
+      // First check if there's already a match for this user and horse
+      const response = await fetch("/api/matches", { credentials: "include" });
+      const existingMatches = await response.json();
       
-      setIsSaved(true);
-      toast({
-        title: "Horse saved",
-        description: "This horse has been added to your favorites.",
-      });
+      const matchExists = existingMatches.some(
+        (match: any) => match.horse_id === parseInt(params!.id) && match.customer_id === user.id
+      );
+
+      if (matchExists) {
+        // If match exists but is not liked (was previously unliked), update it
+        const match = existingMatches.find(
+          (m: any) => m.horse_id === parseInt(params!.id) && m.customer_id === user.id
+        );
+        
+        await fetch(`/api/matches/${match.id}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ is_liked: true }),
+          credentials: 'include'
+        });
+        
+        setIsSaved(true);
+        toast({
+          title: "Horse saved",
+          description: "This horse has been added to your favorites.",
+        });
+      } else {
+        // Create new match if one doesn't exist
+        await apiRequest("POST", "/api/matches", {
+          customer_id: user.id,
+          horse_id: parseInt(params!.id),
+          is_liked: true
+        });
+        
+        setIsSaved(true);
+        toast({
+          title: "Horse saved",
+          description: "This horse has been added to your favorites.",
+        });
+      }
     } catch (error) {
+      console.error("Save error:", error);
       toast({
         title: "Error",
         description: "Failed to save horse. Please try again.",
