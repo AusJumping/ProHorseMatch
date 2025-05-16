@@ -366,9 +366,6 @@ export default function Home() {
                     <p className="text-xs text-neutral-700">
                       {horse.age}yo • {horse.breeds[0]} • {horse.sex}
                     </p>
-                    <p className="text-sm font-accent font-semibold text-primary mt-1">
-                      {horse.currency} {horse.price.toLocaleString()}
-                    </p>
                   </div>
                 </div>
               ))}

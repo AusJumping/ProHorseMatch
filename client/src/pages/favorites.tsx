@@ -141,14 +141,7 @@ export default function Favorites() {
                       `${horse.sire} x ${horse.dam_sire}` : 
                       horse.breeds.join(", ")}
                   </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="text-lg font-bold">
-                      {new Intl.NumberFormat('en-AU', { 
-                        style: 'currency', 
-                        currency: horse.currency,
-                        maximumFractionDigits: 0 
-                      }).format(horse.price)}
-                    </div>
+                  <div className="flex items-center mb-2">
                     <div className="text-sm text-gray-500">
                       {horse.age} yrs &bull; {horse.sex}
                     </div>
