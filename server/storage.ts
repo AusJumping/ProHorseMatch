@@ -345,7 +345,8 @@ export class MemStorage implements IStorage {
       dam: "Callista",
       dam_sire: "Casall",
       characteristics: ["Forward", "Brave", "Careful", "Scope", "Easy to Ride"],
-      price: 65000,
+      price_min: 60000,
+      price_max: 70000,
       currency: "EUR",
       description: "Maestro is an exceptional 7-year-old Hanoverian gelding with a proven competition record at the 1.40m level. With his powerful, elastic movement and careful jumping technique, he has all the qualities of a future Grand Prix horse. He is well-mannered both in the stable and under saddle, making him suitable for an ambitious amateur or professional rider looking to move up the levels. Recently vetted with clean x-rays, he's ready for his new partnership.",
       photos: [

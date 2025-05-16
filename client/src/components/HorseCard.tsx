@@ -15,14 +15,20 @@ interface HorseCardProps {
 const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
   const isMobile = useMobile();
   const { currentCurrency, convertPrice, formatPrice, isLoading } = useCurrency();
-  const [convertedPrice, setConvertedPrice] = useState<number | null>(null);
+  const [convertedMinPrice, setConvertedMinPrice] = useState<number | null>(null);
+  const [convertedMaxPrice, setConvertedMaxPrice] = useState<number | null>(null);
   
-  // Convert price when currency or horse changes
+  // Convert price range when currency or horse changes
   useEffect(() => {
     async function doConversion() {
-      if (horse.price) {
-        const converted = await convertPrice(horse.price, horse.currency);
-        setConvertedPrice(converted);
+      if (horse.price_min) {
+        const convertedMin = await convertPrice(horse.price_min, horse.currency);
+        setConvertedMinPrice(convertedMin);
+      }
+      
+      if (horse.price_max) {
+        const convertedMax = await convertPrice(horse.price_max, horse.currency);
+        setConvertedMaxPrice(convertedMax);
       }
     }
     
@@ -92,7 +98,7 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
           </div>
         </div>
 
-        {/* Price Badge */}
+        {/* Price Range Badge */}
         <div className="text-left mb-2">
           <span className="bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full inline-block min-w-20">
             {isLoading ? (
@@ -100,12 +106,12 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
                 <span>Converting...</span>
               </div>
-            ) : convertedPrice !== null ? (
-              formatPrice(convertedPrice)
+            ) : convertedMinPrice !== null && convertedMaxPrice !== null ? (
+              `${formatPrice(convertedMinPrice)} - ${formatPrice(convertedMaxPrice)}`
             ) : (
-              `${horse.currency} ${horse.price.toLocaleString()}`
+              `${horse.currency} ${horse.price_min?.toLocaleString()} - ${horse.price_max?.toLocaleString()}`
             )}
-            {!isLoading && convertedPrice !== null && currentCurrency !== horse.currency && (
+            {!isLoading && convertedMinPrice !== null && currentCurrency !== horse.currency && (
               <span className="text-xs opacity-70 ml-1">
                 (orig. {horse.currency})
               </span>
