@@ -240,9 +240,6 @@ export default function HorseDetail() {
           <div className={isMobile ? "w-full p-4" : "w-1/2 p-6"}>
             <div className="flex justify-between items-start mb-2">
               <h2 className="font-accent font-bold text-2xl">{horse.name}</h2>
-              <span className="text-lg font-accent font-semibold text-primary">
-                {horse.currency} {horse.price.toLocaleString()}
-              </span>
             </div>
             
             <p className="text-neutral-800 mb-4">

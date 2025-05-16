@@ -62,9 +62,6 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
                 <p>
                   {horse.age} yrs • {horse.sex} • {horse.height_hands}hh
                 </p>
-                <p className="font-semibold mt-1">
-                  {formatCurrency(horse.price, horse.currency)}
-                </p>
               </div>
             </div>
 
