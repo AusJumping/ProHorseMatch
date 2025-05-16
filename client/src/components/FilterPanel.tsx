@@ -186,8 +186,11 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('price_min', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <span className="text-muted-foreground">{filters.price_min ? "" : "Min"}</span>
-                    <SelectValue />
+                    {filters.price_min && filters.price_min !== 0 ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Min</span>
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">No Min</SelectItem>
@@ -236,8 +239,11 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('price_max', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <span className="text-muted-foreground">{filters.price_max && filters.price_max !== 999999999 ? "" : "Max"}</span>
-                    <SelectValue />
+                    {filters.price_max && filters.price_max !== 999999999 ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Max</span>
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999999999">No Max</SelectItem>
@@ -299,8 +305,11 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('age_min', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <span className="text-muted-foreground">{filters.age_min ? "" : "Min"}</span>
-                    <SelectValue />
+                    {filters.age_min && filters.age_min !== 0 ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Min</span>
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">No Min</SelectItem>
@@ -329,8 +338,11 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('age_max', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <span className="text-muted-foreground">{filters.age_max && filters.age_max !== 999 ? "" : "Max"}</span>
-                    <SelectValue />
+                    {filters.age_max && filters.age_max !== 999 ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Max</span>
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999">No Max</SelectItem>
@@ -366,8 +378,11 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('height_min', parseFloat(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <span className="text-muted-foreground">{filters.height_min ? "" : "Min"}</span>
-                    <SelectValue />
+                    {filters.height_min && filters.height_min !== 0 ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Min</span>
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">No Min</SelectItem>
@@ -400,8 +415,11 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('height_max', parseFloat(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <span className="text-muted-foreground">{filters.height_max && filters.height_max !== 999 ? "" : "Max"}</span>
-                    <SelectValue />
+                    {filters.height_max && filters.height_max !== 999 ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Max</span>
+                    )}
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999">No Max</SelectItem>
