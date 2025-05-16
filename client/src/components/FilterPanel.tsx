@@ -174,13 +174,14 @@ const FilterPanel = ({
             </div>
           )}
           
-          {/* Price Range */}
+          {/* Price Range and Currency */}
           <div className="filter-group">
             <div className="mb-3">
               <Label className="block font-accent font-semibold mb-2 text-neutral-800">Currency</Label>
               <CurrencySelector 
                 defaultValue={filters.currency || "AUD"}
                 onChange={(value) => handleChange('currency', value)}
+                showLabel={false}
               />
             </div>
             
