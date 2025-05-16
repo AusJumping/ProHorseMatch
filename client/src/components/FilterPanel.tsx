@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMobile } from "@/hooks/use-mobile";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import CurrencySelector from "@/components/CurrencySelector";
 
 interface FilterPanelProps {
   isOpen: boolean;
@@ -29,11 +31,19 @@ const FilterPanel = ({
 }: FilterPanelProps) => {
   const isMobile = useMobile();
   const [filters, setFilters] = useState(activeFilters);
+  const { currentCurrency, setCurrency } = useCurrency();
   
   // Fetch constants for filter options
   const { data: constants } = useQuery({
     queryKey: ['/api/constants'],
   });
+  
+  // Sync currency between context and filters
+  useEffect(() => {
+    if (currentCurrency) {
+      handleChange('currency', currentCurrency);
+    }
+  }, [currentCurrency]);
 
   useEffect(() => {
     setFilters(activeFilters);
@@ -44,6 +54,11 @@ const FilterPanel = ({
       ...prev,
       [key]: value
     }));
+    
+    // Also update currency context if currency is changed
+    if (key === 'currency') {
+      setCurrency(value);
+    }
   };
 
   const toggleItem = (key: string, value: string) => {
@@ -163,20 +178,7 @@ const FilterPanel = ({
           <div className="filter-group">
             <div className="mb-3">
               <Label className="block font-accent font-semibold mb-2 text-neutral-800">Currency</Label>
-              <Select 
-                value={filters.currency || "EUR"} 
-                onValueChange={(value) => handleChange('currency', value)}
-              >
-                <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                  <SelectValue placeholder="Currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="AUD">AUD (A$)</SelectItem>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
-                </SelectContent>
-              </Select>
+              <CurrencySelector />
             </div>
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Price Range</Label>
             <div className="flex gap-3">
