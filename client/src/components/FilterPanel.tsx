@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMobile } from "@/hooks/use-mobile";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import CurrencySelector from "@/components/CurrencySelector";
+import { CurrencySelector } from "@/components/CurrencySelector";
 
 interface FilterPanelProps {
   isOpen: boolean;
@@ -31,7 +31,7 @@ const FilterPanel = ({
 }: FilterPanelProps) => {
   const isMobile = useMobile();
   const [filters, setFilters] = useState(activeFilters);
-  const { currentCurrency, setCurrency } = useCurrency();
+  const { currentCurrency, setCurrentCurrency } = useCurrency();
   
   // Fetch constants for filter options
   const { data: constants } = useQuery({

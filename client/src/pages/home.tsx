@@ -14,6 +14,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
 import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import CurrencyRate from "@/components/ui/CurrencyRate";
 
 interface Filter {
   disciplines: string[];
@@ -36,6 +38,7 @@ export default function Home() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+  const { currentCurrency } = useCurrency();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
@@ -387,6 +390,11 @@ export default function Home() {
                   </button>
                 </div>
               )}
+            </div>
+            
+            {/* Currency rate widget */}
+            <div className="mt-6">
+              <CurrencyRate baseCurrency={currentCurrency} />
             </div>
           </div>
         )}
