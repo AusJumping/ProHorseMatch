@@ -375,7 +375,8 @@ export class MemStorage implements IStorage {
       dam: "Diana",
       dam_sire: "De Niro",
       characteristics: ["Sensitive", "Athletic", "Talented"],
-      price: 45000,
+      price_min: 40000,
+      price_max: 50000,
       currency: "EUR",
       description: "Bella is a beautiful and talented Holsteiner mare with exceptional dressage potential. She has three outstanding gaits and a wonderful temperament. Already competing successfully at Medium level.",
       photos: [
@@ -403,7 +404,8 @@ export class MemStorage implements IStorage {
       dam: "Elegance",
       dam_sire: "Heartbreaker",
       characteristics: ["Scope", "Brave", "Bold"],
-      price: 85000,
+      price_min: 80000,
+      price_max: 90000,
       currency: "EUR",
       description: "Cassini is a powerful 8-year-old Dutch Warmblood with plenty of scope and ability. Already competing successfully at 1.40m level with clear rounds at international shows.",
       photos: [
@@ -431,7 +433,8 @@ export class MemStorage implements IStorage {
       dam: "Fernanda",
       dam_sire: "For Pleasure",
       characteristics: ["Versatile", "Brave", "Athletic"],
-      price: 72000,
+      price_min: 70000,
+      price_max: 75000,
       currency: "EUR",
       description: "Quantum is a versatile KWPN gelding with experience in both jumping and eventing. He has a wonderful temperament and is suitable for an ambitious amateur or young professional.",
       photos: [
@@ -528,13 +531,13 @@ export class MemStorage implements IStorage {
       
       // Filter by price range if specified
       if (filters.price_min !== undefined && filters.price_min !== null) {
-        if (horse.price < filters.price_min) {
+        if (horse.price_max < filters.price_min) {
           return false;
         }
       }
       
       if (filters.price_max !== undefined && filters.price_max !== null) {
-        if (horse.price > filters.price_max) {
+        if (horse.price_min > filters.price_max) {
           return false;
         }
       }
