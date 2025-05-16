@@ -27,9 +27,9 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 auto-rows-auto">
+    <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-8">
       {horses.map((horse) => (
-        <Card key={horse.id} className="overflow-hidden flex flex-col w-full max-w-[400px] mx-auto md:mx-0">
+        <Card key={horse.id} className="overflow-hidden flex flex-col w-[320px] flex-shrink-0">
           <div className="relative h-48 overflow-hidden">
             {horse.photos && horse.photos.length > 0 ? (
               <Image
