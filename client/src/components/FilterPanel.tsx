@@ -186,7 +186,7 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('price_min', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Min Price" />
+                    <SelectValue placeholder="Min" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">No Min</SelectItem>
@@ -235,7 +235,7 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('price_max', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Max Price" />
+                    <SelectValue placeholder="Max" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999999999">No Max</SelectItem>
@@ -297,7 +297,7 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('age_min', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Min Age" />
+                    <SelectValue placeholder="Min" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">No Min</SelectItem>
@@ -326,7 +326,7 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('age_max', parseInt(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Max Age" />
+                    <SelectValue placeholder="Max" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999">No Max</SelectItem>
@@ -362,7 +362,7 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('height_min', parseFloat(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Min Height" />
+                    <SelectValue placeholder="Min" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">No Min</SelectItem>
@@ -395,7 +395,7 @@ const FilterPanel = ({
                   onValueChange={(value) => handleChange('height_max', parseFloat(value))}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Max Height" />
+                    <SelectValue placeholder="Max" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999">No Max</SelectItem>
