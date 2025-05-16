@@ -66,6 +66,8 @@ export default function HorseDetail() {
         toast({
           title: "Already in favorites",
           description: "This horse is already in your favorites.",
+          variant: "default",
+          duration: 4000, // Show for a longer time (4 seconds)
         });
         return;
       }
@@ -97,6 +99,8 @@ export default function HorseDetail() {
         toast({
           title: "Horse saved",
           description: "This horse has been added to your favorites.",
+          variant: "success",
+          duration: 4000, // Show for 4 seconds
         });
       } else {
         // Create new match if one doesn't exist
@@ -110,6 +114,8 @@ export default function HorseDetail() {
         toast({
           title: "Horse saved",
           description: "This horse has been added to your favorites.",
+          variant: "success",
+          duration: 4000, // Show for 4 seconds
         });
       }
     } catch (error) {
