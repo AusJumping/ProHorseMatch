@@ -27,7 +27,7 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
       {horses.map((horse) => (
         <Card key={horse.id} className="overflow-hidden h-full flex flex-col">
           <div className="relative h-48 overflow-hidden">
@@ -68,35 +68,38 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mt-4">
+            <div className="grid grid-cols-3 gap-1 sm:gap-2 mt-4">
               <Button
                 size="sm"
                 variant="outline"
-                className="pass-button"
+                className="pass-button text-xs sm:text-sm"
                 onClick={() => onDislike(horse.id)}
               >
-                <X className="h-4 w-4 mr-1" />
-                Pass
+                <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <span className="hidden xs:inline">Pass</span>
+                <span className="xs:hidden">X</span>
               </Button>
               
               <Button
                 size="sm"
                 variant="outline"
-                className="info-button"
+                className="info-button text-xs sm:text-sm"
                 onClick={() => onShowMore(horse.id)}
               >
-                <Info className="h-4 w-4 mr-1" />
-                Info
+                <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <span className="hidden xs:inline">Info</span>
+                <span className="xs:hidden">I</span>
               </Button>
               
               <Button
                 size="sm"
                 variant="outline"
-                className="like-button"
+                className="like-button text-xs sm:text-sm"
                 onClick={() => onLike(horse.id)}
               >
-                <Heart className="h-4 w-4 mr-1" />
-                Like
+                <Heart className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <span className="hidden xs:inline">Like</span>
+                <span className="xs:hidden">L</span>
               </Button>
             </div>
           </CardContent>
