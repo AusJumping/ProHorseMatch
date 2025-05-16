@@ -161,8 +161,8 @@ const FilterPanel = ({
           
           {/* Price Range */}
           <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Price Range</Label>
             <div className="mb-3">
+              <Label className="block font-accent font-semibold mb-2 text-neutral-800">Currency</Label>
               <Select 
                 value={filters.currency || "EUR"} 
                 onValueChange={(value) => handleChange('currency', value)}
@@ -178,6 +178,7 @@ const FilterPanel = ({
                 </SelectContent>
               </Select>
             </div>
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Price Range</Label>
             <div className="flex gap-3">
               <div className="flex-1">
                 <Select 
