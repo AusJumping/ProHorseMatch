@@ -57,7 +57,7 @@ const FilterPanel = ({
     
     // Also update currency context if currency is changed
     if (key === 'currency') {
-      setCurrency(value);
+      setCurrentCurrency(value);
     }
   };
 

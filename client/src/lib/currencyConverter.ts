@@ -1,103 +1,61 @@
-import axios from 'axios';
-
-// Define supported currencies
-export const supportedCurrencies = ['USD', 'EUR', 'AUD', 'GBP', 'CAD', 'CHF', 'NZD'];
-
-// Interface for exchange rates
-interface ExchangeRates {
-  [key: string]: number;
-  timestamp: number;
-}
-
-// Cache to store exchange rates with timestamp
-let ratesCache: ExchangeRates | null = null;
-const CACHE_DURATION = 3600000; // 1 hour in milliseconds
-
 /**
- * Fetch current exchange rates from API
+ * Currency conversion utility functions
  */
-export const fetchExchangeRates = async (baseCurrency: string = 'USD'): Promise<ExchangeRates> => {
-  try {
-    // Check if we have a valid cache
-    if (
-      ratesCache && 
-      ratesCache.timestamp && 
-      Date.now() - ratesCache.timestamp < CACHE_DURATION
-    ) {
-      return ratesCache;
-    }
 
-    // If no valid cache, fetch from API
-    const response = await axios.get(
-      `https://api.exchangerate.host/latest?base=${baseCurrency}`
-    );
-
-    if (response.data && response.data.rates) {
-      // Update cache with timestamp
-      const newRates: ExchangeRates = {
-        ...response.data.rates,
-        timestamp: Date.now()
-      };
-      ratesCache = newRates;
-      return newRates;
-    }
-
-    throw new Error('Invalid API response');
-  } catch (error) {
-    console.error('Error fetching exchange rates:', error);
-    
-    // Fallback to hardcoded rates if API fails
-    const fallbackRates: ExchangeRates = {
-      USD: 1,
-      EUR: 0.92,
-      AUD: 1.51,
-      GBP: 0.79,
-      CAD: 1.36,
-      CHF: 0.90,
-      NZD: 1.63,
-      timestamp: Date.now()
-    };
-    
-    return fallbackRates;
-  }
+// Simulated exchange rates (as of May 2025)
+// In a real application, these would come from an API
+const rates: Record<string, Record<string, number>> = {
+  'USD': { 'EUR': 0.92, 'GBP': 0.79, 'AUD': 1.51, 'CAD': 1.36, 'CHF': 0.90, 'NZD': 1.63 },
+  'EUR': { 'USD': 1.09, 'GBP': 0.86, 'AUD': 1.64, 'CAD': 1.48, 'CHF': 0.98, 'NZD': 1.77 },
+  'GBP': { 'USD': 1.27, 'EUR': 1.16, 'AUD': 1.92, 'CAD': 1.73, 'CHF': 1.14, 'NZD': 2.07 },
+  'AUD': { 'USD': 0.66, 'EUR': 0.61, 'GBP': 0.52, 'CAD': 0.90, 'CHF': 0.60, 'NZD': 1.08 },
+  'CAD': { 'USD': 0.74, 'EUR': 0.68, 'GBP': 0.58, 'AUD': 1.11, 'CHF': 0.66, 'NZD': 1.20 },
+  'CHF': { 'USD': 1.11, 'EUR': 1.02, 'GBP': 0.88, 'AUD': 1.68, 'CAD': 1.51, 'NZD': 1.82 },
+  'NZD': { 'USD': 0.61, 'EUR': 0.56, 'GBP': 0.48, 'AUD': 0.93, 'CAD': 0.83, 'CHF': 0.55 }
 };
 
 /**
- * Convert amount from one currency to another
+ * Convert a price from one currency to another
+ * @param amount - The amount to convert
+ * @param fromCurrency - The source currency
+ * @param toCurrency - The target currency
+ * @returns The converted amount
  */
-export const convertCurrency = async (
+export function convertPrice(
   amount: number,
   fromCurrency: string,
   toCurrency: string
-): Promise<number> => {
+): number {
+  // If currencies are the same, no conversion needed
   if (fromCurrency === toCurrency) {
     return amount;
   }
 
-  try {
-    const rates = await fetchExchangeRates('USD');
-    
-    // Convert from source currency to USD (if not already USD)
-    const amountInUSD = fromCurrency === 'USD' 
-      ? amount 
-      : amount / rates[fromCurrency];
-    
-    // Convert from USD to target currency
-    const convertedAmount = toCurrency === 'USD' 
-      ? amountInUSD 
-      : amountInUSD * rates[toCurrency];
-    
-    return parseFloat(convertedAmount.toFixed(2));
-  } catch (error) {
-    console.error('Error converting currency:', error);
-    return amount; // Return original amount if conversion fails
+  // Get the conversion rate
+  let rate: number;
+  
+  if (fromCurrency === 'USD') {
+    rate = rates['USD'][toCurrency] || 1;
+  } else if (toCurrency === 'USD') {
+    rate = 1 / (rates['USD'][fromCurrency] || 1);
+  } else {
+    // Convert via USD as the base currency
+    const fromToUSD = 1 / (rates['USD'][fromCurrency] || 1);
+    const usdToTarget = rates['USD'][toCurrency] || 1;
+    rate = fromToUSD * usdToTarget;
   }
-};
+  
+  // Calculate the converted price
+  return amount * rate;
+}
 
 /**
- * Format price with currency symbol
+ * Format a price with currency symbol
+ * @param price - The price to format
+ * @param currency - The currency to use
+ * @returns Formatted price string with currency symbol
  */
-export const formatPrice = (amount: number, currency: string): string => {
+export function formatPrice(price: number, currency: string): string {
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
@@ -105,5 +63,13 @@ export const formatPrice = (amount: number, currency: string): string => {
     maximumFractionDigits: 0,
   });
   
-  return formatter.format(amount);
-};
+  return formatter.format(price);
+}
+
+/**
+ * Get a list of supported currencies
+ * @returns Array of currency codes
+ */
+export function getSupportedCurrencies(): string[] {
+  return ["USD", "EUR", "GBP", "AUD", "CAD", "CHF", "NZD"];
+}

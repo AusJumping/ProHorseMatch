@@ -43,7 +43,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <CurrencyProvider defaultCurrency="AUD">
+        <CurrencyProvider initialCurrency="AUD">
           <TooltipProvider>
             <Toaster />
             <Router />
