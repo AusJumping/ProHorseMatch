@@ -107,7 +107,7 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
                 <span>Converting...</span>
               </div>
             ) : convertedMinPrice !== null && convertedMaxPrice !== null ? (
-              `${formatPrice(convertedMinPrice)} - ${formatPrice(convertedMaxPrice)}`
+              formatPrice(convertedMinPrice) + " - " + formatPrice(convertedMaxPrice)
             ) : (
               `${horse.currency} ${horse.price_min?.toLocaleString()} - ${horse.price_max?.toLocaleString()}`
             )}
