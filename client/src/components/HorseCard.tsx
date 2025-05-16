@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Share2 } from "lucide-react";
+import { Share2, Loader2 } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { useMobile } from "@/hooks/use-mobile";
 import MediaCarousel from "@/components/MediaCarousel";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { useState, useEffect } from "react";
 
 interface HorseCardProps {
   horse: Horse;
@@ -12,6 +14,20 @@ interface HorseCardProps {
 
 const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
   const isMobile = useMobile();
+  const { currentCurrency, convertPrice, formatPrice, isLoading } = useCurrency();
+  const [convertedPrice, setConvertedPrice] = useState<number | null>(null);
+  
+  // Convert price when currency or horse changes
+  useEffect(() => {
+    async function doConversion() {
+      if (horse.price) {
+        const converted = await convertPrice(horse.price, horse.currency);
+        setConvertedPrice(converted);
+      }
+    }
+    
+    doConversion();
+  }, [horse, currentCurrency, convertPrice]);
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,8 +94,22 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
 
         {/* Price Badge */}
         <div className="text-left mb-2">
-          <span className="bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full inline-block">
-            {horse.currency} {horse.price.toLocaleString()}
+          <span className="bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full inline-block min-w-20">
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                <span>Converting...</span>
+              </div>
+            ) : convertedPrice !== null ? (
+              formatPrice(convertedPrice)
+            ) : (
+              `${horse.currency} ${horse.price.toLocaleString()}`
+            )}
+            {!isLoading && convertedPrice !== null && currentCurrency !== horse.currency && (
+              <span className="text-xs opacity-70 ml-1">
+                (orig. {horse.currency})
+              </span>
+            )}
           </span>
         </div>
         
