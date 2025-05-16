@@ -48,7 +48,7 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
           
           <CardContent className="flex flex-col flex-grow p-4">
             <div className="flex-grow">
-              <h3 className="text-lg font-display font-bold">{horse.name}</h3>
+              <h3 className="text-lg font-accent font-bold">{horse.name}</h3>
               <div className="mt-1 text-sm text-gray-600">
                 {horse.sire && horse.dam_sire ? (
                   <p>{horse.sire} x {horse.dam_sire}</p>
