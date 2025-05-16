@@ -363,8 +363,13 @@ export default function Home() {
                   />
                   <div className="flex-1">
                     <h4 className="font-accent font-medium">{horse.name}</h4>
-                    <p className="text-xs text-neutral-700">
-                      {horse.age}yo • {horse.breeds[0]} • {horse.sex}
+                    <p className="text-xs text-neutral-600">
+                      {horse.sire && horse.dam_sire 
+                        ? `${horse.sire} x ${horse.dam_sire}`
+                        : horse.breeds[0] || "Breeding not specified"}
+                    </p>
+                    <p className="text-xs text-neutral-700 mt-1">
+                      {horse.age}yo • {horse.sex}
                     </p>
                   </div>
                 </div>
