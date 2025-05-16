@@ -37,7 +37,8 @@ const horseFormSchema = z.object({
   dam: z.string().optional(),
   dam_sire: z.string().optional(),
   characteristics: z.array(z.string()).optional(),
-  price: z.number().min(1, "Price must be at least 1"),
+  price_min: z.number().min(1, "Minimum price must be at least 1"),
+  price_max: z.number().min(1, "Maximum price must be at least 1"),
   currency: z.string().min(1, "Currency is required"),
   description: z.string().optional(),
   photos: z.array(z.string()).min(1, "At least one photo is required"),
@@ -87,7 +88,8 @@ export default function AddHorse() {
       dam: "",
       dam_sire: "",
       characteristics: [],
-      price: 0,
+      price_min: 0,
+      price_max: 0,
       currency: "EUR",
       description: "",
       photos: [],
@@ -231,37 +233,68 @@ export default function AddHorse() {
                           )}
                         />
                         
-                        <FormField
-                          control={form.control}
-                          name="price"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Price</FormLabel>
-                              <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select price range" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="5000">€5,000</SelectItem>
-                                  <SelectItem value="10000">€10,000</SelectItem>
-                                  <SelectItem value="15000">€15,000</SelectItem>
-                                  <SelectItem value="20000">€20,000</SelectItem>
-                                  <SelectItem value="25000">€25,000</SelectItem>
-                                  <SelectItem value="30000">€30,000</SelectItem>
-                                  <SelectItem value="40000">€40,000</SelectItem>
-                                  <SelectItem value="50000">€50,000</SelectItem>
-                                  <SelectItem value="75000">€75,000</SelectItem>
-                                  <SelectItem value="100000">€100,000</SelectItem>
-                                  <SelectItem value="150000">€150,000</SelectItem>
-                                  <SelectItem value="200000">€200,000+</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div>
+                          <FormLabel className="block mb-2">Price Range</FormLabel>
+                          <div className="grid grid-cols-2 gap-3">
+                            <FormField
+                              control={form.control}
+                              name="price_min"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Minimum Price" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="5000">€5,000</SelectItem>
+                                      <SelectItem value="10000">€10,000</SelectItem>
+                                      <SelectItem value="15000">€15,000</SelectItem>
+                                      <SelectItem value="20000">€20,000</SelectItem>
+                                      <SelectItem value="25000">€25,000</SelectItem>
+                                      <SelectItem value="30000">€30,000</SelectItem>
+                                      <SelectItem value="40000">€40,000</SelectItem>
+                                      <SelectItem value="50000">€50,000</SelectItem>
+                                      <SelectItem value="75000">€75,000</SelectItem>
+                                      <SelectItem value="100000">€100,000</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="price_max"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Maximum Price" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="25000">€25,000</SelectItem>
+                                      <SelectItem value="50000">€50,000</SelectItem>
+                                      <SelectItem value="75000">€75,000</SelectItem>
+                                      <SelectItem value="100000">€100,000</SelectItem>
+                                      <SelectItem value="150000">€150,000</SelectItem>
+                                      <SelectItem value="200000">€200,000</SelectItem>
+                                      <SelectItem value="250000">€250,000</SelectItem>
+                                      <SelectItem value="300000">€300,000</SelectItem>
+                                      <SelectItem value="400000">€400,000</SelectItem>
+                                      <SelectItem value="500000">€500,000</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
                         
                         <FormField
                           control={form.control}
