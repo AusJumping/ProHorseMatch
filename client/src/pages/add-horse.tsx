@@ -220,7 +220,7 @@ export default function AddHorse() {
                   
                   <ScrollArea className={isMobile ? "h-[calc(100vh-380px)]" : ""}>
                     <TabsContent value="basic" className="space-y-6 pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <FormField
                           control={form.control}
                           name="name"
@@ -235,19 +235,22 @@ export default function AddHorse() {
                           )}
                         />
                         
-                        <div>
-                          {/* Currency Selector */}
+                      </div>
+
+                      {/* Currency and price section with better layout */}
+                      <div className="grid grid-cols-1 gap-6 border-t border-gray-100 pt-6 mb-8">
+                        {/* Currency selector takes full width */}
+                        <div className="w-full mb-2">
                           <FormField
                             control={form.control}
                             name="currency"
                             render={({ field }) => (
-                              <FormItem className="mb-4">
+                              <FormItem>
                                 <FormControl>
                                   <CurrencySelector 
                                     defaultValue={field.value}
                                     onChange={(value) => {
                                       field.onChange(value);
-                                      // Update form currency value
                                       form.setValue("currency", value);
                                     }}
                                   />
@@ -256,174 +259,177 @@ export default function AddHorse() {
                               </FormItem>
                             )}
                           />
-                          
-                          {/* Only show price range after currency is selected */}
-                          {form.watch("currency") && (
-                            <>
-                              <FormLabel className="block mb-2 mt-4">Price Range (in {form.watch("currency")})</FormLabel>
-                              <div className="grid grid-cols-2 gap-3">
-                                <FormField
-                                  control={form.control}
-                                  name="price_min"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                        <FormControl>
-                                          <SelectTrigger>
-                                            <SelectValue placeholder="Minimum Price" />
-                                          </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                          <SelectItem value="5000">
-                                            {form.watch("currency") === "USD" ? "$5,000" : 
-                                             form.watch("currency") === "GBP" ? "£5,000" : 
-                                             form.watch("currency") === "AUD" ? "A$5,000" : 
-                                             "€5,000"}
-                                          </SelectItem>
-                                          <SelectItem value="10000">
-                                            {form.watch("currency") === "USD" ? "$10,000" : 
-                                             form.watch("currency") === "GBP" ? "£10,000" : 
-                                             form.watch("currency") === "AUD" ? "A$10,000" : 
-                                             "€10,000"}
-                                          </SelectItem>
-                                          <SelectItem value="15000">
-                                            {form.watch("currency") === "USD" ? "$15,000" : 
-                                             form.watch("currency") === "GBP" ? "£15,000" : 
-                                             form.watch("currency") === "AUD" ? "A$15,000" : 
-                                             "€15,000"}
-                                          </SelectItem>
-                                          <SelectItem value="20000">
-                                            {form.watch("currency") === "USD" ? "$20,000" : 
-                                             form.watch("currency") === "GBP" ? "£20,000" : 
-                                             form.watch("currency") === "AUD" ? "A$20,000" : 
-                                             "€20,000"}
-                                          </SelectItem>
-                                          <SelectItem value="25000">
-                                            {form.watch("currency") === "USD" ? "$25,000" : 
-                                             form.watch("currency") === "GBP" ? "£25,000" : 
-                                             form.watch("currency") === "AUD" ? "A$25,000" : 
-                                             "€25,000"}
-                                          </SelectItem>
-                                          <SelectItem value="30000">
-                                            {form.watch("currency") === "USD" ? "$30,000" : 
-                                             form.watch("currency") === "GBP" ? "£30,000" : 
-                                             form.watch("currency") === "AUD" ? "A$30,000" : 
-                                             "€30,000"}
-                                          </SelectItem>
-                                          <SelectItem value="40000">
-                                            {form.watch("currency") === "USD" ? "$40,000" : 
-                                             form.watch("currency") === "GBP" ? "£40,000" : 
-                                             form.watch("currency") === "AUD" ? "A$40,000" : 
-                                             "€40,000"}
-                                          </SelectItem>
-                                          <SelectItem value="50000">
-                                            {form.watch("currency") === "USD" ? "$50,000" : 
-                                             form.watch("currency") === "GBP" ? "£50,000" : 
-                                             form.watch("currency") === "AUD" ? "A$50,000" : 
-                                             "€50,000"}
-                                          </SelectItem>
-                                          <SelectItem value="75000">
-                                            {form.watch("currency") === "USD" ? "$75,000" : 
-                                             form.watch("currency") === "GBP" ? "£75,000" : 
-                                             form.watch("currency") === "AUD" ? "A$75,000" : 
-                                             "€75,000"}
-                                          </SelectItem>
-                                          <SelectItem value="100000">
-                                            {form.watch("currency") === "USD" ? "$100,000" : 
-                                             form.watch("currency") === "GBP" ? "£100,000" : 
-                                             form.watch("currency") === "AUD" ? "A$100,000" : 
-                                             "€100,000"}
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                
-                                <FormField
-                                  control={form.control}
-                                  name="price_max"
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                        <FormControl>
-                                          <SelectTrigger>
-                                            <SelectValue placeholder="Maximum Price" />
-                                          </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                          <SelectItem value="25000">
-                                            {form.watch("currency") === "USD" ? "$25,000" : 
-                                             form.watch("currency") === "GBP" ? "£25,000" : 
-                                             form.watch("currency") === "AUD" ? "A$25,000" : 
-                                             "€25,000"}
-                                          </SelectItem>
-                                          <SelectItem value="50000">
-                                            {form.watch("currency") === "USD" ? "$50,000" : 
-                                             form.watch("currency") === "GBP" ? "£50,000" : 
-                                             form.watch("currency") === "AUD" ? "A$50,000" : 
-                                             "€50,000"}
-                                          </SelectItem>
-                                          <SelectItem value="75000">
-                                            {form.watch("currency") === "USD" ? "$75,000" : 
-                                             form.watch("currency") === "GBP" ? "£75,000" : 
-                                             form.watch("currency") === "AUD" ? "A$75,000" : 
-                                             "€75,000"}
-                                          </SelectItem>
-                                          <SelectItem value="100000">
-                                            {form.watch("currency") === "USD" ? "$100,000" : 
-                                             form.watch("currency") === "GBP" ? "£100,000" : 
-                                             form.watch("currency") === "AUD" ? "A$100,000" : 
-                                             "€100,000"}
-                                          </SelectItem>
-                                          <SelectItem value="150000">
-                                            {form.watch("currency") === "USD" ? "$150,000" : 
-                                             form.watch("currency") === "GBP" ? "£150,000" : 
-                                             form.watch("currency") === "AUD" ? "A$150,000" : 
-                                             "€150,000"}
-                                          </SelectItem>
-                                          <SelectItem value="200000">
-                                            {form.watch("currency") === "USD" ? "$200,000" : 
-                                             form.watch("currency") === "GBP" ? "£200,000" : 
-                                             form.watch("currency") === "AUD" ? "A$200,000" : 
-                                             "€200,000"}
-                                          </SelectItem>
-                                          <SelectItem value="250000">
-                                            {form.watch("currency") === "USD" ? "$250,000" : 
-                                             form.watch("currency") === "GBP" ? "£250,000" : 
-                                             form.watch("currency") === "AUD" ? "A$250,000" : 
-                                             "€250,000"}
-                                          </SelectItem>
-                                          <SelectItem value="300000">
-                                            {form.watch("currency") === "USD" ? "$300,000" : 
-                                             form.watch("currency") === "GBP" ? "£300,000" : 
-                                             form.watch("currency") === "AUD" ? "A$300,000" : 
-                                             "€300,000"}
-                                          </SelectItem>
-                                          <SelectItem value="400000">
-                                            {form.watch("currency") === "USD" ? "$400,000" : 
-                                             form.watch("currency") === "GBP" ? "£400,000" : 
-                                             form.watch("currency") === "AUD" ? "A$400,000" : 
-                                             "€400,000"}
-                                          </SelectItem>
-                                          <SelectItem value="500000">
-                                            {form.watch("currency") === "USD" ? "$500,000+" : 
-                                             form.watch("currency") === "GBP" ? "£500,000+" : 
-                                             form.watch("currency") === "AUD" ? "A$500,000+" : 
-                                             "€500,000+"}
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            </>
-                          )}
                         </div>
-                        
+                          
+                        {/* Price range section */}
+                        {form.watch("currency") && (
+                          <div className="w-full">
+                            <FormLabel className="block mb-4">Price Range (in {form.watch("currency")})</FormLabel>
+                            <div className="grid grid-cols-2 gap-4">
+                              <FormField
+                                control={form.control}
+                                name="price_min"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Minimum Price" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        <SelectItem value="5000">
+                                          {form.watch("currency") === "USD" ? "$5,000" : 
+                                           form.watch("currency") === "GBP" ? "£5,000" : 
+                                           form.watch("currency") === "AUD" ? "A$5,000" : 
+                                           "€5,000"}
+                                        </SelectItem>
+                                        <SelectItem value="10000">
+                                          {form.watch("currency") === "USD" ? "$10,000" : 
+                                           form.watch("currency") === "GBP" ? "£10,000" : 
+                                           form.watch("currency") === "AUD" ? "A$10,000" : 
+                                           "€10,000"}
+                                        </SelectItem>
+                                        <SelectItem value="15000">
+                                          {form.watch("currency") === "USD" ? "$15,000" : 
+                                           form.watch("currency") === "GBP" ? "£15,000" : 
+                                           form.watch("currency") === "AUD" ? "A$15,000" : 
+                                           "€15,000"}
+                                        </SelectItem>
+                                        <SelectItem value="20000">
+                                          {form.watch("currency") === "USD" ? "$20,000" : 
+                                           form.watch("currency") === "GBP" ? "£20,000" : 
+                                           form.watch("currency") === "AUD" ? "A$20,000" : 
+                                           "€20,000"}
+                                        </SelectItem>
+                                        <SelectItem value="25000">
+                                          {form.watch("currency") === "USD" ? "$25,000" : 
+                                           form.watch("currency") === "GBP" ? "£25,000" : 
+                                           form.watch("currency") === "AUD" ? "A$25,000" : 
+                                           "€25,000"}
+                                        </SelectItem>
+                                        <SelectItem value="30000">
+                                          {form.watch("currency") === "USD" ? "$30,000" : 
+                                           form.watch("currency") === "GBP" ? "£30,000" : 
+                                           form.watch("currency") === "AUD" ? "A$30,000" : 
+                                           "€30,000"}
+                                        </SelectItem>
+                                        <SelectItem value="40000">
+                                          {form.watch("currency") === "USD" ? "$40,000" : 
+                                           form.watch("currency") === "GBP" ? "£40,000" : 
+                                           form.watch("currency") === "AUD" ? "A$40,000" : 
+                                           "€40,000"}
+                                        </SelectItem>
+                                        <SelectItem value="50000">
+                                          {form.watch("currency") === "USD" ? "$50,000" : 
+                                           form.watch("currency") === "GBP" ? "£50,000" : 
+                                           form.watch("currency") === "AUD" ? "A$50,000" : 
+                                           "€50,000"}
+                                        </SelectItem>
+                                        <SelectItem value="75000">
+                                          {form.watch("currency") === "USD" ? "$75,000" : 
+                                           form.watch("currency") === "GBP" ? "£75,000" : 
+                                           form.watch("currency") === "AUD" ? "A$75,000" : 
+                                           "€75,000"}
+                                        </SelectItem>
+                                        <SelectItem value="100000">
+                                          {form.watch("currency") === "USD" ? "$100,000" : 
+                                           form.watch("currency") === "GBP" ? "£100,000" : 
+                                           form.watch("currency") === "AUD" ? "A$100,000" : 
+                                           "€100,000"}
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="price_max"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                      <FormControl>
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Maximum Price" />
+                                        </SelectTrigger>
+                                      </FormControl>
+                                      <SelectContent>
+                                        <SelectItem value="25000">
+                                          {form.watch("currency") === "USD" ? "$25,000" : 
+                                           form.watch("currency") === "GBP" ? "£25,000" : 
+                                           form.watch("currency") === "AUD" ? "A$25,000" : 
+                                           "€25,000"}
+                                        </SelectItem>
+                                        <SelectItem value="50000">
+                                          {form.watch("currency") === "USD" ? "$50,000" : 
+                                           form.watch("currency") === "GBP" ? "£50,000" : 
+                                           form.watch("currency") === "AUD" ? "A$50,000" : 
+                                           "€50,000"}
+                                        </SelectItem>
+                                        <SelectItem value="75000">
+                                          {form.watch("currency") === "USD" ? "$75,000" : 
+                                           form.watch("currency") === "GBP" ? "£75,000" : 
+                                           form.watch("currency") === "AUD" ? "A$75,000" : 
+                                           "€75,000"}
+                                        </SelectItem>
+                                        <SelectItem value="100000">
+                                          {form.watch("currency") === "USD" ? "$100,000" : 
+                                           form.watch("currency") === "GBP" ? "£100,000" : 
+                                           form.watch("currency") === "AUD" ? "A$100,000" : 
+                                           "€100,000"}
+                                        </SelectItem>
+                                        <SelectItem value="150000">
+                                          {form.watch("currency") === "USD" ? "$150,000" : 
+                                           form.watch("currency") === "GBP" ? "£150,000" : 
+                                           form.watch("currency") === "AUD" ? "A$150,000" : 
+                                           "€150,000"}
+                                        </SelectItem>
+                                        <SelectItem value="200000">
+                                          {form.watch("currency") === "USD" ? "$200,000" : 
+                                           form.watch("currency") === "GBP" ? "£200,000" : 
+                                           form.watch("currency") === "AUD" ? "A$200,000" : 
+                                           "€200,000"}
+                                        </SelectItem>
+                                        <SelectItem value="250000">
+                                          {form.watch("currency") === "USD" ? "$250,000" : 
+                                           form.watch("currency") === "GBP" ? "£250,000" : 
+                                           form.watch("currency") === "AUD" ? "A$250,000" : 
+                                           "€250,000"}
+                                        </SelectItem>
+                                        <SelectItem value="300000">
+                                          {form.watch("currency") === "USD" ? "$300,000" : 
+                                           form.watch("currency") === "GBP" ? "£300,000" : 
+                                           form.watch("currency") === "AUD" ? "A$300,000" : 
+                                           "€300,000"}
+                                        </SelectItem>
+                                        <SelectItem value="400000">
+                                          {form.watch("currency") === "USD" ? "$400,000" : 
+                                           form.watch("currency") === "GBP" ? "£400,000" : 
+                                           form.watch("currency") === "AUD" ? "A$400,000" : 
+                                           "€400,000"}
+                                        </SelectItem>
+                                        <SelectItem value="500000">
+                                          {form.watch("currency") === "USD" ? "$500,000+" : 
+                                           form.watch("currency") === "GBP" ? "£500,000+" : 
+                                           form.watch("currency") === "AUD" ? "A$500,000+" : 
+                                           "€500,000+"}
+                                        </SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Location and other details section */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
                           name="location_country"
