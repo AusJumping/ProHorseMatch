@@ -11,8 +11,8 @@ const Sidebar = () => {
   const { toast } = useToast();
   const { user, isAuthenticated, logout } = useAuth();
   
-  // Debug log
-  console.log("Sidebar - Auth state:", { isAuthenticated });
+  // Debug log with more details
+  console.log("Sidebar - Auth state:", { isAuthenticated, user });
 
   const handleLogout = async () => {
     try {
