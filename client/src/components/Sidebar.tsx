@@ -38,7 +38,7 @@ const Sidebar = () => {
           <img 
             src={logoImage} 
             alt="Pro Horse Match" 
-            className="h-10 w-auto object-contain max-w-[200px]"
+            className="h-14 w-auto object-contain max-w-[240px]"
           />
         </div>
       </div>
