@@ -109,11 +109,13 @@ export default function AddHorse() {
     try {
       setIsSubmitting(true);
       
-      // Include the photo and video URLs in the form data
+      // Always include the photo and video URLs in the form data from state
+      // This solves the issue of the URLs not being passed to the form
+      data.photos = photoUrls;
+      data.videos = videoUrls;
+      
       const submissionData = {
         ...data,
-        photos: photoUrls,
-        videos: videoUrls,
         owner_id: ownerID,
       };
       
@@ -1404,16 +1406,20 @@ export default function AddHorse() {
                           type="button" 
                           disabled={isSubmitting}
                           onClick={() => {
-                            console.log("Submit button clicked");
+                            console.log("Submit button clicked", {
+                              photos: photoUrls,
+                              videos: videoUrls
+                            });
                             
-                            // Make sure photos array is populated
-                            form.setValue("photos", photoUrls);
+                            // Create a complete data object with all required fields
+                            const formData = form.getValues();
                             
-                            // Make sure videos array is populated
-                            form.setValue("videos", videoUrls);
+                            // Set the media directly in the form data
+                            formData.photos = photoUrls;
+                            formData.videos = videoUrls;
                             
-                            // Manually trigger form submission
-                            form.handleSubmit(onSubmit)();
+                            // Directly call the submission function with the complete data
+                            onSubmit(formData);
                           }}
                         >
                           {isSubmitting ? (
