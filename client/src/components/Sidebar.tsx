@@ -32,12 +32,12 @@ const Sidebar = () => {
 
   return (
     <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col">
-      <div className="p-4 border-b border-neutral-200 bg-neutral-900">
+      <div className="p-3 border-b border-neutral-200 bg-neutral-900">
         <div className="flex justify-center">
           <img 
             src="/images/logo.jpg" 
             alt="Pro Horse Match" 
-            className="h-12 object-contain"
+            className="h-16 w-auto object-contain"
           />
         </div>
       </div>
