@@ -14,12 +14,8 @@ const Landing = () => {
         
         <h1 className="font-accent text-4xl font-bold mb-6 text-white">
           Matching Performance Horses<br />
-          with New Owners
+          with New Owners using intelligent matching technology
         </h1>
-        
-        <p className="text-lg text-white mb-8">
-          ProHorseMatch brings buyers and sellers together with intelligent matching technology.
-        </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 
