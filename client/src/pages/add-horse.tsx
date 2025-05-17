@@ -722,44 +722,70 @@ export default function AddHorse() {
                       <FormField
                         control={form.control}
                         name="characteristics"
-                        render={() => (
+                        render={({ field }) => (
                           <FormItem>
                             <FormLabel>Characteristics</FormLabel>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
-                              {constants?.characteristics?.map((characteristic: string) => (
-                                <FormField
-                                  key={characteristic}
-                                  control={form.control}
-                                  name="characteristics"
-                                  render={({ field }) => {
-                                    return (
-                                      <FormItem
-                                        key={characteristic}
-                                        className="flex flex-row items-start space-x-2"
-                                      >
-                                        <FormControl>
-                                          <Checkbox
-                                            checked={field.value?.includes(characteristic)}
-                                            onCheckedChange={(checked) => {
-                                              return checked
-                                                ? field.onChange([...field.value || [], characteristic])
-                                                : field.onChange(
-                                                    field.value?.filter(
-                                                      (value) => value !== characteristic
-                                                    )
-                                                  )
-                                            }}
-                                          />
-                                        </FormControl>
-                                        <FormLabel className="font-normal cursor-pointer">
-                                          {characteristic}
-                                        </FormLabel>
-                                      </FormItem>
-                                    )
+                            <FormControl>
+                              <div className="relative">
+                                <Select 
+                                  onValueChange={(value) => {
+                                    // If already selected, remove it, otherwise add it
+                                    if (field.value?.includes(value)) {
+                                      field.onChange(field.value.filter(item => item !== value));
+                                    } else {
+                                      field.onChange([...(field.value || []), value]);
+                                    }
                                   }}
-                                />
-                              ))}
-                            </div>
+                                  value=""
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder={
+                                      field.value?.length 
+                                        ? `${field.value.length} characteristic${field.value.length > 1 ? 's' : ''} selected` 
+                                        : "Select characteristics"
+                                    } />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {constants?.characteristics?.map((characteristic: string) => (
+                                      <SelectItem 
+                                        key={characteristic} 
+                                        value={characteristic}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <span className={field.value?.includes(characteristic) ? "font-semibold" : ""}>
+                                            {characteristic}
+                                          </span>
+                                          {field.value?.includes(characteristic) && 
+                                            <span className="ml-auto h-2 w-2 rounded-full bg-primary"></span>
+                                          }
+                                        </div>
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </FormControl>
+                            {field.value && field.value.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {field.value.map((characteristic) => (
+                                  <div 
+                                    key={characteristic} 
+                                    className="bg-accent text-accent-foreground text-sm px-2 py-1 rounded-md flex items-center gap-1"
+                                  >
+                                    <span>{characteristic}</span>
+                                    <button 
+                                      type="button"
+                                      className="text-muted-foreground hover:text-foreground"
+                                      onClick={() => {
+                                        field.onChange(field.value.filter(item => item !== characteristic));
+                                      }}
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                             <FormMessage />
                           </FormItem>
                         )}
