@@ -56,8 +56,6 @@ export default function AddHorse() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [videoUrls, setVideoUrls] = useState<string[]>([]);
-  const [newPhotoUrl, setNewPhotoUrl] = useState("");
-  const [newVideoUrl, setNewVideoUrl] = useState("");
   const [activeTab, setActiveTab] = useState("basic");
   
   // Fetch user data
@@ -146,22 +144,8 @@ export default function AddHorse() {
     }
   };
 
-  const addPhotoUrl = () => {
-    if (newPhotoUrl && !photoUrls.includes(newPhotoUrl)) {
-      setPhotoUrls([...photoUrls, newPhotoUrl]);
-      setNewPhotoUrl("");
-    }
-  };
-
   const removePhotoUrl = (url: string) => {
     setPhotoUrls(photoUrls.filter(photo => photo !== url));
-  };
-
-  const addVideoUrl = () => {
-    if (newVideoUrl && !videoUrls.includes(newVideoUrl)) {
-      setVideoUrls([...videoUrls, newVideoUrl]);
-      setNewVideoUrl("");
-    }
   };
 
   const removeVideoUrl = (url: string) => {
