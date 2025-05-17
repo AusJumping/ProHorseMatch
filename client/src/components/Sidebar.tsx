@@ -48,7 +48,7 @@ const Sidebar = () => {
           <li>
             <Button
               variant={location === "/" ? "default" : "ghost"}
-              className={`w-full justify-start px-5 py-3 ${
+              className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
                 location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
               }`}
               onClick={() => navigate("/")}
