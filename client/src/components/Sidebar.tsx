@@ -79,7 +79,6 @@ const Sidebar = () => {
             >
               <MessageSquare className="mr-3 h-5 w-5" />
               <span>Messages</span>
-              <span className="ml-auto bg-destructive text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">3</span>
             </Button>
           </li>
           <li>
