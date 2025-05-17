@@ -236,7 +236,6 @@ export default function AddHorse() {
                         />
                         
                         <div>
-                          <FormLabel className="block mb-2">Select Currency</FormLabel>
                           {/* Currency Selector */}
                           <FormField
                             control={form.control}
