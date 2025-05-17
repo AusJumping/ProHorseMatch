@@ -424,6 +424,7 @@ export default function AddHorse() {
                               </div>
                             </>
                           )}
+                        </div>
                         
                         <FormField
                           control={form.control}
