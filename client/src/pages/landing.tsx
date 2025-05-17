@@ -33,7 +33,7 @@ const Landing = () => {
             className="px-8 py-6 text-lg font-semibold bg-white text-gray-800 hover:bg-gray-100"
             onClick={() => navigate("/browse")}
           >
-            Browse Horses
+            Register
           </Button>
         </div>
       </div>
