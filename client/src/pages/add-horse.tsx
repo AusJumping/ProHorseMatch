@@ -400,6 +400,12 @@ export default function AddHorse() {
                                            "€95,000"}
                                         </SelectItem>
                                         <SelectItem value="100000">
+                                        <SelectItem value="999999">
+                                          {form.watch("currency") === "USD" ? "$100,000+" : 
+                                           form.watch("currency") === "GBP" ? "£100,000+" : 
+                                           form.watch("currency") === "AUD" ? "A$100,000+" : 
+                                           "€100,000+"}
+                                        </SelectItem>
                                           {form.watch("currency") === "USD" ? "$100,000" : 
                                            form.watch("currency") === "GBP" ? "£100,000" : 
                                            form.watch("currency") === "AUD" ? "A$100,000" : 
@@ -466,12 +472,6 @@ export default function AddHorse() {
                                 render={({ field }) => (
                                   <FormItem>
                                     <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                        <SelectItem value="1">
-                                          {form.watch("currency") === "USD" ? "Under $5,000" : 
-                                           form.watch("currency") === "GBP" ? "Under £5,000" : 
-                                           form.watch("currency") === "AUD" ? "Under A$5,000" : 
-                                           "Under €5,000"}
-                                        </SelectItem>
                                       <FormControl>
                                         <SelectTrigger>
                                           <SelectValue placeholder="Maximum Price" />
@@ -593,6 +593,12 @@ export default function AddHorse() {
                                            "€95,000"}
                                         </SelectItem>
                                         <SelectItem value="100000">
+                                        <SelectItem value="999999">
+                                          {form.watch("currency") === "USD" ? "$100,000+" : 
+                                           form.watch("currency") === "GBP" ? "£100,000+" : 
+                                           form.watch("currency") === "AUD" ? "A$100,000+" : 
+                                           "€100,000+"}
+                                        </SelectItem>
                                           {form.watch("currency") === "USD" ? "$100,000" : 
                                            form.watch("currency") === "GBP" ? "£100,000" : 
                                            form.watch("currency") === "AUD" ? "A$100,000" : 
