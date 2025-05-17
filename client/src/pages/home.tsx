@@ -392,10 +392,7 @@ export default function Home() {
               )}
             </div>
             
-            {/* Currency rate widget */}
-            <div className="mt-6">
-              <CurrencyRate baseCurrency={currentCurrency} />
-            </div>
+
           </div>
         )}
 
