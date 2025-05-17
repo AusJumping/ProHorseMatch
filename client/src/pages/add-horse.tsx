@@ -129,8 +129,19 @@ export default function AddHorse() {
         submissionData.height_cm = Math.round(submissionData.height_hands * 10.16);
       }
       
-      // Make the API request with the complete data
-      await apiRequest("POST", "/api/horses", submissionData);
+      // Make the API request with the complete data using fetch directly with credentials
+      const response = await fetch("/api/horses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Important! This ensures cookies are sent with the request
+        body: JSON.stringify(submissionData),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to add horse. Server returned an error.");
+      }
       
       toast({
         title: "Horse added successfully",
@@ -140,12 +151,15 @@ export default function AddHorse() {
       // Invalidate horses query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
       
-      // Redirect to the horses page
-      navigate("/");
+      // Use client-side navigation with a delay to allow the toast to display
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (error) {
+      console.error("Error submitting horse:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to add horse. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to add horse. Please try again.",
         variant: "destructive",
       });
     } finally {
