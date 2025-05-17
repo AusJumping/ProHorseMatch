@@ -4,6 +4,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCircle, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import logoImage from "../assets/logo.jpg";
 
 const Sidebar = () => {
   const [location, navigate] = useLocation();
@@ -35,7 +36,7 @@ const Sidebar = () => {
       <div className="py-4 px-3 border-b border-neutral-200 bg-neutral-900">
         <div className="flex justify-center">
           <img 
-            src="/images/logo.jpg" 
+            src={logoImage} 
             alt="Pro Horse Match" 
             className="h-10 w-auto object-contain max-w-[200px]"
           />
