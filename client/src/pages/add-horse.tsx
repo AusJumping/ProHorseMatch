@@ -278,12 +278,6 @@ export default function AddHorse() {
                                           <SelectValue placeholder="Minimum Price" />
                                         </SelectTrigger>
                                       </FormControl>
-                                        <SelectItem value="1">
-                                          {form.watch("currency") === "USD" ? "Under $5,000" : 
-                                           form.watch("currency") === "GBP" ? "Under £5,000" : 
-                                           form.watch("currency") === "AUD" ? "Under A$5,000" : 
-                                           "Under €5,000"}
-                                        </SelectItem>
                                       <SelectContent>
                                         <SelectItem value="5000">
                                           {form.watch("currency") === "USD" ? "$5,000" : 
@@ -639,6 +633,12 @@ export default function AddHorse() {
                                            form.watch("currency") === "GBP" ? "£500,000" : 
                                            form.watch("currency") === "AUD" ? "A$500,000" : 
                                            "€500,000"}
+                                        </SelectItem>
+                                        <SelectItem value="999999">
+                                          {form.watch("currency") === "USD" ? "Over $500,000" : 
+                                           form.watch("currency") === "GBP" ? "Over £500,000" : 
+                                           form.watch("currency") === "AUD" ? "Over A$500,000" : 
+                                           "Over €500,000"}
                                         </SelectItem>
                                       </SelectContent>
                                     </Select>
