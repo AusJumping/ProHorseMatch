@@ -1,9 +1,13 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import logoImage from "../assets/logo.jpg";
+import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 const Landing = () => {
   const [, navigate] = useLocation();
+  const { isAuthenticated, logout } = useAuth();
+  const { toast } = useToast();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "#2b2b2b" }}>
@@ -19,20 +23,47 @@ const Landing = () => {
         </h1>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button 
-            className="px-8 sm:py-6 py-3 text-lg font-semibold text-white"
-            style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
-            onClick={() => navigate("/auth")}
-          >
-            Sign In
-          </Button>
-          <Button 
-            className="px-8 sm:py-6 py-3 text-lg font-semibold hover:opacity-90"
-            style={{ backgroundColor: "#e4e3dd", color: "#2b2b2b", borderColor: "#e4e3dd" }}
-            onClick={() => navigate("/auth?tab=register")}
-          >
-            Register
-          </Button>
+          {isAuthenticated ? (
+            <Button 
+              className="px-8 sm:py-6 py-3 text-lg font-semibold text-white"
+              style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
+              onClick={async () => {
+                try {
+                  await logout();
+                  toast({
+                    title: "Logged out",
+                    description: "You have been logged out successfully.",
+                  });
+                  navigate("/auth");
+                } catch (error) {
+                  toast({
+                    title: "Error",
+                    description: "Failed to logout. Please try again.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              Log Out
+            </Button>
+          ) : (
+            <>
+              <Button 
+                className="px-8 sm:py-6 py-3 text-lg font-semibold text-white"
+                style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
+                onClick={() => navigate("/auth")}
+              >
+                Sign In
+              </Button>
+              <Button 
+                className="px-8 sm:py-6 py-3 text-lg font-semibold hover:opacity-90"
+                style={{ backgroundColor: "#e4e3dd", color: "#2b2b2b", borderColor: "#e4e3dd" }}
+                onClick={() => navigate("/auth?tab=register")}
+              >
+                Register
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>
