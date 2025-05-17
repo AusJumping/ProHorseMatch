@@ -2,10 +2,11 @@ import { ReactNode } from "react";
 import { useLocation } from "wouter";
 import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
-import { ArrowLeft, Filter, PlusCircle } from "lucide-react";
+import { ArrowLeft, Filter, PlusCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 interface LayoutProps {
   children: ReactNode;
@@ -27,9 +28,20 @@ const Layout = ({
   const isMobile = useMobile();
   const [location, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const { toast } = useToast();
   
   // Debug log
   console.log("Layout - Auth state:", { isAuthenticated, userType: user?.type });
+  
+  const handleRefreshSession = () => {
+    toast({
+      title: "Refreshing session",
+      description: "Please wait while we refresh your session...",
+    });
+    
+    // Force a page reload to refresh the session
+    window.location.reload();
+  };
 
   const isOwner = user?.type === "owner";
 
