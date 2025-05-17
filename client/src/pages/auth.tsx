@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -44,9 +44,18 @@ const ownerRegisterSchema = z.object({
 export default function Auth() {
   const { toast } = useToast();
   const { login, register } = useAuth();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
   const [registerType, setRegisterType] = useState<string>("customer");
+  
+  // Check URL query params for tab selection
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const tabParam = url.searchParams.get('tab');
+    if (tabParam === 'register') {
+      setActiveTab('register');
+    }
+  }, [location]);
 
   // Login form
   const loginForm = useForm<z.infer<typeof loginSchema>>({

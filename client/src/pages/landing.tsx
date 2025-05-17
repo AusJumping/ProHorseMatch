@@ -29,7 +29,7 @@ const Landing = () => {
           <Button 
             className="px-8 sm:py-6 py-3 text-lg font-semibold hover:opacity-90"
             style={{ backgroundColor: "#e4e3dd", color: "#2b2b2b", borderColor: "#e4e3dd" }}
-            onClick={() => navigate("/browse")}
+            onClick={() => navigate("/auth?tab=register")}
           >
             Register
           </Button>
