@@ -105,15 +105,15 @@
   }
 
   .like-button {
-    background-color: hsl(43, 68%, 59%) !important;
+    background-color: #cdac6e !important;
     color: white !important;
-    border-color: hsl(43, 68%, 59%) !important;
+    border-color: #cdac6e !important;
   }
 
   .like-button:hover {
-    background-color: hsl(142, 52%, 24%) !important;
+    background-color: #cdac6e !important;
     color: white !important;
-    border-color: hsl(142, 52%, 24%) !important;
+    border-color: #cdac6e !important;
   }
 
   .pass-button {
