@@ -215,7 +215,7 @@ export default function AddHorse() {
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
                   <TabsList className="grid grid-cols-3 w-full">
                     <TabsTrigger value="basic">Basic Information</TabsTrigger>
-                    <TabsTrigger value="details">Specifications</TabsTrigger>
+                    <TabsTrigger value="details">Horse Details</TabsTrigger>
                     <TabsTrigger value="media">Media & Description</TabsTrigger>
                   </TabsList>
                   
