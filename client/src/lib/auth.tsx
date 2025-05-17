@@ -37,24 +37,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch the current user
+  // Fetch the current user with improved caching
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        const res = await fetch('/api/auth/me', { 
+          credentials: 'include',
+          cache: 'no-cache' // Ensure we don't get cached responses
+        });
         if (res.status === 401) return null;
         const userData = await res.json();
         console.log("Auth user data:", userData); // Debug log
+        
+        // Store user data in localStorage for persistence
+        if (userData && userData.id) {
+          localStorage.setItem('user', JSON.stringify(userData));
+        }
+        
         return userData;
       } catch (error) {
         console.error("Auth fetch error:", error);
+        
+        // Try to restore from localStorage if fetch fails
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            return JSON.parse(storedUser);
+          } catch (e) {
+            return null;
+          }
+        }
+        
         return null;
       }
     },
-    staleTime: 0, // Don't cache authentication state
-    refetchOnWindowFocus: true, // Change to true to ensure we keep auth state updated
-    refetchInterval: 30000, // Refetch every 30 seconds to keep session fresh
+    staleTime: 60 * 1000, // Cache auth data for 1 minute
+    refetchOnWindowFocus: true,
+    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
   });
   
   // Ensure user is either User object or null, never undefined
@@ -82,8 +102,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = await response.json();
       console.log("Login successful, user data:", userData);
       
-      // Force a full page reload for reliable auth state reset
-      window.location.href = '/';
+      // Store user in localStorage for quick recovery if session issues occur
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Update query cache with user data
+      queryClient.setQueryData(['/api/auth/me'], userData);
+      
+      // Navigate to home page using client-side routing
+      navigate('/');
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -97,8 +123,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         credentials: 'include',
       });
 
-      // Force a full page reload for reliable auth state reset
-      window.location.href = '/';
+      // Clear localStorage
+      localStorage.removeItem('user');
+      
+      // Clear the query cache
+      queryClient.setQueryData(['/api/auth/me'], null);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      
+      // Navigate to home page using client-side routing
+      navigate('/');
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
