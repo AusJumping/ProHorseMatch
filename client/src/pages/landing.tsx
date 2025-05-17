@@ -13,8 +13,8 @@ const Landing = () => {
         </div>
         
         <h1 className="font-accent text-xl font-bold mb-6" style={{ color: "#e4e2dd" }}>
-          Using Smart Technology to Connect<br />
-          Performance Horses with<br />
+          Using Smart Technology to<br />
+          Connect Performance Horses with<br />
           New Owners
         </h1>
         
