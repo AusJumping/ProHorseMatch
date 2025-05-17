@@ -137,60 +137,32 @@ const Sidebar = () => {
       </div>
       
       <div className="mt-auto p-5 border-t border-neutral-200">
-        {user ? (
-          <>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600">
-                <span>{user.name ? user.name.charAt(0) : (user.business_name ? user.business_name.charAt(0) : "U")}</span>
-              </div>
-              <div>
-                <p className="font-medium text-neutral-900">
-                  {user.name || user.business_name || "User"}
-                </p>
-                <p className="text-sm text-neutral-500">
-                  {user.is_searching && user.is_selling ? "Searching & Selling Account" : 
-                   user.is_searching ? "Searching Account" : 
-                   user.is_selling ? "Selling Account" : "Account"}
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => navigate("/profile")}
-              >
-                <User className="mr-2 h-4 w-4" />
-                Profile
-              </Button>
-              <Button 
-                variant="outline"
-                className="flex-1" 
-                onClick={() => navigate("/account-settings")}
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Account
-              </Button>
-              <Button 
-                variant="outline"
-                className="flex-1 col-span-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
-            </div>
-          </>
-        ) : (
+        <div className="grid grid-cols-2 gap-2">
           <Button 
-            className="w-full"
-            style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
-            onClick={() => navigate("/auth")}
+            variant="outline" 
+            className="flex-1"
+            onClick={() => navigate("/profile")}
           >
             <User className="mr-2 h-4 w-4" />
-            Sign In
+            Profile
           </Button>
-        )}
+          <Button 
+            variant="outline"
+            className="flex-1" 
+            onClick={() => navigate("/account-settings")}
+          >
+            <Settings className="mr-2 h-4 w-4" />
+            Account
+          </Button>
+          <Button 
+            variant="outline"
+            className="flex-1 col-span-2"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
       </div>
     </aside>
   );
