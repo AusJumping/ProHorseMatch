@@ -125,7 +125,10 @@ const Layout = ({
                 
                 {isOwner && (
                   <Button 
-                    onClick={() => navigate("/add-horse")}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate("/add-horse");
+                    }}
                     className={`${location === "/add-horse" ? "bg-primary-light text-primary" : ""}`}
                     variant="outline"
                   >
