@@ -6,7 +6,7 @@ const Landing = () => {
   const [, navigate] = useLocation();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-sky-100">
+    <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "#e4e2dd" }}>
       <div className="max-w-4xl mx-auto text-center px-4">
         <div className="bg-white p-10 rounded-lg shadow-md mb-8">
           <div className="mb-8 flex justify-center">
