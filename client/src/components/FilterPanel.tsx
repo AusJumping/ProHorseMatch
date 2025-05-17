@@ -205,39 +205,63 @@ const FilterPanel = ({
                         <SelectItem value="0">No Min</SelectItem>
                         <SelectItem value="5000">
                           {filters.currency === "USD" ? "$5,000" : 
-                           filters.currency === "GBP" ? "£5,000" : 
-                           filters.currency === "AUD" ? "A$5,000" : 
-                           "€5,000"}
+                           filters.currency === "AUD" ? "A$5,000" : ""}
                         </SelectItem>
                         <SelectItem value="10000">
                           {filters.currency === "USD" ? "$10,000" : 
-                           filters.currency === "GBP" ? "£10,000" : 
-                           filters.currency === "AUD" ? "A$10,000" : 
-                           "€10,000"}
+                           filters.currency === "AUD" ? "A$10,000" : ""}
                         </SelectItem>
                         <SelectItem value="15000">
                           {filters.currency === "USD" ? "$15,000" : 
-                           filters.currency === "GBP" ? "£15,000" : 
-                           filters.currency === "AUD" ? "A$15,000" : 
-                           "€15,000"}
+                           filters.currency === "AUD" ? "A$15,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="20000">
+                          {filters.currency === "USD" ? "$20,000" : 
+                           filters.currency === "AUD" ? "A$20,000" : ""}
                         </SelectItem>
                         <SelectItem value="25000">
                           {filters.currency === "USD" ? "$25,000" : 
-                           filters.currency === "GBP" ? "£25,000" : 
-                           filters.currency === "AUD" ? "A$25,000" : 
-                           "€25,000"}
+                           filters.currency === "AUD" ? "A$25,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="30000">
+                          {filters.currency === "USD" ? "$30,000" : 
+                           filters.currency === "AUD" ? "A$30,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="35000">
+                          {filters.currency === "USD" ? "$35,000" : 
+                           filters.currency === "AUD" ? "A$35,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="40000">
+                          {filters.currency === "USD" ? "$40,000" : 
+                           filters.currency === "AUD" ? "A$40,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="45000">
+                          {filters.currency === "USD" ? "$45,000" : 
+                           filters.currency === "AUD" ? "A$45,000" : ""}
                         </SelectItem>
                         <SelectItem value="50000">
                           {filters.currency === "USD" ? "$50,000" : 
-                           filters.currency === "GBP" ? "£50,000" : 
-                           filters.currency === "AUD" ? "A$50,000" : 
-                           "€50,000"}
+                           filters.currency === "AUD" ? "A$50,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="55000">
+                          {filters.currency === "USD" ? "$55,000" : 
+                           filters.currency === "AUD" ? "A$55,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="60000">
+                          {filters.currency === "USD" ? "$60,000" : 
+                           filters.currency === "AUD" ? "A$60,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="65000">
+                          {filters.currency === "USD" ? "$65,000" : 
+                           filters.currency === "AUD" ? "A$65,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="70000">
+                          {filters.currency === "USD" ? "$70,000" : 
+                           filters.currency === "AUD" ? "A$70,000" : ""}
                         </SelectItem>
                         <SelectItem value="75000">
                           {filters.currency === "USD" ? "$75,000" : 
-                           filters.currency === "GBP" ? "£75,000" : 
-                           filters.currency === "AUD" ? "A$75,000" : 
-                           "€75,000"}
+                           filters.currency === "AUD" ? "A$75,000" : ""}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -256,47 +280,121 @@ const FilterPanel = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="999999999">No Max</SelectItem>
+                        <SelectItem value="5000">
+                          {filters.currency === "USD" ? "$5,000" : 
+                           filters.currency === "AUD" ? "A$5,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="10000">
+                          {filters.currency === "USD" ? "$10,000" : 
+                           filters.currency === "AUD" ? "A$10,000" : ""}
+                        </SelectItem>
                         <SelectItem value="15000">
                           {filters.currency === "USD" ? "$15,000" : 
-                           filters.currency === "GBP" ? "£15,000" : 
-                           filters.currency === "AUD" ? "A$15,000" : 
-                           "€15,000"}
+                           filters.currency === "AUD" ? "A$15,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="20000">
+                          {filters.currency === "USD" ? "$20,000" : 
+                           filters.currency === "AUD" ? "A$20,000" : ""}
                         </SelectItem>
                         <SelectItem value="25000">
                           {filters.currency === "USD" ? "$25,000" : 
-                           filters.currency === "GBP" ? "£25,000" : 
-                           filters.currency === "AUD" ? "A$25,000" : 
-                           "€25,000"}
+                           filters.currency === "AUD" ? "A$25,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="30000">
+                          {filters.currency === "USD" ? "$30,000" : 
+                           filters.currency === "AUD" ? "A$30,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="35000">
+                          {filters.currency === "USD" ? "$35,000" : 
+                           filters.currency === "AUD" ? "A$35,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="40000">
+                          {filters.currency === "USD" ? "$40,000" : 
+                           filters.currency === "AUD" ? "A$40,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="45000">
+                          {filters.currency === "USD" ? "$45,000" : 
+                           filters.currency === "AUD" ? "A$45,000" : ""}
                         </SelectItem>
                         <SelectItem value="50000">
                           {filters.currency === "USD" ? "$50,000" : 
-                           filters.currency === "GBP" ? "£50,000" : 
-                           filters.currency === "AUD" ? "A$50,000" : 
-                           "€50,000"}
+                           filters.currency === "AUD" ? "A$50,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="55000">
+                          {filters.currency === "USD" ? "$55,000" : 
+                           filters.currency === "AUD" ? "A$55,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="60000">
+                          {filters.currency === "USD" ? "$60,000" : 
+                           filters.currency === "AUD" ? "A$60,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="65000">
+                          {filters.currency === "USD" ? "$65,000" : 
+                           filters.currency === "AUD" ? "A$65,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="70000">
+                          {filters.currency === "USD" ? "$70,000" : 
+                           filters.currency === "AUD" ? "A$70,000" : ""}
                         </SelectItem>
                         <SelectItem value="75000">
                           {filters.currency === "USD" ? "$75,000" : 
-                           filters.currency === "GBP" ? "£75,000" : 
-                           filters.currency === "AUD" ? "A$75,000" : 
-                           "€75,000"}
+                           filters.currency === "AUD" ? "A$75,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="80000">
+                          {filters.currency === "USD" ? "$80,000" : 
+                           filters.currency === "AUD" ? "A$80,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="85000">
+                          {filters.currency === "USD" ? "$85,000" : 
+                           filters.currency === "AUD" ? "A$85,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="90000">
+                          {filters.currency === "USD" ? "$90,000" : 
+                           filters.currency === "AUD" ? "A$90,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="95000">
+                          {filters.currency === "USD" ? "$95,000" : 
+                           filters.currency === "AUD" ? "A$95,000" : ""}
                         </SelectItem>
                         <SelectItem value="100000">
                           {filters.currency === "USD" ? "$100,000" : 
-                           filters.currency === "GBP" ? "£100,000" : 
-                           filters.currency === "AUD" ? "A$100,000" : 
-                           "€100,000"}
+                           filters.currency === "AUD" ? "A$100,000" : ""}
                         </SelectItem>
                         <SelectItem value="150000">
                           {filters.currency === "USD" ? "$150,000" : 
-                           filters.currency === "GBP" ? "£150,000" : 
-                           filters.currency === "AUD" ? "A$150,000" : 
-                           "€150,000"}
+                           filters.currency === "AUD" ? "A$150,000" : ""}
                         </SelectItem>
                         <SelectItem value="200000">
-                          {filters.currency === "USD" ? "$200,000+" : 
-                           filters.currency === "GBP" ? "£200,000+" : 
-                           filters.currency === "AUD" ? "A$200,000+" : 
-                           "€200,000+"}
+                          {filters.currency === "USD" ? "$200,000" : 
+                           filters.currency === "AUD" ? "A$200,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="250000">
+                          {filters.currency === "USD" ? "$250,000" : 
+                           filters.currency === "AUD" ? "A$250,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="300000">
+                          {filters.currency === "USD" ? "$300,000" : 
+                           filters.currency === "AUD" ? "A$300,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="350000">
+                          {filters.currency === "USD" ? "$350,000" : 
+                           filters.currency === "AUD" ? "A$350,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="400000">
+                          {filters.currency === "USD" ? "$400,000" : 
+                           filters.currency === "AUD" ? "A$400,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="450000">
+                          {filters.currency === "USD" ? "$450,000" : 
+                           filters.currency === "AUD" ? "A$450,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="500000">
+                          {filters.currency === "USD" ? "$500,000" : 
+                           filters.currency === "AUD" ? "A$500,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="999999">
+                          {filters.currency === "USD" ? "Over $500,000" : 
+                           filters.currency === "AUD" ? "Over A$500,000" : ""}
                         </SelectItem>
                       </SelectContent>
                     </Select>
