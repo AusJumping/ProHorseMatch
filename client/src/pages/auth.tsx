@@ -233,7 +233,11 @@ export default function Auth() {
                       )}
                     />
 
-                    <Button type="submit" className="w-full">
+                    <Button 
+                      type="submit" 
+                      className="w-full text-white"
+                      style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
+                    >
                       Sign In
                     </Button>
                   </form>
