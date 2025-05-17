@@ -701,14 +701,38 @@ export default function AddHorse() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Age</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  placeholder="Age in years" 
-                                  {...field}
-                                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
-                                />
-                              </FormControl>
+                              <Select 
+                                onValueChange={(value) => field.onChange(parseInt(value))} 
+                                value={field.value?.toString()}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select age" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="1">1 year</SelectItem>
+                                  <SelectItem value="2">2 years</SelectItem>
+                                  <SelectItem value="3">3 years</SelectItem>
+                                  <SelectItem value="4">4 years</SelectItem>
+                                  <SelectItem value="5">5 years</SelectItem>
+                                  <SelectItem value="6">6 years</SelectItem>
+                                  <SelectItem value="7">7 years</SelectItem>
+                                  <SelectItem value="8">8 years</SelectItem>
+                                  <SelectItem value="9">9 years</SelectItem>
+                                  <SelectItem value="10">10 years</SelectItem>
+                                  <SelectItem value="11">11 years</SelectItem>
+                                  <SelectItem value="12">12 years</SelectItem>
+                                  <SelectItem value="13">13 years</SelectItem>
+                                  <SelectItem value="14">14 years</SelectItem>
+                                  <SelectItem value="15">15 years</SelectItem>
+                                  <SelectItem value="16">16 years</SelectItem>
+                                  <SelectItem value="17">17 years</SelectItem>
+                                  <SelectItem value="18">18 years</SelectItem>
+                                  <SelectItem value="19">19 years</SelectItem>
+                                  <SelectItem value="20">20 years</SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -720,14 +744,43 @@ export default function AddHorse() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Height (hands)</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  type="number" 
-                                  placeholder="Height in hands" 
-                                  {...field}
-                                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
-                                />
-                              </FormControl>
+                              <Select 
+                                onValueChange={(value) => field.onChange(parseFloat(value))} 
+                                value={field.value?.toString()}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select height" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="12.0">12.0 hh</SelectItem>
+                                  <SelectItem value="12.1">12.1 hh</SelectItem>
+                                  <SelectItem value="12.2">12.2 hh</SelectItem>
+                                  <SelectItem value="12.3">12.3 hh</SelectItem>
+                                  <SelectItem value="13.0">13.0 hh</SelectItem>
+                                  <SelectItem value="13.1">13.1 hh</SelectItem>
+                                  <SelectItem value="13.2">13.2 hh</SelectItem>
+                                  <SelectItem value="13.3">13.3 hh</SelectItem>
+                                  <SelectItem value="14.0">14.0 hh</SelectItem>
+                                  <SelectItem value="14.1">14.1 hh</SelectItem>
+                                  <SelectItem value="14.2">14.2 hh</SelectItem>
+                                  <SelectItem value="14.3">14.3 hh</SelectItem>
+                                  <SelectItem value="15.0">15.0 hh</SelectItem>
+                                  <SelectItem value="15.1">15.1 hh</SelectItem>
+                                  <SelectItem value="15.2">15.2 hh</SelectItem>
+                                  <SelectItem value="15.3">15.3 hh</SelectItem>
+                                  <SelectItem value="16.0">16.0 hh</SelectItem>
+                                  <SelectItem value="16.1">16.1 hh</SelectItem>
+                                  <SelectItem value="16.2">16.2 hh</SelectItem>
+                                  <SelectItem value="16.3">16.3 hh</SelectItem>
+                                  <SelectItem value="17.0">17.0 hh</SelectItem>
+                                  <SelectItem value="17.1">17.1 hh</SelectItem>
+                                  <SelectItem value="17.2">17.2 hh</SelectItem>
+                                  <SelectItem value="17.3">17.3 hh</SelectItem>
+                                  <SelectItem value="18.0">18.0 hh</SelectItem>
+                                </SelectContent>
+                              </Select>
                               <FormMessage />
                             </FormItem>
                           )}
