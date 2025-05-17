@@ -13,9 +13,9 @@ const Landing = () => {
         </div>
         
         <h1 className="font-accent text-xl font-bold mb-6" style={{ color: "#e4e2dd" }}>
-          Connecting Performance Horses<br />
-          with New Owners using<br />
-          Smart Matching Technology
+          Using Smart Technology to Connect<br />
+          Performance Horses with<br />
+          New Owners
         </h1>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
