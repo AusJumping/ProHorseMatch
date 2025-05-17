@@ -27,7 +27,6 @@ const horseFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
   owner_id: z.number(),
   location_country: z.string().min(1, "Country is required"),
-  location_radius_km: z.number().optional(),
   disciplines: z.array(z.string()).min(1, "Select at least one discipline"),
   levels: z.array(z.string()).min(1, "Select at least one level"),
   breeds: z.array(z.string()).min(1, "Select at least one breed"),
@@ -79,7 +78,6 @@ export default function AddHorse() {
       name: "",
       owner_id: ownerID,
       location_country: "",
-      location_radius_km: 0,
       disciplines: [],
       levels: [],
       breeds: ["Warmblood"],
@@ -684,27 +682,7 @@ export default function AddHorse() {
                             )}
                           />
                           
-                          <FormField
-                            control={form.control}
-                            name="location_radius_km"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Radius (km)</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="number" 
-                                    placeholder="Distance radius in kilometers" 
-                                    {...field}
-                                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  How far from your location are you willing to show this horse?
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+
                         </div>
 
                         <div className="w-full mt-4">
