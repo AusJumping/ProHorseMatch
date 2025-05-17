@@ -14,7 +14,7 @@ const Landing = () => {
           </div>
           
           <h1 className="font-accent text-4xl font-bold mb-6 text-gray-800">
-            Connect with Your Perfect Equine Partner
+            Matching Performance Horses with New Owners
           </h1>
           
           <p className="text-lg text-gray-600 mb-8">
