@@ -142,6 +142,7 @@ const SwipeSection = ({
           size="icon"
           className="like-button w-14 h-14 rounded-full"
           onClick={handleButtonLike}
+          style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
         >
           <Heart className="h-6 w-6" />
         </Button>
