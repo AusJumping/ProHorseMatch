@@ -668,9 +668,17 @@ export default function AddHorse() {
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Country</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Country where the horse is located" {...field} />
-                                </FormControl>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a country" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="Australia">Australia</SelectItem>
+                                    <SelectItem value="United States">United States</SelectItem>
+                                  </SelectContent>
+                                </Select>
                                 <FormMessage />
                               </FormItem>
                             )}
