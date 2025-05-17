@@ -14,7 +14,8 @@ const Landing = () => {
         
         <h1 className="font-accent text-4xl font-bold mb-6" style={{ color: "#e4e2dd" }}>
           Connecting Performance Horses<br />
-          with New Owners using Smart Matching Technology
+          with New Owners using<br />
+          Smart Matching Technology
         </h1>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
