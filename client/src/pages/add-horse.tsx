@@ -959,11 +959,20 @@ export default function AddHorse() {
                                   </FormControl>
                                   <SelectContent>
                                     {constants && constants.levels ? (
-                                      constants.levels.map((level) => (
-                                        <SelectItem key={level} value={level}>
-                                          {level}
-                                        </SelectItem>
-                                      ))
+                                      // Get discipline from form value
+                                      (() => {
+                                        const disciplineValue = form.getValues("disciplines");
+                                        const discipline = disciplineValue && disciplineValue.length > 0 ? disciplineValue[0] : "Jumping";
+                                        
+                                        // Get levels for this discipline
+                                        const disciplineLevels = constants.levels[discipline] || [];
+                                        
+                                        return disciplineLevels.map((level) => (
+                                          <SelectItem key={level} value={level}>
+                                            {level}
+                                          </SelectItem>
+                                        ));
+                                      })()
                                     ) : (
                                       <>
                                         <SelectItem value="1.00m">1.00m</SelectItem>
