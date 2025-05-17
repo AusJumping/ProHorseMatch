@@ -267,17 +267,19 @@ export default function AddHorse() {
                           <div className="w-full">
                             <FormLabel className="block mb-4">Price Range (in {form.watch("currency")})</FormLabel>
                             <div className="grid grid-cols-2 gap-4">
-                              <FormField
-                                control={form.control}
-                                name="price_min"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                      <FormControl>
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Minimum Price" />
-                                        </SelectTrigger>
-                                      </FormControl>
+                              <div>
+                                <FormLabel className="block mb-2">Min</FormLabel>
+                                <FormField
+                                  control={form.control}
+                                  name="price_min"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue placeholder="Minimum Price" />
+                                          </SelectTrigger>
+                                        </FormControl>
                                       <SelectContent>
                                         <SelectItem value="5000">
                                           {form.watch("currency") === "USD" ? "$5,000" : 
