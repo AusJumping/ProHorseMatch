@@ -33,7 +33,7 @@ const Sidebar = () => {
 
   return (
     <aside className="w-64 bg-white border-r border-neutral-200 flex flex-col">
-      <div className="py-4 px-3 border-b border-neutral-200 bg-neutral-900">
+      <div className="py-4 px-3 border-b border-neutral-200 bg-white">
         <div className="flex justify-center">
           <img 
             src={logoImage} 
