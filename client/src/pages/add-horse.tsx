@@ -19,6 +19,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
 import { useMobile } from "@/hooks/use-mobile";
+import { CurrencySelector } from "@/components/CurrencySelector";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 // Form schema for adding a horse
 const horseFormSchema = z.object({
