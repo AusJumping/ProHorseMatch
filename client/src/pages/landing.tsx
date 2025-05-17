@@ -23,7 +23,8 @@ const Landing = () => {
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button 
-            className="px-8 py-6 text-lg font-semibold bg-primary hover:bg-primary/90"
+            className="px-8 py-6 text-lg font-semibold text-white"
+            style={{ backgroundColor: "gold", borderColor: "gold" }}
             onClick={() => navigate("/auth")}
           >
             Sign In
