@@ -101,8 +101,8 @@ export default function Auth() {
         description: "Welcome back to ProHorseMatch",
       });
       
-      // Force full page reload to ensure auth state is picked up
-      window.location.href = "/";
+      // Navigate to home page after successful login
+      window.location.href = "/home";
     } catch (error: any) {
       toast({
         title: "Login failed",
