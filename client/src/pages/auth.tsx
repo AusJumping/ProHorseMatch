@@ -101,8 +101,8 @@ export default function Auth() {
         description: "Welcome back to ProHorseMatch",
       });
       
-      // Navigate to home page after successful login
-      window.location.href = "/home";
+      // Navigate to browse page (home) after successful login
+      window.location.href = "/browse";
     } catch (error: any) {
       toast({
         title: "Login failed",
