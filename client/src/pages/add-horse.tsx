@@ -99,6 +99,13 @@ export default function AddHorse() {
   // This function is called when the form is submitted
   const onSubmit = async (data: HorseFormValues) => {
     console.log("Form submission started", data);
+    
+    // Add debug toast to confirm the form submission was triggered
+    toast({
+      title: "Submitting form...",
+      description: "Processing your horse listing submission",
+    });
+    
     try {
       setIsSubmitting(true);
       
@@ -1393,7 +1400,21 @@ export default function AddHorse() {
                         <Button onClick={prevTab} type="button" variant="outline">
                           Back
                         </Button>
-                        <Button type="submit" disabled={isSubmitting}>
+                        <Button 
+                          type="submit" 
+                          disabled={isSubmitting}
+                          onClick={() => {
+                            console.log("Submit button clicked");
+                            console.log("Form state:", form.formState);
+                            console.log("Form values:", form.getValues());
+                            
+                            // Make sure photos array is populated
+                            form.setValue("photos", photoUrls);
+                            
+                            // Make sure videos array is populated
+                            form.setValue("videos", videoUrls);
+                          }}
+                        >
                           {isSubmitting ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
