@@ -88,9 +88,9 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
               
               <Button
                 size="sm"
-                variant="outline"
                 className="like-button"
                 onClick={() => onLike(horse.id)}
+                style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" }}
               >
                 <Heart className="h-4 w-4 mr-1" />
                 Like

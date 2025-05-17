@@ -329,10 +329,11 @@ export default function HorseDetail() {
             {!isMessageOpen && (
               <div className="flex gap-3 mt-auto">
                 <Button 
-                  variant="outline" 
+                  variant={isSaved ? "outline" : "default"}
                   className={`flex-1 ${isSaved ? 'bg-primary-light bg-opacity-10 text-primary' : ''}`}
                   onClick={handleSave} 
                   disabled={isSaved}
+                  style={!isSaved ? { backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" } : {}}
                 >
                   <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
                   {isSaved ? 'Saved to Favorites' : 'Save to Favorites'}
