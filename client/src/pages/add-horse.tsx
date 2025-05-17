@@ -1401,18 +1401,19 @@ export default function AddHorse() {
                           Back
                         </Button>
                         <Button 
-                          type="submit" 
+                          type="button" 
                           disabled={isSubmitting}
                           onClick={() => {
                             console.log("Submit button clicked");
-                            console.log("Form state:", form.formState);
-                            console.log("Form values:", form.getValues());
                             
                             // Make sure photos array is populated
                             form.setValue("photos", photoUrls);
                             
                             // Make sure videos array is populated
                             form.setValue("videos", videoUrls);
+                            
+                            // Manually trigger form submission
+                            form.handleSubmit(onSubmit)();
                           }}
                         >
                           {isSubmitting ? (
