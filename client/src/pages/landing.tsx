@@ -12,7 +12,7 @@ const Landing = () => {
           <img src={logoImage} alt="Pro Horse Match" className="h-28 object-contain" />
         </div>
         
-        <h1 className="font-accent text-2xl font-bold mb-6" style={{ color: "#e4e2dd" }}>
+        <h1 className="font-accent text-xl font-bold mb-6" style={{ color: "#e4e2dd" }}>
           Connecting Performance Horses<br />
           with New Owners using<br />
           Smart Matching Technology
