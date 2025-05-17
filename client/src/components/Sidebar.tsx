@@ -51,7 +51,10 @@ const Sidebar = () => {
               className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
                 location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
               }`}
-              onClick={() => navigate("/")}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/");
+              }}
             >
               <Home className="mr-3 h-5 w-5" />
               <span>Home</span>
@@ -63,7 +66,10 @@ const Sidebar = () => {
               className={`w-full justify-start px-5 py-3 ${
                 location === "/favorites" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
               }`}
-              onClick={() => navigate("/favorites")}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/favorites");
+              }}
             >
               <Heart className="mr-3 h-5 w-5" />
               <span>My Favorites</span>
@@ -75,7 +81,10 @@ const Sidebar = () => {
               className={`w-full justify-start px-5 py-3 ${
                 location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
               }`}
-              onClick={() => navigate("/messages")}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/messages");
+              }}
             >
               <MessageSquare className="mr-3 h-5 w-5" />
               <span>Messages</span>
@@ -85,7 +94,10 @@ const Sidebar = () => {
             <Button
               variant="ghost"
               className="w-full justify-start px-5 py-3 text-neutral-800 hover:bg-neutral-100"
-              onClick={() => navigate("/recent")}
+              onClick={(e) => {
+                e.preventDefault(); 
+                navigate("/recent");
+              }}
               disabled
             >
               <Clock className="mr-3 h-5 w-5" />
@@ -100,7 +112,10 @@ const Sidebar = () => {
                   className={`w-full justify-start px-5 py-3 ${
                     location === "/my-horses" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
                   }`}
-                  onClick={() => navigate("/my-horses")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/my-horses");
+                  }}
                 >
                   <List className="mr-3 h-5 w-5" />
                   <span>My Horses</span>
@@ -112,7 +127,10 @@ const Sidebar = () => {
                   className={`w-full justify-start px-5 py-3 ${
                     location === "/add-horse" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
                   }`}
-                  onClick={() => navigate("/add-horse")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/add-horse");
+                  }}
                 >
                   <PlusCircle className="mr-3 h-5 w-5" />
                   <span>Add Horse</span>
@@ -124,7 +142,10 @@ const Sidebar = () => {
                   className={`w-full justify-start px-5 py-3 ${
                     location === "/admin" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
                   }`}
-                  onClick={() => navigate("/admin")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/admin");
+                  }}
                 >
                   <ShieldAlert className="mr-3 h-5 w-5" />
                   <span>Admin Panel</span>
@@ -140,7 +161,10 @@ const Sidebar = () => {
           <Button 
             variant="outline" 
             className="flex-1"
-            onClick={() => navigate("/profile")}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/profile");
+            }}
           >
             <User className="mr-2 h-4 w-4" />
             Profile
@@ -148,7 +172,10 @@ const Sidebar = () => {
           <Button 
             variant="outline"
             className="flex-1" 
-            onClick={() => navigate("/account-settings")}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/account-settings");
+            }}
           >
             <Settings className="mr-2 h-4 w-4" />
             Account
@@ -156,7 +183,10 @@ const Sidebar = () => {
           <Button 
             variant="outline"
             className="flex-1 col-span-2"
-            onClick={handleLogout}
+            onClick={(e) => {
+              e.preventDefault();
+              handleLogout();
+            }}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Logout

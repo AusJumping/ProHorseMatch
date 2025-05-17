@@ -18,7 +18,10 @@ const MobileNavbar = () => {
           className={`flex flex-col items-center ${
             location === "/" ? "text-primary" : "text-neutral-500"
           }`}
-          onClick={() => navigate("/")}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/");
+          }}
         >
           <Home className="h-5 w-5" />
           <span className="text-xs mt-1 font-medium">Discover</span>
@@ -29,7 +32,10 @@ const MobileNavbar = () => {
             className={`flex flex-col items-center ${
               location === "/my-horses" ? "text-primary" : "text-neutral-500"
             }`}
-            onClick={() => navigate("/my-horses")}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/my-horses");
+            }}
           >
             <List className="h-5 w-5" />
             <span className="text-xs mt-1">My Horses</span>
@@ -39,7 +45,10 @@ const MobileNavbar = () => {
             className={`flex flex-col items-center ${
               location === "/favorites" ? "text-primary" : "text-neutral-500"
             }`}
-            onClick={() => navigate("/favorites")}
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/favorites");
+            }}
           >
             <Heart className="h-5 w-5" />
             <span className="text-xs mt-1">Favorites</span>
@@ -50,7 +59,10 @@ const MobileNavbar = () => {
           className={`flex flex-col items-center ${
             location === "/messages" ? "text-primary" : "text-neutral-500"
           }`}
-          onClick={() => navigate("/messages")}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/messages");
+          }}
         >
           <MessageSquare className="h-5 w-5" />
           <span className="text-xs mt-1">Messages</span>
@@ -60,7 +72,10 @@ const MobileNavbar = () => {
           className={`flex flex-col items-center ${
             location === "/filter" ? "text-primary" : "text-neutral-500"
           }`}
-          onClick={() => navigate("/filter")}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/filter");
+          }}
         >
           <Filter className="h-5 w-5" />
           <span className="text-xs mt-1">Filter</span>
@@ -70,7 +85,10 @@ const MobileNavbar = () => {
           className={`flex flex-col items-center ${
             location === "/profile" ? "text-primary" : "text-neutral-500"
           }`}
-          onClick={() => navigate("/profile")}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/profile");
+          }}
         >
           <User className="h-5 w-5" />
           <span className="text-xs mt-1">Profile</span>

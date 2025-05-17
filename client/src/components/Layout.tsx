@@ -45,7 +45,8 @@ const Layout = ({
 
   const isOwner = user?.type === "owner";
 
-  const handleBack = () => {
+  const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (onBackClick) {
       onBackClick();
     } else {
@@ -83,7 +84,10 @@ const Layout = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate("/add-horse")}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/add-horse");
+                  }}
                   className="flex items-center"
                 >
                   <PlusCircle className="mr-1 h-4 w-4" />
