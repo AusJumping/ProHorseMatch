@@ -183,7 +183,8 @@ const Sidebar = () => {
           </>
         ) : (
           <Button 
-            className="w-full" 
+            className="w-full"
+            style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
             onClick={() => navigate("/auth")}
           >
             <User className="mr-2 h-4 w-4" />
