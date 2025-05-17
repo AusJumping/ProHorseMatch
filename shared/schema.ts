@@ -177,11 +177,8 @@ export const characteristics = [
   "Brave",
   "Careful",
   "Scope",
-  "Easy to Ride",
   "Schoolmaster",
-  "Athletic",
   "Honest",
-  "Talented",
   "Bold",
   "Sensitive",
   "Calm"
