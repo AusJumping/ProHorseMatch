@@ -400,12 +400,6 @@ export default function AddHorse() {
                                            "€95,000"}
                                         </SelectItem>
                                         <SelectItem value="100000">
-                                        <SelectItem value="999999">
-                                          {form.watch("currency") === "USD" ? "$100,000+" : 
-                                           form.watch("currency") === "GBP" ? "£100,000+" : 
-                                           form.watch("currency") === "AUD" ? "A$100,000+" : 
-                                           "€100,000+"}
-                                        </SelectItem>
                                           {form.watch("currency") === "USD" ? "$100,000" : 
                                            form.watch("currency") === "GBP" ? "£100,000" : 
                                            form.watch("currency") === "AUD" ? "A$100,000" : 
