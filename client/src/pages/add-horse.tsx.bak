@@ -279,12 +279,6 @@ export default function AddHorse() {
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
-                                        <SelectItem value="1">
-                                          {form.watch("currency") === "USD" ? "Under $5,000" : 
-                                           form.watch("currency") === "GBP" ? "Under £5,000" : 
-                                           form.watch("currency") === "AUD" ? "Under A$5,000" : 
-                                           "Under €5,000"}
-                                        </SelectItem>
                                         <SelectItem value="5000">
                                           {form.watch("currency") === "USD" ? "$5,000" : 
                                            form.watch("currency") === "GBP" ? "£5,000" : 
@@ -466,12 +460,6 @@ export default function AddHorse() {
                                 render={({ field }) => (
                                   <FormItem>
                                     <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                        <SelectItem value="1">
-                                          {form.watch("currency") === "USD" ? "Under $5,000" : 
-                                           form.watch("currency") === "GBP" ? "Under £5,000" : 
-                                           form.watch("currency") === "AUD" ? "Under A$5,000" : 
-                                           "Under €5,000"}
-                                        </SelectItem>
                                       <FormControl>
                                         <SelectTrigger>
                                           <SelectValue placeholder="Maximum Price" />
