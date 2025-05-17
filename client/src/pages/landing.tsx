@@ -38,23 +38,6 @@ const Landing = () => {
             </Button>
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="font-accent text-xl font-semibold mb-2 text-primary">For Buyers</h3>
-            <p className="text-gray-600">Find your ideal horse with advanced search and matching technology.</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="font-accent text-xl font-semibold mb-2 text-primary">For Sellers</h3>
-            <p className="text-gray-600">Connect with serious buyers and showcase your horses to the right audience.</p>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h3 className="font-accent text-xl font-semibold mb-2 text-primary">Expert Support</h3>
-            <p className="text-gray-600">Our equestrian specialists are available to assist with your journey.</p>
-          </div>
-        </div>
       </div>
     </div>
   );
