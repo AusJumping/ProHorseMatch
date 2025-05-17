@@ -782,9 +782,6 @@ export default function AddHorse() {
                                     {...field} 
                                   />
                                 </FormControl>
-                                <FormDescription>
-                                  Including recent competitive results can help attract serious buyers
-                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -803,9 +800,6 @@ export default function AddHorse() {
                                     {...field} 
                                   />
                                 </FormControl>
-                                <FormDescription>
-                                  Additional information about your horse can help interested buyers make informed decisions
-                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
