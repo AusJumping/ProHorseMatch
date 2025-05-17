@@ -772,16 +772,16 @@ export default function AddHorse() {
                           name="description"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Description</FormLabel>
+                              <FormLabel>Recent Results <span className="text-sm text-muted-foreground ml-1">(Optional)</span></FormLabel>
                               <FormControl>
                                 <Textarea 
-                                  placeholder="Provide details about your horse's background, training, temperament, etc." 
+                                  placeholder="Share recent competition results, achievements, or other highlights" 
                                   className="min-h-[150px]"
                                   {...field} 
                                 />
                               </FormControl>
                               <FormDescription>
-                                Be detailed and honest to attract serious buyers.
+                                Including recent competitive results can help attract serious buyers
                               </FormDescription>
                               <FormMessage />
                             </FormItem>
