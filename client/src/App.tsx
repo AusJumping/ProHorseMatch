@@ -16,13 +16,15 @@ import AccountSettings from "@/pages/account-settings";
 import MigrateHorses from "@/pages/migrate-horses";
 import AdminPanel from "@/pages/admin";
 import Favorites from "@/pages/favorites";
+import Landing from "@/pages/landing";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={Landing} />
+      <Route path="/browse" component={Home} />
       <Route path="/auth" component={Auth} />
       <Route path="/horse/:id" component={HorseDetail} />
       <Route path="/messages" component={Messages} />
