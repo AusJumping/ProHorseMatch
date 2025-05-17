@@ -291,35 +291,11 @@ export default function AddHorse() {
                                            form.watch("currency") === "AUD" ? "A$10,000" : 
                                            "€10,000"}
                                         </SelectItem>
-                                        <SelectItem value="15000">
-                                          {form.watch("currency") === "USD" ? "$15,000" : 
-                                           form.watch("currency") === "GBP" ? "£15,000" : 
-                                           form.watch("currency") === "AUD" ? "A$15,000" : 
-                                           "€15,000"}
-                                        </SelectItem>
-                                        <SelectItem value="20000">
-                                          {form.watch("currency") === "USD" ? "$20,000" : 
-                                           form.watch("currency") === "GBP" ? "£20,000" : 
-                                           form.watch("currency") === "AUD" ? "A$20,000" : 
-                                           "€20,000"}
-                                        </SelectItem>
                                         <SelectItem value="25000">
                                           {form.watch("currency") === "USD" ? "$25,000" : 
                                            form.watch("currency") === "GBP" ? "£25,000" : 
                                            form.watch("currency") === "AUD" ? "A$25,000" : 
                                            "€25,000"}
-                                        </SelectItem>
-                                        <SelectItem value="30000">
-                                          {form.watch("currency") === "USD" ? "$30,000" : 
-                                           form.watch("currency") === "GBP" ? "£30,000" : 
-                                           form.watch("currency") === "AUD" ? "A$30,000" : 
-                                           "€30,000"}
-                                        </SelectItem>
-                                        <SelectItem value="40000">
-                                          {form.watch("currency") === "USD" ? "$40,000" : 
-                                           form.watch("currency") === "GBP" ? "£40,000" : 
-                                           form.watch("currency") === "AUD" ? "A$40,000" : 
-                                           "€40,000"}
                                         </SelectItem>
                                         <SelectItem value="50000">
                                           {form.watch("currency") === "USD" ? "$50,000" : 
@@ -338,6 +314,42 @@ export default function AddHorse() {
                                            form.watch("currency") === "GBP" ? "£100,000" : 
                                            form.watch("currency") === "AUD" ? "A$100,000" : 
                                            "€100,000"}
+                                        </SelectItem>
+                                        <SelectItem value="150000">
+                                          {form.watch("currency") === "USD" ? "$150,000" : 
+                                           form.watch("currency") === "GBP" ? "£150,000" : 
+                                           form.watch("currency") === "AUD" ? "A$150,000" : 
+                                           "€150,000"}
+                                        </SelectItem>
+                                        <SelectItem value="200000">
+                                          {form.watch("currency") === "USD" ? "$200,000" : 
+                                           form.watch("currency") === "GBP" ? "£200,000" : 
+                                           form.watch("currency") === "AUD" ? "A$200,000" : 
+                                           "€200,000"}
+                                        </SelectItem>
+                                        <SelectItem value="250000">
+                                          {form.watch("currency") === "USD" ? "$250,000" : 
+                                           form.watch("currency") === "GBP" ? "£250,000" : 
+                                           form.watch("currency") === "AUD" ? "A$250,000" : 
+                                           "€250,000"}
+                                        </SelectItem>
+                                        <SelectItem value="300000">
+                                          {form.watch("currency") === "USD" ? "$300,000" : 
+                                           form.watch("currency") === "GBP" ? "£300,000" : 
+                                           form.watch("currency") === "AUD" ? "A$300,000" : 
+                                           "€300,000"}
+                                        </SelectItem>
+                                        <SelectItem value="400000">
+                                          {form.watch("currency") === "USD" ? "$400,000" : 
+                                           form.watch("currency") === "GBP" ? "£400,000" : 
+                                           form.watch("currency") === "AUD" ? "A$400,000" : 
+                                           "€400,000"}
+                                        </SelectItem>
+                                        <SelectItem value="500000">
+                                          {form.watch("currency") === "USD" ? "$500,000" : 
+                                           form.watch("currency") === "GBP" ? "£500,000" : 
+                                           form.watch("currency") === "AUD" ? "A$500,000" : 
+                                           "€500,000"}
                                         </SelectItem>
                                       </SelectContent>
                                     </Select>
@@ -358,6 +370,18 @@ export default function AddHorse() {
                                         </SelectTrigger>
                                       </FormControl>
                                       <SelectContent>
+                                        <SelectItem value="5000">
+                                          {form.watch("currency") === "USD" ? "$5,000" : 
+                                           form.watch("currency") === "GBP" ? "£5,000" : 
+                                           form.watch("currency") === "AUD" ? "A$5,000" : 
+                                           "€5,000"}
+                                        </SelectItem>
+                                        <SelectItem value="10000">
+                                          {form.watch("currency") === "USD" ? "$10,000" : 
+                                           form.watch("currency") === "GBP" ? "£10,000" : 
+                                           form.watch("currency") === "AUD" ? "A$10,000" : 
+                                           "€10,000"}
+                                        </SelectItem>
                                         <SelectItem value="25000">
                                           {form.watch("currency") === "USD" ? "$25,000" : 
                                            form.watch("currency") === "GBP" ? "£25,000" : 
