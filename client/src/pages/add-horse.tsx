@@ -43,6 +43,7 @@ const horseFormSchema = z.object({
   price_max: z.number().min(1, "Maximum price must be at least 1"),
   currency: z.string().min(1, "Currency is required"),
   description: z.string().optional(),
+  additional_info: z.string().optional(),
   photos: z.array(z.string()).min(1, "At least one photo is required"),
   videos: z.array(z.string()).optional(),
 });
@@ -767,26 +768,49 @@ export default function AddHorse() {
                     
                     <TabsContent value="media" className="space-y-6 pt-4">
                       <div className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Recent Results <span className="text-sm text-muted-foreground ml-1">(Optional)</span></FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Share recent competition results, achievements, or other highlights" 
-                                  className="min-h-[150px]"
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Including recent competitive results can help attract serious buyers
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+                        <div className="space-y-6">
+                          <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Recent Results <span className="text-sm text-muted-foreground ml-1">(Optional)</span></FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Share recent competition results, achievements, or other highlights" 
+                                    className="min-h-[120px]"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Including recent competitive results can help attract serious buyers
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="additional_info"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Other Relevant Information <span className="text-sm text-muted-foreground ml-1">(Optional)</span></FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Add training history, temperament, special care needs, or any other relevant information" 
+                                    className="min-h-[120px]"
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Additional information about your horse can help interested buyers make informed decisions
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
                       </div>
                       
                       <Separator />
