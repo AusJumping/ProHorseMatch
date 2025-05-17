@@ -14,8 +14,8 @@ const Landing = () => {
         
         <h1 className="font-accent text-xl font-bold mb-6" style={{ color: "#e4e2dd" }}>
           Using Smart Technology to<br />
-          Connect Performance Horses with<br />
-          New Owners
+          Connect Performance Horses<br />
+          with New Owners
         </h1>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
