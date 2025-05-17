@@ -13,8 +13,8 @@ const Landing = () => {
         </div>
         
         <h1 className="font-accent text-4xl font-bold mb-6 text-white">
-          Matching Performance Horses<br />
-          with New Owners using intelligent matching technology
+          Connecting Performance Horses<br />
+          with New Owners using Smart Matching Technology
         </h1>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
