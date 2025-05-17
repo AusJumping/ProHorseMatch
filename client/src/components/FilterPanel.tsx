@@ -113,7 +113,16 @@ const FilterPanel = ({
           : 'h-full'}
       `}>
         <div className="flex justify-between items-center mb-5">
-          <h2 className="font-accent font-bold text-xl">Find Horse</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="font-accent font-bold text-xl">Find Horse</h2>
+            <button 
+              onClick={() => window.location.href="/auth"} 
+              className="text-sm py-1 px-3 rounded-md"
+              style={{ backgroundColor: "#cdac6e", color: "white" }}
+            >
+              Already Signed In?
+            </button>
+          </div>
           {isMobile && (
             <Button 
               variant="ghost" 
