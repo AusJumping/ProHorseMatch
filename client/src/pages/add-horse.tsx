@@ -235,7 +235,6 @@ export default function AddHorse() {
                             </FormItem>
                           )}
                         />
-                        
                       </div>
 
                       {/* Currency and price section with better layout */}
@@ -262,7 +261,7 @@ export default function AddHorse() {
                           />
                         </div>
                           
-                        {/* Price range section */}
+                        {/* Price range section with Min and Max labels */}
                         {form.watch("currency") && (
                           <div className="w-full">
                             <FormLabel className="block mb-4">Price Range (in {form.watch("currency")})</FormLabel>
@@ -280,181 +279,188 @@ export default function AddHorse() {
                                             <SelectValue placeholder="Minimum Price" />
                                           </SelectTrigger>
                                         </FormControl>
-                                      <SelectContent>
-                                        <SelectItem value="5000">
-                                          {form.watch("currency") === "USD" ? "$5,000" : 
-                                           form.watch("currency") === "GBP" ? "£5,000" : 
-                                           form.watch("currency") === "AUD" ? "A$5,000" : 
-                                           "€5,000"}
-                                        </SelectItem>
-                                        <SelectItem value="10000">
-                                          {form.watch("currency") === "USD" ? "$10,000" : 
-                                           form.watch("currency") === "GBP" ? "£10,000" : 
-                                           form.watch("currency") === "AUD" ? "A$10,000" : 
-                                           "€10,000"}
-                                        </SelectItem>
-                                        <SelectItem value="15000">
-                                          {form.watch("currency") === "USD" ? "$15,000" : 
-                                           form.watch("currency") === "GBP" ? "£15,000" : 
-                                           form.watch("currency") === "AUD" ? "A$15,000" : 
-                                           "€15,000"}
-                                        </SelectItem>
-                                        <SelectItem value="20000">
-                                          {form.watch("currency") === "USD" ? "$20,000" : 
-                                           form.watch("currency") === "GBP" ? "£20,000" : 
-                                           form.watch("currency") === "AUD" ? "A$20,000" : 
-                                           "€20,000"}
-                                        </SelectItem>
-                                        <SelectItem value="25000">
-                                          {form.watch("currency") === "USD" ? "$25,000" : 
-                                           form.watch("currency") === "GBP" ? "£25,000" : 
-                                           form.watch("currency") === "AUD" ? "A$25,000" : 
-                                           "€25,000"}
-                                        </SelectItem>
-                                        <SelectItem value="30000">
-                                          {form.watch("currency") === "USD" ? "$30,000" : 
-                                           form.watch("currency") === "GBP" ? "£30,000" : 
-                                           form.watch("currency") === "AUD" ? "A$30,000" : 
-                                           "€30,000"}
-                                        </SelectItem>
-                                        <SelectItem value="35000">
-                                          {form.watch("currency") === "USD" ? "$35,000" : 
-                                           form.watch("currency") === "GBP" ? "£35,000" : 
-                                           form.watch("currency") === "AUD" ? "A$35,000" : 
-                                           "€35,000"}
-                                        </SelectItem>
-                                        <SelectItem value="40000">
-                                          {form.watch("currency") === "USD" ? "$40,000" : 
-                                           form.watch("currency") === "GBP" ? "£40,000" : 
-                                           form.watch("currency") === "AUD" ? "A$40,000" : 
-                                           "€40,000"}
-                                        </SelectItem>
-                                        <SelectItem value="45000">
-                                          {form.watch("currency") === "USD" ? "$45,000" : 
-                                           form.watch("currency") === "GBP" ? "£45,000" : 
-                                           form.watch("currency") === "AUD" ? "A$45,000" : 
-                                           "€45,000"}
-                                        </SelectItem>
-                                        <SelectItem value="50000">
-                                          {form.watch("currency") === "USD" ? "$50,000" : 
-                                           form.watch("currency") === "GBP" ? "£50,000" : 
-                                           form.watch("currency") === "AUD" ? "A$50,000" : 
-                                           "€50,000"}
-                                        </SelectItem>
-                                        <SelectItem value="55000">
-                                          {form.watch("currency") === "USD" ? "$55,000" : 
-                                           form.watch("currency") === "GBP" ? "£55,000" : 
-                                           form.watch("currency") === "AUD" ? "A$55,000" : 
-                                           "€55,000"}
-                                        </SelectItem>
-                                        <SelectItem value="60000">
-                                          {form.watch("currency") === "USD" ? "$60,000" : 
-                                           form.watch("currency") === "GBP" ? "£60,000" : 
-                                           form.watch("currency") === "AUD" ? "A$60,000" : 
-                                           "€60,000"}
-                                        </SelectItem>
-                                        <SelectItem value="65000">
-                                          {form.watch("currency") === "USD" ? "$65,000" : 
-                                           form.watch("currency") === "GBP" ? "£65,000" : 
-                                           form.watch("currency") === "AUD" ? "A$65,000" : 
-                                           "€65,000"}
-                                        </SelectItem>
-                                        <SelectItem value="70000">
-                                          {form.watch("currency") === "USD" ? "$70,000" : 
-                                           form.watch("currency") === "GBP" ? "£70,000" : 
-                                           form.watch("currency") === "AUD" ? "A$70,000" : 
-                                           "€70,000"}
-                                        </SelectItem>
-                                        <SelectItem value="75000">
-                                          {form.watch("currency") === "USD" ? "$75,000" : 
-                                           form.watch("currency") === "GBP" ? "£75,000" : 
-                                           form.watch("currency") === "AUD" ? "A$75,000" : 
-                                           "€75,000"}
-                                        </SelectItem>
-                                        <SelectItem value="80000">
-                                          {form.watch("currency") === "USD" ? "$80,000" : 
-                                           form.watch("currency") === "GBP" ? "£80,000" : 
-                                           form.watch("currency") === "AUD" ? "A$80,000" : 
-                                           "€80,000"}
-                                        </SelectItem>
-                                        <SelectItem value="85000">
-                                          {form.watch("currency") === "USD" ? "$85,000" : 
-                                           form.watch("currency") === "GBP" ? "£85,000" : 
-                                           form.watch("currency") === "AUD" ? "A$85,000" : 
-                                           "€85,000"}
-                                        </SelectItem>
-                                        <SelectItem value="90000">
-                                          {form.watch("currency") === "USD" ? "$90,000" : 
-                                           form.watch("currency") === "GBP" ? "£90,000" : 
-                                           form.watch("currency") === "AUD" ? "A$90,000" : 
-                                           "€90,000"}
-                                        </SelectItem>
-                                        <SelectItem value="95000">
-                                          {form.watch("currency") === "USD" ? "$95,000" : 
-                                           form.watch("currency") === "GBP" ? "£95,000" : 
-                                           form.watch("currency") === "AUD" ? "A$95,000" : 
-                                           "€95,000"}
-                                        </SelectItem>
-                                        <SelectItem value="100000">
-                                          {form.watch("currency") === "USD" ? "$100,000" : 
-                                           form.watch("currency") === "GBP" ? "£100,000" : 
-                                           form.watch("currency") === "AUD" ? "A$100,000" : 
-                                           "€100,000"}
-                                        </SelectItem>
-                                        <SelectItem value="150000">
-                                          {form.watch("currency") === "USD" ? "$150,000" : 
-                                           form.watch("currency") === "GBP" ? "£150,000" : 
-                                           form.watch("currency") === "AUD" ? "A$150,000" : 
-                                           "€150,000"}
-                                        </SelectItem>
-                                        <SelectItem value="200000">
-                                          {form.watch("currency") === "USD" ? "$200,000" : 
-                                           form.watch("currency") === "GBP" ? "£200,000" : 
-                                           form.watch("currency") === "AUD" ? "A$200,000" : 
-                                           "€200,000"}
-                                        </SelectItem>
-                                        <SelectItem value="250000">
-                                          {form.watch("currency") === "USD" ? "$250,000" : 
-                                           form.watch("currency") === "GBP" ? "£250,000" : 
-                                           form.watch("currency") === "AUD" ? "A$250,000" : 
-                                           "€250,000"}
-                                        </SelectItem>
-                                        <SelectItem value="300000">
-                                          {form.watch("currency") === "USD" ? "$300,000" : 
-                                           form.watch("currency") === "GBP" ? "£300,000" : 
-                                           form.watch("currency") === "AUD" ? "A$300,000" : 
-                                           "€300,000"}
-                                        </SelectItem>
-                                        <SelectItem value="350000">
-                                          {form.watch("currency") === "USD" ? "$350,000" : 
-                                           form.watch("currency") === "GBP" ? "£350,000" : 
-                                           form.watch("currency") === "AUD" ? "A$350,000" : 
-                                           "€350,000"}
-                                        </SelectItem>
-                                        <SelectItem value="400000">
-                                          {form.watch("currency") === "USD" ? "$400,000" : 
-                                           form.watch("currency") === "GBP" ? "£400,000" : 
-                                           form.watch("currency") === "AUD" ? "A$400,000" : 
-                                           "€400,000"}
-                                        </SelectItem>
-                                        <SelectItem value="450000">
-                                          {form.watch("currency") === "USD" ? "$450,000" : 
-                                           form.watch("currency") === "GBP" ? "£450,000" : 
-                                           form.watch("currency") === "AUD" ? "A$450,000" : 
-                                           "€450,000"}
-                                        </SelectItem>
-                                        <SelectItem value="500000">
-                                          {form.watch("currency") === "USD" ? "$500,000" : 
-                                           form.watch("currency") === "GBP" ? "£500,000" : 
-                                           form.watch("currency") === "AUD" ? "A$500,000" : 
-                                           "€500,000"}
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                                        <SelectContent>
+                                          <SelectItem value="5000">
+                                            {form.watch("currency") === "USD" ? "$5,000" : 
+                                             form.watch("currency") === "GBP" ? "£5,000" : 
+                                             form.watch("currency") === "AUD" ? "A$5,000" : 
+                                             "€5,000"}
+                                          </SelectItem>
+                                          <SelectItem value="10000">
+                                            {form.watch("currency") === "USD" ? "$10,000" : 
+                                             form.watch("currency") === "GBP" ? "£10,000" : 
+                                             form.watch("currency") === "AUD" ? "A$10,000" : 
+                                             "€10,000"}
+                                          </SelectItem>
+                                          <SelectItem value="15000">
+                                            {form.watch("currency") === "USD" ? "$15,000" : 
+                                             form.watch("currency") === "GBP" ? "£15,000" : 
+                                             form.watch("currency") === "AUD" ? "A$15,000" : 
+                                             "€15,000"}
+                                          </SelectItem>
+                                          <SelectItem value="20000">
+                                            {form.watch("currency") === "USD" ? "$20,000" : 
+                                             form.watch("currency") === "GBP" ? "£20,000" : 
+                                             form.watch("currency") === "AUD" ? "A$20,000" : 
+                                             "€20,000"}
+                                          </SelectItem>
+                                          <SelectItem value="25000">
+                                            {form.watch("currency") === "USD" ? "$25,000" : 
+                                             form.watch("currency") === "GBP" ? "£25,000" : 
+                                             form.watch("currency") === "AUD" ? "A$25,000" : 
+                                             "€25,000"}
+                                          </SelectItem>
+                                          <SelectItem value="30000">
+                                            {form.watch("currency") === "USD" ? "$30,000" : 
+                                             form.watch("currency") === "GBP" ? "£30,000" : 
+                                             form.watch("currency") === "AUD" ? "A$30,000" : 
+                                             "€30,000"}
+                                          </SelectItem>
+                                          <SelectItem value="35000">
+                                            {form.watch("currency") === "USD" ? "$35,000" : 
+                                             form.watch("currency") === "GBP" ? "£35,000" : 
+                                             form.watch("currency") === "AUD" ? "A$35,000" : 
+                                             "€35,000"}
+                                          </SelectItem>
+                                          <SelectItem value="40000">
+                                            {form.watch("currency") === "USD" ? "$40,000" : 
+                                             form.watch("currency") === "GBP" ? "£40,000" : 
+                                             form.watch("currency") === "AUD" ? "A$40,000" : 
+                                             "€40,000"}
+                                          </SelectItem>
+                                          <SelectItem value="45000">
+                                            {form.watch("currency") === "USD" ? "$45,000" : 
+                                             form.watch("currency") === "GBP" ? "£45,000" : 
+                                             form.watch("currency") === "AUD" ? "A$45,000" : 
+                                             "€45,000"}
+                                          </SelectItem>
+                                          <SelectItem value="50000">
+                                            {form.watch("currency") === "USD" ? "$50,000" : 
+                                             form.watch("currency") === "GBP" ? "£50,000" : 
+                                             form.watch("currency") === "AUD" ? "A$50,000" : 
+                                             "€50,000"}
+                                          </SelectItem>
+                                          <SelectItem value="55000">
+                                            {form.watch("currency") === "USD" ? "$55,000" : 
+                                             form.watch("currency") === "GBP" ? "£55,000" : 
+                                             form.watch("currency") === "AUD" ? "A$55,000" : 
+                                             "€55,000"}
+                                          </SelectItem>
+                                          <SelectItem value="60000">
+                                            {form.watch("currency") === "USD" ? "$60,000" : 
+                                             form.watch("currency") === "GBP" ? "£60,000" : 
+                                             form.watch("currency") === "AUD" ? "A$60,000" : 
+                                             "€60,000"}
+                                          </SelectItem>
+                                          <SelectItem value="65000">
+                                            {form.watch("currency") === "USD" ? "$65,000" : 
+                                             form.watch("currency") === "GBP" ? "£65,000" : 
+                                             form.watch("currency") === "AUD" ? "A$65,000" : 
+                                             "€65,000"}
+                                          </SelectItem>
+                                          <SelectItem value="70000">
+                                            {form.watch("currency") === "USD" ? "$70,000" : 
+                                             form.watch("currency") === "GBP" ? "£70,000" : 
+                                             form.watch("currency") === "AUD" ? "A$70,000" : 
+                                             "€70,000"}
+                                          </SelectItem>
+                                          <SelectItem value="75000">
+                                            {form.watch("currency") === "USD" ? "$75,000" : 
+                                             form.watch("currency") === "GBP" ? "£75,000" : 
+                                             form.watch("currency") === "AUD" ? "A$75,000" : 
+                                             "€75,000"}
+                                          </SelectItem>
+                                          <SelectItem value="80000">
+                                            {form.watch("currency") === "USD" ? "$80,000" : 
+                                             form.watch("currency") === "GBP" ? "£80,000" : 
+                                             form.watch("currency") === "AUD" ? "A$80,000" : 
+                                             "€80,000"}
+                                          </SelectItem>
+                                          <SelectItem value="85000">
+                                            {form.watch("currency") === "USD" ? "$85,000" : 
+                                             form.watch("currency") === "GBP" ? "£85,000" : 
+                                             form.watch("currency") === "AUD" ? "A$85,000" : 
+                                             "€85,000"}
+                                          </SelectItem>
+                                          <SelectItem value="90000">
+                                            {form.watch("currency") === "USD" ? "$90,000" : 
+                                             form.watch("currency") === "GBP" ? "£90,000" : 
+                                             form.watch("currency") === "AUD" ? "A$90,000" : 
+                                             "€90,000"}
+                                          </SelectItem>
+                                          <SelectItem value="95000">
+                                            {form.watch("currency") === "USD" ? "$95,000" : 
+                                             form.watch("currency") === "GBP" ? "£95,000" : 
+                                             form.watch("currency") === "AUD" ? "A$95,000" : 
+                                             "€95,000"}
+                                          </SelectItem>
+                                          <SelectItem value="100000">
+                                            {form.watch("currency") === "USD" ? "$100,000" : 
+                                             form.watch("currency") === "GBP" ? "£100,000" : 
+                                             form.watch("currency") === "AUD" ? "A$100,000" : 
+                                             "€100,000"}
+                                          </SelectItem>
+                                          <SelectItem value="150000">
+                                            {form.watch("currency") === "USD" ? "$150,000" : 
+                                             form.watch("currency") === "GBP" ? "£150,000" : 
+                                             form.watch("currency") === "AUD" ? "A$150,000" : 
+                                             "€150,000"}
+                                          </SelectItem>
+                                          <SelectItem value="200000">
+                                            {form.watch("currency") === "USD" ? "$200,000" : 
+                                             form.watch("currency") === "GBP" ? "£200,000" : 
+                                             form.watch("currency") === "AUD" ? "A$200,000" : 
+                                             "€200,000"}
+                                          </SelectItem>
+                                          <SelectItem value="250000">
+                                            {form.watch("currency") === "USD" ? "$250,000" : 
+                                             form.watch("currency") === "GBP" ? "£250,000" : 
+                                             form.watch("currency") === "AUD" ? "A$250,000" : 
+                                             "€250,000"}
+                                          </SelectItem>
+                                          <SelectItem value="300000">
+                                            {form.watch("currency") === "USD" ? "$300,000" : 
+                                             form.watch("currency") === "GBP" ? "£300,000" : 
+                                             form.watch("currency") === "AUD" ? "A$300,000" : 
+                                             "€300,000"}
+                                          </SelectItem>
+                                          <SelectItem value="350000">
+                                            {form.watch("currency") === "USD" ? "$350,000" : 
+                                             form.watch("currency") === "GBP" ? "£350,000" : 
+                                             form.watch("currency") === "AUD" ? "A$350,000" : 
+                                             "€350,000"}
+                                          </SelectItem>
+                                          <SelectItem value="400000">
+                                            {form.watch("currency") === "USD" ? "$400,000" : 
+                                             form.watch("currency") === "GBP" ? "£400,000" : 
+                                             form.watch("currency") === "AUD" ? "A$400,000" : 
+                                             "€400,000"}
+                                          </SelectItem>
+                                          <SelectItem value="450000">
+                                            {form.watch("currency") === "USD" ? "$450,000" : 
+                                             form.watch("currency") === "GBP" ? "£450,000" : 
+                                             form.watch("currency") === "AUD" ? "A$450,000" : 
+                                             "€450,000"}
+                                          </SelectItem>
+                                          <SelectItem value="500000">
+                                            {form.watch("currency") === "USD" ? "$500,000" : 
+                                             form.watch("currency") === "GBP" ? "£500,000" : 
+                                             form.watch("currency") === "AUD" ? "A$500,000" : 
+                                             "€500,000"}
+                                          </SelectItem>
+                                          <SelectItem value="999999">
+                                            {form.watch("currency") === "USD" ? "Over $500,000" : 
+                                             form.watch("currency") === "GBP" ? "Over £500,000" : 
+                                             form.watch("currency") === "AUD" ? "Over A$500,000" : 
+                                             "Over €500,000"}
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
                               
                               <div>
                                 <FormLabel className="block mb-2">Max</FormLabel>
@@ -469,294 +475,235 @@ export default function AddHorse() {
                                             <SelectValue placeholder="Maximum Price" />
                                           </SelectTrigger>
                                         </FormControl>
-                                      <SelectContent>
-                                        <SelectItem value="5000">
-                                          {form.watch("currency") === "USD" ? "$5,000" : 
-                                           form.watch("currency") === "GBP" ? "£5,000" : 
-                                           form.watch("currency") === "AUD" ? "A$5,000" : 
-                                           "€5,000"}
-                                        </SelectItem>
-                                        <SelectItem value="10000">
-                                          {form.watch("currency") === "USD" ? "$10,000" : 
-                                           form.watch("currency") === "GBP" ? "£10,000" : 
-                                           form.watch("currency") === "AUD" ? "A$10,000" : 
-                                           "€10,000"}
-                                        </SelectItem>
-                                        <SelectItem value="15000">
-                                          {form.watch("currency") === "USD" ? "$15,000" : 
-                                           form.watch("currency") === "GBP" ? "£15,000" : 
-                                           form.watch("currency") === "AUD" ? "A$15,000" : 
-                                           "€15,000"}
-                                        </SelectItem>
-                                        <SelectItem value="20000">
-                                          {form.watch("currency") === "USD" ? "$20,000" : 
-                                           form.watch("currency") === "GBP" ? "£20,000" : 
-                                           form.watch("currency") === "AUD" ? "A$20,000" : 
-                                           "€20,000"}
-                                        </SelectItem>
-                                        <SelectItem value="25000">
-                                          {form.watch("currency") === "USD" ? "$25,000" : 
-                                           form.watch("currency") === "GBP" ? "£25,000" : 
-                                           form.watch("currency") === "AUD" ? "A$25,000" : 
-                                           "€25,000"}
-                                        </SelectItem>
-                                        <SelectItem value="30000">
-                                          {form.watch("currency") === "USD" ? "$30,000" : 
-                                           form.watch("currency") === "GBP" ? "£30,000" : 
-                                           form.watch("currency") === "AUD" ? "A$30,000" : 
-                                           "€30,000"}
-                                        </SelectItem>
-                                        <SelectItem value="35000">
-                                          {form.watch("currency") === "USD" ? "$35,000" : 
-                                           form.watch("currency") === "GBP" ? "£35,000" : 
-                                           form.watch("currency") === "AUD" ? "A$35,000" : 
-                                           "€35,000"}
-                                        </SelectItem>
-                                        <SelectItem value="40000">
-                                          {form.watch("currency") === "USD" ? "$40,000" : 
-                                           form.watch("currency") === "GBP" ? "£40,000" : 
-                                           form.watch("currency") === "AUD" ? "A$40,000" : 
-                                           "€40,000"}
-                                        </SelectItem>
-                                        <SelectItem value="45000">
-                                          {form.watch("currency") === "USD" ? "$45,000" : 
-                                           form.watch("currency") === "GBP" ? "£45,000" : 
-                                           form.watch("currency") === "AUD" ? "A$45,000" : 
-                                           "€45,000"}
-                                        </SelectItem>
-                                        <SelectItem value="50000">
-                                          {form.watch("currency") === "USD" ? "$50,000" : 
-                                           form.watch("currency") === "GBP" ? "£50,000" : 
-                                           form.watch("currency") === "AUD" ? "A$50,000" : 
-                                           "€50,000"}
-                                        </SelectItem>
-                                        <SelectItem value="55000">
-                                          {form.watch("currency") === "USD" ? "$55,000" : 
-                                           form.watch("currency") === "GBP" ? "£55,000" : 
-                                           form.watch("currency") === "AUD" ? "A$55,000" : 
-                                           "€55,000"}
-                                        </SelectItem>
-                                        <SelectItem value="60000">
-                                          {form.watch("currency") === "USD" ? "$60,000" : 
-                                           form.watch("currency") === "GBP" ? "£60,000" : 
-                                           form.watch("currency") === "AUD" ? "A$60,000" : 
-                                           "€60,000"}
-                                        </SelectItem>
-                                        <SelectItem value="65000">
-                                          {form.watch("currency") === "USD" ? "$65,000" : 
-                                           form.watch("currency") === "GBP" ? "£65,000" : 
-                                           form.watch("currency") === "AUD" ? "A$65,000" : 
-                                           "€65,000"}
-                                        </SelectItem>
-                                        <SelectItem value="70000">
-                                          {form.watch("currency") === "USD" ? "$70,000" : 
-                                           form.watch("currency") === "GBP" ? "£70,000" : 
-                                           form.watch("currency") === "AUD" ? "A$70,000" : 
-                                           "€70,000"}
-                                        </SelectItem>
-                                        <SelectItem value="75000">
-                                          {form.watch("currency") === "USD" ? "$75,000" : 
-                                           form.watch("currency") === "GBP" ? "£75,000" : 
-                                           form.watch("currency") === "AUD" ? "A$75,000" : 
-                                           "€75,000"}
-                                        </SelectItem>
-                                        <SelectItem value="80000">
-                                          {form.watch("currency") === "USD" ? "$80,000" : 
-                                           form.watch("currency") === "GBP" ? "£80,000" : 
-                                           form.watch("currency") === "AUD" ? "A$80,000" : 
-                                           "€80,000"}
-                                        </SelectItem>
-                                        <SelectItem value="85000">
-                                          {form.watch("currency") === "USD" ? "$85,000" : 
-                                           form.watch("currency") === "GBP" ? "£85,000" : 
-                                           form.watch("currency") === "AUD" ? "A$85,000" : 
-                                           "€85,000"}
-                                        </SelectItem>
-                                        <SelectItem value="90000">
-                                          {form.watch("currency") === "USD" ? "$90,000" : 
-                                           form.watch("currency") === "GBP" ? "£90,000" : 
-                                           form.watch("currency") === "AUD" ? "A$90,000" : 
-                                           "€90,000"}
-                                        </SelectItem>
-                                        <SelectItem value="95000">
-                                          {form.watch("currency") === "USD" ? "$95,000" : 
-                                           form.watch("currency") === "GBP" ? "£95,000" : 
-                                           form.watch("currency") === "AUD" ? "A$95,000" : 
-                                           "€95,000"}
-                                        </SelectItem>
-                                        <SelectItem value="100000">
-                                          {form.watch("currency") === "USD" ? "$100,000" : 
-                                           form.watch("currency") === "GBP" ? "£100,000" : 
-                                           form.watch("currency") === "AUD" ? "A$100,000" : 
-                                           "€100,000"}
-                                        </SelectItem>
-                                        <SelectItem value="150000">
-                                          {form.watch("currency") === "USD" ? "$150,000" : 
-                                           form.watch("currency") === "GBP" ? "£150,000" : 
-                                           form.watch("currency") === "AUD" ? "A$150,000" : 
-                                           "€150,000"}
-                                        </SelectItem>
-                                        <SelectItem value="200000">
-                                          {form.watch("currency") === "USD" ? "$200,000" : 
-                                           form.watch("currency") === "GBP" ? "£200,000" : 
-                                           form.watch("currency") === "AUD" ? "A$200,000" : 
-                                           "€200,000"}
-                                        </SelectItem>
-                                        <SelectItem value="250000">
-                                          {form.watch("currency") === "USD" ? "$250,000" : 
-                                           form.watch("currency") === "GBP" ? "£250,000" : 
-                                           form.watch("currency") === "AUD" ? "A$250,000" : 
-                                           "€250,000"}
-                                        </SelectItem>
-                                        <SelectItem value="300000">
-                                          {form.watch("currency") === "USD" ? "$300,000" : 
-                                           form.watch("currency") === "GBP" ? "£300,000" : 
-                                           form.watch("currency") === "AUD" ? "A$300,000" : 
-                                           "€300,000"}
-                                        </SelectItem>
-                                        <SelectItem value="350000">
-                                          {form.watch("currency") === "USD" ? "$350,000" : 
-                                           form.watch("currency") === "GBP" ? "£350,000" : 
-                                           form.watch("currency") === "AUD" ? "A$350,000" : 
-                                           "€350,000"}
-                                        </SelectItem>
-                                        <SelectItem value="400000">
-                                          {form.watch("currency") === "USD" ? "$400,000" : 
-                                           form.watch("currency") === "GBP" ? "£400,000" : 
-                                           form.watch("currency") === "AUD" ? "A$400,000" : 
-                                           "€400,000"}
-                                        </SelectItem>
-                                        <SelectItem value="450000">
-                                          {form.watch("currency") === "USD" ? "$450,000" : 
-                                           form.watch("currency") === "GBP" ? "£450,000" : 
-                                           form.watch("currency") === "AUD" ? "A$450,000" : 
-                                           "€450,000"}
-                                        </SelectItem>
-                                        <SelectItem value="500000">
-                                          {form.watch("currency") === "USD" ? "$500,000" : 
-                                           form.watch("currency") === "GBP" ? "£500,000" : 
-                                           form.watch("currency") === "AUD" ? "A$500,000" : 
-                                           "€500,000"}
-                                        </SelectItem>
-                                        <SelectItem value="999999">
-                                          {form.watch("currency") === "USD" ? "Over $500,000" : 
-                                           form.watch("currency") === "GBP" ? "Over £500,000" : 
-                                           form.watch("currency") === "AUD" ? "Over A$500,000" : 
-                                           "Over €500,000"}
-                                        </SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
+                                        <SelectContent>
+                                          <SelectItem value="5000">
+                                            {form.watch("currency") === "USD" ? "$5,000" : 
+                                             form.watch("currency") === "GBP" ? "£5,000" : 
+                                             form.watch("currency") === "AUD" ? "A$5,000" : 
+                                             "€5,000"}
+                                          </SelectItem>
+                                          <SelectItem value="10000">
+                                            {form.watch("currency") === "USD" ? "$10,000" : 
+                                             form.watch("currency") === "GBP" ? "£10,000" : 
+                                             form.watch("currency") === "AUD" ? "A$10,000" : 
+                                             "€10,000"}
+                                          </SelectItem>
+                                          <SelectItem value="15000">
+                                            {form.watch("currency") === "USD" ? "$15,000" : 
+                                             form.watch("currency") === "GBP" ? "£15,000" : 
+                                             form.watch("currency") === "AUD" ? "A$15,000" : 
+                                             "€15,000"}
+                                          </SelectItem>
+                                          <SelectItem value="20000">
+                                            {form.watch("currency") === "USD" ? "$20,000" : 
+                                             form.watch("currency") === "GBP" ? "£20,000" : 
+                                             form.watch("currency") === "AUD" ? "A$20,000" : 
+                                             "€20,000"}
+                                          </SelectItem>
+                                          <SelectItem value="25000">
+                                            {form.watch("currency") === "USD" ? "$25,000" : 
+                                             form.watch("currency") === "GBP" ? "£25,000" : 
+                                             form.watch("currency") === "AUD" ? "A$25,000" : 
+                                             "€25,000"}
+                                          </SelectItem>
+                                          <SelectItem value="30000">
+                                            {form.watch("currency") === "USD" ? "$30,000" : 
+                                             form.watch("currency") === "GBP" ? "£30,000" : 
+                                             form.watch("currency") === "AUD" ? "A$30,000" : 
+                                             "€30,000"}
+                                          </SelectItem>
+                                          <SelectItem value="35000">
+                                            {form.watch("currency") === "USD" ? "$35,000" : 
+                                             form.watch("currency") === "GBP" ? "£35,000" : 
+                                             form.watch("currency") === "AUD" ? "A$35,000" : 
+                                             "€35,000"}
+                                          </SelectItem>
+                                          <SelectItem value="40000">
+                                            {form.watch("currency") === "USD" ? "$40,000" : 
+                                             form.watch("currency") === "GBP" ? "£40,000" : 
+                                             form.watch("currency") === "AUD" ? "A$40,000" : 
+                                             "€40,000"}
+                                          </SelectItem>
+                                          <SelectItem value="45000">
+                                            {form.watch("currency") === "USD" ? "$45,000" : 
+                                             form.watch("currency") === "GBP" ? "£45,000" : 
+                                             form.watch("currency") === "AUD" ? "A$45,000" : 
+                                             "€45,000"}
+                                          </SelectItem>
+                                          <SelectItem value="50000">
+                                            {form.watch("currency") === "USD" ? "$50,000" : 
+                                             form.watch("currency") === "GBP" ? "£50,000" : 
+                                             form.watch("currency") === "AUD" ? "A$50,000" : 
+                                             "€50,000"}
+                                          </SelectItem>
+                                          <SelectItem value="55000">
+                                            {form.watch("currency") === "USD" ? "$55,000" : 
+                                             form.watch("currency") === "GBP" ? "£55,000" : 
+                                             form.watch("currency") === "AUD" ? "A$55,000" : 
+                                             "€55,000"}
+                                          </SelectItem>
+                                          <SelectItem value="60000">
+                                            {form.watch("currency") === "USD" ? "$60,000" : 
+                                             form.watch("currency") === "GBP" ? "£60,000" : 
+                                             form.watch("currency") === "AUD" ? "A$60,000" : 
+                                             "€60,000"}
+                                          </SelectItem>
+                                          <SelectItem value="65000">
+                                            {form.watch("currency") === "USD" ? "$65,000" : 
+                                             form.watch("currency") === "GBP" ? "£65,000" : 
+                                             form.watch("currency") === "AUD" ? "A$65,000" : 
+                                             "€65,000"}
+                                          </SelectItem>
+                                          <SelectItem value="70000">
+                                            {form.watch("currency") === "USD" ? "$70,000" : 
+                                             form.watch("currency") === "GBP" ? "£70,000" : 
+                                             form.watch("currency") === "AUD" ? "A$70,000" : 
+                                             "€70,000"}
+                                          </SelectItem>
+                                          <SelectItem value="75000">
+                                            {form.watch("currency") === "USD" ? "$75,000" : 
+                                             form.watch("currency") === "GBP" ? "£75,000" : 
+                                             form.watch("currency") === "AUD" ? "A$75,000" : 
+                                             "€75,000"}
+                                          </SelectItem>
+                                          <SelectItem value="80000">
+                                            {form.watch("currency") === "USD" ? "$80,000" : 
+                                             form.watch("currency") === "GBP" ? "£80,000" : 
+                                             form.watch("currency") === "AUD" ? "A$80,000" : 
+                                             "€80,000"}
+                                          </SelectItem>
+                                          <SelectItem value="85000">
+                                            {form.watch("currency") === "USD" ? "$85,000" : 
+                                             form.watch("currency") === "GBP" ? "£85,000" : 
+                                             form.watch("currency") === "AUD" ? "A$85,000" : 
+                                             "€85,000"}
+                                          </SelectItem>
+                                          <SelectItem value="90000">
+                                            {form.watch("currency") === "USD" ? "$90,000" : 
+                                             form.watch("currency") === "GBP" ? "£90,000" : 
+                                             form.watch("currency") === "AUD" ? "A$90,000" : 
+                                             "€90,000"}
+                                          </SelectItem>
+                                          <SelectItem value="95000">
+                                            {form.watch("currency") === "USD" ? "$95,000" : 
+                                             form.watch("currency") === "GBP" ? "£95,000" : 
+                                             form.watch("currency") === "AUD" ? "A$95,000" : 
+                                             "€95,000"}
+                                          </SelectItem>
+                                          <SelectItem value="100000">
+                                            {form.watch("currency") === "USD" ? "$100,000" : 
+                                             form.watch("currency") === "GBP" ? "£100,000" : 
+                                             form.watch("currency") === "AUD" ? "A$100,000" : 
+                                             "€100,000"}
+                                          </SelectItem>
+                                          <SelectItem value="150000">
+                                            {form.watch("currency") === "USD" ? "$150,000" : 
+                                             form.watch("currency") === "GBP" ? "£150,000" : 
+                                             form.watch("currency") === "AUD" ? "A$150,000" : 
+                                             "€150,000"}
+                                          </SelectItem>
+                                          <SelectItem value="200000">
+                                            {form.watch("currency") === "USD" ? "$200,000" : 
+                                             form.watch("currency") === "GBP" ? "£200,000" : 
+                                             form.watch("currency") === "AUD" ? "A$200,000" : 
+                                             "€200,000"}
+                                          </SelectItem>
+                                          <SelectItem value="250000">
+                                            {form.watch("currency") === "USD" ? "$250,000" : 
+                                             form.watch("currency") === "GBP" ? "£250,000" : 
+                                             form.watch("currency") === "AUD" ? "A$250,000" : 
+                                             "€250,000"}
+                                          </SelectItem>
+                                          <SelectItem value="300000">
+                                            {form.watch("currency") === "USD" ? "$300,000" : 
+                                             form.watch("currency") === "GBP" ? "£300,000" : 
+                                             form.watch("currency") === "AUD" ? "A$300,000" : 
+                                             "€300,000"}
+                                          </SelectItem>
+                                          <SelectItem value="350000">
+                                            {form.watch("currency") === "USD" ? "$350,000" : 
+                                             form.watch("currency") === "GBP" ? "£350,000" : 
+                                             form.watch("currency") === "AUD" ? "A$350,000" : 
+                                             "€350,000"}
+                                          </SelectItem>
+                                          <SelectItem value="400000">
+                                            {form.watch("currency") === "USD" ? "$400,000" : 
+                                             form.watch("currency") === "GBP" ? "£400,000" : 
+                                             form.watch("currency") === "AUD" ? "A$400,000" : 
+                                             "€400,000"}
+                                          </SelectItem>
+                                          <SelectItem value="450000">
+                                            {form.watch("currency") === "USD" ? "$450,000" : 
+                                             form.watch("currency") === "GBP" ? "£450,000" : 
+                                             form.watch("currency") === "AUD" ? "A$450,000" : 
+                                             "€450,000"}
+                                          </SelectItem>
+                                          <SelectItem value="500000">
+                                            {form.watch("currency") === "USD" ? "$500,000" : 
+                                             form.watch("currency") === "GBP" ? "£500,000" : 
+                                             form.watch("currency") === "AUD" ? "A$500,000" : 
+                                             "€500,000"}
+                                          </SelectItem>
+                                          <SelectItem value="999999">
+                                            {form.watch("currency") === "USD" ? "Over $500,000" : 
+                                             form.watch("currency") === "GBP" ? "Over £500,000" : 
+                                             form.watch("currency") === "AUD" ? "Over A$500,000" : 
+                                             "Over €500,000"}
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
                             </div>
                           </div>
                         )}
-                      </div>
-                      
-                      {/* Location and other details section */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="location_country"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Country</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select country" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Australia">Australia</SelectItem>
-                                  <SelectItem value="Belgium">Belgium</SelectItem>
-                                  <SelectItem value="France">France</SelectItem>
-                                  <SelectItem value="Germany">Germany</SelectItem>
-                                  <SelectItem value="Netherlands">Netherlands</SelectItem>
-                                  <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                                  <SelectItem value="United States">United States</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <Separator />
-                      
-                      <div className="space-y-4">
-                        <FormField
-                          control={form.control}
-                          name="disciplines"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Discipline</FormLabel>
-                              <Select 
-                                onValueChange={(value) => field.onChange([value])} 
-                                value={field.value?.length ? field.value[0] : undefined}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a discipline" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {constants?.disciplines?.map((discipline: string) => (
-                                    <SelectItem key={discipline} value={discipline}>
-                                      {discipline}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              <FormDescription>
-                                Choose the primary discipline for this horse
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="levels"
-                          render={({ field }) => {
-                            // Get the selected discipline (or default to empty array)
-                            const selectedDiscipline = form.watch("disciplines")[0] || "";
-                            // Get all available levels for the selected discipline
-                            const availableLevels = selectedDiscipline && constants?.levels?.[selectedDiscipline] || [];
 
-                            return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <FormField
+                            control={form.control}
+                            name="location_country"
+                            render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Performance Level</FormLabel>
-                                <Select 
-                                  onValueChange={(value) => field.onChange([value])} 
-                                  value={field.value?.length ? field.value[0] : undefined}
-                                  disabled={!selectedDiscipline}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder={selectedDiscipline ? "Select a performance level" : "Please select a discipline first"} />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {availableLevels.map((level: string) => (
-                                      <SelectItem key={level} value={level}>
-                                        {level}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
+                                <FormLabel>Country</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Country where the horse is located" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="location_radius_km"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Radius (km)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    placeholder="Distance radius in kilometers" 
+                                    {...field}
+                                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
+                                  />
+                                </FormControl>
                                 <FormDescription>
-                                  Choose the current performance level for this horse
+                                  How far from your location are you willing to show this horse?
                                 </FormDescription>
                                 <FormMessage />
                               </FormItem>
-                            );
-                          }}
-                        />
+                            )}
+                          />
+                        </div>
+
+                        <div className="w-full mt-4">
+                          <Button onClick={nextTab} type="button" className="w-full">
+                            Next: Horse Details
+                          </Button>
+                        </div>
                       </div>
                     </TabsContent>
                     
@@ -767,30 +714,15 @@ export default function AddHorse() {
                           name="age"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Age (years)</FormLabel>
-                              <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select age" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="3">3 years</SelectItem>
-                                  <SelectItem value="4">4 years</SelectItem>
-                                  <SelectItem value="5">5 years</SelectItem>
-                                  <SelectItem value="6">6 years</SelectItem>
-                                  <SelectItem value="7">7 years</SelectItem>
-                                  <SelectItem value="8">8 years</SelectItem>
-                                  <SelectItem value="9">9 years</SelectItem>
-                                  <SelectItem value="10">10 years</SelectItem>
-                                  <SelectItem value="11">11 years</SelectItem>
-                                  <SelectItem value="12">12 years</SelectItem>
-                                  <SelectItem value="13">13 years</SelectItem>
-                                  <SelectItem value="14">14 years</SelectItem>
-                                  <SelectItem value="15">15 years</SelectItem>
-                                  <SelectItem value="16">16+ years</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <FormLabel>Age</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  placeholder="Age in years" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
+                                />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -802,47 +734,21 @@ export default function AddHorse() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Height (hands)</FormLabel>
-                              <Select 
-                                onValueChange={value => {
-                                  field.onChange(parseFloat(value));
-                                  // Calculate cm equivalent for height_cm field
-                                  form.setValue("height_cm", Math.round(parseFloat(value) * 10.16));
-                                }} 
-                                defaultValue={field.value?.toString()}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select height" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="14.0">14.0 hh (142 cm)</SelectItem>
-                                  <SelectItem value="14.1">14.1 hh (144 cm)</SelectItem>
-                                  <SelectItem value="14.2">14.2 hh (147 cm)</SelectItem>
-                                  <SelectItem value="14.3">14.3 hh (150 cm)</SelectItem>
-                                  <SelectItem value="15.0">15.0 hh (152 cm)</SelectItem>
-                                  <SelectItem value="15.1">15.1 hh (155 cm)</SelectItem>
-                                  <SelectItem value="15.2">15.2 hh (157 cm)</SelectItem>
-                                  <SelectItem value="15.3">15.3 hh (160 cm)</SelectItem>
-                                  <SelectItem value="16.0">16.0 hh (163 cm)</SelectItem>
-                                  <SelectItem value="16.1">16.1 hh (165 cm)</SelectItem>
-                                  <SelectItem value="16.2">16.2 hh (168 cm)</SelectItem>
-                                  <SelectItem value="16.3">16.3 hh (170 cm)</SelectItem>
-                                  <SelectItem value="17.0">17.0 hh (173 cm)</SelectItem>
-                                  <SelectItem value="17.1">17.1 hh (175 cm)</SelectItem>
-                                  <SelectItem value="17.2">17.2 hh (178 cm)</SelectItem>
-                                  <SelectItem value="17.3">17.3 hh (180 cm)</SelectItem>
-                                  <SelectItem value="18.0">18.0 hh (183 cm)</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              <FormDescription>
-                                Standard measurement for horses (hands high)
-                              </FormDescription>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  placeholder="Height in hands" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 0)}
+                                />
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
                           name="sex"
@@ -852,13 +758,23 @@ export default function AddHorse() {
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select sex" />
+                                    <SelectValue placeholder="Select a sex" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  {constants?.sexes?.map((sex: string) => (
-                                    <SelectItem key={sex} value={sex}>{sex}</SelectItem>
-                                  ))}
+                                  {constants && constants.sexes ? (
+                                    constants.sexes.map((sex) => (
+                                      <SelectItem key={sex} value={sex}>
+                                        {sex}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <SelectItem value="Mare">Mare</SelectItem>
+                                      <SelectItem value="Gelding">Gelding</SelectItem>
+                                      <SelectItem value="Stallion">Stallion</SelectItem>
+                                    </>
+                                  )}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -874,18 +790,34 @@ export default function AddHorse() {
                               <FormLabel>Breed</FormLabel>
                               <Select 
                                 onValueChange={(value) => field.onChange([value])} 
-                                defaultValue={field.value[0] || "Warmblood"}
+                                defaultValue={field.value?.length ? field.value[0] : undefined}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select breed" />
+                                    <SelectValue placeholder="Select a breed" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="Warmblood">Warmblood</SelectItem>
-                                  <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
-                                  <SelectItem value="OTT Thoroughbred">OTT Thoroughbred</SelectItem>
-                                  <SelectItem value="Other">Other</SelectItem>
+                                  {constants && constants.breeds ? (
+                                    constants.breeds.map((breed) => (
+                                      <SelectItem key={breed} value={breed}>
+                                        {breed}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <SelectItem value="Warmblood">Warmblood</SelectItem>
+                                      <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
+                                      <SelectItem value="Arabian">Arabian</SelectItem>
+                                      <SelectItem value="Quarter Horse">Quarter Horse</SelectItem>
+                                      <SelectItem value="Hanoverian">Hanoverian</SelectItem>
+                                      <SelectItem value="Dutch Warmblood">Dutch Warmblood</SelectItem>
+                                      <SelectItem value="Oldenburg">Oldenburg</SelectItem>
+                                      <SelectItem value="Holsteiner">Holsteiner</SelectItem>
+                                      <SelectItem value="Selle Français">Selle Français</SelectItem>
+                                      <SelectItem value="Irish Sport Horse">Irish Sport Horse</SelectItem>
+                                    </>
+                                  )}
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -894,378 +826,438 @@ export default function AddHorse() {
                         />
                       </div>
                       
-                      <Separator />
-                      
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Breeding Information</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                          <FormField
-                            control={form.control}
-                            name="sire"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Sire</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Enter sire name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="dam"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Dam</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Enter dam name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="dam_sire"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Dam Sire</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Enter dam sire name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="sire"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Sire</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Sire" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="dam"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Dam</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Dam" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="dam_sire"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Dam Sire</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Dam Sire" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                      
-                      <Separator />
-                      
-                      <FormField
-                        control={form.control}
-                        name="characteristics"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Characteristics</FormLabel>
-                            <FormControl>
-                              <div className="relative">
+
+                      <div className="border-t border-gray-100 pt-6">
+                        <FormField
+                          control={form.control}
+                          name="disciplines"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Disciplines</FormLabel>
+                              <div className="grid grid-cols-1 gap-2">
                                 <Select 
                                   onValueChange={(value) => {
-                                    // If already selected, remove it, otherwise add it
-                                    if (field.value?.includes(value)) {
-                                      field.onChange(field.value.filter(item => item !== value));
+                                    // Get current disciplines
+                                    const currentDisciplines = field.value || [];
+                                    
+                                    // Check if the value is already selected
+                                    if (currentDisciplines.includes(value)) {
+                                      // If it is, remove it
+                                      field.onChange(currentDisciplines.filter((discipline) => discipline !== value));
                                     } else {
-                                      field.onChange([...(field.value || []), value]);
+                                      // If it's not, add it
+                                      field.onChange([...currentDisciplines, value]);
                                     }
                                   }}
-                                  value=""
+                                  value={field.value?.length ? field.value[0] : undefined}
                                 >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder={
-                                      field.value?.length 
-                                        ? `${field.value.length} characteristic${field.value.length > 1 ? 's' : ''} selected` 
-                                        : "Select characteristics"
-                                    } />
-                                  </SelectTrigger>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select at least one discipline" />
+                                    </SelectTrigger>
+                                  </FormControl>
                                   <SelectContent>
-                                    {constants?.characteristics?.map((characteristic: string) => (
-                                      <SelectItem 
-                                        key={characteristic} 
-                                        value={characteristic}
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <span className={field.value?.includes(characteristic) ? "font-semibold" : ""}>
-                                            {characteristic}
-                                          </span>
-                                          {field.value?.includes(characteristic) && 
-                                            <span className="ml-auto h-2 w-2 rounded-full bg-primary"></span>
-                                          }
-                                        </div>
-                                      </SelectItem>
-                                    ))}
+                                    {constants && constants.disciplines ? (
+                                      constants.disciplines.map((discipline) => (
+                                        <SelectItem key={discipline} value={discipline}>
+                                          {discipline}
+                                        </SelectItem>
+                                      ))
+                                    ) : (
+                                      <>
+                                        <SelectItem value="Jumping">Jumping</SelectItem>
+                                        <SelectItem value="Dressage">Dressage</SelectItem>
+                                        <SelectItem value="Eventing">Eventing</SelectItem>
+                                      </>
+                                    )}
                                   </SelectContent>
                                 </Select>
                               </div>
-                            </FormControl>
-                            {field.value && field.value.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {field.value.map((characteristic) => (
-                                  <div 
-                                    key={characteristic} 
-                                    className="bg-accent text-accent-foreground text-sm px-2 py-1 rounded-md flex items-center gap-1"
-                                  >
-                                    <span>{characteristic}</span>
-                                    <button 
-                                      type="button"
-                                      className="text-muted-foreground hover:text-foreground"
-                                      onClick={() => {
-                                        field.onChange(field.value.filter(item => item !== characteristic));
-                                      }}
-                                    >
-                                      <X className="h-3 w-3" />
-                                    </button>
-                                  </div>
-                                ))}
+                              
+                              {field.value && field.value.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {field.value.map((discipline) => (
+                                    <div key={discipline} className="bg-primary/10 text-primary rounded-md px-2 py-1 text-sm flex items-center">
+                                      {discipline}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          field.onChange(field.value?.filter((d) => d !== discipline));
+                                        }}
+                                        className="ml-1 text-primary hover:text-primary/80"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="border-t border-gray-100 pt-6">
+                        <FormField
+                          control={form.control}
+                          name="levels"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Performance Levels</FormLabel>
+                              <div className="grid grid-cols-1 gap-2">
+                                <Select 
+                                  onValueChange={(value) => {
+                                    // Get current levels
+                                    const currentLevels = field.value || [];
+                                    
+                                    // Check if the value is already selected
+                                    if (currentLevels.includes(value)) {
+                                      // If it is, remove it
+                                      field.onChange(currentLevels.filter((level) => level !== value));
+                                    } else {
+                                      // If it's not, add it
+                                      field.onChange([...currentLevels, value]);
+                                    }
+                                  }}
+                                  value={field.value?.length ? field.value[0] : undefined}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select at least one level" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {constants && constants.levels ? (
+                                      constants.levels.map((level) => (
+                                        <SelectItem key={level} value={level}>
+                                          {level}
+                                        </SelectItem>
+                                      ))
+                                    ) : (
+                                      <>
+                                        <SelectItem value="1.00m">1.00m</SelectItem>
+                                        <SelectItem value="1.10m">1.10m</SelectItem>
+                                        <SelectItem value="1.20m">1.20m</SelectItem>
+                                        <SelectItem value="1.30m">1.30m</SelectItem>
+                                        <SelectItem value="1.40m">1.40m</SelectItem>
+                                        <SelectItem value="1.50m">1.50m</SelectItem>
+                                        <SelectItem value="1.60m">1.60m</SelectItem>
+                                      </>
+                                    )}
+                                  </SelectContent>
+                                </Select>
                               </div>
-                            )}
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              
+                              {field.value && field.value.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {field.value.map((level) => (
+                                    <div key={level} className="bg-primary/10 text-primary rounded-md px-2 py-1 text-sm flex items-center">
+                                      {level}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          field.onChange(field.value?.filter((l) => l !== level));
+                                        }}
+                                        className="ml-1 text-primary hover:text-primary/80"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="border-t border-gray-100 pt-6">
+                        <FormField
+                          control={form.control}
+                          name="characteristics"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Characteristics</FormLabel>
+                              <div className="grid grid-cols-1 gap-2">
+                                <Select 
+                                  onValueChange={(value) => {
+                                    // Get current characteristics
+                                    const currentCharacteristics = field.value || [];
+                                    
+                                    // Check if the value is already selected
+                                    if (currentCharacteristics.includes(value)) {
+                                      // If it is, remove it
+                                      field.onChange(currentCharacteristics.filter((char) => char !== value));
+                                    } else {
+                                      // If it's not, add it
+                                      field.onChange([...currentCharacteristics, value]);
+                                    }
+                                  }}
+                                  value={""}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select characteristics" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {constants && constants.characteristics ? (
+                                      constants.characteristics.map((characteristic) => (
+                                        <SelectItem key={characteristic} value={characteristic}>
+                                          {characteristic}
+                                        </SelectItem>
+                                      ))
+                                    ) : (
+                                      <>
+                                        <SelectItem value="Forward">Forward</SelectItem>
+                                        <SelectItem value="Brave">Brave</SelectItem>
+                                        <SelectItem value="Careful">Careful</SelectItem>
+                                        <SelectItem value="Scopey">Scopey</SelectItem>
+                                        <SelectItem value="Athletic">Athletic</SelectItem>
+                                        <SelectItem value="Balanced">Balanced</SelectItem>
+                                        <SelectItem value="Quick">Quick</SelectItem>
+                                        <SelectItem value="Powerful">Powerful</SelectItem>
+                                        <SelectItem value="Adjustable">Adjustable</SelectItem>
+                                        <SelectItem value="Easy">Easy</SelectItem>
+                                        <SelectItem value="Gentle">Gentle</SelectItem>
+                                        <SelectItem value="Competitive">Competitive</SelectItem>
+                                      </>
+                                    )}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              
+                              {field.value && field.value.length > 0 && (
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {field.value.map((characteristic) => (
+                                    <div key={characteristic} className="bg-primary/10 text-primary rounded-md px-2 py-1 text-sm flex items-center">
+                                      {characteristic}
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          field.onChange(field.value?.filter((c) => c !== characteristic));
+                                        }}
+                                        className="ml-1 text-primary hover:text-primary/80"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <div className="flex justify-between mt-4">
+                        <Button onClick={prevTab} type="button" variant="outline">
+                          Back
+                        </Button>
+                        <Button onClick={nextTab} type="button">
+                          Next: Media & Description
+                        </Button>
+                      </div>
                     </TabsContent>
                     
                     <TabsContent value="media" className="space-y-6 pt-4">
-                      <div className="space-y-4">
-                        <div className="space-y-6">
-                          <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Recent Results <span className="text-sm text-muted-foreground ml-1">(Optional)</span></FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Share recent competition results, achievements, or other highlights" 
-                                    className="min-h-[120px]"
-                                    {...field} 
+                      <div>
+                        <h3 className="text-lg font-medium mb-4">Photos</h3>
+                        <div className="space-y-4 mb-6">
+                          <div className="flex items-end gap-2">
+                            <Input
+                              value={newPhotoUrl}
+                              onChange={(e) => setNewPhotoUrl(e.target.value)}
+                              placeholder="Enter URL for photo"
+                              className="flex-1"
+                            />
+                            <Button type="button" onClick={addPhotoUrl} size="sm">
+                              <Plus className="h-4 w-4 mr-1" /> Add
+                            </Button>
+                          </div>
+                          
+                          {photoUrls.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                              {photoUrls.map((url, index) => (
+                                <div key={index} className="relative group rounded-md overflow-hidden">
+                                  <img
+                                    src={url}
+                                    alt={`Horse photo ${index + 1}`}
+                                    className="h-40 w-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.src = "https://placehold.co/600x400?text=Error+Loading+Image";
+                                    }}
                                   />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="additional_info"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Other Relevant Information <span className="text-sm text-muted-foreground ml-1">(Optional)</span></FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Add training history, temperament, special care needs, or any other relevant information" 
-                                    className="min-h-[120px]"
-                                    {...field} 
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                      
-                      <Separator />
-                      
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Photos</h3>
-                        <p className="text-sm text-neutral-500">Add photos of your horse (minimum 1)</p>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <div className="flex flex-col gap-2">
-                              <div className="flex gap-2">
-                                <Button 
-                                  type="button" 
-                                  variant="outline" 
-                                  className="flex-1"
-                                  onClick={() => document.getElementById('photo-upload')?.click()}
-                                >
-                                  <Upload className="h-4 w-4 mr-2" />
-                                  Select photo
-                                </Button>
-                                <input
-                                  id="photo-upload"
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    
-                                    const formData = new FormData();
-                                    formData.append('file', file);
-                                    
-                                    try {
-                                      const response = await fetch('/api/upload', {
-                                        method: 'POST',
-                                        body: formData,
-                                      });
-                                      
-                                      if (!response.ok) throw new Error('Upload failed');
-                                      
-                                      const data = await response.json();
-                                      setPhotoUrls([...photoUrls, data.url]);
-                                      
-                                      // Reset the input
-                                      e.target.value = '';
-                                    } catch (error) {
-                                      console.error('Upload error:', error);
-                                      toast({
-                                        title: "Upload failed",
-                                        description: "There was an error uploading your photo. Please try again.",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                />
-                              </div>
-                              <FormDescription>
-                                Select photos from your device to upload
-                              </FormDescription>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-2">
-                            {photoUrls.map((url, index) => (
-                              <div key={index} className="flex items-center gap-2">
-                                <div className="w-12 h-12 bg-neutral-100 rounded flex items-center justify-center overflow-hidden">
-                                  <img src={url.startsWith('http') ? url : url} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                                  <Button
+                                    type="button"
+                                    variant="destructive"
+                                    size="sm"
+                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={() => removePhotoUrl(url)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
                                 </div>
-                                <span className="flex-1 truncate text-sm">{url.split('/').pop()}</span>
-                                <Button type="button" size="icon" variant="ghost" onClick={() => removePhotoUrl(url)}>
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            {photoUrls.length === 0 && (
-                              <p className="text-sm text-neutral-500 italic">No photos added yet</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <Separator />
-                      
-                      <div className="space-y-4">
-                        <h3 className="text-lg font-semibold">Videos (Optional)</h3>
-                        <p className="text-sm text-neutral-500">Add videos of your horse in action</p>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <div className="flex flex-col gap-2">
-                              <div className="flex gap-2">
-                                <Button 
-                                  type="button" 
-                                  variant="outline" 
-                                  className="flex-1"
-                                  onClick={() => document.getElementById('video-upload')?.click()}
-                                >
-                                  <Upload className="h-4 w-4 mr-2" />
-                                  Select video
-                                </Button>
-                                <input
-                                  id="video-upload"
-                                  type="file"
-                                  accept="video/*"
-                                  className="hidden"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    
-                                    const formData = new FormData();
-                                    formData.append('file', file);
-                                    
-                                    try {
-                                      const response = await fetch('/api/upload', {
-                                        method: 'POST',
-                                        body: formData,
-                                      });
-                                      
-                                      if (!response.ok) throw new Error('Upload failed');
-                                      
-                                      const data = await response.json();
-                                      setVideoUrls([...videoUrls, data.url]);
-                                      
-                                      // Reset the input
-                                      e.target.value = '';
-                                    } catch (error) {
-                                      console.error('Upload error:', error);
-                                      toast({
-                                        title: "Upload failed",
-                                        description: "There was an error uploading your video. Please try again.",
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                />
-                              </div>
-                              <FormDescription>
-                                Select videos from your device to upload
-                              </FormDescription>
+                              ))}
                             </div>
+                          ) : (
+                            <div className="border border-dashed border-gray-300 rounded-md p-8 text-center">
+                              <Image className="mx-auto h-12 w-12 text-gray-400" />
+                              <h3 className="mt-2 text-sm font-semibold text-gray-900">No photos added</h3>
+                              <p className="mt-1 text-sm text-gray-500">Add at least one photo of your horse</p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <h3 className="text-lg font-medium mb-4 mt-8">Videos</h3>
+                        <div className="space-y-4 mb-6">
+                          <div className="flex items-end gap-2">
+                            <Input
+                              value={newVideoUrl}
+                              onChange={(e) => setNewVideoUrl(e.target.value)}
+                              placeholder="Enter URL for video (YouTube, Vimeo, etc.)"
+                              className="flex-1"
+                            />
+                            <Button type="button" onClick={addVideoUrl} size="sm">
+                              <Plus className="h-4 w-4 mr-1" /> Add
+                            </Button>
                           </div>
                           
-                          <div className="space-y-2">
-                            {videoUrls.map((url, index) => (
-                              <div key={index} className="flex items-center gap-2">
-                                <div className="w-12 h-12 bg-neutral-200 rounded flex items-center justify-center">
-                                  <FileVideo className="h-6 w-6 text-neutral-500" />
+                          {videoUrls.length > 0 ? (
+                            <div className="space-y-2 mt-4">
+                              {videoUrls.map((url, index) => (
+                                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                                  <div className="flex items-center">
+                                    <FileVideo className="h-5 w-5 mr-2 text-gray-500" />
+                                    <span className="text-sm truncate max-w-[250px]">{url}</span>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeVideoUrl(url)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
                                 </div>
-                                <span className="flex-1 truncate text-sm">{url.split('/').pop()}</span>
-                                <Button type="button" size="icon" variant="ghost" onClick={() => removeVideoUrl(url)}>
-                                  <X className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            ))}
-                            {videoUrls.length === 0 && (
-                              <p className="text-sm text-neutral-500 italic">No videos added yet</p>
-                            )}
-                          </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="border border-dashed border-gray-300 rounded-md p-8 text-center">
+                              <FileVideo className="mx-auto h-12 w-12 text-gray-400" />
+                              <h3 className="mt-2 text-sm font-semibold text-gray-900">No videos added</h3>
+                              <p className="mt-1 text-sm text-gray-500">Videos are optional but recommended</p>
+                            </div>
+                          )}
                         </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Provide a detailed description of your horse"
+                                  className="min-h-[120px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="additional_info"
+                          render={({ field }) => (
+                            <FormItem className="mt-4">
+                              <FormLabel>Additional Information</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Any additional information (veterinary history, competition results, etc.)"
+                                  className="min-h-[120px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       </div>
                       
-                      {photoUrls.length === 0 && (
-                        <div className="bg-orange-100 border border-orange-200 text-orange-800 px-4 py-3 rounded">
-                          <p className="text-sm font-medium">You must add at least one photo to continue</p>
-                        </div>
-                      )}
+                      <div className="flex justify-between mt-8">
+                        <Button onClick={prevTab} type="button" variant="outline">
+                          Back
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Submitting...
+                            </>
+                          ) : (
+                            "Submit Listing"
+                          )}
+                        </Button>
+                      </div>
                     </TabsContent>
                   </ScrollArea>
                 </Tabs>
-                {/* Form buttons inside the form tag */}
-                <div className="flex justify-between pt-6">
-                  <Button type="button" variant="outline" onClick={prevTab} disabled={activeTab === "basic"}>
-                    Previous
-                  </Button>
-                  {activeTab === "media" ? (
-                    <Button 
-                      type="button"
-                      onClick={() => {
-                        // Manually validate form and submit
-                        form.setValue("photos", photoUrls);
-                        form.setValue("videos", videoUrls);
-                        form.handleSubmit(onSubmit)();
-                      }}
-                      disabled={isSubmitting || photoUrls.length === 0}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Submitting...
-                        </>
-                      ) : (
-                        "Submit Listing"
-                      )}
-                    </Button>
-                  ) : (
-                    <Button 
-                      type="button"
-                      onClick={nextTab}
-                      disabled={isSubmitting}
-                    >
-                      Next
-                    </Button>
-                  )}
-                </div>
               </form>
             </Form>
           </CardContent>
-          {/* No CardFooter here since we moved the buttons inside the form */}
         </Card>
       </div>
     </Layout>
