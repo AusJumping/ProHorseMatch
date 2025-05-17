@@ -1161,79 +1161,68 @@ export default function AddHorse() {
                       <div>
                         <h3 className="text-lg font-medium mb-4">Photos</h3>
                         <div className="space-y-4 mb-6">
-                          <div className="grid grid-cols-1 gap-4">
-                            {/* File Upload Option */}
-                            <div className="border rounded-md p-4">
-                              <h4 className="text-sm font-medium mb-2">Upload Photo</h4>
-                              <div className="flex flex-col gap-3">
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={async (e) => {
-                                      const file = e.target.files?.[0];
-                                      if (!file) return;
-                                      
-                                      // Create form data
-                                      const formData = new FormData();
-                                      formData.append("file", file);
-                                      
-                                      try {
-                                        // Show loading state
-                                        toast({
-                                          title: "Uploading...",
-                                          description: "Please wait while we upload your image.",
-                                        });
-                                        
-                                        // Upload the file
-                                        const response = await fetch("/api/upload", {
-                                          method: "POST",
-                                          body: formData,
-                                        });
-                                        
-                                        if (!response.ok) {
-                                          throw new Error("Failed to upload file");
-                                        }
-                                        
-                                        const data = await response.json();
-                                        
-                                        // Add the URL to the list
-                                        setPhotoUrls([...photoUrls, data.url]);
-                                        
-                                        // Clear the input
-                                        e.target.value = "";
-                                        
-                                        toast({
-                                          title: "Upload successful",
-                                          description: "Your image has been uploaded.",
-                                        });
-                                      } catch (error) {
-                                        console.error("Upload error:", error);
-                                        toast({
-                                          title: "Upload failed",
-                                          description: "There was an error uploading your image. Please try again.",
-                                          variant: "destructive",
-                                        });
-                                      }
-                                    }}
-                                    className="flex-1"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {/* URL Option */}
-                            <div className="border rounded-md p-4">
-                              <h4 className="text-sm font-medium mb-2">Add Photo URL</h4>
-                              <div className="flex items-end gap-2">
+                          <div className="border rounded-md p-4">
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-2">
                                 <Input
-                                  value={newPhotoUrl}
-                                  onChange={(e) => setNewPhotoUrl(e.target.value)}
-                                  placeholder="Enter URL for photo"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    
+                                    // Create form data
+                                    const formData = new FormData();
+                                    formData.append("file", file);
+                                    
+                                    try {
+                                      // Show loading state
+                                      toast({
+                                        title: "Uploading...",
+                                        description: "Please wait while we upload your image.",
+                                      });
+                                      
+                                      // Upload the file
+                                      const response = await fetch("/api/upload", {
+                                        method: "POST",
+                                        body: formData,
+                                      });
+                                      
+                                      if (!response.ok) {
+                                        throw new Error("Failed to upload file");
+                                      }
+                                      
+                                      const data = await response.json();
+                                      
+                                      // Add the URL to the list
+                                      setPhotoUrls([...photoUrls, data.url]);
+                                      
+                                      // Clear the input
+                                      e.target.value = "";
+                                      
+                                      toast({
+                                        title: "Upload successful",
+                                        description: "Your image has been uploaded.",
+                                      });
+                                    } catch (error) {
+                                      console.error("Upload error:", error);
+                                      toast({
+                                        title: "Upload failed",
+                                        description: "There was an error uploading your image. Please try again.",
+                                        variant: "destructive",
+                                      });
+                                    }
+                                  }}
                                   className="flex-1"
                                 />
-                                <Button type="button" onClick={addPhotoUrl} size="sm">
-                                  <Plus className="h-4 w-4 mr-1" /> Add
+                                <Button type="button" size="sm" onClick={() => {
+                                  // Find the file input and trigger a click
+                                  const fileInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+                                  if (fileInput) {
+                                    fileInput.click();
+                                  }
+                                }}>
+                                  <Plus className="h-4 w-4 mr-1" /> Add Photo
                                 </Button>
                               </div>
                             </div>
@@ -1274,89 +1263,78 @@ export default function AddHorse() {
                         
                         <h3 className="text-lg font-medium mb-4 mt-8">Videos</h3>
                         <div className="space-y-4 mb-6">
-                          <div className="grid grid-cols-1 gap-4">
-                            {/* File Upload Option */}
-                            <div className="border rounded-md p-4">
-                              <h4 className="text-sm font-medium mb-2">Upload Video</h4>
-                              <div className="flex flex-col gap-3">
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="file"
-                                    accept="video/*"
-                                    onChange={async (e) => {
-                                      const file = e.target.files?.[0];
-                                      if (!file) return;
-                                      
-                                      // Check file size (max 25MB)
-                                      if (file.size > 25 * 1024 * 1024) {
-                                        toast({
-                                          title: "File too large",
-                                          description: "Video must be less than 25MB.",
-                                          variant: "destructive",
-                                        });
-                                        return;
-                                      }
-                                      
-                                      // Create form data
-                                      const formData = new FormData();
-                                      formData.append("file", file);
-                                      
-                                      try {
-                                        // Show loading state
-                                        toast({
-                                          title: "Uploading...",
-                                          description: "Please wait while we upload your video.",
-                                        });
-                                        
-                                        // Upload the file
-                                        const response = await fetch("/api/upload", {
-                                          method: "POST",
-                                          body: formData,
-                                        });
-                                        
-                                        if (!response.ok) {
-                                          throw new Error("Failed to upload file");
-                                        }
-                                        
-                                        const data = await response.json();
-                                        
-                                        // Add the URL to the list
-                                        setVideoUrls([...videoUrls, data.url]);
-                                        
-                                        // Clear the input
-                                        e.target.value = "";
-                                        
-                                        toast({
-                                          title: "Upload successful",
-                                          description: "Your video has been uploaded.",
-                                        });
-                                      } catch (error) {
-                                        console.error("Upload error:", error);
-                                        toast({
-                                          title: "Upload failed",
-                                          description: "There was an error uploading your video. Please try again.",
-                                          variant: "destructive",
-                                        });
-                                      }
-                                    }}
-                                    className="flex-1"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {/* URL Option */}
-                            <div className="border rounded-md p-4">
-                              <h4 className="text-sm font-medium mb-2">Add Video URL</h4>
-                              <div className="flex items-end gap-2">
+                          <div className="border rounded-md p-4">
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-2">
                                 <Input
-                                  value={newVideoUrl}
-                                  onChange={(e) => setNewVideoUrl(e.target.value)}
-                                  placeholder="Enter URL for video (YouTube, Vimeo, etc.)"
+                                  type="file"
+                                  accept="video/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    
+                                    // Check file size (max 25MB)
+                                    if (file.size > 25 * 1024 * 1024) {
+                                      toast({
+                                        title: "File too large",
+                                        description: "Video must be less than 25MB.",
+                                        variant: "destructive",
+                                      });
+                                      return;
+                                    }
+                                    
+                                    // Create form data
+                                    const formData = new FormData();
+                                    formData.append("file", file);
+                                    
+                                    try {
+                                      // Show loading state
+                                      toast({
+                                        title: "Uploading...",
+                                        description: "Please wait while we upload your video.",
+                                      });
+                                      
+                                      // Upload the file
+                                      const response = await fetch("/api/upload", {
+                                        method: "POST",
+                                        body: formData,
+                                      });
+                                      
+                                      if (!response.ok) {
+                                        throw new Error("Failed to upload file");
+                                      }
+                                      
+                                      const data = await response.json();
+                                      
+                                      // Add the URL to the list
+                                      setVideoUrls([...videoUrls, data.url]);
+                                      
+                                      // Clear the input
+                                      e.target.value = "";
+                                      
+                                      toast({
+                                        title: "Upload successful",
+                                        description: "Your video has been uploaded.",
+                                      });
+                                    } catch (error) {
+                                      console.error("Upload error:", error);
+                                      toast({
+                                        title: "Upload failed",
+                                        description: "There was an error uploading your video. Please try again.",
+                                        variant: "destructive",
+                                      });
+                                    }
+                                  }}
                                   className="flex-1"
                                 />
-                                <Button type="button" onClick={addVideoUrl} size="sm">
-                                  <Plus className="h-4 w-4 mr-1" /> Add
+                                <Button type="button" size="sm" onClick={() => {
+                                  // Find the file input and trigger a click
+                                  const fileInput = document.querySelector('input[type="file"][accept="video/*"]') as HTMLInputElement;
+                                  if (fileInput) {
+                                    fileInput.click();
+                                  }
+                                }}>
+                                  <Plus className="h-4 w-4 mr-1" /> Add Video
                                 </Button>
                               </div>
                             </div>
