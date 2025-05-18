@@ -280,6 +280,7 @@ export default function Profile() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
+                                    <SelectItem value="All">All Disciplines</SelectItem>
                                     {disciplines.map((discipline) => (
                                       <SelectItem key={discipline} value={discipline}>
                                         {discipline}
@@ -308,6 +309,7 @@ export default function Profile() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
+                                    <SelectItem value="Any">Any Sex</SelectItem>
                                     {sexes.map((sex) => (
                                       <SelectItem key={sex} value={sex}>
                                         {sex}
