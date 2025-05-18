@@ -5,11 +5,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCircle, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
+import { useQuery } from "@tanstack/react-query";
 
 const Sidebar = () => {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated, logout } = useAuth();
+  
+  // Query for conversations to check for unread messages
+  const { data: conversations } = useQuery({
+    queryKey: ['/api/conversations'],
+    enabled: isAuthenticated,
+  });
+  
+  // Calculate total unread messages
+  const unreadCount = conversations?.reduce((total, conversation) => {
+    return total + (conversation.unread_count || 0);
+  }, 0) || 0;
   
   // Debug log with more details
   console.log("Sidebar - Auth state:", { isAuthenticated, user });
@@ -86,7 +98,14 @@ const Sidebar = () => {
                 navigate("/messages");
               }}
             >
-              <MessageSquare className="mr-3 h-5 w-5" />
+              <div className="relative">
+                <MessageSquare className="mr-3 h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </div>
               <span>Messages</span>
             </Button>
           </li>
