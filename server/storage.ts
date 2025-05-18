@@ -693,6 +693,23 @@ export class MemStorage implements IStorage {
     
     const updatedUser = { ...user, ...update };
     this.users.set(id, updatedUser);
+    saveStorageToDisk();
+    return updatedUser;
+  }
+  
+  async updateUserSubscription(id: number, subscriptionData: {
+    stripe_customer_id?: string;
+    stripe_subscription_id?: string;
+    subscription_status?: string;
+    subscription_plan?: string;
+    subscription_end_date?: Date;
+  }): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) throw new Error("User not found");
+    
+    const updatedUser = { ...user, ...subscriptionData };
+    this.users.set(id, updatedUser);
+    saveStorageToDisk();
     return updatedUser;
   }
   
@@ -927,6 +944,26 @@ export class DatabaseStorage implements IStorage {
       .set(update)
       .where(eq(users.id, id))
       .returning();
+    return result;
+  }
+
+  async updateUserSubscription(id: number, subscriptionData: {
+    stripe_customer_id?: string;
+    stripe_subscription_id?: string;
+    subscription_status?: string;
+    subscription_plan?: string;
+    subscription_end_date?: Date;
+  }): Promise<User> {
+    const [result] = await db
+      .update(users)
+      .set(subscriptionData)
+      .where(eq(users.id, id))
+      .returning();
+    
+    if (!result) {
+      throw new Error(`User with ID ${id} not found`);
+    }
+    
     return result;
   }
   // Horse methods
