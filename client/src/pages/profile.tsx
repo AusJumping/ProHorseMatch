@@ -373,7 +373,7 @@ export default function Profile() {
                                       >
                                         <FormControl>
                                           <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="Select minimum price" />
                                           </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -458,7 +458,7 @@ export default function Profile() {
                                       >
                                         <FormControl>
                                           <SelectTrigger>
-                                            <SelectValue />
+                                            <SelectValue placeholder="Select maximum price" />
                                           </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
