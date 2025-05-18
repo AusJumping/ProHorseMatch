@@ -1,109 +1,144 @@
-import { useStripe, useElements, Elements, PaymentElement } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, Check, ChevronRight } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Loader2, CheckCircle2 } from 'lucide-react';
-import { useLocation, useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 
 // Ensure we have the public key
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
   throw new Error('Missing environment variable: VITE_STRIPE_PUBLIC_KEY');
 }
 
-// Load the Stripe instance once
+// Load Stripe.js asynchronously
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-// Plans configuration (in a real app, these would come from an API)
-const SUBSCRIPTION_PLANS = {
-  basic: {
-    id: 'price_basic',
-    name: 'Basic Seller',
-    price: 25,
-    description: 'Perfect for sellers with a small number of horses',
+// Subscription plan data
+const plans = [
+  {
+    id: 'basic',
+    name: 'Basic',
+    price: 19.99,
+    interval: 'month',
+    description: 'Essential features for horse sellers',
     features: [
-      'List up to 5 horses',
-      'Basic analytics',
+      'List up to 3 horses',
+      'Basic horse profile',
+      'Email notifications',
       'Standard customer support'
     ]
   },
-  premium: {
-    id: 'price_premium',
-    name: 'Premium Seller',
-    price: 50,
-    description: 'For professional sellers with multiple horses',
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: 49.99,
+    interval: 'month',
+    description: 'Advanced features for serious sellers',
+    features: [
+      'List up to 10 horses',
+      'Premium horse profiles with video',
+      'Featured listings',
+      'Priority customer support',
+      'Performance analytics',
+      'Advanced matching algorithm'
+    ]
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    price: 99.99,
+    interval: 'month',
+    description: 'All features plus exclusive benefits',
     features: [
       'Unlimited horse listings',
-      'Advanced analytics and reporting',
-      'Featured placement in search results',
-      'Priority customer support'
+      'All Pro features included',
+      'Dedicated account manager',
+      'Professional listing optimization',
+      'Export leads & performance data',
+      'White-glove buyer introduction service'
     ]
   }
-};
+];
 
-// Subscription form component
-const SubscriptionForm = ({ planId }: { planId: string }) => {
+// Checkout form component (uses Stripe Elements)
+const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const stripe = useStripe();
   const elements = useElements();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [, navigate] = useLocation();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!stripe || !elements) {
-      return toast({
-        title: "Error",
-        description: "Stripe has not been properly initialized",
-        variant: "destructive"
-      });
+      return;
     }
-    
-    setIsLoading(true);
-    
+
+    setIsProcessing(true);
+    setErrorMessage(null);
+
     try {
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/subscription/success`,
+          return_url: window.location.origin + '/subscription/success',
         },
+        redirect: 'if_required',
       });
-      
+
       if (error) {
+        setErrorMessage(error.message || 'Payment failed. Please try again.');
         toast({
-          title: "Payment Failed",
-          description: error.message,
-          variant: "destructive",
+          title: 'Payment Failed',
+          description: error.message || 'There was an issue processing your payment.',
+          variant: 'destructive',
         });
+      } else {
+        // Payment succeeded
+        toast({
+          title: 'Payment Successful',
+          description: 'Your subscription has been activated!',
+        });
+        onSuccess();
       }
     } catch (err: any) {
+      setErrorMessage(err.message || 'An unexpected error occurred.');
       toast({
-        title: "Error",
-        description: err.message || "An error occurred during payment processing",
-        variant: "destructive",
+        title: 'Error',
+        description: err.message || 'An unexpected error occurred.',
+        variant: 'destructive',
       });
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
-  
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement />
+      
+      {errorMessage && (
+        <div className="text-sm font-medium text-destructive">{errorMessage}</div>
+      )}
+      
       <Button 
         type="submit" 
-        className="w-full" 
-        disabled={!stripe || isLoading}
+        disabled={!stripe || isProcessing} 
+        className="w-full"
       >
-        {isLoading ? (
+        {isProcessing ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing
+            Processing...
           </>
         ) : (
           'Subscribe Now'
@@ -119,6 +154,7 @@ export default function SubscriptionPage() {
   const [clientSecret, setClientSecret] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   
   // Get current subscription status
   const { data: subscriptionData, isLoading: isLoadingSubscription } = useQuery({
@@ -129,48 +165,63 @@ export default function SubscriptionPage() {
   // Create subscription mutation
   const { mutate: createSubscription, isPending: isCreatingSubscription } = useMutation({
     mutationFn: async (planId: string) => {
-      const response = await apiRequest('POST', '/api/create-subscription', { plan: planId });
+      const response = await apiRequest('POST', '/api/subscription', { planId });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create subscription');
+      }
       return response.json();
     },
     onSuccess: (data) => {
       setClientSecret(data.clientSecret);
-      queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create subscription",
-        variant: "destructive",
+        title: 'Subscription Error',
+        description: error.message,
+        variant: 'destructive',
       });
-    }
+    },
   });
   
   // Cancel subscription mutation
-  const { mutate: cancelSubscription, isPending: isCancelingSubscription } = useMutation({
+  const { mutate: cancelSubscription, isPending: isCancellingSubscription } = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/cancel-subscription');
+      const response = await apiRequest('DELETE', '/api/subscription');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to cancel subscription');
+      }
       return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Subscription Canceled",
-        description: "Your subscription will be canceled at the end of the billing period",
-      });
       queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
-    },
-    onError: (error: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       toast({
-        title: "Error",
-        description: error.message || "Failed to cancel subscription",
-        variant: "destructive",
+        title: 'Subscription Cancelled',
+        description: 'Your subscription has been cancelled successfully.',
       });
-    }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Cancellation Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
   });
   
-  // Handle plan selection and subscription creation
+  // When plan is selected, create a subscription intent
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
-    createSubscription(SUBSCRIPTION_PLANS[planId as keyof typeof SUBSCRIPTION_PLANS].id);
+    createSubscription(planId);
+  };
+  
+  // Handle successful payment
+  const handlePaymentSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+    navigate('/subscription/success');
   };
   
   // Format date for display
@@ -184,150 +235,158 @@ export default function SubscriptionPage() {
   
   if (isLoadingSubscription) {
     return (
-      <div className="flex items-center justify-center min-h-[70vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="container mx-auto py-20 flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+        <h2 className="text-2xl font-accent font-semibold">Loading subscription status...</h2>
       </div>
     );
   }
   
-  // Display active subscription details
+  // Show current subscription if the user has one
   if (subscriptionData?.hasSubscription) {
     const { status, currentPeriodEnd, planId } = subscriptionData;
-    
-    // Find plan name based on planId
-    const getPlanName = () => {
-      const plan = Object.values(SUBSCRIPTION_PLANS).find(p => p.id === planId);
-      return plan ? plan.name : 'Custom Plan';
-    };
+    const plan = plans.find(p => p.id === planId) || { name: 'Unknown', price: 0 };
     
     return (
-      <div className="container mx-auto py-10 max-w-4xl">
-        <h1 className="text-3xl font-accent font-bold mb-6">Your Subscription</h1>
-        
-        <Card className="mb-8">
+      <div className="container mx-auto py-20 max-w-4xl">
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <CheckCircle2 className="h-5 w-5 mr-2 text-green-500" />
-              Active Subscription
-            </CardTitle>
-            <CardDescription>Your subscription details</CardDescription>
+            <CardTitle className="text-2xl font-accent">Your Subscription</CardTitle>
+            <CardDescription>Current subscription details and management</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Plan</p>
-                <p className="font-medium">{getPlanName()}</p>
+          <CardContent className="space-y-6">
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Plan Details</h3>
+                <div className="flex items-center justify-between text-lg">
+                  <span className="font-medium">{plan.name} Plan</span>
+                  <span className="font-bold">${plan.price}/month</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Status: <span className="capitalize">{status}</span>
+                </p>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <p className="font-medium capitalize">{status}</p>
+              
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Billing Cycle</h3>
+                <p className="text-sm">
+                  Your subscription renews on <span className="font-medium">{formatDate(currentPeriodEnd)}</span>
+                </p>
+                {status === 'active' && (
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => cancelSubscription()} 
+                    disabled={isCancellingSubscription}
+                    className="mt-4"
+                  >
+                    {isCancellingSubscription ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      'Cancel Subscription'
+                    )}
+                  </Button>
+                )}
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Current Period Ends</p>
-                <p className="font-medium">{formatDate(currentPeriodEnd)}</p>
+            </div>
+            
+            <div className="space-y-4 pt-4">
+              <h3 className="text-lg font-semibold">Benefits & Features</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {plan.features?.map((feature, i) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>{feature}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button 
-              variant="outline" 
-              className="w-full" 
-              onClick={() => cancelSubscription()}
-              disabled={isCancelingSubscription}
-            >
-              {isCancelingSubscription ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing
-                </>
-              ) : (
-                'Cancel Subscription'
-              )}
-            </Button>
-          </CardFooter>
         </Card>
-        
-        <div className="text-center text-sm text-muted-foreground mt-8">
-          <p>Need help? Contact our support team at support@prohorsemath.com</p>
-        </div>
       </div>
     );
   }
   
   // Show subscription plans for new subscribers
   return (
-    <div className="container mx-auto py-10 max-w-4xl">
-      <h1 className="text-3xl font-accent font-bold mb-2">Subscription Plans</h1>
-      <p className="text-muted-foreground mb-8">
-        Choose a subscription plan to list your horses and connect with potential buyers
-      </p>
+    <div className="container mx-auto py-10 max-w-6xl">
+      <div className="text-center mb-12">
+        <h1 className="text-3xl font-accent font-bold mb-2">Choose Your Subscription Plan</h1>
+        <p className="text-muted-foreground">Unlock premium features and sell more horses with the right plan for your business</p>
+      </div>
       
-      {clientSecret ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Complete Your Subscription</CardTitle>
-            <CardDescription>
-              Enter your payment details to subscribe to the {SUBSCRIPTION_PLANS[selectedPlan as keyof typeof SUBSCRIPTION_PLANS].name} plan
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Elements stripe={stripePromise} options={{ clientSecret }}>
-              <SubscriptionForm planId={selectedPlan} />
-            </Elements>
-          </CardContent>
-        </Card>
-      ) : (
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="basic">Basic Plan</TabsTrigger>
-            <TabsTrigger value="premium">Premium Plan</TabsTrigger>
-          </TabsList>
-          
-          {Object.entries(SUBSCRIPTION_PLANS).map(([key, plan]) => (
-            <TabsContent key={key} value={key} className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-center">
-                    <span>{plan.name}</span>
-                    <span className="text-2xl">${plan.price}/month</span>
-                  </CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-center">
-                        <CheckCircle2 className="h-4 w-4 mr-2 text-green-500" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    className="w-full"
-                    onClick={() => handleSelectPlan(key)}
-                    disabled={isCreatingSubscription}
-                  >
-                    {isCreatingSubscription ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing
-                      </>
-                    ) : (
-                      'Subscribe Now'
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
+      {!clientSecret ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {plans.map((plan) => (
+            <Card key={plan.id} className={`overflow-hidden flex flex-col ${selectedPlan === plan.id ? 'ring-2 ring-primary' : ''}`}>
+              <CardHeader className="pb-4">
+                <CardTitle className="font-accent">{plan.name}</CardTitle>
+                <div className="flex items-baseline mt-2">
+                  <span className="text-3xl font-bold">${plan.price}</span>
+                  <span className="text-sm text-muted-foreground ml-1">/{plan.interval}</span>
+                </div>
+                <CardDescription className="mt-2">{plan.description}</CardDescription>
+              </CardHeader>
+              
+              <CardContent className="flex-grow">
+                <ul className="space-y-2 mb-6">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                      <span className="text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              
+              <div className="px-6 pb-6 mt-auto">
+                <Button 
+                  onClick={() => handleSelectPlan(plan.id)} 
+                  variant={selectedPlan === plan.id ? "default" : "outline"}
+                  className="w-full"
+                  disabled={isCreatingSubscription}
+                >
+                  {isCreatingSubscription && selectedPlan === plan.id ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Processing...
+                    </>
+                  ) : selectedPlan === plan.id ? (
+                    "Selected"
+                  ) : (
+                    "Select Plan"
+                  )}
+                </Button>
+              </div>
+            </Card>
           ))}
-        </Tabs>
+        </div>
+      ) : (
+        <div className="max-w-md mx-auto">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-accent">Complete Your Subscription</CardTitle>
+              <CardDescription>
+                Enter your payment details to start your {plans.find(p => p.id === selectedPlan)?.name} subscription
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+                <CheckoutForm onSuccess={handlePaymentSuccess} />
+              </Elements>
+            </CardContent>
+          </Card>
+        </div>
       )}
       
-      <div className="text-center text-sm text-muted-foreground mt-8">
-        <p>All plans include secure processing with Stripe</p>
-        <p className="mt-2">Need help? Contact our support team at support@prohorsemath.com</p>
+      <div className="text-center mt-12">
+        <h3 className="text-lg font-medium mb-2">Questions about our plans?</h3>
+        <p className="text-muted-foreground mb-4">Contact our support team for help choosing the right plan for your needs.</p>
+        <Button variant="outline" onClick={() => navigate('/contact')}>
+          Contact Support <ChevronRight className="ml-1 h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

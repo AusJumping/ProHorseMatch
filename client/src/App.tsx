@@ -19,6 +19,8 @@ import Favorites from "@/pages/favorites";
 import Landing from "@/pages/landing";
 import Checkout from "@/pages/checkout";
 import PaymentSuccess from "@/pages/payment-success";
+import Subscription from "@/pages/subscription";
+import SubscriptionSuccess from "@/pages/subscription/success";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
@@ -40,6 +42,8 @@ function Router() {
       <Route path="/favorites" component={Favorites} />
       <Route path="/checkout/:horseId" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
+      <Route path="/subscription" component={Subscription} />
+      <Route path="/subscription/success" component={SubscriptionSuccess} />
       <Route component={NotFound} />
     </Switch>
   );
