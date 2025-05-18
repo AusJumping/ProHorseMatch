@@ -234,10 +234,11 @@ export default function SubscriptionPage() {
         description: 'You are being redirected to complete your donation.',
       });
       
-      // Redirect to our own checkout page, passing the amount as a URL parameter
-      // Ensure amount is a valid number and convert to string safely
-      const amountStr = amount.toString();
-      navigate(`/donation-checkout?amount=${amountStr}`);
+      // Format the amount with 2 decimal places to ensure consistency
+      const formattedAmount = amount.toFixed(2);
+      
+      // Use direct window location change to avoid any stale state issues
+      window.location.href = `/donation-checkout?amount=${formattedAmount}`;
       
     } catch (error: any) {
       toast({

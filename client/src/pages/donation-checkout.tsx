@@ -161,18 +161,13 @@ export default function DonationCheckout() {
         // Round to 2 decimal places to ensure valid currency amount
         const donationAmount = Math.round(amount * 100) / 100;
         
-        const response = await apiRequest('POST', '/api/create-donation', {
+        // Use apiRequest which automatically handles the response and errors
+        const data = await apiRequest('POST', '/api/create-donation', {
           amount: donationAmount,
           currency: 'usd',
         });
         
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to create payment intent');
-        }
-        
-        if (!data.clientSecret) {
+        if (!data || !data.clientSecret) {
           throw new Error('No client secret returned from the server');
         }
         
