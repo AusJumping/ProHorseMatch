@@ -333,10 +333,10 @@
         "id": 1,
         "customer_id": 4,
         "owner_id": 3,
-        "horse_id": 9,
-        "content": "Is Snow a good horse?",
+        "horse_id": 11,
+        "content": "really nice?",
         "sender_type": "customer",
-        "created_at": "2025-05-18T05:17:16.791Z",
+        "created_at": "2025-05-18T07:00:13.758Z",
         "is_read": true
       }
     ],
@@ -374,9 +374,9 @@
         "customer_id": 4,
         "owner_id": 3,
         "horse_id": 11,
-        "last_message_id": null,
-        "last_message_time": null,
-        "unread_count": 0
+        "last_message_id": 1,
+        "last_message_time": "2025-05-18T07:00:13.758Z",
+        "unread_count": 1
       }
     ]
   ],
