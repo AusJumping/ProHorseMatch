@@ -275,7 +275,7 @@ export default function Profile() {
                                   value={field.value?.[0] || undefined}
                                 >
                                   <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
                                       <SelectValue placeholder="Select Discipline" />
                                     </SelectTrigger>
                                   </FormControl>
@@ -304,7 +304,7 @@ export default function Profile() {
                                   value={field.value?.[0] || undefined}
                                 >
                                   <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
                                       <SelectValue placeholder="Select Sex" />
                                     </SelectTrigger>
                                   </FormControl>
@@ -341,7 +341,7 @@ export default function Profile() {
                                   onValueChange={field.onChange}
                                 >
                                   <FormControl>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
                                       <SelectValue placeholder="Select Currency" />
                                     </SelectTrigger>
                                   </FormControl>
@@ -372,7 +372,7 @@ export default function Profile() {
                                         onValueChange={(value) => field.onChange(parseInt(value))}
                                       >
                                         <FormControl>
-                                          <SelectTrigger>
+                                          <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
                                             <SelectValue placeholder="Select minimum price" />
                                           </SelectTrigger>
                                         </FormControl>
@@ -457,7 +457,7 @@ export default function Profile() {
                                         onValueChange={(value) => field.onChange(parseInt(value))}
                                       >
                                         <FormControl>
-                                          <SelectTrigger>
+                                          <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
                                             <SelectValue placeholder="Select maximum price" />
                                           </SelectTrigger>
                                         </FormControl>
