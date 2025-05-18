@@ -463,7 +463,8 @@ export default function Profile() {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="text-black bg-white">
-                                      {ageValues.slice(0, -1).map(age => (
+                                      <SelectItem value="0" className="text-gray-900">No Min</SelectItem>
+                                      {ageValues.slice(1, -1).map(age => (
                                         <SelectItem key={age} value={age.toString()} className="text-gray-900">
                                           {age} {age === 1 ? "year" : "years"}
                                         </SelectItem>
@@ -492,6 +493,7 @@ export default function Profile() {
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="text-black bg-white">
+                                      <SelectItem value="999" className="text-gray-900">No Max</SelectItem>
                                       {ageValues.slice(1).map(age => (
                                         <SelectItem key={age} value={age.toString()} className="text-gray-900">
                                           {age} {age === 1 ? "year" : "years"}
