@@ -25,241 +25,12 @@ const AdminPanel = () => {
       <div className="p-6 space-y-6">
         <div className="mb-6">
           <h1 className="font-accent text-3xl font-bold text-primary mb-2">Admin Panel</h1>
-          <p className="text-neutral-500">Manage system settings and perform administrative tasks</p>
+          <p className="text-neutral-500">System maintenance</p>
         </div>
         
         <section>
-          <h2 className="font-accent text-xl font-semibold mb-4">Horse Management</h2>
+          <h2 className="font-accent text-xl font-semibold mb-4">Database Management</h2>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Delete Specific Horses</CardTitle>
-                <CardDescription>
-                  Delete Maestro, Bella, and Cassini
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-orange-500 flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  Removes only the specified horses
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteSpecificHorses}
-                  disabled={isDeletingSpecific}
-                  className="w-full"
-                >
-                  {isDeletingSpecific ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <X className="mr-2 h-4 w-4" />
-                      Delete Specific Horses
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Delete All Horses</CardTitle>
-                <CardDescription>
-                  Remove all horse listings from the database
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-destructive flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  This action cannot be undone
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteAllHorses}
-                  disabled={isDeleting}
-                  className="w-full"
-                >
-                  {isDeleting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash className="mr-2 h-4 w-4" />
-                      Delete All Horses
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Delete User 1</CardTitle>
-                <CardDescription>
-                  Remove User 1 and all their horses
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-red-600 flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  Removes User 1 and all problematic horses
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="destructive"
-                  onClick={handleDeleteUserOne}
-                  disabled={isDeletingUserOne}
-                  className="w-full"
-                >
-                  {isDeletingUserOne ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash className="mr-2 h-4 w-4" />
-                      Delete User 1
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card className="bg-amber-50">
-              <CardHeader className="pb-2">
-                <CardTitle>Reset Database</CardTitle>
-                <CardDescription>
-                  Preserve your horses, remove all others
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-orange-600 flex items-center">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  Keeps only your horses, deletes everything else
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="default"
-                  disabled={isResettingDb}
-                  onClick={async () => {
-                    if (isResettingDb) return;
-                    
-                    if (window.confirm('WARNING: This will delete ALL horses except the ones you own. This action cannot be undone. Are you sure you want to continue?')) {
-                      setIsResettingDb(true);
-                      
-                      try {
-                        console.log("Sending reset database request...");
-                        const response = await fetch('/api/admin/reset-database', {
-                          method: 'DELETE',
-                          headers: {
-                            'Content-Type': 'application/json'
-                          }
-                        });
-                        
-                        console.log("Server response status:", response.status);
-                        
-                        // Even if we get a 200 response, let's try to parse the JSON
-                        let data;
-                        try {
-                          const textResponse = await response.text();
-                          console.log("Raw response:", textResponse);
-                          data = JSON.parse(textResponse);
-                        } catch (parseError) {
-                          console.error("Error parsing response:", parseError);
-                          throw new Error("Invalid response from server");
-                        }
-                        
-                        console.log("Parsed response data:", data);
-                        
-                        if (!response.ok || data.success === false) {
-                          throw new Error(data.message || `Server returned ${response.status}`);
-                        }
-                        
-                        // Invalidate all horse-related queries
-                        await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
-                        await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
-                        
-                        toast({
-                          title: 'Success',
-                          description: data.message || 'Database reset successful. All problematic horses have been removed.',
-                          variant: 'default',
-                        });
-                        
-                        // Force a complete refresh of the page (not just client-side)
-                        toast({
-                          title: 'Refreshing Page',
-                          description: 'Database reset successful. Refreshing page in 2 seconds...',
-                          variant: 'default',
-                        });
-                        
-                        setTimeout(() => {
-                          // Force a full page reload from server
-                          window.location.href = window.location.href;
-                        }, 2000);
-                      } catch (error) {
-                        console.error('Failed to reset database:', error);
-                        toast({
-                          title: 'Error',
-                          description: 'Failed to reset database. Please try again.',
-                          variant: 'destructive',
-                        });
-                      } finally {
-                        setIsResettingDb(false);
-                      }
-                    }
-                  }}
-                  className="w-full"
-                >
-                  {isResettingDb ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Resetting...
-                    </>
-                  ) : (
-                    <>
-                      <Database className="mr-2 h-4 w-4" />
-                      Reset Database
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Add New Horse</CardTitle>
-                <CardDescription>
-                  Create a new horse listing
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-neutral-500">
-                  Add a new horse to your inventory with detailed information
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => navigate('/add-horse')}
-                >
-                  Add Horse
-                </Button>
-              </CardFooter>
-            </Card>
-            
             <Card className="border-red-500 bg-red-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-red-600">Clean Database</CardTitle>
@@ -283,66 +54,59 @@ const AdminPanel = () => {
                     if (window.confirm('EXTREME DANGER: This will delete ALL horses in the database including yours. This action CANNOT be undone. Are you sure you want to continue?')) {
                       // Double confirm because this is dangerous
                       const confirmation = window.prompt('FINAL WARNING: You are about to delete ALL data. Type "DELETE" to confirm.');
-                      if (confirmation === 'DELETE') {
-                        setIsResettingDb(true);
+                      
+                      if (confirmation !== 'DELETE') {
+                        toast({
+                          title: 'Cancelled',
+                          description: 'Database cleaning cancelled.',
+                          variant: 'default',
+                        });
+                        return;
+                      }
+                      
+                      setIsResettingDb(true);
+                      
+                      try {
+                        console.log("Sending clean database request...");
+                        const response = await fetch('/api/admin/clean-database', {
+                          method: 'DELETE',
+                          headers: {
+                            'Content-Type': 'application/json'
+                          }
+                        });
                         
-                        try {
-                          console.log("Sending clean database request...");
-                          const response = await fetch('/api/admin/clean-database', {
-                            method: 'POST',
-                            headers: {
-                              'Content-Type': 'application/json'
-                            }
-                          });
-                          
-                          // Even if we get a 200 response, let's try to parse the JSON
-                          let data;
-                          try {
-                            const textResponse = await response.text();
-                            console.log("Raw response:", textResponse);
-                            data = JSON.parse(textResponse);
-                          } catch (parseError) {
-                            console.error("Error parsing response:", parseError);
-                            throw new Error("Invalid response from server");
-                          }
-                          
-                          console.log("Clean database response:", data);
-                          
-                          if (!response.ok || data.success === false) {
-                            throw new Error(data.message || 'Failed to clean database');
-                          }
-                          
-                          // Invalidate all horse-related queries
-                          await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
-                          await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
-                          
-                          toast({
-                            title: 'Success',
-                            description: data.message || 'Database completely cleared. All horses have been removed.',
-                            variant: 'default',
-                          });
-                          
-                          // Force a complete refresh of the page (not just client-side)
-                          toast({
-                            title: 'Refreshing Page',
-                            description: 'Database completely cleared. Refreshing page in 3 seconds...',
-                            variant: 'default',
-                          });
-                          
-                          setTimeout(() => {
-                            // Force a full page reload from server
-                            window.location.href = window.location.href;
-                          }, 3000);
-                        } catch (error) {
-                          console.error('Failed to clean database:', error);
-                          toast({
-                            title: 'Error',
-                            description: error.message || 'Failed to clean database',
-                            variant: 'destructive',
-                          });
-                        } finally {
-                          setIsResettingDb(false);
+                        console.log("Server response status:", response.status);
+                        
+                        if (!response.ok) {
+                          throw new Error(`Server returned ${response.status}`);
                         }
+                        
+                        const data = await response.json();
+                        console.log("Response data:", data);
+                        
+                        // Invalidate all horse-related queries
+                        await queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+                        await queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+                        
+                        toast({
+                          title: 'Success',
+                          description: 'Database cleaned successfully. All horses have been removed.',
+                          variant: 'default',
+                        });
+                        
+                        // Force a complete refresh after 2 seconds
+                        setTimeout(() => {
+                          window.location.href = window.location.href;
+                        }, 2000);
+                      } catch (error) {
+                        console.error('Failed to clean database:', error);
+                        toast({
+                          title: 'Error',
+                          description: 'Failed to clean database. Please try again.',
+                          variant: 'destructive',
+                        });
+                      } finally {
+                        setIsResettingDb(false);
                       }
                     }
                   }}
