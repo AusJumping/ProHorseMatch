@@ -598,7 +598,6 @@ export default function Profile() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent className="text-black bg-white">
-                                    <SelectItem value="All" className="text-gray-900">All Breeds</SelectItem>
                                     {breeds.map((breed) => (
                                       <SelectItem key={breed} value={breed} className="text-gray-900">
                                         {breed}
