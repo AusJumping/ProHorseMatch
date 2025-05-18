@@ -23,7 +23,7 @@ import { useMobile } from "@/hooks/use-mobile";
 
 // Schemas for form validation
 const profileFormSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }).optional(),
   email: z.string().email({ message: "Please enter a valid email address" }),
   location_country: z.string().optional(),
   preferred_disciplines: z.array(z.string()).optional(),
@@ -178,7 +178,7 @@ export default function Profile() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Full Name</FormLabel>
+                          <FormLabel>Your Name (optional)</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>
