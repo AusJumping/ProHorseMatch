@@ -1410,17 +1410,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Unauthorized" });
       }
       
-      // Ensure the logged-in user is part of the conversation
-      const userIsCustomer = user.is_searching && customerId === req.session.userId;
-      const userIsOwner = user.is_selling && ownerId === req.session.userId;
+      // Debug logs
+      console.log("Messages request details:", {
+        userId: req.session.userId,
+        userRoles: { 
+          is_searching: user.is_searching, 
+          is_selling: user.is_selling 
+        },
+        requestedData: {
+          customerId,
+          ownerId,
+          horseId
+        }
+      });
       
-      if (!userIsCustomer && !userIsOwner) {
+      // Simple authorization - either the user is the customer or the owner in this conversation
+      if ((user.is_searching && req.session.userId === customerId) || 
+          (user.is_selling && req.session.userId === ownerId)) {
+        const messages = await storage.getMessagesByConversationId(customerId, ownerId, horseId);
+        
+        // Mark messages as read if user is the recipient
+        // This would normally update the database too, but we'll keep it simple for now
+        const processedMessages = messages.map(msg => {
+          // If owner is viewing and message is from customer
+          if (req.session.userId === ownerId && msg.sender_type === 'customer') {
+            return { ...msg, is_read: true };
+          }
+          // If customer is viewing and message is from owner
+          if (req.session.userId === customerId && msg.sender_type === 'owner') {
+            return { ...msg, is_read: true };
+          }
+          return msg;
+        });
+        
+        return res.json(processedMessages);
+      } else {
         console.log("Access denied - User:", req.session.userId, "trying to access conversation between customer:", customerId, "and owner:", ownerId);
         return res.status(403).json({ message: "Cannot access messages of other users" });
       }
-      
-      const messages = await storage.getMessagesByConversationId(customerId, ownerId, horseId);
-      return res.json(messages);
     } catch (error) {
       console.error("Get messages error:", error);
       return res.status(500).json({ message: "Failed to get messages" });
