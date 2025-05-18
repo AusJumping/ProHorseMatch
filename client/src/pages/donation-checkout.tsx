@@ -6,6 +6,7 @@ import Layout from '@/components/Layout';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, Heart } from 'lucide-react';
+import { apiRequest } from "@/lib/queryClient";
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
@@ -14,7 +15,8 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-const DonationCheckoutForm = ({ amount, clientSecret }: { amount: number, clientSecret: string }) => {
+// The checkout form component that uses Stripe Elements
+const DonationCheckoutForm = ({ amount }: { amount: number }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -26,28 +28,36 @@ const DonationCheckoutForm = ({ amount, clientSecret }: { amount: number, client
     e.preventDefault();
 
     if (!stripe || !elements) {
+      toast({
+        title: "Error",
+        description: "Stripe is not available. Please try again later.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsProcessing(true);
 
     try {
+      // Use the confirmPayment method with the elements instance
       const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/donation-success`,
+          return_url: `${window.location.origin}/donation-success?amount=${amount}`,
         },
         redirect: 'if_required'
       });
 
       if (error) {
+        console.error('Payment error:', error);
         toast({
-          title: "Donation Failed",
+          title: "Payment Failed",
           description: error.message || "An error occurred processing your donation",
           variant: "destructive",
         });
         setIsProcessing(false);
       } else if (paymentIntent && paymentIntent.status === 'succeeded') {
+        // Payment succeeded
         toast({
           title: "Thank You!",
           description: `Your $${amount} donation has been received`,
@@ -56,11 +66,12 @@ const DonationCheckoutForm = ({ amount, clientSecret }: { amount: number, client
         setIsPaid(true);
         setTimeout(() => {
           navigate('/donation-success');
-        }, 1500);
+        }, 1000);
       }
     } catch (err: any) {
+      console.error('Payment error:', err);
       toast({
-        title: "Donation Failed",
+        title: "Payment Failed",
         description: err.message || "An error occurred processing your donation",
         variant: "destructive",
       });
@@ -111,6 +122,7 @@ const DonationCheckoutForm = ({ amount, clientSecret }: { amount: number, client
             variant="ghost" 
             className="w-full mt-2" 
             onClick={() => navigate('/subscription')}
+            disabled={isProcessing}
           >
             Cancel
           </Button>
@@ -120,50 +132,56 @@ const DonationCheckoutForm = ({ amount, clientSecret }: { amount: number, client
   );
 };
 
+// Main donation checkout page
 export default function DonationCheckout() {
   const [searchParams] = useState(() => new URLSearchParams(window.location.search));
   const amount = parseInt(searchParams.get('amount') || '10', 10);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [, navigate] = useLocation();
-
+  
   useEffect(() => {
-    const initializeDonation = async () => {
+    // Get a payment intent for the donation
+    const createPaymentIntent = async () => {
       try {
-        const response = await fetch('/api/create-donation', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            amount,
-            currency: 'usd',
-          }),
+        setIsLoading(true);
+        setError(null);
+        
+        console.log("Creating donation payment intent for amount:", amount);
+        
+        const response = await apiRequest('POST', '/api/create-donation', {
+          amount,
+          currency: 'usd',
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to initialize donation');
-        }
-
+        
         const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to create payment intent');
+        }
+        
+        if (!data.clientSecret) {
+          throw new Error('No client secret returned from the server');
+        }
+        
+        console.log("Payment intent created successfully");
         setClientSecret(data.clientSecret);
-      } catch (error: any) {
+      } catch (err: any) {
+        console.error("Error creating payment intent:", err);
+        setError(err.message || 'An unexpected error occurred');
         toast({
           title: "Error",
-          description: error.message || "Failed to initialize donation",
+          description: err.message || "Failed to initialize donation",
           variant: "destructive",
         });
-        setTimeout(() => {
-          navigate('/subscription');
-        }, 2000);
       } finally {
         setIsLoading(false);
       }
     };
-
-    initializeDonation();
+    
+    createPaymentIntent();
   }, [amount, toast, navigate]);
 
   if (isLoading) {
@@ -176,17 +194,17 @@ export default function DonationCheckout() {
     );
   }
 
-  if (!clientSecret) {
+  if (error || !clientSecret) {
     return (
       <Layout pageTitle="Donation Error">
         <div className="text-center py-12">
           <h2 className="text-2xl font-accent font-bold mb-3">Donation Error</h2>
-          <p className="text-neutral-600">
-            Unable to initialize donation. Please try again later.
+          <p className="text-neutral-600 mb-4">
+            {error || "Unable to initialize donation. Please try again later."}
           </p>
           <Button 
             onClick={() => navigate('/subscription')} 
-            className="mt-6"
+            className="mt-2"
           >
             Go Back
           </Button>
@@ -198,8 +216,16 @@ export default function DonationCheckout() {
   return (
     <Layout pageTitle="Complete Your Donation">
       <div className="container py-10">
-        <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
-          <DonationCheckoutForm amount={amount} clientSecret={clientSecret} />
+        <Elements stripe={stripePromise} options={{ 
+          clientSecret,
+          appearance: { 
+            theme: 'stripe',
+            variables: {
+              colorPrimary: '#cdac6e',
+            },
+          } 
+        }}>
+          <DonationCheckoutForm amount={amount} />
         </Elements>
       </div>
     </Layout>

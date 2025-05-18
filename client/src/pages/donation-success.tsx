@@ -1,62 +1,57 @@
-import { useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
-import { Gift, Heart, ChevronRight } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { Heart, CheckCircle } from 'lucide-react';
 
-export default function DonationSuccessPage() {
-  const { toast } = useToast();
-  const [, navigate] = useLocation();
-  
+export default function DonationSuccess() {
+  const [location, navigate] = useLocation();
+  const [searchParams] = useState(() => new URLSearchParams(window.location.search));
+  const amount = searchParams.get('amount') || '10';
+
+  // Redirect after 10 seconds
   useEffect(() => {
-    // Show a success message when the page loads
-    toast({
-      title: "Thank You for Your Donation!",
-      description: "Your contribution will help improve Pro Horse Match.",
-    });
-  }, [toast]);
-  
+    const timer = setTimeout(() => {
+      navigate('/subscription');
+    }, 10000);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
   return (
-    <div className="container mx-auto py-20 max-w-md">
-      <Card>
-        <CardHeader className="text-center">
-          <div className="mx-auto bg-[#e4e2dd] rounded-full p-3 mb-4 w-16 h-16 flex items-center justify-center">
-            <Heart className="w-8 h-8 text-[#cdac6e]" />
+    <Layout pageTitle="Thank You for Your Donation">
+      <div className="container max-w-xl mx-auto py-10">
+        <div className="bg-[#e4e2dd] rounded-xl p-8 text-center space-y-6">
+          <div className="relative mx-auto h-20 w-20 rounded-full bg-white flex items-center justify-center">
+            <CheckCircle className="h-10 w-10 text-[#cdac6e]" />
           </div>
-          <CardTitle className="text-2xl font-accent">Thank You!</CardTitle>
-          <CardDescription>
-            Your generous donation has been received
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="bg-muted/50 p-4 rounded-lg">
-            <div className="flex gap-3 items-center mb-3">
-              <Gift className="text-primary h-5 w-5" />
-              <p className="font-medium">How your donation helps</p>
-            </div>
-            <ul className="space-y-2 text-sm pl-8 list-disc">
-              <li>Fund new feature development</li>
-              <li>Improve user experience and interface design</li>
-              <li>Enhance matching algorithms for better horse/buyer matches</li>
-              <li>Expand platform availability to more countries</li>
-            </ul>
-          </div>
+
+          <Heart className="h-16 w-16 text-[#cdac6e] mx-auto" />
           
-          <div className="text-center text-sm text-muted-foreground">
-            <p>A receipt has been sent to your email address if you were logged in.</p>
-          </div>
+          <h1 className="text-3xl font-accent font-bold">Thank You!</h1>
           
-          <div className="space-y-3 pt-4">
-            <Button className="w-full" onClick={() => navigate('/')}>
-              Back to Home
-            </Button>
-            <Button variant="outline" className="w-full" onClick={() => navigate('/subscription')}>
-              View Subscription Plans <ChevronRight className="ml-1 h-4 w-4" />
+          <p className="text-xl">
+            Your generous donation of <span className="font-semibold">${parseFloat(amount).toLocaleString()}</span> to Pro Horse Match has been received.
+          </p>
+          
+          <p className="text-neutral-600">
+            Your support helps us continue developing the platform and provide better services to the equestrian community.
+          </p>
+          
+          <div className="pt-4">
+            <Button 
+              onClick={() => navigate('/subscription')}
+              className="bg-[#cdac6e] hover:bg-[#b69a5e]"
+            >
+              Return to Subscription Page
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
+          
+          <p className="text-sm text-neutral-500">
+            You will be automatically redirected in a few seconds.
+          </p>
+        </div>
+      </div>
+    </Layout>
   );
 }

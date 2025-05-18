@@ -2150,7 +2150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid donation amount" });
       }
       
-      // Create a direct payment intent for the donation
+      // Create a payment intent specifically for donations
       const paymentIntent = await stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
         currency: currency.toLowerCase(),
@@ -2160,11 +2160,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Add user ID if authenticated
           ...(req.session && req.session.userId ? { userId: req.session.userId.toString() } : {})
         },
+        // Enable automatic payment methods for a smoother checkout experience
         automatic_payment_methods: {
           enabled: true,
         },
       });
       
+      console.log(`Donation payment intent created: ${paymentIntent.id} for amount ${amount}`);
+      
+      // Return the client secret which is needed for the frontend to complete the payment
       res.json({
         clientSecret: paymentIntent.client_secret,
         amount: amount
