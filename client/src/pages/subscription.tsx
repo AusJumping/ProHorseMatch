@@ -149,6 +149,9 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
 export default function SubscriptionPage() {
   const [selectedPlan, setSelectedPlan] = useState('basic');
   const [clientSecret, setClientSecret] = useState('');
+  const [showCustomAmount, setShowCustomAmount] = useState(false);
+  const [customAmount, setCustomAmount] = useState(20);
+  const [isDonating, setIsDonating] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -219,6 +222,55 @@ export default function SubscriptionPage() {
     queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
     queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     navigate('/subscription/success');
+  };
+  
+  // Handle donation
+  const handleDonation = async (amount: number) => {
+    try {
+      setIsDonating(true);
+      
+      // Create a payment intent for the donation
+      const response = await apiRequest('POST', '/api/create-donation', { 
+        amount, 
+        currency: 'usd' 
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to process donation');
+      }
+      
+      const data = await response.json();
+      
+      // Use Stripe.js to open a checkout page for the donation
+      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+      
+      if (!stripe) {
+        throw new Error('Failed to load Stripe');
+      }
+      
+      const { error } = await stripe.redirectToCheckout({
+        sessionId: data.sessionId
+      });
+      
+      if (error) {
+        throw new Error(error.message || 'Failed to redirect to checkout');
+      }
+      
+      toast({
+        title: 'Thank You!',
+        description: 'You are being redirected to complete your donation.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Donation Error',
+        description: error.message || 'An error occurred processing your donation',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDonating(false);
+      setShowCustomAmount(false);
+    }
   };
   
   // Format date for display
@@ -377,6 +429,64 @@ export default function SubscriptionPage() {
           </Card>
         </div>
       )}
+      
+      {/* Donation Section */}
+      <div className="max-w-2xl mx-auto mt-20 mb-10 bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-6 border border-amber-200">
+        <div className="text-center">
+          <h3 className="text-xl font-accent font-semibold mb-3">Support Our Development</h3>
+          <p className="text-muted-foreground mb-6">
+            Help us make Pro Horse Match the #1 horse sale app with a one-time donation. 
+            Every contribution helps us build new features and improve the platform.
+          </p>
+          
+          <div className="flex flex-wrap justify-center gap-4 mb-6">
+            {[10, 25, 50, 100].map((amount) => (
+              <Button 
+                key={amount}
+                variant="outline" 
+                className="min-w-[80px] bg-white hover:bg-primary hover:text-white border-amber-300"
+                onClick={() => handleDonation(amount)}
+                disabled={isDonating}
+              >
+                ${amount}
+              </Button>
+            ))}
+            <Button 
+              variant="outline" 
+              className="min-w-[80px] bg-white hover:bg-primary hover:text-white border-amber-300"
+              onClick={() => setShowCustomAmount(true)}
+              disabled={isDonating}
+            >
+              Custom
+            </Button>
+          </div>
+          
+          {showCustomAmount && (
+            <div className="max-w-xs mx-auto mb-6">
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Enter amount"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(Math.max(1, parseInt(e.target.value) || 0))}
+                  min="1"
+                />
+                <Button 
+                  onClick={() => handleDonation(customAmount)}
+                  disabled={isDonating || customAmount < 1}
+                >
+                  Donate
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          <p className="text-sm text-muted-foreground italic">
+            100% of donations go directly to improving Pro Horse Match
+          </p>
+        </div>
+      </div>
       
       <div className="text-center mt-12">
         <h3 className="text-lg font-medium mb-2">Questions about our plans?</h3>

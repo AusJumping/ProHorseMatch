@@ -2136,6 +2136,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Create a one-time donation payment
+  app.post('/api/create-donation', async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe is not configured" });
+      }
+      
+      const { amount, currency = 'usd' } = req.body;
+      
+      if (!amount || amount < 1) {
+        return res.status(400).json({ message: "Invalid donation amount" });
+      }
+      
+      // Create a checkout session for the donation
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: currency.toLowerCase(),
+              product_data: {
+                name: 'Donation to Pro Horse Match',
+                description: 'Support the development of Pro Horse Match',
+                images: ['https://prohorsematch.com/logo.png'], // placeholder URL
+              },
+              unit_amount: Math.round(amount * 100), // Convert to cents
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${req.protocol}://${req.get('host')}/donation-success`,
+        cancel_url: `${req.protocol}://${req.get('host')}/subscription`,
+        metadata: {
+          type: 'donation',
+          // Add user ID if authenticated
+          ...(req.session.userId ? { userId: req.session.userId.toString() } : {})
+        }
+      });
+      
+      res.json({
+        sessionId: session.id
+      });
+    } catch (error) {
+      console.error("Error creating donation payment:", error);
+      res.status(500).json({ 
+        message: "Error creating donation payment",
+        error: error.message 
+      });
+    }
+  });
 
   // Create HTTP server
   const httpServer = createServer(app);
