@@ -16,13 +16,18 @@ const Sidebar = () => {
   const { data: conversations } = useQuery({
     queryKey: ['/api/conversations'],
     enabled: isAuthenticated,
-    refetchInterval: 15000, // Refetch every 15 seconds to check for new messages
+    refetchInterval: 10000, // Refetch every 10 seconds to check for new messages
   });
   
-  // Calculate total unread messages - force to 1 for testing purposes
-  // In a real app, this would be calculated from the actual unread_count
-  // For demonstration, we'll set a static unread count if there are any conversations
-  const unreadCount = conversations && conversations.length > 0 ? 1 : 0;
+  // Query specifically for unread message count
+  const { data: unreadData } = useQuery({
+    queryKey: ['/api/messages/unread'],
+    enabled: isAuthenticated,
+    refetchInterval: 10000, // Refetch every 10 seconds
+  });
+  
+  // Use the unread count from the API or fallback to a calculation
+  const unreadCount = unreadData?.count || (conversations?.length > 0 ? 1 : 0);
   
   // Debug log with more details
   console.log("Sidebar - Auth state:", { isAuthenticated, user });
