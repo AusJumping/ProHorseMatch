@@ -465,10 +465,6 @@ export default function Profile() {
                                               }
                                             </SelectItem>
                                           ))}
-                                          <SelectItem value="999999">
-                                            {profileForm.watch("currency") === "USD" ? "Over $500,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "Over A$500,000" : ""}
-                                          </SelectItem>
                                         </SelectContent>
                                       </Select>
                                       <FormMessage />
