@@ -104,7 +104,7 @@ export default function Profile() {
       preferred_characteristics: user?.profile?.preferred_characteristics || [],
       price_range_min: user?.profile?.price_range_min || 0,
       price_range_max: user?.profile?.price_range_max || 999999999,
-      currency: user?.profile?.currency || "EUR",
+      currency: user?.profile?.currency || "AUD",
     }
   });
 
@@ -350,7 +350,7 @@ export default function Profile() {
                               <FormItem>
                                 <FormLabel>Currency</FormLabel>
                                 <Select 
-                                  value={field.value} 
+                                  value={field.value || "AUD"} 
                                   onValueChange={field.onChange}
                                 >
                                   <FormControl>
