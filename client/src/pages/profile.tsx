@@ -56,6 +56,12 @@ const countries = [
   "Germany", "Netherlands", "Belgium", "France", "United Kingdom", 
   "United States", "Ireland", "Sweden", "Denmark", "Spain", "Italy"
 ];
+const priceValues = [
+  0, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 
+  50000, 55000, 60000, 65000, 70000, 75000, 80000, 85000, 90000, 95000, 
+  100000, 125000, 150000, 175000, 200000, 250000, 300000, 350000, 400000, 
+  450000, 500000
+];
 
 export default function Profile() {
   const isMobile = useMobile();
@@ -378,22 +384,14 @@ export default function Profile() {
                                         </FormControl>
                                         <SelectContent className="text-black bg-white">
                                           <SelectItem value="0" className="text-gray-900">No Min</SelectItem>
-                                          <SelectItem value="5000" className="text-gray-900">
-                                            {profileForm.watch("currency") === "USD" ? "$5,000" : "A$5,000"}
-                                          </SelectItem>
-                                          <SelectItem value="10000" className="text-gray-900">
-                                            {profileForm.watch("currency") === "USD" ? "$10,000" : "A$10,000"}
-                                          </SelectItem>
-                                          <SelectItem value="15000" className="text-gray-900">
-                                            {profileForm.watch("currency") === "USD" ? "$15,000" : "A$15,000"}
-                                          </SelectItem>
-                                          <SelectItem value="20000" className="text-gray-900">
-                                            {profileForm.watch("currency") === "USD" ? "$20,000" : "A$20,000"}
-                                          </SelectItem>
-                                          <SelectItem value="25000">
-                                            {profileForm.watch("currency") === "USD" ? "$25,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$25,000" : ""}
-                                          </SelectItem>
+                                          {priceValues.slice(1, 15).map(price => (
+                                            <SelectItem key={price} value={price.toString()} className="text-gray-900">
+                                              {profileForm.watch("currency") === "USD" 
+                                                ? `$${price.toLocaleString()}` 
+                                                : `A$${price.toLocaleString()}`
+                                              }
+                                            </SelectItem>
+                                          ))}
                                           <SelectItem value="30000">
                                             {profileForm.watch("currency") === "USD" ? "$30,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$30,000" : ""}
@@ -459,22 +457,16 @@ export default function Profile() {
                                         </FormControl>
                                         <SelectContent className="text-black bg-white">
                                           <SelectItem value="999999999" className="text-gray-900">No Max</SelectItem>
-                                          <SelectItem value="5000" className="text-gray-900">
-                                            $5,000
-                                          </SelectItem>
-                                          <SelectItem value="10000" className="text-gray-900">
-                                            $10,000
-                                          </SelectItem>
-                                          <SelectItem value="15000" className="text-gray-900">
-                                            $15,000
-                                          </SelectItem>
-                                          <SelectItem value="20000" className="text-gray-900">
-                                            $20,000
-                                          </SelectItem>
-                                          <SelectItem value="25000">
-                                            {profileForm.watch("currency") === "USD" ? "$25,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$25,000" : ""}
-                                          </SelectItem>
+                                          {priceValues.slice(1).map(price => (
+                                            <SelectItem key={price} value={price.toString()} className="text-gray-900">
+                                              {profileForm.watch("currency") === "USD" 
+                                                ? `$${price.toLocaleString()}` 
+                                                : `A$${price.toLocaleString()}`
+                                              }
+                                            </SelectItem>
+                                          ))}
+
+
                                           <SelectItem value="30000">
                                             {profileForm.watch("currency") === "USD" ? "$30,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$30,000" : ""}
