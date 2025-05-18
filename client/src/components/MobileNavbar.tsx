@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Home, Heart, Filter, MessageSquare, User, PlusCircle, List } from "lucide-react";
+import { Home, Heart, Filter, MessageSquare, User, PlusCircle, List, CreditCard } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 
 const MobileNavbar = () => {
@@ -7,9 +7,9 @@ const MobileNavbar = () => {
   const { user, isAuthenticated } = useAuth();
   
   // Log for debugging
-  console.log("MobileNavbar - Auth state:", { isAuthenticated, userType: user?.type });
+  console.log("MobileNavbar - Auth state:", { isAuthenticated, isSelling: user?.is_selling });
   
-  const isOwner = user?.type === "owner";
+  const isOwner = user?.is_selling;
 
   return (
     <nav className="bg-white border-t border-neutral-200 py-2 px-4">
@@ -79,6 +79,19 @@ const MobileNavbar = () => {
         >
           <Filter className="h-5 w-5" />
           <span className="text-xs mt-1">Filter</span>
+        </button>
+        
+        <button 
+          className={`flex flex-col items-center ${
+            location === "/subscription" ? "text-primary" : "text-neutral-500"
+          }`}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/subscription");
+          }}
+        >
+          <CreditCard className="h-5 w-5" />
+          <span className="text-xs mt-1">Subscribe</span>
         </button>
         
         <button 
