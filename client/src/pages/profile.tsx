@@ -583,44 +583,30 @@ export default function Profile() {
                           <FormField
                             control={profileForm.control}
                             name="preferred_breeds"
-                            render={() => (
+                            render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Preferred Breeds</FormLabel>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                                  {breeds.map((breed) => (
-                                    <FormField
-                                      key={breed}
-                                      control={profileForm.control}
-                                      name="preferred_breeds"
-                                      render={({ field }) => {
-                                        return (
-                                          <FormItem
-                                            key={breed}
-                                            className="flex flex-row items-start space-x-2"
-                                          >
-                                            <FormControl>
-                                              <Checkbox
-                                                checked={field.value?.includes(breed)}
-                                                onCheckedChange={(checked) => {
-                                                  return checked
-                                                    ? field.onChange([...field.value || [], breed])
-                                                    : field.onChange(
-                                                        field.value?.filter(
-                                                          (value) => value !== breed
-                                                        )
-                                                      )
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormLabel className="font-normal cursor-pointer">
-                                              {breed}
-                                            </FormLabel>
-                                          </FormItem>
-                                        )
-                                      }}
-                                    />
-                                  ))}
-                                </div>
+                                <Select 
+                                  value={field.value?.length ? field.value[0] : undefined}
+                                  onValueChange={(value) => {
+                                    field.onChange([value]);
+                                  }}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
+                                      <SelectValue placeholder="Select breed" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent className="text-black bg-white">
+                                    <SelectItem value="All" className="text-gray-900">All Breeds</SelectItem>
+                                    {breeds.map((breed) => (
+                                      <SelectItem key={breed} value={breed} className="text-gray-900">
+                                        {breed}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
