@@ -459,23 +459,19 @@ export default function Profile() {
                                             <SelectValue placeholder="Select maximum price" />
                                           </SelectTrigger>
                                         </FormControl>
-                                        <SelectContent>
-                                          <SelectItem value="999999999">No Max</SelectItem>
-                                          <SelectItem value="5000">
-                                            {profileForm.watch("currency") === "USD" ? "$5,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$5,000" : ""}
+                                        <SelectContent className="text-black bg-white">
+                                          <SelectItem value="999999999" className="text-gray-900">No Max</SelectItem>
+                                          <SelectItem value="5000" className="text-gray-900">
+                                            $5,000
                                           </SelectItem>
-                                          <SelectItem value="10000">
-                                            {profileForm.watch("currency") === "USD" ? "$10,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$10,000" : ""}
+                                          <SelectItem value="10000" className="text-gray-900">
+                                            $10,000
                                           </SelectItem>
-                                          <SelectItem value="15000">
-                                            {profileForm.watch("currency") === "USD" ? "$15,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$15,000" : ""}
+                                          <SelectItem value="15000" className="text-gray-900">
+                                            $15,000
                                           </SelectItem>
-                                          <SelectItem value="20000">
-                                            {profileForm.watch("currency") === "USD" ? "$20,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$20,000" : ""}
+                                          <SelectItem value="20000" className="text-gray-900">
+                                            $20,000
                                           </SelectItem>
                                           <SelectItem value="25000">
                                             {profileForm.watch("currency") === "USD" ? "$25,000" : 
