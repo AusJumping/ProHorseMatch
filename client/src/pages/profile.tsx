@@ -276,7 +276,7 @@ export default function Profile() {
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select a discipline" />
+                                      <SelectValue placeholder="Select Discipline" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
@@ -305,7 +305,7 @@ export default function Profile() {
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select a sex" />
+                                      <SelectValue placeholder="Select Sex" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
