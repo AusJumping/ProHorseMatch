@@ -275,7 +275,6 @@ export default function Profile() {
                   <Form {...profileForm}>
                     <form className="space-y-8">
                       <div>
-                        <h3 className="text-lg font-semibold mb-4">Basic Criteria</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <FormField
                             control={profileForm.control}
@@ -340,7 +339,6 @@ export default function Profile() {
                       <Separator />
                       
                       <div>
-                        <h3 className="text-lg font-semibold mb-4">Price Range</h3>
                         <div className="space-y-6">
                           {/* Currency selector first */}
                           <FormField
@@ -447,7 +445,6 @@ export default function Profile() {
                       <Separator />
                       
                       <div>
-                        <h3 className="text-lg font-semibold mb-4">Physical Attributes</h3>
                         <div className="space-y-6">
                           <FormLabel className="block mb-2">Age Range (in years)</FormLabel>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -580,7 +577,6 @@ export default function Profile() {
                       <Separator />
                       
                       <div>
-                        <h3 className="text-lg font-semibold mb-4">Characteristics & Breeding</h3>
                         <div className="grid grid-cols-1 gap-6">
                           <FormField
                             control={profileForm.control}
