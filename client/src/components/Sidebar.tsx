@@ -57,7 +57,7 @@ const Sidebar = () => {
               }}
             >
               <Home className="mr-3 h-5 w-5" />
-              <span>Home</span>
+              <span>Search</span>
             </Button>
           </li>
           <li>
