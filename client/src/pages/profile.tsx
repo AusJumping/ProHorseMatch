@@ -63,6 +63,8 @@ const priceValues = [
   450000, 500000
 ];
 
+const ageValues = Array.from({ length: 21 }, (_, i) => i);
+
 export default function Profile() {
   const isMobile = useMobile();
   const { toast } = useToast();
@@ -442,42 +444,67 @@ export default function Profile() {
                       <div>
                         <h3 className="text-lg font-semibold mb-4">Physical Attributes</h3>
                         <div className="space-y-6">
-                          <FormField
-                            control={profileForm.control}
-                            name="age_range_min"
-                            render={({ field }) => (
-                              <FormItem>
-                                <div className="flex justify-between">
-                                  <FormLabel>Age Range</FormLabel>
-                                  <span className="text-sm text-primary font-semibold">
-                                    {profileForm.watch("age_range_min") || 0} - {profileForm.watch("age_range_max") || 20} years
-                                  </span>
-                                </div>
-                                <FormControl>
-                                  <div className="pt-6">
-                                    <Slider
-                                      value={[
-                                        profileForm.watch("age_range_min") || 0,
-                                        profileForm.watch("age_range_max") || 20
-                                      ]}
-                                      min={0}
-                                      max={20}
-                                      step={1}
-                                      onValueChange={(vals) => {
-                                        profileForm.setValue("age_range_min", vals[0]);
-                                        profileForm.setValue("age_range_max", vals[1]);
-                                      }}
-                                    />
-                                  </div>
-                                </FormControl>
-                                <div className="flex justify-between text-xs text-neutral-500 mt-2">
-                                  <span>0 years</span>
-                                  <span>20+ years</span>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                          <FormLabel className="block mb-2">Age Range (in years)</FormLabel>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Min Age */}
+                            <FormField
+                              control={profileForm.control}
+                              name="age_range_min"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Minimum Age</FormLabel>
+                                  <Select 
+                                    value={field.value?.toString() || "0"} 
+                                    onValueChange={(value) => field.onChange(parseInt(value))}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
+                                        <SelectValue placeholder="Select minimum age" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent className="text-black bg-white">
+                                      {ageValues.slice(0, -1).map(age => (
+                                        <SelectItem key={age} value={age.toString()} className="text-gray-900">
+                                          {age} {age === 1 ? "year" : "years"}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          
+                            {/* Max Age */}
+                            <FormField
+                              control={profileForm.control}
+                              name="age_range_max"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Maximum Age</FormLabel>
+                                  <Select 
+                                    value={field.value?.toString() || "20"} 
+                                    onValueChange={(value) => field.onChange(parseInt(value))}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
+                                        <SelectValue placeholder="Select maximum age" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent className="text-black bg-white">
+                                      {ageValues.slice(1).map(age => (
+                                        <SelectItem key={age} value={age.toString()} className="text-gray-900">
+                                          {age} {age === 1 ? "year" : "years"}
+                                        </SelectItem>
+                                      ))}
+                                      <SelectItem value="21" className="text-gray-900">20+ years</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                           
                           <FormField
                             control={profileForm.control}
