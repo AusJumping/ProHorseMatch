@@ -92,7 +92,7 @@
           "Warmblood"
         ],
         "age": 13,
-        "height_hands": null,
+        "height_hands": 16,
         "height_cm": 0,
         "sex": "Mare",
         "sire": "Misty Dad",
@@ -109,7 +109,9 @@
           "/uploads/file-1747474523332-338120685.jpg"
         ],
         "videos": [],
-        "created_at": "2025-05-17T09:35:26.729Z"
+        "created_at": "2025-05-17T09:35:26.729Z",
+        "location_radius_km": 0,
+        "price": 50
       }
     ],
     [
