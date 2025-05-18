@@ -33,10 +33,16 @@ const CheckoutForm = ({ horseId, horsePrice, horseName, horseCurrency }: { horse
     setIsProcessing(true);
 
     try {
+      // Build the return URL with horse details
+      const successUrl = new URL(`${window.location.origin}/payment-success`);
+      successUrl.searchParams.append('horse_name', horseName);
+      successUrl.searchParams.append('amount', horsePrice.toString());
+      successUrl.searchParams.append('currency', horseCurrency);
+      
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: window.location.origin + "/payment-success",
+          return_url: successUrl.toString(),
         },
         redirect: 'if_required'
       });
@@ -53,11 +59,18 @@ const CheckoutForm = ({ horseId, horsePrice, horseName, horseCurrency }: { horse
           title: "Payment Successful!",
           description: `Thank you for your purchase of ${horseName}`,
         });
+        
+        // Create success URL with purchase details
+        const successUrl = new URL(`${window.location.origin}/payment-success`);
+        successUrl.searchParams.append('horse_name', horseName);
+        successUrl.searchParams.append('amount', horsePrice.toString());
+        successUrl.searchParams.append('currency', horseCurrency);
+        
         setIsPaid(true);
         // In a real app, we'd record the successful payment on the server
         setTimeout(() => {
-          navigate('/');
-        }, 3000);
+          navigate(successUrl.toString());
+        }, 1500);
       }
     } catch (err: any) {
       toast({
