@@ -1352,7 +1352,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Endpoint to get unread message count
-  // Endpoint to get unread message count
   app.get("/api/messages/unread", isAuthenticated, async (req, res) => {
     try {
       // Get the user with their roles

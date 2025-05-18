@@ -27,7 +27,8 @@ const Sidebar = () => {
   });
   
   // Use the unread count from the API or fallback to a calculation
-  const unreadCount = unreadData?.count || (conversations?.length > 0 ? 1 : 0);
+  const unreadCount = unreadData && 'count' in unreadData ? unreadData.count : 
+    (conversations && Array.isArray(conversations) && conversations.length > 0 ? 1 : 0);
   
   // Debug log with more details
   console.log("Sidebar - Auth state:", { isAuthenticated, user });
