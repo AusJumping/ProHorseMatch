@@ -235,7 +235,9 @@ export default function SubscriptionPage() {
       });
       
       // Redirect to our own checkout page, passing the amount as a URL parameter
-      navigate(`/donation-checkout?amount=${amount}`);
+      // Ensure amount is a valid number and convert to string safely
+      const amountStr = amount.toString();
+      navigate(`/donation-checkout?amount=${amountStr}`);
       
     } catch (error: any) {
       toast({

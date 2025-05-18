@@ -878,7 +878,17 @@ export class MemStorage implements IStorage {
       .sort((a, b) => {
         if (!a.last_message_time) return 1;
         if (!b.last_message_time) return -1;
-        return b.last_message_time.getTime() - a.last_message_time.getTime();
+        
+        try {
+          // Convert string dates to Date objects if needed
+          const aDate = typeof a.last_message_time === 'string' ? new Date(a.last_message_time) : a.last_message_time;
+          const bDate = typeof b.last_message_time === 'string' ? new Date(b.last_message_time) : b.last_message_time;
+          
+          return bDate.getTime() - aDate.getTime();
+        } catch (err) {
+          console.error('Error sorting conversations:', err);
+          return 0; // Default sort order if we can't compare dates
+        }
       });
   }
   
