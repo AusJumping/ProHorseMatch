@@ -376,7 +376,7 @@ export default function Profile() {
                                     <FormItem>
                                       <FormLabel>Minimum Price</FormLabel>
                                       <Select 
-                                        value={field.value?.toString() || "0"} 
+                                        value={field.value === 0 ? "0" : (field.value?.toString() || "0")}
                                         onValueChange={(value) => field.onChange(parseInt(value))}
                                       >
                                         <FormControl>
@@ -409,7 +409,7 @@ export default function Profile() {
                                     <FormItem>
                                       <FormLabel>Maximum Price</FormLabel>
                                       <Select 
-                                        value={field.value?.toString() || "999999999"} 
+                                        value={field.value === 999999999 ? "999999999" : (field.value?.toString() || "999999999")}
                                         onValueChange={(value) => field.onChange(parseInt(value))}
                                       >
                                         <FormControl>
@@ -454,7 +454,7 @@ export default function Profile() {
                                 <FormItem>
                                   <FormLabel>Minimum Age</FormLabel>
                                   <Select 
-                                    value={field.value?.toString() || "0"} 
+                                    value={field.value === 0 ? "0" : (field.value?.toString() || "0")}
                                     onValueChange={(value) => field.onChange(parseInt(value))}
                                   >
                                     <FormControl>
@@ -484,7 +484,7 @@ export default function Profile() {
                                 <FormItem>
                                   <FormLabel>Maximum Age</FormLabel>
                                   <Select 
-                                    value={field.value?.toString() || "20"} 
+                                    value={field.value === 999 ? "999" : (field.value?.toString() || "999")}
                                     onValueChange={(value) => field.onChange(parseInt(value))}
                                   >
                                     <FormControl>
