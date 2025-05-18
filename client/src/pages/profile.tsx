@@ -589,9 +589,13 @@ export default function Profile() {
                               <FormItem>
                                 <FormLabel>Preferred Breeds</FormLabel>
                                 <Select 
-                                  value={field.value?.length ? field.value[0] : undefined}
+                                  value={field.value?.length === 0 ? "Any" : (field.value?.length ? field.value[0] : "Any")}
                                   onValueChange={(value) => {
-                                    field.onChange([value]);
+                                    if (value === "Any") {
+                                      field.onChange([]);
+                                    } else {
+                                      field.onChange([value]);
+                                    }
                                   }}
                                 >
                                   <FormControl>
