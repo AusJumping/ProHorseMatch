@@ -17,6 +17,8 @@ import MigrateHorses from "@/pages/migrate-horses";
 import AdminPanel from "@/pages/admin";
 import Favorites from "@/pages/favorites";
 import Landing from "@/pages/landing";
+import Checkout from "@/pages/checkout";
+import PaymentSuccess from "@/pages/payment-success";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
@@ -36,6 +38,8 @@ function Router() {
       <Route path="/migrate-horses" component={MigrateHorses} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/favorites" component={Favorites} />
+      <Route path="/checkout/:horseId" component={Checkout} />
+      <Route path="/payment-success" component={PaymentSuccess} />
       <Route component={NotFound} />
     </Switch>
   );

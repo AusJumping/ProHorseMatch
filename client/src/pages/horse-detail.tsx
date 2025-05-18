@@ -325,6 +325,35 @@ export default function HorseDetail() {
               </div>
             )}
             
+            {/* Price Display */}
+            <div className="mb-6">
+              <div className="bg-neutral-50 p-4 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm text-neutral-500">Price</p>
+                    <p className="text-xl font-accent font-bold">
+                      {horse.price_min ? 
+                        (horse.price_min === horse.price_max ? 
+                          `${horse.currency} $${horse.price_min.toLocaleString()}` : 
+                          `${horse.currency} $${horse.price_min.toLocaleString()} - $${horse.price_max.toLocaleString()}`
+                        ) : 
+                        "Price on Request"
+                      }
+                    </p>
+                  </div>
+                  {horse.price_min && (
+                    <Button 
+                      onClick={() => navigate(`/checkout/${horse.id}`)}
+                      style={{ backgroundColor: "#34a853", borderColor: "#34a853" }}
+                      className="text-white hover:bg-green-600"
+                    >
+                      Buy Now
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Action Buttons */}
             {!isMessageOpen && (
               <div className="flex gap-3 mt-auto">

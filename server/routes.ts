@@ -1550,6 +1550,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment routes - Stripe integration
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe is not configured" });
+      }
+
+      const { horseId, amount } = req.body;
+      
+      if (!horseId || !amount) {
+        return res.status(400).json({ message: "Horse ID and amount are required" });
+      }
+      
+      // Get the horse to verify it exists and get its details
+      const horse = await storage.getHorseById(horseId);
+      if (!horse) {
+        return res.status(404).json({ message: "Horse not found" });
+      }
+      
+      // Create a payment intent with Stripe
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: horse.currency.toLowerCase() || "aud",
+        metadata: {
+          horse_id: horseId.toString(),
+          horse_name: horse.name
+        },
+      });
+      
+      // Return the client secret to the client
+      res.json({
+        clientSecret: paymentIntent.client_secret,
+      });
+    } catch (error: any) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ 
+        message: "Failed to create payment intent",
+        error: error.message 
+      });
+    }
+  });
+
   // Utility routes - for the app constants
   app.get("/api/constants", (req, res) => {
     try {
