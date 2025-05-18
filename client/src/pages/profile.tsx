@@ -63,7 +63,7 @@ const priceValues = [
   450000, 500000
 ];
 
-const ageValues = Array.from({ length: 21 }, (_, i) => i);
+const ageValues = [0, ...Array.from({ length: 30 }, (_, i) => i + 1), 999];
 
 export default function Profile() {
   const isMobile = useMobile();
@@ -91,14 +91,14 @@ export default function Profile() {
       preferred_levels: user?.profile?.preferred_levels || [],
       preferred_breeds: user?.profile?.preferred_breeds || [],
       age_range_min: user?.profile?.age_range_min || 0,
-      age_range_max: user?.profile?.age_range_max || 20,
+      age_range_max: user?.profile?.age_range_max || 999,
       height_range_min: user?.profile?.height_range_min || 13,
       height_range_max: user?.profile?.height_range_max || 18,
       preferred_sexes: user?.profile?.preferred_sexes || [],
       breeding_preferences: user?.profile?.breeding_preferences || "",
       preferred_characteristics: user?.profile?.preferred_characteristics || [],
       price_range_min: user?.profile?.price_range_min || 0,
-      price_range_max: user?.profile?.price_range_max || 100000,
+      price_range_max: user?.profile?.price_range_max || 999999999,
       currency: user?.profile?.currency || "EUR",
     }
   });
