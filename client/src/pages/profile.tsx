@@ -51,8 +51,8 @@ const breeds = [
   "Other"
 ];
 const characteristics = [
-  "Forward", "Brave", "Careful", "Scope", "Easy to Ride", "Schoolmaster", 
-  "Athletic", "Honest", "Talented", "Bold", "Sensitive", "Calm"
+  "Forward", "Brave", "Careful", "Scope", "Schoolmaster", 
+  "Honest", "Bold", "Sensitive", "Calm"
 ];
 const countries = [
   "Germany", "Netherlands", "Belgium", "France", "United Kingdom", 
