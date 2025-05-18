@@ -32,6 +32,13 @@ export const users = pgTable("users", {
   price_range_max: integer("price_range_max"),
   currency: text("currency"),
   
+  // Subscription fields
+  stripe_customer_id: text("stripe_customer_id"),
+  stripe_subscription_id: text("stripe_subscription_id"),
+  subscription_status: text("subscription_status"),
+  subscription_plan: text("subscription_plan"),
+  subscription_end_date: timestamp("subscription_end_date"),
+  
   created_at: timestamp("created_at").defaultNow(),
 });
 

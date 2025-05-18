@@ -24,6 +24,13 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<User>): Promise<User>;
+  updateUserSubscription(id: number, subscriptionData: {
+    stripe_customer_id?: string;
+    stripe_subscription_id?: string;
+    subscription_status?: string;
+    subscription_plan?: string;
+    subscription_end_date?: Date;
+  }): Promise<User>;
   
   // Legacy methods for backward compatibility
   getOwnerById(id: number): Promise<Owner | undefined>;
