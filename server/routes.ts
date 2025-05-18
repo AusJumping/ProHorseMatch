@@ -1594,6 +1594,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Stripe subscription endpoint
+  app.post("/api/create-subscription", isAuthenticated, async (req, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe is not configured" });
+      }
+      
+      const { plan } = req.body;
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      let customerId = user.stripe_customer_id;
+      
+      // Create a customer if one doesn't exist
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: user.name || user.business_name || "Horse Match Customer"
+        });
+        
+        customerId = customer.id;
+        await storage.updateUserSubscription(userId, { stripe_customer_id: customerId });
+      }
+      
+      // Create a subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: plan }],
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription' },
+        expand: ['latest_invoice.payment_intent'],
+      });
+      
+      // Update user subscription info
+      await storage.updateUserSubscription(userId, {
+        stripe_subscription_id: subscription.id,
+        subscription_status: subscription.status,
+        subscription_plan: plan
+      });
+      
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      });
+    } catch (error: any) {
+      console.error("Error creating subscription:", error);
+      res.status(500).json({ 
+        message: "Failed to create subscription", 
+        error: error.message 
+      });
+    }
+  });
+  
+  // Get subscription status
+  app.get("/api/subscription", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (!user.stripe_subscription_id) {
+        return res.json({ hasSubscription: false });
+      }
+      
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe is not configured" });
+      }
+      
+      // Get the latest subscription status from Stripe
+      const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
+      
+      // Update local subscription status
+      await storage.updateUserSubscription(userId, {
+        subscription_status: subscription.status,
+        subscription_end_date: new Date(subscription.current_period_end * 1000)
+      });
+      
+      res.json({
+        hasSubscription: true,
+        subscriptionId: user.stripe_subscription_id,
+        status: subscription.status,
+        planId: subscription.items.data[0].price.id,
+        currentPeriodEnd: subscription.current_period_end,
+      });
+    } catch (error: any) {
+      console.error("Error getting subscription:", error);
+      res.status(500).json({ 
+        message: "Error retrieving subscription information",
+        error: error.message
+      });
+    }
+  });
+  
+  // Cancel subscription
+  app.post("/api/cancel-subscription", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+      
+      const user = await storage.getUserById(userId);
+      if (!user || !user.stripe_subscription_id) {
+        return res.status(404).json({ message: "No active subscription found" });
+      }
+      
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe is not configured" });
+      }
+      
+      // Cancel the subscription at period end
+      const subscription = await stripe.subscriptions.update(user.stripe_subscription_id, {
+        cancel_at_period_end: true
+      });
+      
+      // Update user subscription status
+      await storage.updateUserSubscription(userId, {
+        subscription_status: subscription.status
+      });
+      
+      res.json({
+        success: true,
+        message: "Subscription will be canceled at the end of the billing period",
+        currentPeriodEnd: subscription.current_period_end
+      });
+    } catch (error: any) {
+      console.error("Error canceling subscription:", error);
+      res.status(500).json({ 
+        message: "Error canceling subscription",
+        error: error.message 
+      });
+    }
+  });
 
   // Utility routes - for the app constants
   app.get("/api/constants", (req, res) => {
