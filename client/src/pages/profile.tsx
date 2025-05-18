@@ -736,7 +736,7 @@ export default function Profile() {
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold">Email Notifications</h3>
+                      <h3 className="font-accent">Email Notifications</h3>
                       <p className="text-sm text-neutral-500">Receive email notifications for new matches and messages</p>
                     </div>
                     <Switch defaultChecked />
@@ -746,7 +746,7 @@ export default function Profile() {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold">Push Notifications</h3>
+                      <h3 className="font-accent">Push Notifications</h3>
                       <p className="text-sm text-neutral-500">Receive push notifications on your device</p>
                     </div>
                     <Switch defaultChecked />
@@ -755,7 +755,7 @@ export default function Profile() {
                   
                   
                   <div>
-                    <h3 className="font-semibold text-red-500 mb-2">Danger Zone</h3>
+                    <h3 className="font-accent text-red-500 mb-2">Danger Zone</h3>
                     <p className="text-sm text-neutral-500 mb-4">
                       Once you delete your account, there is no going back. This action cannot be undone.
                     </p>
