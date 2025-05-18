@@ -279,10 +279,10 @@ export default function Profile() {
                                       <SelectValue placeholder="Select Discipline" />
                                     </SelectTrigger>
                                   </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="All">All Disciplines</SelectItem>
+                                  <SelectContent className="text-black bg-white">
+                                    <SelectItem value="All" className="text-gray-900">All Disciplines</SelectItem>
                                     {disciplines.map((discipline) => (
-                                      <SelectItem key={discipline} value={discipline}>
+                                      <SelectItem key={discipline} value={discipline} className="text-gray-900">
                                         {discipline}
                                       </SelectItem>
                                     ))}
@@ -308,10 +308,10 @@ export default function Profile() {
                                       <SelectValue placeholder="Select Sex" />
                                     </SelectTrigger>
                                   </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="Any">Any Sex</SelectItem>
+                                  <SelectContent className="text-black bg-white">
+                                    <SelectItem value="Any" className="text-gray-900">Any Sex</SelectItem>
                                     {sexes.map((sex) => (
-                                      <SelectItem key={sex} value={sex}>
+                                      <SelectItem key={sex} value={sex} className="text-gray-900">
                                         {sex}
                                       </SelectItem>
                                     ))}
@@ -345,9 +345,9 @@ export default function Profile() {
                                       <SelectValue placeholder="Select Currency" />
                                     </SelectTrigger>
                                   </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="USD">US Dollar (USD)</SelectItem>
-                                    <SelectItem value="AUD">Australian Dollar (AUD)</SelectItem>
+                                  <SelectContent className="text-black bg-white">
+                                    <SelectItem value="USD" className="text-gray-900">US Dollar (USD)</SelectItem>
+                                    <SelectItem value="AUD" className="text-gray-900">Australian Dollar (AUD)</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -376,11 +376,10 @@ export default function Profile() {
                                             <SelectValue placeholder="Select minimum price" />
                                           </SelectTrigger>
                                         </FormControl>
-                                        <SelectContent>
-                                          <SelectItem value="0">No Min</SelectItem>
-                                          <SelectItem value="5000">
-                                            {profileForm.watch("currency") === "USD" ? "$5,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$5,000" : ""}
+                                        <SelectContent className="text-black bg-white">
+                                          <SelectItem value="0" className="text-gray-900 font-semibold">No Min</SelectItem>
+                                          <SelectItem value="5000" className="text-gray-900 font-semibold">
+                                            {profileForm.watch("currency") === "USD" ? "$5,000" : "A$5,000"}
                                           </SelectItem>
                                           <SelectItem value="10000">
                                             {profileForm.watch("currency") === "USD" ? "$10,000" : 
