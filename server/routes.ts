@@ -2160,7 +2160,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               product_data: {
                 name: 'Donation to Pro Horse Match',
                 description: 'Support the development of Pro Horse Match',
-                images: ['https://prohorsematch.com/logo.png'], // placeholder URL
               },
               unit_amount: Math.round(amount * 100), // Convert to cents
             },
@@ -2173,7 +2172,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         metadata: {
           type: 'donation',
           // Add user ID if authenticated
-          ...(req.session.userId ? { userId: req.session.userId.toString() } : {})
+          ...(req.session && req.session.userId ? { userId: req.session.userId.toString() } : {})
         }
       });
       

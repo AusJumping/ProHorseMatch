@@ -21,8 +21,8 @@ export default function DonationSuccessPage() {
     <div className="container mx-auto py-20 max-w-md">
       <Card>
         <CardHeader className="text-center">
-          <div className="mx-auto bg-amber-100 rounded-full p-3 mb-4 w-16 h-16 flex items-center justify-center">
-            <Heart className="w-8 h-8 text-primary" />
+          <div className="mx-auto bg-[#e4e2dd] rounded-full p-3 mb-4 w-16 h-16 flex items-center justify-center">
+            <Heart className="w-8 h-8 text-[#cdac6e]" />
           </div>
           <CardTitle className="text-2xl font-accent">Thank You!</CardTitle>
           <CardDescription>

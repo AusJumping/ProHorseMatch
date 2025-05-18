@@ -229,6 +229,12 @@ export default function SubscriptionPage() {
     try {
       setIsDonating(true);
       
+      // Show loading toast
+      toast({
+        title: 'Processing...',
+        description: 'Preparing your donation checkout',
+      });
+      
       // Create a payment intent for the donation
       const response = await apiRequest('POST', '/api/create-donation', { 
         amount, 
@@ -249,25 +255,28 @@ export default function SubscriptionPage() {
         throw new Error('Failed to load Stripe');
       }
       
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: data.sessionId
-      });
-      
-      if (error) {
-        throw new Error(error.message || 'Failed to redirect to checkout');
-      }
-      
       toast({
         title: 'Thank You!',
         description: 'You are being redirected to complete your donation.',
       });
+      
+      // Redirect to checkout with a slight delay to ensure toast is visible
+      setTimeout(async () => {
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: data.sessionId
+        });
+        
+        if (error) {
+          throw new Error(error.message || 'Failed to redirect to checkout');
+        }
+      }, 500);
+      
     } catch (error: any) {
       toast({
         title: 'Donation Error',
         description: error.message || 'An error occurred processing your donation',
         variant: 'destructive',
       });
-    } finally {
       setIsDonating(false);
       setShowCustomAmount(false);
     }
@@ -431,7 +440,7 @@ export default function SubscriptionPage() {
       )}
       
       {/* Donation Section */}
-      <div className="max-w-2xl mx-auto mt-20 mb-10 bg-gradient-to-r from-amber-50 to-amber-100 rounded-lg p-6 border border-amber-200">
+      <div className="max-w-2xl mx-auto mt-20 mb-10 bg-[#e4e2dd] rounded-lg p-6 border border-[#d1cfc8]">
         <div className="text-center">
           <h3 className="text-xl font-accent font-semibold mb-3">Support Our Development</h3>
           <p className="text-muted-foreground mb-6">
@@ -444,7 +453,7 @@ export default function SubscriptionPage() {
               <Button 
                 key={amount}
                 variant="outline" 
-                className="min-w-[80px] bg-white hover:bg-primary hover:text-white border-amber-300"
+                className="min-w-[80px] bg-white hover:bg-[#cdac6e] hover:text-white border-[#d1cfc8]"
                 onClick={() => handleDonation(amount)}
                 disabled={isDonating}
               >
