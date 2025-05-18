@@ -153,7 +153,12 @@ const Sidebar = () => {
               </li>
             </>
           )}
-          <li className="mt-4">
+        </ul>
+        
+        <div className="border-t border-neutral-200 my-6"></div>
+        
+        <ul className="space-y-1 px-5">
+          <li>
             <Button 
               variant="outline" 
               className="w-full justify-start px-5 py-3"
@@ -195,7 +200,7 @@ const Sidebar = () => {
         </ul>
       </div>
       
-      <div className="mt-auto p-5 border-t border-neutral-200">
+      <div className="mt-auto p-5">
       </div>
     </aside>
   );
