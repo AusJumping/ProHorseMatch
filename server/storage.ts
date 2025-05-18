@@ -776,13 +776,25 @@ export class MemStorage implements IStorage {
   }
   
   async getMessagesByConversationId(customerId: number, ownerId: number, horseId: number): Promise<Message[]> {
-    return Array.from(this.messages.values())
-      .filter(message => 
-        message.customer_id === customerId && 
-        message.owner_id === ownerId && 
-        message.horse_id === horseId
-      )
-      .sort((a, b) => a.created_at.getTime() - b.created_at.getTime());
+    try {
+      // Get all messages for this conversation
+      const conversationMessages = Array.from(this.messages.values())
+        .filter(message => 
+          message.customer_id === customerId && 
+          message.owner_id === ownerId && 
+          message.horse_id === horseId
+        );
+      
+      // Sort by date (handling both Date objects and string dates)
+      return conversationMessages.sort((a, b) => {
+        const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at);
+        const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at);
+        return dateA.getTime() - dateB.getTime();
+      });
+    } catch (error) {
+      console.error("Error in getMessagesByConversationId:", error);
+      return [];
+    }
   }
   
   async createMessage(message: InsertMessage): Promise<Message> {
