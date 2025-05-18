@@ -2150,34 +2150,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid donation amount" });
       }
       
-      // Create a checkout session for the donation
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [
-          {
-            price_data: {
-              currency: currency.toLowerCase(),
-              product_data: {
-                name: 'Donation to Pro Horse Match',
-                description: 'Support the development of Pro Horse Match',
-              },
-              unit_amount: Math.round(amount * 100), // Convert to cents
-            },
-            quantity: 1,
-          },
-        ],
-        mode: 'payment',
-        success_url: `${req.protocol}://${req.get('host')}/donation-success`,
-        cancel_url: `${req.protocol}://${req.get('host')}/subscription`,
+      // Create a direct payment intent for the donation
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: currency.toLowerCase(),
+        description: 'Donation to Pro Horse Match',
         metadata: {
           type: 'donation',
           // Add user ID if authenticated
           ...(req.session && req.session.userId ? { userId: req.session.userId.toString() } : {})
-        }
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
       });
       
       res.json({
-        url: session.url
+        clientSecret: paymentIntent.client_secret,
+        amount: amount
       });
     } catch (error) {
       console.error("Error creating donation payment:", error);

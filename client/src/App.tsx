@@ -22,6 +22,7 @@ import PaymentSuccess from "@/pages/payment-success";
 import Subscription from "@/pages/subscription";
 import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
+import DonationCheckout from "@/pages/donation-checkout";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/subscription" component={Subscription} />
       <Route path="/subscription/success" component={SubscriptionSuccess} />
+      <Route path="/donation-checkout" component={DonationCheckout} />
       <Route path="/donation-success" component={DonationSuccess} />
       <Route component={NotFound} />
     </Switch>

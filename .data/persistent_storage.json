@@ -292,7 +292,8 @@
           "Jumping"
         ],
         "currency": "AUD",
-        "created_at": "2025-05-15T10:50:29.884Z"
+        "created_at": "2025-05-15T10:50:29.884Z",
+        "stripe_customer_id": "cus_SKiNnZwVJQL4mi"
       }
     ]
   ],

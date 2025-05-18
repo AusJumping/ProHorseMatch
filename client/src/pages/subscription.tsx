@@ -229,39 +229,13 @@ export default function SubscriptionPage() {
     try {
       setIsDonating(true);
       
-      // Show loading toast
-      toast({
-        title: 'Processing...',
-        description: 'Preparing your donation checkout',
-      });
-      
-      // Create a payment intent for the donation
-      const response = await apiRequest('POST', '/api/create-donation', { 
-        amount, 
-        currency: 'usd' 
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to process donation');
-      }
-      
-      const data = await response.json();
-      
-      // Use Stripe.js to open a checkout page for the donation
-      const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-      
-      if (!stripe) {
-        throw new Error('Failed to load Stripe');
-      }
-      
       toast({
         title: 'Thank You!',
         description: 'You are being redirected to complete your donation.',
       });
       
-      // Direct redirect to Stripe's hosted checkout page
-      window.location.href = data.url;
+      // Redirect to our own checkout page, passing the amount as a URL parameter
+      navigate(`/donation-checkout?amount=${amount}`);
       
     } catch (error: any) {
       toast({
