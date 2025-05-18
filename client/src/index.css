@@ -153,4 +153,22 @@
     width: 1px;
     background-color: hsl(var(--border));
   }
+  
+  /* Fix for dropdown visibility */
+  .select-content {
+    background-color: white !important;
+  }
+  
+  .select-item {
+    color: #333 !important;
+  }
+  
+  /* Force all SelectContent components to have visible text */
+  [data-radix-select-content] {
+    background-color: white !important;
+  }
+  
+  [data-radix-select-item] {
+    color: #333 !important;
+  }
 }

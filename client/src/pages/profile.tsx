@@ -376,14 +376,13 @@ export default function Profile() {
                                             <SelectValue placeholder="Select minimum price" />
                                           </SelectTrigger>
                                         </FormControl>
-                                        <SelectContent className="text-black bg-white">
+                                        <SelectContent className="text-black bg-white font-medium">
                                           <SelectItem value="0" className="text-gray-900 font-semibold">No Min</SelectItem>
                                           <SelectItem value="5000" className="text-gray-900 font-semibold">
-                                            {profileForm.watch("currency") === "USD" ? "$5,000" : "A$5,000"}
+                                            $5,000
                                           </SelectItem>
-                                          <SelectItem value="10000">
-                                            {profileForm.watch("currency") === "USD" ? "$10,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$10,000" : ""}
+                                          <SelectItem value="10000" className="text-gray-900 font-semibold">
+                                            $10,000
                                           </SelectItem>
                                           <SelectItem value="15000">
                                             {profileForm.watch("currency") === "USD" ? "$15,000" : 
