@@ -153,45 +153,49 @@ const Sidebar = () => {
               </li>
             </>
           )}
+          <li className="mt-4">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start px-5 py-3"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/profile");
+              }}
+            >
+              <User className="mr-3 h-5 w-5" />
+              Profile
+            </Button>
+          </li>
+          <li>
+            <Button 
+              variant="outline"
+              className="w-full justify-start px-5 py-3"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/account-settings");
+              }}
+            >
+              <Settings className="mr-3 h-5 w-5" />
+              Account
+            </Button>
+          </li>
+          <li>
+            <Button 
+              variant="outline"
+              className="w-full justify-start px-5 py-3"
+              onClick={(e) => {
+                e.preventDefault();
+                handleLogout();
+              }}
+            >
+              <LogOut className="mr-3 h-5 w-5" />
+              Logout
+            </Button>
+          </li>
         </ul>
       </div>
       
       <div className="mt-auto p-5 border-t border-neutral-200">
-        <div className="grid grid-cols-2 gap-2">
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/profile");
-            }}
-          >
-            <User className="mr-2 h-4 w-4" />
-            Profile
-          </Button>
-          <Button 
-            variant="outline"
-            className="flex-1" 
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/account-settings");
-            }}
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            Account
-          </Button>
-          <Button 
-            variant="outline"
-            className="flex-1 col-span-2"
-            onClick={(e) => {
-              e.preventDefault();
-              handleLogout();
-            }}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </div>
       </div>
     </aside>
   );
