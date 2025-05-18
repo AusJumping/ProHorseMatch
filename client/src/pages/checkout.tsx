@@ -15,7 +15,7 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-const CheckoutForm = ({ horseId, horsePrice, horseName }: { horseId: number, horsePrice: number, horseName: string }) => {
+const CheckoutForm = ({ horseId, horsePrice, horseName, horseCurrency }: { horseId: number, horsePrice: number, horseName: string, horseCurrency: string }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -85,7 +85,7 @@ const CheckoutForm = ({ horseId, horsePrice, horseName }: { horseId: number, hor
             <h2 className="text-2xl font-accent font-bold mb-2">Complete Your Purchase</h2>
             <p className="text-neutral-600 mb-6">
               You're purchasing <span className="font-semibold">{horseName}</span> for{' '}
-              <span className="font-semibold">${horsePrice.toLocaleString()}</span>
+              <span className="font-semibold">{horseCurrency} ${horsePrice.toLocaleString()}</span>
             </p>
             <div className="bg-neutral-50 p-4 rounded-lg mb-6">
               <PaymentElement />
@@ -102,7 +102,7 @@ const CheckoutForm = ({ horseId, horsePrice, horseName }: { horseId: number, hor
                 Processing...
               </>
             ) : (
-              `Pay $${horsePrice.toLocaleString()}`
+              `Pay ${horseCurrency} $${horsePrice.toLocaleString()}`
             )}
           </Button>
         </form>
@@ -113,7 +113,7 @@ const CheckoutForm = ({ horseId, horsePrice, horseName }: { horseId: number, hor
 
 export default function Checkout() {
   const [clientSecret, setClientSecret] = useState("");
-  const [horseDetails, setHorseDetails] = useState<{id: number, name: string, price: number} | null>(null);
+  const [horseDetails, setHorseDetails] = useState<{id: number, name: string, price: number, currency: string} | null>(null);
   const [location] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -138,16 +138,21 @@ export default function Checkout() {
         if (!response.ok) throw new Error("Failed to fetch horse details");
         
         const horse = await response.json();
+        
+        // Use price_min as the purchase price
+        const purchasePrice = horse.price_min;
+        
         setHorseDetails({
           id: horse.id,
           name: horse.name,
-          price: horse.price
+          price: purchasePrice,
+          currency: horse.currency
         });
 
         // Then create a payment intent
         const paymentResponse = await apiRequest("POST", "/api/create-payment-intent", { 
           horseId: horse.id,
-          amount: horse.price 
+          amount: purchasePrice 
         });
         
         const paymentData = await paymentResponse.json();
@@ -204,6 +209,7 @@ export default function Checkout() {
             horseId={horseDetails.id}
             horsePrice={horseDetails.price}
             horseName={horseDetails.name}
+            horseCurrency={horseDetails.currency}
           />
         </Elements>
       </div>

@@ -1529,7 +1529,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: horse.id,
             name: horse.name,
             photos: horse.photos,
-            price: horse.price,
+            price_min: horse.price_min,
+            price_max: horse.price_max,
             currency: horse.currency,
             breeds: horse.breeds,
             age: horse.age,
@@ -1575,7 +1576,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currency: horse.currency.toLowerCase() || "aud",
         metadata: {
           horse_id: horseId.toString(),
-          horse_name: horse.name
+          horse_name: horse.name,
+          price_min: horse.price_min.toString(),
+          price_max: horse.price_max.toString()
         },
       });
       
