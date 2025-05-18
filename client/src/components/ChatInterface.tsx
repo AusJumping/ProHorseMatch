@@ -8,6 +8,7 @@ import { Send, Loader2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useMobile } from "@/hooks/use-mobile";
+import { useQuery } from "@tanstack/react-query";
 
 interface Conversation {
   id: number;
@@ -45,6 +46,14 @@ interface Message {
   is_read: boolean;
 }
 
+interface User {
+  id: number;
+  name?: string | null;
+  business_name?: string | null;
+  is_searching: boolean;
+  is_selling: boolean;
+}
+
 interface ChatInterfaceProps {
   conversation: Conversation;
   messages: Message[];
@@ -57,8 +66,15 @@ const ChatInterface = ({ conversation, messages, isLoading }: ChatInterfaceProps
   const [messageInput, setMessageInput] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  // Get user type from the API, for now we'll use a mock value
-  const userType = "customer";
+  // Get current user info
+  const { data: user } = useQuery<User>({
+    queryKey: ['/api/auth/me'],
+  });
+
+  // Determine user type based on user roles and conversation context
+  const userType = user?.id === conversation.owner_id && user?.is_selling 
+    ? "owner" 
+    : "customer";
 
   const handleSendMessage = async () => {
     if (!messageInput.trim()) return;
