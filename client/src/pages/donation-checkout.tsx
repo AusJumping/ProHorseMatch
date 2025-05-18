@@ -135,7 +135,9 @@ const DonationCheckoutForm = ({ amount }: { amount: number }) => {
 // Main donation checkout page
 export default function DonationCheckout() {
   const [searchParams] = useState(() => new URLSearchParams(window.location.search));
-  const amount = parseInt(searchParams.get('amount') || '10', 10);
+  // Get amount from URL and handle it more safely to avoid parsing errors
+  const amountParam = searchParams.get('amount') || '10';
+  const amount = parseFloat(amountParam);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
@@ -149,10 +151,18 @@ export default function DonationCheckout() {
         setIsLoading(true);
         setError(null);
         
+        // Make sure amount is valid - must be a positive number
+        if (isNaN(amount) || amount <= 0) {
+          throw new Error('Invalid donation amount');
+        }
+        
         console.log("Creating donation payment intent for amount:", amount);
         
+        // Round to 2 decimal places to ensure valid currency amount
+        const donationAmount = Math.round(amount * 100) / 100;
+        
         const response = await apiRequest('POST', '/api/create-donation', {
-          amount,
+          amount: donationAmount,
           currency: 'usd',
         });
         
