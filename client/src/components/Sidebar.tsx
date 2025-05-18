@@ -53,6 +53,13 @@ const Sidebar = () => {
             className="h-[2.625rem] w-auto object-contain max-w-[184px]"
           />
         </div>
+        {isAuthenticated && user && (
+          <div className="mt-3 text-center">
+            <p className="text-sm font-medium text-primary">
+              Welcome, {user.name || user.business_name || 'User'}
+            </p>
+          </div>
+        )}
       </div>
       
       <div className="flex-1 py-5">
