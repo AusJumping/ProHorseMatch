@@ -402,13 +402,41 @@ export default function Profile() {
                                             {profileForm.watch("currency") === "USD" ? "$30,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$30,000" : ""}
                                           </SelectItem>
+                                          <SelectItem value="35000">
+                                            {profileForm.watch("currency") === "USD" ? "$35,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$35,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="40000">
+                                            {profileForm.watch("currency") === "USD" ? "$40,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$40,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="45000">
+                                            {profileForm.watch("currency") === "USD" ? "$45,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$45,000" : ""}
+                                          </SelectItem>
                                           <SelectItem value="50000">
                                             {profileForm.watch("currency") === "USD" ? "$50,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$50,000" : ""}
                                           </SelectItem>
-                                          <SelectItem value="100000">
-                                            {profileForm.watch("currency") === "USD" ? "$100,000" : 
-                                             profileForm.watch("currency") === "AUD" ? "A$100,000" : ""}
+                                          <SelectItem value="55000">
+                                            {profileForm.watch("currency") === "USD" ? "$55,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$55,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="60000">
+                                            {profileForm.watch("currency") === "USD" ? "$60,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$60,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="65000">
+                                            {profileForm.watch("currency") === "USD" ? "$65,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$65,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="70000">
+                                            {profileForm.watch("currency") === "USD" ? "$70,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$70,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="75000">
+                                            {profileForm.watch("currency") === "USD" ? "$75,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$75,000" : ""}
                                           </SelectItem>
                                         </SelectContent>
                                       </Select>
@@ -435,21 +463,81 @@ export default function Profile() {
                                         </FormControl>
                                         <SelectContent>
                                           <SelectItem value="999999999">No Max</SelectItem>
+                                          <SelectItem value="5000">
+                                            {profileForm.watch("currency") === "USD" ? "$5,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$5,000" : ""}
+                                          </SelectItem>
                                           <SelectItem value="10000">
                                             {profileForm.watch("currency") === "USD" ? "$10,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$10,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="15000">
+                                            {profileForm.watch("currency") === "USD" ? "$15,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$15,000" : ""}
                                           </SelectItem>
                                           <SelectItem value="20000">
                                             {profileForm.watch("currency") === "USD" ? "$20,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$20,000" : ""}
                                           </SelectItem>
+                                          <SelectItem value="25000">
+                                            {profileForm.watch("currency") === "USD" ? "$25,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$25,000" : ""}
+                                          </SelectItem>
                                           <SelectItem value="30000">
                                             {profileForm.watch("currency") === "USD" ? "$30,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$30,000" : ""}
                                           </SelectItem>
+                                          <SelectItem value="35000">
+                                            {profileForm.watch("currency") === "USD" ? "$35,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$35,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="40000">
+                                            {profileForm.watch("currency") === "USD" ? "$40,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$40,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="45000">
+                                            {profileForm.watch("currency") === "USD" ? "$45,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$45,000" : ""}
+                                          </SelectItem>
                                           <SelectItem value="50000">
                                             {profileForm.watch("currency") === "USD" ? "$50,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$50,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="55000">
+                                            {profileForm.watch("currency") === "USD" ? "$55,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$55,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="60000">
+                                            {profileForm.watch("currency") === "USD" ? "$60,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$60,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="65000">
+                                            {profileForm.watch("currency") === "USD" ? "$65,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$65,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="70000">
+                                            {profileForm.watch("currency") === "USD" ? "$70,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$70,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="75000">
+                                            {profileForm.watch("currency") === "USD" ? "$75,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$75,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="80000">
+                                            {profileForm.watch("currency") === "USD" ? "$80,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$80,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="85000">
+                                            {profileForm.watch("currency") === "USD" ? "$85,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$85,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="90000">
+                                            {profileForm.watch("currency") === "USD" ? "$90,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$90,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="95000">
+                                            {profileForm.watch("currency") === "USD" ? "$95,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$95,000" : ""}
                                           </SelectItem>
                                           <SelectItem value="100000">
                                             {profileForm.watch("currency") === "USD" ? "$100,000" : 
@@ -463,9 +551,33 @@ export default function Profile() {
                                             {profileForm.watch("currency") === "USD" ? "$200,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$200,000" : ""}
                                           </SelectItem>
+                                          <SelectItem value="250000">
+                                            {profileForm.watch("currency") === "USD" ? "$250,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$250,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="300000">
+                                            {profileForm.watch("currency") === "USD" ? "$300,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$300,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="350000">
+                                            {profileForm.watch("currency") === "USD" ? "$350,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$350,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="400000">
+                                            {profileForm.watch("currency") === "USD" ? "$400,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$400,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="450000">
+                                            {profileForm.watch("currency") === "USD" ? "$450,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$450,000" : ""}
+                                          </SelectItem>
                                           <SelectItem value="500000">
                                             {profileForm.watch("currency") === "USD" ? "$500,000" : 
                                              profileForm.watch("currency") === "AUD" ? "A$500,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="999999">
+                                            {profileForm.watch("currency") === "USD" ? "Over $500,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "Over A$500,000" : ""}
                                           </SelectItem>
                                         </SelectContent>
                                       </Select>
