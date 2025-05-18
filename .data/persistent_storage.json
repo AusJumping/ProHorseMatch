@@ -150,6 +150,44 @@
         "videos": [],
         "created_at": "2025-05-17T09:45:16.329Z"
       }
+    ],
+    [
+      13,
+      {
+        "id": 13,
+        "owner_id": 3,
+        "name": "Goldie",
+        "location_country": "Australia",
+        "disciplines": [
+          "Jumping"
+        ],
+        "levels": [
+          "Mini Prix",
+          "Amateur"
+        ],
+        "breeds": [
+          "Warmblood"
+        ],
+        "age": 11,
+        "height_hands": 15.3,
+        "height_cm": 155,
+        "sex": "Mare",
+        "sire": "Goldie Dad",
+        "dam": "Goldie Mum",
+        "dam_sire": "Goldie Grandad",
+        "characteristics": [
+          "Schoolmaster"
+        ],
+        "price_min": 60000,
+        "price_max": 70000,
+        "currency": "AUD",
+        "description": "",
+        "photos": [
+          "/uploads/file-1747547036951-541507406.jpg"
+        ],
+        "videos": [],
+        "created_at": "2025-05-18T05:44:03.153Z"
+      }
     ]
   ],
   "users": [
@@ -233,7 +271,7 @@
         "business_name": "Elite Sporthorses",
         "contact_name": "John Smith",
         "is_selling": true,
-        "is_searching": false,
+        "is_searching": true,
         "name": null,
         "created_at": "2025-05-15T10:50:29.882Z"
       }
@@ -256,10 +294,93 @@
       }
     ]
   ],
-  "matches": [],
-  "messages": [],
-  "conversations": [],
-  "horseId": 13,
+  "matches": [
+    [
+      1,
+      {
+        "id": 1,
+        "customer_id": 4,
+        "horse_id": 9,
+        "is_liked": true,
+        "created_at": "2025-05-18T05:16:52.244Z"
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "customer_id": 4,
+        "horse_id": 12,
+        "is_liked": true,
+        "created_at": "2025-05-18T05:16:54.981Z"
+      }
+    ],
+    [
+      3,
+      {
+        "id": 3,
+        "customer_id": 3,
+        "horse_id": 9,
+        "is_liked": true,
+        "created_at": "2025-05-18T05:40:22.498Z"
+      }
+    ]
+  ],
+  "messages": [
+    [
+      1,
+      {
+        "id": 1,
+        "customer_id": 4,
+        "owner_id": 3,
+        "horse_id": 9,
+        "content": "Is Snow a good horse?",
+        "sender_type": "customer",
+        "created_at": "2025-05-18T05:17:16.791Z",
+        "is_read": false
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "customer_id": 4,
+        "owner_id": 3,
+        "horse_id": 11,
+        "content": "Hi is Misty a nice horse?",
+        "sender_type": "customer",
+        "created_at": "2025-05-18T05:23:42.874Z",
+        "is_read": false
+      }
+    ]
+  ],
+  "conversations": [
+    [
+      1,
+      {
+        "id": 1,
+        "customer_id": 4,
+        "owner_id": 3,
+        "horse_id": 9,
+        "last_message_id": null,
+        "last_message_time": null,
+        "unread_count": 0
+      }
+    ],
+    [
+      2,
+      {
+        "id": 2,
+        "customer_id": 4,
+        "owner_id": 3,
+        "horse_id": 11,
+        "last_message_id": null,
+        "last_message_time": null,
+        "unread_count": 0
+      }
+    ]
+  ],
+  "horseId": 14,
   "userId": 3,
   "matchId": 1,
   "messageId": 1,
