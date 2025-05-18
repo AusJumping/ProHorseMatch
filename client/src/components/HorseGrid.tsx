@@ -27,8 +27,12 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
   }
 
   return (
-    <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-8">
-      {horses.map((horse) => (
+    <div className="w-full">
+      <div className="text-xs text-neutral-500 mb-3 ml-1">
+        {horses.length} {horses.length === 1 ? 'horse' : 'horses'} match your criteria
+      </div>
+      <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-8">
+        {horses.map((horse) => (
         <Card key={horse.id} className="overflow-hidden flex flex-col w-[320px] flex-shrink-0">
           <div className="relative h-48 overflow-hidden">
             {horse.photos && horse.photos.length > 0 ? (
