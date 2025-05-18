@@ -26,7 +26,6 @@ const profileFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   location_country: z.string().optional(),
-  location_radius_km: z.number().min(0).max(500).optional(),
   preferred_disciplines: z.array(z.string()).optional(),
   preferred_levels: z.array(z.string()).optional(),
   preferred_breeds: z.array(z.string()).optional(),
@@ -80,7 +79,6 @@ export default function Profile() {
       name: user?.name || "",
       email: user?.email || "",
       location_country: user?.profile?.location_country || undefined,
-      location_radius_km: user?.profile?.location_radius_km || 0,
       preferred_disciplines: user?.profile?.preferred_disciplines || [],
       preferred_levels: user?.profile?.preferred_levels || [],
       preferred_breeds: user?.profile?.preferred_breeds || [],
@@ -237,32 +235,7 @@ export default function Profile() {
                         )}
                       />
                       
-                      <FormField
-                        control={profileForm.control}
-                        name="location_radius_km"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Search Radius (km)</FormLabel>
-                            <FormControl>
-                              <div className="pt-6">
-                                <Slider
-                                  value={[field.value || 0]}
-                                  min={0}
-                                  max={500}
-                                  step={50}
-                                  onValueChange={(vals) => field.onChange(vals[0])}
-                                />
-                              </div>
-                            </FormControl>
-                            <div className="flex justify-between text-xs text-neutral-500 mt-2">
-                              <span>0 km</span>
-                              <span>{field.value || 0} km</span>
-                              <span>500 km</span>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+
                     </div>
                   </form>
                 </Form>
