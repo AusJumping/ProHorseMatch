@@ -5,6 +5,7 @@ import session from "express-session";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import Stripe from "stripe";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -147,6 +148,13 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize Stripe
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.warn('Missing STRIPE_SECRET_KEY - Payment features will not work');
+  }
+  const stripe = process.env.STRIPE_SECRET_KEY 
+    ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
+    : null;
   // Configure session middleware
   const isProduction = process.env.NODE_ENV === "production";
   
