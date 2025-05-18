@@ -65,6 +65,9 @@ const priceValues = [
 
 const ageValues = [0, ...Array.from({ length: 30 }, (_, i) => i + 1), 999];
 
+// Height values from 13.0 to 18.0 hands high
+const heightValues = [0, ...Array.from({ length: 51 }, (_, i) => 13 + i * 0.1).map(h => parseFloat(h.toFixed(1))), 99];
+
 export default function Profile() {
   const isMobile = useMobile();
   const { toast } = useToast();
@@ -92,8 +95,8 @@ export default function Profile() {
       preferred_breeds: user?.profile?.preferred_breeds || [],
       age_range_min: user?.profile?.age_range_min || 0,
       age_range_max: user?.profile?.age_range_max || 999,
-      height_range_min: user?.profile?.height_range_min || 13,
-      height_range_max: user?.profile?.height_range_max || 18,
+      height_range_min: user?.profile?.height_range_min || 0,
+      height_range_max: user?.profile?.height_range_max || 99,
       preferred_sexes: user?.profile?.preferred_sexes || [],
       breeding_preferences: user?.profile?.breeding_preferences || "",
       preferred_characteristics: user?.profile?.preferred_characteristics || [],
@@ -507,42 +510,68 @@ export default function Profile() {
                             />
                           </div>
                           
-                          <FormField
-                            control={profileForm.control}
-                            name="height_range_min"
-                            render={({ field }) => (
-                              <FormItem>
-                                <div className="flex justify-between">
-                                  <FormLabel>Height Range (hands)</FormLabel>
-                                  <span className="text-sm text-primary font-semibold">
-                                    {profileForm.watch("height_range_min") || 13} - {profileForm.watch("height_range_max") || 18} hh
-                                  </span>
-                                </div>
-                                <FormControl>
-                                  <div className="pt-6">
-                                    <Slider
-                                      value={[
-                                        profileForm.watch("height_range_min") || 13,
-                                        profileForm.watch("height_range_max") || 18
-                                      ]}
-                                      min={13}
-                                      max={18}
-                                      step={0.1}
-                                      onValueChange={(vals) => {
-                                        profileForm.setValue("height_range_min", vals[0]);
-                                        profileForm.setValue("height_range_max", vals[1]);
-                                      }}
-                                    />
-                                  </div>
-                                </FormControl>
-                                <div className="flex justify-between text-xs text-neutral-500 mt-2">
-                                  <span>13 hh</span>
-                                  <span>18 hh</span>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                          <FormLabel className="block mb-2">Height Range (in hands)</FormLabel>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Min Height */}
+                            <FormField
+                              control={profileForm.control}
+                              name="height_range_min"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Minimum Height</FormLabel>
+                                  <Select 
+                                    value={field.value === 0 ? "0" : (field.value?.toString() || "0")}
+                                    onValueChange={(value) => field.onChange(parseFloat(value))}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
+                                        <SelectValue placeholder="Select minimum height" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent className="text-black bg-white">
+                                      <SelectItem value="0" className="text-gray-900">No Min</SelectItem>
+                                      {heightValues.slice(1, -1).map(height => (
+                                        <SelectItem key={height} value={height.toString()} className="text-gray-900">
+                                          {height} hh
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          
+                            {/* Max Height */}
+                            <FormField
+                              control={profileForm.control}
+                              name="height_range_max"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Maximum Height</FormLabel>
+                                  <Select 
+                                    value={field.value === 99 ? "99" : (field.value?.toString() || "99")}
+                                    onValueChange={(value) => field.onChange(parseFloat(value))}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
+                                        <SelectValue placeholder="Select maximum height" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent className="text-black bg-white">
+                                      <SelectItem value="99" className="text-gray-900">No Max</SelectItem>
+                                      {heightValues.slice(1, -1).map(height => (
+                                        <SelectItem key={height} value={height.toString()} className="text-gray-900">
+                                          {height} hh
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
                         </div>
                       </div>
                       
