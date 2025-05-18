@@ -45,8 +45,10 @@ const profileFormSchema = z.object({
 const disciplines = ["Jumping", "Dressage", "Eventing"];
 const sexes = ["Mare", "Gelding", "Stallion"];
 const breeds = [
-  "Hanoverian", "Dutch Warmblood", "Holsteiner", "KWPN", "Thoroughbred", 
-  "Westphalian", "Selle Francais", "Belgian Warmblood", "Oldenburg", "Trakehner", "Irish Sport Horse"
+  "Warmblood", 
+  "Thoroughbred", 
+  "OTT Thoroughbred", 
+  "Other"
 ];
 const characteristics = [
   "Forward", "Brave", "Careful", "Scope", "Easy to Ride", "Schoolmaster", 
