@@ -89,7 +89,7 @@ export default function AccountSettings() {
       <div className="container max-w-3xl mx-auto py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-accent">Account Roles</CardTitle>
+            <CardTitle className="font-accent">Account Roles</CardTitle>
             <CardDescription>
               Choose how you want to use ProHorseMatch. You can enable one or both roles.
             </CardDescription>
@@ -108,7 +108,7 @@ export default function AccountSettings() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-lg font-semibold">Searching Role</FormLabel>
+                          <FormLabel className="text-lg font-accent">Searching Role</FormLabel>
                           <FormDescription>
                             Enable this role to search and browse horses
                           </FormDescription>
@@ -135,7 +135,7 @@ export default function AccountSettings() {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between p-4 border rounded-lg">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-lg font-semibold">Selling Role</FormLabel>
+                          <FormLabel className="text-lg font-accent">Selling Role</FormLabel>
                           <FormDescription>
                             Enable this role to list horses for sale
                           </FormDescription>
