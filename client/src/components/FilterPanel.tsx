@@ -14,6 +14,7 @@ interface FilterPanelProps {
   onClose: () => void;
   activeFilters: any;
   onApplyFilters: (filters: any) => void;
+  horseCount?: number;
 }
 
 // Available filter options (would come from API in a real app)
@@ -26,7 +27,8 @@ const FilterPanel = ({
   isOpen, 
   onClose, 
   activeFilters, 
-  onApplyFilters 
+  onApplyFilters,
+  horseCount 
 }: FilterPanelProps) => {
   const isMobile = useMobile();
   const [filters, setFilters] = useState(activeFilters);
@@ -641,6 +643,14 @@ const FilterPanel = ({
             </div>
           </div>
         </div>
+        
+        {/* Horse Count Display */}
+        {horseCount !== undefined && (
+          <div className="my-4 py-3 px-4 bg-primary/5 rounded-lg text-center">
+            <span className="text-primary font-semibold">{horseCount}</span>
+            <span className="text-neutral-700"> {horseCount === 1 ? 'horse' : 'horses'} match your criteria</span>
+          </div>
+        )}
         
         {/* Filter Actions */}
         <div className="flex gap-3 mt-6">

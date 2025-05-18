@@ -312,6 +312,7 @@ export default function Home() {
               onClose={() => {}} 
               activeFilters={activeFilters}
               onApplyFilters={handleApplyFilters}
+              horseCount={horses?.length || 0}
             />
           </div>
         )}
@@ -403,6 +404,7 @@ export default function Home() {
             onClose={() => setIsFilterOpen(false)} 
             activeFilters={activeFilters}
             onApplyFilters={handleApplyFilters}
+            horseCount={horses?.length || 0}
           />
         )}
       </div>
