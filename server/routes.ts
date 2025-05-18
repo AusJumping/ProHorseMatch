@@ -1427,23 +1427,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Simple authorization - either the user is the customer or the owner in this conversation
       if ((user.is_searching && req.session.userId === customerId) || 
           (user.is_selling && req.session.userId === ownerId)) {
-        const messages = await storage.getMessagesByConversationId(customerId, ownerId, horseId);
-        
-        // Mark messages as read if user is the recipient
-        // This would normally update the database too, but we'll keep it simple for now
-        const processedMessages = messages.map(msg => {
-          // If owner is viewing and message is from customer
-          if (req.session.userId === ownerId && msg.sender_type === 'customer') {
-            return { ...msg, is_read: true };
-          }
-          // If customer is viewing and message is from owner
-          if (req.session.userId === customerId && msg.sender_type === 'owner') {
-            return { ...msg, is_read: true };
-          }
-          return msg;
-        });
-        
-        return res.json(processedMessages);
+        try {
+          // Get all messages in this conversation
+          let messages = await storage.getMessages();
+          
+          // Filter to only include messages from this specific conversation
+          messages = messages.filter(message => 
+            message.customer_id === customerId && 
+            message.owner_id === ownerId && 
+            message.horse_id === horseId
+          );
+          
+          // Sort by date (handling string dates from the database)
+          messages.sort((a, b) => {
+            const dateA = new Date(a.created_at);
+            const dateB = new Date(b.created_at);
+            return dateA.getTime() - dateB.getTime();
+          });
+          
+          // Mark messages as read if the current user is the recipient
+          const processedMessages = messages.map(msg => {
+            // If owner is viewing and message is from customer
+            if (req.session.userId === ownerId && msg.sender_type === 'customer') {
+              return { ...msg, is_read: true };
+            }
+            // If customer is viewing and message is from owner
+            if (req.session.userId === customerId && msg.sender_type === 'owner') {
+              return { ...msg, is_read: true };
+            }
+            return msg;
+          });
+          
+          console.log("Returning messages:", processedMessages);
+          return res.json(processedMessages);
+        } catch (innerError) {
+          console.error("Error processing messages:", innerError);
+          return res.status(500).json({ message: "Error processing messages" });
+        }
       } else {
         console.log("Access denied - User:", req.session.userId, "trying to access conversation between customer:", customerId, "and owner:", ownerId);
         return res.status(403).json({ message: "Cannot access messages of other users" });
