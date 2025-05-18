@@ -328,43 +328,8 @@ export default function Profile() {
                       
                       <div>
                         <h3 className="text-lg font-semibold mb-4">Price Range</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          <FormField
-                            control={profileForm.control}
-                            name="price_range_min"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Minimum Price</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    value={field.value || 0}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={profileForm.control}
-                            name="price_range_max"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Maximum Price</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    type="number"
-                                    value={field.value || 0}
-                                    onChange={(e) => field.onChange(parseInt(e.target.value))}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
+                        <div className="space-y-6">
+                          {/* Currency selector first */}
                           <FormField
                             control={profileForm.control}
                             name="currency"
@@ -377,19 +342,140 @@ export default function Profile() {
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select currency" />
+                                      <SelectValue placeholder="Select Currency" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="EUR">Euro (EUR)</SelectItem>
                                     <SelectItem value="USD">US Dollar (USD)</SelectItem>
-                                    <SelectItem value="GBP">British Pound (GBP)</SelectItem>
+                                    <SelectItem value="AUD">Australian Dollar (AUD)</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
+                          
+                          {/* Price range options only shown after currency is selected */}
+                          {profileForm.watch("currency") && (
+                            <>
+                              <FormLabel className="block mb-2">Price Range (in {profileForm.watch("currency")})</FormLabel>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Min Price */}
+                                <FormField
+                                  control={profileForm.control}
+                                  name="price_range_min"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Minimum Price</FormLabel>
+                                      <Select 
+                                        value={field.value?.toString() || "0"} 
+                                        onValueChange={(value) => field.onChange(parseInt(value))}
+                                      >
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="0">No Min</SelectItem>
+                                          <SelectItem value="5000">
+                                            {profileForm.watch("currency") === "USD" ? "$5,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$5,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="10000">
+                                            {profileForm.watch("currency") === "USD" ? "$10,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$10,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="15000">
+                                            {profileForm.watch("currency") === "USD" ? "$15,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$15,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="20000">
+                                            {profileForm.watch("currency") === "USD" ? "$20,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$20,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="25000">
+                                            {profileForm.watch("currency") === "USD" ? "$25,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$25,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="30000">
+                                            {profileForm.watch("currency") === "USD" ? "$30,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$30,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="50000">
+                                            {profileForm.watch("currency") === "USD" ? "$50,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$50,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="100000">
+                                            {profileForm.watch("currency") === "USD" ? "$100,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$100,000" : ""}
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                {/* Max Price */}
+                                <FormField
+                                  control={profileForm.control}
+                                  name="price_range_max"
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel>Maximum Price</FormLabel>
+                                      <Select 
+                                        value={field.value?.toString() || "999999999"} 
+                                        onValueChange={(value) => field.onChange(parseInt(value))}
+                                      >
+                                        <FormControl>
+                                          <SelectTrigger>
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                          <SelectItem value="999999999">No Max</SelectItem>
+                                          <SelectItem value="10000">
+                                            {profileForm.watch("currency") === "USD" ? "$10,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$10,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="20000">
+                                            {profileForm.watch("currency") === "USD" ? "$20,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$20,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="30000">
+                                            {profileForm.watch("currency") === "USD" ? "$30,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$30,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="50000">
+                                            {profileForm.watch("currency") === "USD" ? "$50,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$50,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="100000">
+                                            {profileForm.watch("currency") === "USD" ? "$100,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$100,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="150000">
+                                            {profileForm.watch("currency") === "USD" ? "$150,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$150,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="200000">
+                                            {profileForm.watch("currency") === "USD" ? "$200,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$200,000" : ""}
+                                          </SelectItem>
+                                          <SelectItem value="500000">
+                                            {profileForm.watch("currency") === "USD" ? "$500,000" : 
+                                             profileForm.watch("currency") === "AUD" ? "A$500,000" : ""}
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                       
