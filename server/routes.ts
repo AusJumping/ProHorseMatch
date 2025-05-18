@@ -1411,10 +1411,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Ensure the logged-in user is part of the conversation
-      if (
-        (user.is_searching && customerId !== req.session.userId) ||
-        (user.is_selling && ownerId !== req.session.userId)
-      ) {
+      const userIsCustomer = user.is_searching && customerId === req.session.userId;
+      const userIsOwner = user.is_selling && ownerId === req.session.userId;
+      
+      if (!userIsCustomer && !userIsOwner) {
+        console.log("Access denied - User:", req.session.userId, "trying to access conversation between customer:", customerId, "and owner:", ownerId);
         return res.status(403).json({ message: "Cannot access messages of other users" });
       }
       
