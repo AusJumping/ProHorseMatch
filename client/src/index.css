@@ -170,5 +170,19 @@
   
   [data-radix-select-item] {
     color: #333 !important;
+    background-color: white !important;
+  }
+  
+  [data-radix-select-item-text] {
+    color: #333 !important;
+  }
+  
+  [data-radix-select-viewport] {
+    background-color: white !important;
+  }
+  
+  /* Fix for all dropdown options */
+  .SelectItem {
+    color: #333 !important;
   }
 }
