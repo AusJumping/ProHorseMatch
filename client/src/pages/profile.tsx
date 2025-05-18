@@ -637,44 +637,79 @@ export default function Profile() {
                           <FormField
                             control={profileForm.control}
                             name="preferred_characteristics"
-                            render={() => (
+                            render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Preferred Characteristics</FormLabel>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-                                  {characteristics.map((characteristic) => (
-                                    <FormField
-                                      key={characteristic}
-                                      control={profileForm.control}
-                                      name="preferred_characteristics"
-                                      render={({ field }) => {
-                                        return (
-                                          <FormItem
-                                            key={characteristic}
-                                            className="flex flex-row items-start space-x-2"
-                                          >
-                                            <FormControl>
+                                <div className="relative">
+                                  <Select
+                                    value="multiselect"
+                                    onValueChange={() => {}}
+                                  >
+                                    <FormControl>
+                                      <SelectTrigger className="text-gray-800 border-gray-300 bg-white">
+                                        <SelectValue>
+                                          {field.value?.length 
+                                            ? `${field.value.length} selected` 
+                                            : "Select characteristics"}
+                                        </SelectValue>
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent className="text-black bg-white max-h-[300px] overflow-y-auto">
+                                      <div className="p-2">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                          {characteristics.map((characteristic) => (
+                                            <div key={characteristic} className="flex items-center space-x-2">
                                               <Checkbox
+                                                id={`char-${characteristic}`}
                                                 checked={field.value?.includes(characteristic)}
                                                 onCheckedChange={(checked) => {
-                                                  return checked
-                                                    ? field.onChange([...field.value || [], characteristic])
-                                                    : field.onChange(
-                                                        field.value?.filter(
-                                                          (value) => value !== characteristic
-                                                        )
-                                                      )
+                                                  const newValue = checked
+                                                    ? [...field.value || [], characteristic]
+                                                    : field.value?.filter(
+                                                        (value) => value !== characteristic
+                                                      );
+                                                  field.onChange(newValue);
                                                 }}
                                               />
-                                            </FormControl>
-                                            <FormLabel className="font-normal cursor-pointer">
-                                              {characteristic}
-                                            </FormLabel>
-                                          </FormItem>
-                                        )
-                                      }}
-                                    />
-                                  ))}
+                                              <label 
+                                                htmlFor={`char-${characteristic}`}
+                                                className="text-sm font-normal cursor-pointer"
+                                              >
+                                                {characteristic}
+                                              </label>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </SelectContent>
+                                  </Select>
                                 </div>
+                                {field.value?.length > 0 && (
+                                  <div className="flex flex-wrap gap-1 mt-2">
+                                    {field.value.map((item) => (
+                                      <div 
+                                        key={item}
+                                        className="bg-primary/20 text-primary text-xs rounded-full px-2 py-1 flex items-center"
+                                      >
+                                        {item}
+                                        <button
+                                          type="button"
+                                          className="ml-1 text-primary hover:text-primary/80"
+                                          onClick={() => {
+                                            field.onChange(
+                                              field.value?.filter(
+                                                (value) => value !== item
+                                              )
+                                            );
+                                          }}
+                                        >
+                                          ✕
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
