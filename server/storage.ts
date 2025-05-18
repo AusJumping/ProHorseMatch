@@ -48,6 +48,7 @@ export interface IStorage {
   getMessageById(id: number): Promise<Message | undefined>;
   getMessagesByConversationId(customerId: number, ownerId: number, horseId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
+  updateMessage(id: number, message: Partial<Message>): Promise<Message>;
   
   // Conversation methods
   getConversations(): Promise<Conversation[]>;
@@ -795,6 +796,19 @@ export class MemStorage implements IStorage {
       console.error("Error in getMessagesByConversationId:", error);
       return [];
     }
+  }
+  
+  async updateMessage(id: number, update: Partial<Message>): Promise<Message> {
+    const message = this.messages.get(id);
+    if (!message) {
+      throw new Error(`Message with ID ${id} not found`);
+    }
+    
+    const updatedMessage = { ...message, ...update };
+    this.messages.set(id, updatedMessage);
+    saveStorageToDisk(); // Save changes to disk
+    
+    return updatedMessage;
   }
   
   async createMessage(message: InsertMessage): Promise<Message> {

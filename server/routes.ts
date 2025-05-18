@@ -1385,10 +1385,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ).length;
       }
       
-      // For testing, always return at least 1 if there are any messages
-      if (unreadCount === 0 && allMessages.length > 0) {
-        unreadCount = 1;
-      }
+      // Only return the actual unread count
+      // Removed test code that always returned at least 1
       
       return res.json({ count: unreadCount });
     } catch (error) {
@@ -1446,17 +1444,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           
           // Mark messages as read if the current user is the recipient
-          const processedMessages = messages.map(msg => {
+          const processedMessages = await Promise.all(messages.map(async (msg) => {
             // If owner is viewing and message is from customer
-            if (req.session.userId === ownerId && msg.sender_type === 'customer') {
-              return { ...msg, is_read: true };
+            if (req.session.userId === ownerId && msg.sender_type === 'customer' && !msg.is_read) {
+              const updatedMsg = await storage.updateMessage(msg.id, { is_read: true });
+              return updatedMsg;
             }
             // If customer is viewing and message is from owner
-            if (req.session.userId === customerId && msg.sender_type === 'owner') {
-              return { ...msg, is_read: true };
+            if (req.session.userId === customerId && msg.sender_type === 'owner' && !msg.is_read) {
+              const updatedMsg = await storage.updateMessage(msg.id, { is_read: true });
+              return updatedMsg;
             }
             return msg;
-          });
+          }));
           
           console.log("Returning messages:", processedMessages);
           return res.json(processedMessages);
