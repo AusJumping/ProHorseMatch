@@ -260,16 +260,8 @@ export default function SubscriptionPage() {
         description: 'You are being redirected to complete your donation.',
       });
       
-      // Redirect to checkout with a slight delay to ensure toast is visible
-      setTimeout(async () => {
-        const { error } = await stripe.redirectToCheckout({
-          sessionId: data.sessionId
-        });
-        
-        if (error) {
-          throw new Error(error.message || 'Failed to redirect to checkout');
-        }
-      }, 500);
+      // Direct redirect to Stripe's hosted checkout page
+      window.location.href = data.url;
       
     } catch (error: any) {
       toast({

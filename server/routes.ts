@@ -2177,7 +2177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       res.json({
-        sessionId: session.id
+        url: session.url
       });
     } catch (error) {
       console.error("Error creating donation payment:", error);
