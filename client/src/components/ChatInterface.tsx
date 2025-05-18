@@ -82,7 +82,7 @@ const ChatInterface = ({ conversation, messages, isLoading }: ChatInterfaceProps
     try {
       setIsSending(true);
       
-      await apiRequest("POST", "/api/messages", {
+      const result = await apiRequest("POST", "/api/messages", {
         customer_id: conversation.customer_id,
         owner_id: conversation.owner_id,
         horse_id: conversation.horse_id,
@@ -92,14 +92,25 @@ const ChatInterface = ({ conversation, messages, isLoading }: ChatInterfaceProps
       
       setMessageInput("");
       
-      // Invalidate the messages query to refetch messages
-      queryClient.invalidateQueries({ 
-        queryKey: [`/api/messages/${conversation.customer_id}/${conversation.owner_id}/${conversation.horse_id}`] 
-      });
+      // Immediately invalidate queries to refetch latest data
+      await Promise.all([
+        // Refresh messages for this conversation
+        queryClient.invalidateQueries({ 
+          queryKey: [`/api/messages/${conversation.customer_id}/${conversation.owner_id}/${conversation.horse_id}`] 
+        }),
+        // Refresh the conversations list with updated last message info
+        queryClient.invalidateQueries({ 
+          queryKey: ['/api/conversations'] 
+        }),
+        // Refresh unread message count
+        queryClient.invalidateQueries({ 
+          queryKey: ['/api/messages/unread'] 
+        })
+      ]);
       
-      // Invalidate conversations to update last message
-      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      console.log("Message sent and queries refreshed:", result);
     } catch (error) {
+      console.error("Failed to send message:", error);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",

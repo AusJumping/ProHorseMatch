@@ -61,6 +61,7 @@ export default function Messages() {
       `/api/messages/${activeConversation?.customer_id}/${activeConversation?.owner_id}/${activeConversation?.horse_id}`
     ],
     enabled: !!activeConversation,
+    refetchInterval: 3000, // Refetch every 3 seconds to get new messages
   });
 
   const handleSelectConversation = (conversation: Conversation) => {
