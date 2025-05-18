@@ -267,44 +267,27 @@ export default function Profile() {
                           <FormField
                             control={profileForm.control}
                             name="preferred_disciplines"
-                            render={() => (
+                            render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Disciplines</FormLabel>
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  {disciplines.map((discipline) => (
-                                    <FormField
-                                      key={discipline}
-                                      control={profileForm.control}
-                                      name="preferred_disciplines"
-                                      render={({ field }) => {
-                                        return (
-                                          <FormItem
-                                            key={discipline}
-                                            className="flex flex-row items-start space-x-2"
-                                          >
-                                            <FormControl>
-                                              <Checkbox
-                                                checked={field.value?.includes(discipline)}
-                                                onCheckedChange={(checked) => {
-                                                  return checked
-                                                    ? field.onChange([...field.value || [], discipline])
-                                                    : field.onChange(
-                                                        field.value?.filter(
-                                                          (value) => value !== discipline
-                                                        )
-                                                      )
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormLabel className="font-normal cursor-pointer">
-                                              {discipline}
-                                            </FormLabel>
-                                          </FormItem>
-                                        )
-                                      }}
-                                    />
-                                  ))}
-                                </div>
+                                <Select 
+                                  onValueChange={(value) => field.onChange([value])}
+                                  value={field.value?.[0] || undefined}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a discipline" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {disciplines.map((discipline) => (
+                                      <SelectItem key={discipline} value={discipline}>
+                                        {discipline}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
@@ -312,44 +295,27 @@ export default function Profile() {
                           <FormField
                             control={profileForm.control}
                             name="preferred_sexes"
-                            render={() => (
+                            render={({ field }) => (
                               <FormItem>
                                 <FormLabel>Sex</FormLabel>
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  {sexes.map((sex) => (
-                                    <FormField
-                                      key={sex}
-                                      control={profileForm.control}
-                                      name="preferred_sexes"
-                                      render={({ field }) => {
-                                        return (
-                                          <FormItem
-                                            key={sex}
-                                            className="flex flex-row items-start space-x-2"
-                                          >
-                                            <FormControl>
-                                              <Checkbox
-                                                checked={field.value?.includes(sex)}
-                                                onCheckedChange={(checked) => {
-                                                  return checked
-                                                    ? field.onChange([...field.value || [], sex])
-                                                    : field.onChange(
-                                                        field.value?.filter(
-                                                          (value) => value !== sex
-                                                        )
-                                                      )
-                                                }}
-                                              />
-                                            </FormControl>
-                                            <FormLabel className="font-normal cursor-pointer">
-                                              {sex}
-                                            </FormLabel>
-                                          </FormItem>
-                                        )
-                                      }}
-                                    />
-                                  ))}
-                                </div>
+                                <Select 
+                                  onValueChange={(value) => field.onChange([value])}
+                                  value={field.value?.[0] || undefined}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select a sex" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {sexes.map((sex) => (
+                                      <SelectItem key={sex} value={sex}>
+                                        {sex}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
                               </FormItem>
                             )}
                           />
