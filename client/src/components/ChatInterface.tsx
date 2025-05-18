@@ -22,7 +22,8 @@ interface Conversation {
     id: number;
     name: string;
     photos: string[];
-    price: number;
+    price_min: number;
+    price_max: number;
     currency: string;
     breeds: string[];
     age: number;
