@@ -1716,13 +1716,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Update user with beta subscription info
-      await storage.updateUserSubscription(userId, {
+      // Determine user permissions based on the plan type
+      let updatedUserData: any = {
         stripe_subscription_id: `beta-${Date.now()}`, // Create a unique ID for the beta subscription
         subscription_status: 'active',
         subscription_plan: planId,
         subscription_end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days from now
-      });
+      };
+      
+      // Update user roles based on subscription type
+      if (planId === 'beta-seller') {
+        // Seller plan gets both selling and searching permissions
+        await storage.updateUser(userId, {
+          is_selling: true,
+          is_searching: true
+        });
+        console.log(`Updated user ${userId} with beta-seller permissions (selling: true, searching: true)`);
+      } else if (planId === 'beta-searching') {
+        // Searching plan only gets searching permissions
+        await storage.updateUser(userId, {
+          is_selling: false,
+          is_searching: true
+        });
+        console.log(`Updated user ${userId} with beta-searching permissions (selling: false, searching: true)`);
+      }
+      
+      // Update user with beta subscription info
+      await storage.updateUserSubscription(userId, updatedUserData);
       
       res.json({
         success: true,
