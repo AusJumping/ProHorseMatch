@@ -85,25 +85,13 @@
 }
 
 @layer components {
-  /* Menu rollover styling */
-  .hover\:bg-accent:hover {
-    background-color: #cdac6e !important;
-    color: white !important;
-  }
-  
-  .hover\:bg-sidebar-accent:hover {
-    background-color: #cdac6e !important;
-    color: white !important;
-  }
-  
-  .hover\:bg-neutral-50:hover {
-    background-color: #cdac6e !important;
-    color: white !important;
-  }
-  
-  .hover\:bg-neutral-100:hover {
-    background-color: #cdac6e !important;
-    color: white !important;
+  /* Desktop sidebar menu hover styling only */
+  @media (min-width: 768px) {
+    [data-sidebar="menu-button"]:hover,
+    [data-sidebar="menu-sub-button"]:hover {
+      background-color: #cdac6e !important;
+      color: white !important;
+    }
   }
   
   .horse-card {
