@@ -17,50 +17,98 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-// Subscription plan data
-const plans = [
+// Beta plans - Free during beta period
+const betaPlans = [
   {
-    id: 'basic',
-    name: 'Basic',
-    price: 19.99,
+    id: 'beta-seller',
+    name: 'SELLER',
+    price: 0,
     interval: 'month',
-    description: 'Essential features for horse sellers',
+    description: 'Free for a limited time',
     features: [
-      'List up to 3 horses',
-      'Basic horse profile',
-      'Email notifications',
-      'Standard customer support'
-    ]
+      'List unlimited horses for sale',
+      'Detailed horse profile creation',
+      'Connect with interested buyers',
+      'Notification options',
+      'No payment details required'
+    ],
+    buttonText: 'Get Started',
+    isBeta: true
   },
   {
-    id: 'pro',
-    name: 'Pro',
-    price: 49.99,
+    id: 'beta-searching',
+    name: 'SEARCHING',
+    price: 0,
     interval: 'month',
-    description: 'Advanced features for serious sellers',
+    description: 'Free for a limited time',
     features: [
-      'List up to 10 horses',
-      'Premium horse profiles with video',
-      'Featured listings',
-      'Priority customer support',
-      'Performance analytics',
-      'Advanced matching algorithm'
-    ]
+      'Use advanced filtering options',
+      'Connect with sellers directly',
+      'Save favorite listings',
+      'Notification options',
+      'No payment details required'
+    ],
+    buttonText: 'Get Started',
+    isBeta: true
+  }
+];
+
+// Future plans - Coming after beta period
+const futurePlans = [
+  {
+    id: 'searching',
+    name: 'SEARCHING',
+    price: 6.95,
+    interval: 'month',
+    currency: 'AUD',
+    description: '',
+    features: [
+      'Unlimited searches',
+      'Use advanced filtering options',
+      'Connect with sellers directly',
+      'Save favorite listings',
+      'Notification options',
+      'GST Included'
+    ],
+    buttonText: 'Coming Soon',
+    isComingSoon: true
   },
   {
-    id: 'premium',
-    name: 'Premium',
-    price: 99.99,
+    id: 'professional',
+    name: 'PROFESSIONAL',
+    price: 39.95,
     interval: 'month',
-    description: 'All features plus exclusive benefits',
+    currency: 'AUD',
+    description: '',
     features: [
-      'Unlimited horse listings',
-      'All Pro features included',
-      'Dedicated account manager',
-      'Professional listing optimization',
-      'Export leads & performance data',
-      'White-glove buyer introduction service'
-    ]
+      'List up to 3 horses at any one time',
+      'Unlimited searches',
+      'Detailed horse profile creation',
+      'Connect with interested buyers',
+      'Notification options',
+      'GST Included'
+    ],
+    buttonText: 'Coming Soon',
+    isComingSoon: true,
+    isPopular: true
+  },
+  {
+    id: 'elite',
+    name: 'ELITE',
+    price: 99.95,
+    interval: 'month',
+    currency: 'AUD',
+    description: '',
+    features: [
+      'List unlimited horses',
+      'Unlimited searches',
+      'Detailed horse profile creation',
+      'Connect with interested buyers',
+      'Notification options',
+      'GST Included'
+    ],
+    buttonText: 'Coming Soon',
+    isComingSoon: true
   }
 ];
 
@@ -147,7 +195,7 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
 
 // Main subscription page component
 export default function SubscriptionPage() {
-  const [selectedPlan, setSelectedPlan] = useState('basic');
+  const [selectedPlan, setSelectedPlan] = useState('beta-seller');
   const [clientSecret, setClientSecret] = useState('');
   const [showCustomAmount, setShowCustomAmount] = useState(false);
   const [customAmount, setCustomAmount] = useState(20);
@@ -272,7 +320,9 @@ export default function SubscriptionPage() {
   // Show current subscription if the user has one
   if (subscriptionData?.hasSubscription) {
     const { status, currentPeriodEnd, planId } = subscriptionData;
-    const plan = plans.find(p => p.id === planId) || { name: 'Unknown', price: 0 };
+    // Find the plan from beta or future plans
+    const allPlans = [...betaPlans, ...futurePlans];
+    const plan = allPlans.find(p => p.id === planId) || { name: 'Unknown', price: 0, features: [] };
     
     return (
       <div className="container mx-auto py-20 max-w-4xl">
@@ -339,64 +389,103 @@ export default function SubscriptionPage() {
   // Show subscription plans for new subscribers
   return (
     <div className="container mx-auto py-10 max-w-6xl">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl font-accent font-bold mb-2">Choose Your Subscription Plan</h1>
-        <p className="text-muted-foreground">Unlock premium features and sell more horses with the right plan for your business</p>
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-accent font-bold mb-2">Beta Access</h1>
+        <p className="text-muted-foreground">Enjoy full access FREE during our Beta launch period</p>
       </div>
       
       {!clientSecret ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {plans.map((plan) => (
-            <Card key={plan.id} className={`overflow-hidden flex flex-col ${selectedPlan === plan.id ? 'ring-2 ring-primary' : ''}`}>
-              <CardHeader className="pb-4">
-                <CardTitle className="font-accent">{plan.name}</CardTitle>
-                <div className="flex items-baseline mt-2">
-                  <span className="text-3xl font-bold">${plan.price}</span>
-                  <span className="text-sm text-muted-foreground ml-1">/{plan.interval}</span>
+        <>
+          {/* Beta Plans Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+            {betaPlans.map((plan) => (
+              <Card key={plan.id} className="overflow-hidden flex flex-col">
+                <CardHeader className="pb-4">
+                  <CardTitle className="font-accent">{plan.name}</CardTitle>
+                  <div className="flex items-baseline mt-2">
+                    <span className="text-xl font-medium">{plan.price === 0 ? 'Free for a limited time' : `$${plan.price}/${plan.interval}`}</span>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="flex-grow">
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                
+                <div className="px-6 pb-6 mt-auto">
+                  <Button 
+                    onClick={() => handleSelectPlan(plan.id)} 
+                    className="w-full"
+                  >
+                    {plan.buttonText || "Get Started"}
+                  </Button>
                 </div>
-                <CardDescription className="mt-2">{plan.description}</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="flex-grow">
-                <ul className="space-y-2 mb-6">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              
-              <div className="px-6 pb-6 mt-auto">
-                <Button 
-                  onClick={() => handleSelectPlan(plan.id)} 
-                  variant={selectedPlan === plan.id ? "default" : "outline"}
-                  className="w-full"
-                  disabled={isCreatingSubscription}
-                >
-                  {isCreatingSubscription && selectedPlan === plan.id ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : selectedPlan === plan.id ? (
-                    "Selected"
-                  ) : (
-                    "Select Plan"
-                  )}
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+          
+          {/* Future Plans Section */}
+          <div className="text-center mb-8 mt-20">
+            <h2 className="text-2xl font-accent font-bold mb-2">Choose Your Perfect Plan</h2>
+            <p className="text-muted-foreground">When the full version goes live you will be able to select a subscription that matches your needs</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {futurePlans.map((plan) => (
+              <Card 
+                key={plan.id} 
+                className={`overflow-hidden flex flex-col ${plan.isPopular ? 'ring-2 ring-[#cdac6e] relative' : ''}`}
+              >
+                {plan.isPopular && (
+                  <div className="absolute top-0 right-0 bg-[#cdac6e] text-white px-4 py-1 text-xs font-medium">
+                    Popular
+                  </div>
+                )}
+                <CardHeader className="pb-4">
+                  <CardTitle className="font-accent">{plan.name}</CardTitle>
+                  <div className="flex items-baseline mt-2">
+                    <span className="text-3xl font-bold">${plan.price}</span>
+                    <span className="text-sm text-muted-foreground ml-1">/{plan.interval}</span>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="flex-grow">
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                
+                <div className="px-6 pb-6 mt-auto">
+                  <Button 
+                    className="w-full"
+                    variant="outline"
+                    disabled={true}
+                  >
+                    {plan.buttonText || "Coming Soon"}
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader>
               <CardTitle className="font-accent">Complete Your Subscription</CardTitle>
               <CardDescription>
-                Enter your payment details to start your {plans.find(p => p.id === selectedPlan)?.name} subscription
+                Enter your payment details to start your {betaPlans.concat(futurePlans).find(p => p.id === selectedPlan)?.name} subscription
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -447,31 +536,20 @@ export default function SubscriptionPage() {
                   placeholder="Enter amount"
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={customAmount}
-                  onChange={(e) => setCustomAmount(Math.max(1, parseInt(e.target.value) || 0))}
-                  min="1"
+                  onChange={(e) => setCustomAmount(Number(e.target.value))}
+                  min={1}
                 />
                 <Button 
+                  variant="default" 
                   onClick={() => handleDonation(customAmount)}
-                  disabled={isDonating || customAmount < 1}
+                  disabled={isDonating || customAmount <= 0}
                 >
                   Donate
                 </Button>
               </div>
             </div>
           )}
-          
-          <p className="text-sm text-muted-foreground italic">
-            100% of donations go directly to improving Pro Horse Match
-          </p>
         </div>
-      </div>
-      
-      <div className="text-center mt-12">
-        <h3 className="text-lg font-medium mb-2">Questions about our plans?</h3>
-        <p className="text-muted-foreground mb-4">Contact our support team for help choosing the right plan for your needs.</p>
-        <Button variant="outline" onClick={() => navigate('/contact')}>
-          Contact Support <ChevronRight className="ml-1 h-4 w-4" />
-        </Button>
       </div>
     </div>
   );
