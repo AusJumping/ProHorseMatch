@@ -1,19 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Share2, Loader2 } from "lucide-react";
+import { Share2, Loader2, Heart } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { useMobile } from "@/hooks/use-mobile";
 import MediaCarousel from "@/components/MediaCarousel";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useState, useEffect } from "react";
+import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 
 interface HorseCardProps {
   horse: Horse;
   onShowMore: (horseId: number) => void;
+  onLike?: (horseId: number) => void;
+  showFavoriteButton?: boolean;
 }
 
-const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
+const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false }: HorseCardProps) => {
   const isMobile = useMobile();
+  const isTouchDevice = useIsTouchDevice();
   const { currentCurrency, convertPrice, formatPrice, isLoading } = useCurrency();
   const [convertedMinPrice, setConvertedMinPrice] = useState<number | null>(null);
   const [convertedMaxPrice, setConvertedMaxPrice] = useState<number | null>(null);
@@ -50,6 +54,13 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
       // Fallback for browsers that don't support navigator.share
       navigator.clipboard.writeText(window.location.href);
       alert("Link copied to clipboard!");
+    }
+  };
+  
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onLike) {
+      onLike(horse.id);
     }
   };
 
@@ -129,6 +140,24 @@ const HorseCard = ({ horse, onShowMore }: HorseCardProps) => {
           >
             {isMobile ? "More Info" : "View Full Profile"}
           </Button>
+          
+          {/* Add Like button for mobile users or when explicitly requested */}
+          {(isTouchDevice || showFavoriteButton) && onLike && (
+            <Button
+              variant="outline"
+              size="icon"
+              className="w-10 h-10 flex items-center justify-center like-button"
+              onClick={handleLike}
+              style={{ 
+                backgroundColor: "#cdac6e", 
+                borderColor: "#cdac6e", 
+                color: "white" 
+              }}
+            >
+              <Heart size={18} />
+            </Button>
+          )}
+          
           <Button
             variant="outline"
             size="icon"
