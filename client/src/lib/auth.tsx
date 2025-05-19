@@ -118,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Login error:', error);
       throw error;
-    }}
+    }
   };
 
   const logout = async () => {
@@ -180,7 +180,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
 // Export the hook separately to avoid Fast Refresh issues
 export function useAuth() {
