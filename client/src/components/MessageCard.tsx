@@ -46,7 +46,7 @@ const MessageCard = ({ conversation, onClick, isActive = false }: MessageCardPro
   return (
     <div 
       className={`flex gap-3 p-3 rounded-lg cursor-pointer ${
-        isActive ? "bg-primary bg-opacity-5" : "hover:bg-neutral-50"
+        isActive ? "bg-primary text-white" : "hover:bg-neutral-50"
       }`}
       onClick={onClick}
     >
@@ -69,14 +69,14 @@ const MessageCard = ({ conversation, onClick, isActive = false }: MessageCardPro
           <h4 className="font-accent font-medium">
             {conversation.otherParty?.name || "User"}
           </h4>
-          <span className="text-xs text-neutral-500">
+          <span className={`text-xs ${isActive ? "text-white" : "text-neutral-500"}`}>
             {conversation.last_message_time 
               ? formatTimeAgo(conversation.last_message_time)
               : "New"}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <p className="text-sm text-neutral-700 line-clamp-1">
+          <p className={`text-sm ${isActive ? "text-white" : "text-neutral-700"} line-clamp-1`}>
             {conversation.horse 
               ? `${conversation.horse.name}`
               : "No horse details"}
