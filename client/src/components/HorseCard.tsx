@@ -148,7 +148,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
         {!isMobile && (
           <div className="text-left mb-2">
             <span className="bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full inline-block min-w-20">
-              {isLoading ? (
+              {currencyLoading ? (
                 <div className="flex items-center justify-center">
                   <Loader2 className="h-3 w-3 animate-spin mr-1" />
                   <span>Converting...</span>
@@ -158,7 +158,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
               ) : (
                 `${horse.currency} ${horse.price_min?.toLocaleString()} - ${horse.price_max?.toLocaleString()}`
               )}
-              {!isLoading && convertedMinPrice !== null && currentCurrency !== horse.currency && (
+              {!currencyLoading && convertedMinPrice !== null && currentCurrency !== horse.currency && (
                 <span className="text-xs opacity-70 ml-1">
                   (orig. {horse.currency})
                 </span>
