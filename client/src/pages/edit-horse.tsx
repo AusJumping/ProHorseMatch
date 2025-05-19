@@ -155,16 +155,21 @@ export default function EditHorse() {
         description: "Your horse has been updated successfully",
       });
       
-      // Invalidate cached horse data
-      queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
-      queryClient.invalidateQueries({ queryKey: [`/api/horses/${horseId}`] });
-      queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
+      // Invalidate cached horse data with immediate refetch to update UI
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['/api/horses'] }),
+        queryClient.invalidateQueries({ queryKey: [`/api/horses/${horseId}`] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] })
+      ]);
+      
+      // Force a refetch of all horses to ensure fresh data
+      await queryClient.refetchQueries({ queryKey: ['/api/horses'] });
       
       // Show a success message first before navigating
       setTimeout(() => {
         // Navigate back to My Horses page after a small delay
         navigate("/my-horses");
-      }, 1000);
+      }, 1500);
     } catch (error) {
       console.error("Error updating horse:", error);
       toast({
