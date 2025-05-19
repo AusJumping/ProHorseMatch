@@ -130,15 +130,16 @@ export default function Home() {
   });
 
   const handleLike = async (horseId: number) => {
+    // Debug logging to help diagnose authentication issues
+    console.log("Like horse - Auth state:", { isAuthenticated, user, userId: user?.id });
+    
     // Check if user is authenticated
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       toast({
         title: "Login Required",
         description: "Please log in to save this horse to your favorites.",
         variant: "default",
       });
-      // Optionally redirect to login page
-      // navigate('/login');
       
       // Still advance to the next horse
       setSwipingIndex(prev => prev + 1);
@@ -170,8 +171,11 @@ export default function Home() {
   };
 
   const handleDislike = async (horseId: number) => {
+    // Debug logging to help diagnose authentication issues
+    console.log("Dislike horse - Auth state:", { isAuthenticated, user, userId: user?.id });
+    
     // Check if user is authenticated
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       // For dislikes, we won't show a login message
       // Just advance to the next horse
       setSwipingIndex(prev => prev + 1);
