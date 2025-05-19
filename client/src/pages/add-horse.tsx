@@ -284,7 +284,17 @@ export default function AddHorse() {
                                   name="price_min"
                                   render={({ field }) => (
                                     <FormItem>
-                                      <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                      <Select onValueChange={value => {
+                                        const newValue = parseInt(value);
+                                        field.onChange(newValue);
+                                        
+                                        // Check if max price is less than new min price
+                                        const currentMaxPrice = form.getValues("price_max");
+                                        if (currentMaxPrice < newValue) {
+                                          // Update max price to match min price
+                                          form.setValue("price_max", newValue);
+                                        }
+                                      }} defaultValue={field.value?.toString()}>
                                         <FormControl>
                                           <SelectTrigger>
                                             <SelectValue placeholder="Minimum Price" />
@@ -480,7 +490,20 @@ export default function AddHorse() {
                                   name="price_max"
                                   render={({ field }) => (
                                     <FormItem>
-                                      <Select onValueChange={value => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                                      <Select onValueChange={value => {
+                                        const newValue = parseInt(value);
+                                        const currentMinPrice = form.getValues("price_min");
+                                        
+                                        // Only update if the new max price is greater than or equal to min price
+                                        if (newValue >= currentMinPrice) {
+                                          field.onChange(newValue);
+                                        } else {
+                                          // Show validation error
+                                          setTimeout(() => {
+                                            form.trigger("price_max");
+                                          }, 100);
+                                        }
+                                      }} defaultValue={field.value?.toString()}>
                                         <FormControl>
                                           <SelectTrigger>
                                             <SelectValue placeholder="Maximum Price" />
