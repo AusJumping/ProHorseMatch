@@ -109,14 +109,22 @@ const SwipeSection = ({
             transition={{ type: "spring", damping: 20, stiffness: 100 }}
             className="absolute top-0 left-0 right-0 z-10"
           >
-            <HorseCard horse={currentHorse} onShowMore={onShowMore} />
+            <HorseCard 
+              horse={currentHorse} 
+              onShowMore={onShowMore} 
+              onLike={onLike}
+              showFavoriteButton={true}
+            />
           </motion.div>
         </AnimatePresence>
 
         {/* Backup card (shows the next horse) */}
         {horses[activeIndex + 1] && (
           <div className="absolute top-0 left-0 right-0 z-0">
-            <HorseCard horse={horses[activeIndex + 1]} onShowMore={onShowMore} />
+            <HorseCard 
+              horse={horses[activeIndex + 1]} 
+              onShowMore={onShowMore}
+            />
           </div>
         )}
       </div>
