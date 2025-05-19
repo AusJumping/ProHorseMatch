@@ -403,25 +403,127 @@ export default function EditHorse() {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="price"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Price</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                placeholder="Enter price" 
-                                min={1} 
-                                {...field} 
-                                onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-2">
+                        <div className="font-medium">Price Range</div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <FormLabel className="block mb-2">Min</FormLabel>
+                            <FormField
+                              control={form.control}
+                              name="price_min"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Select onValueChange={value => {
+                                    const newValue = parseInt(value);
+                                    field.onChange(newValue);
+                                    
+                                    // Check if max price is less than new min price
+                                    const currentMaxPrice = form.getValues("price_max");
+                                    if (currentMaxPrice < newValue) {
+                                      // Update max price to match min price
+                                      form.setValue("price_max", newValue);
+                                      toast({
+                                        description: "Maximum price has been adjusted to match the new minimum price.",
+                                      });
+                                    }
+                                  }} value={field.value?.toString()}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select min price" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="5000">5,000</SelectItem>
+                                      <SelectItem value="10000">10,000</SelectItem>
+                                      <SelectItem value="15000">15,000</SelectItem>
+                                      <SelectItem value="20000">20,000</SelectItem>
+                                      <SelectItem value="25000">25,000</SelectItem>
+                                      <SelectItem value="30000">30,000</SelectItem>
+                                      <SelectItem value="35000">35,000</SelectItem>
+                                      <SelectItem value="40000">40,000</SelectItem>
+                                      <SelectItem value="45000">45,000</SelectItem>
+                                      <SelectItem value="50000">50,000</SelectItem>
+                                      <SelectItem value="60000">60,000</SelectItem>
+                                      <SelectItem value="70000">70,000</SelectItem>
+                                      <SelectItem value="80000">80,000</SelectItem>
+                                      <SelectItem value="90000">90,000</SelectItem>
+                                      <SelectItem value="100000">100,000</SelectItem>
+                                      <SelectItem value="150000">150,000</SelectItem>
+                                      <SelectItem value="200000">200,000</SelectItem>
+                                      <SelectItem value="250000">250,000</SelectItem>
+                                      <SelectItem value="300000">300,000</SelectItem>
+                                      <SelectItem value="350000">350,000</SelectItem>
+                                      <SelectItem value="400000">400,000</SelectItem>
+                                      <SelectItem value="450000">450,000</SelectItem>
+                                      <SelectItem value="500000">500,000</SelectItem>
+                                      <SelectItem value="1000000">1,000,000+</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div>
+                            <FormLabel className="block mb-2">Max</FormLabel>
+                            <FormField
+                              control={form.control}
+                              name="price_max"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <Select onValueChange={value => {
+                                    const newValue = parseInt(value);
+                                    field.onChange(newValue);
+                                    
+                                    // Check if min price is greater than new max price
+                                    const currentMinPrice = form.getValues("price_min");
+                                    if (currentMinPrice > newValue) {
+                                      // Update min price to match max price
+                                      form.setValue("price_min", newValue);
+                                      toast({
+                                        description: "Minimum price has been adjusted to match the new maximum price.",
+                                      });
+                                    }
+                                  }} value={field.value?.toString()}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select max price" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="10000">10,000</SelectItem>
+                                      <SelectItem value="15000">15,000</SelectItem>
+                                      <SelectItem value="20000">20,000</SelectItem>
+                                      <SelectItem value="25000">25,000</SelectItem>
+                                      <SelectItem value="30000">30,000</SelectItem>
+                                      <SelectItem value="35000">35,000</SelectItem>
+                                      <SelectItem value="40000">40,000</SelectItem>
+                                      <SelectItem value="45000">45,000</SelectItem>
+                                      <SelectItem value="50000">50,000</SelectItem>
+                                      <SelectItem value="60000">60,000</SelectItem>
+                                      <SelectItem value="70000">70,000</SelectItem>
+                                      <SelectItem value="80000">80,000</SelectItem>
+                                      <SelectItem value="90000">90,000</SelectItem>
+                                      <SelectItem value="100000">100,000</SelectItem>
+                                      <SelectItem value="150000">150,000</SelectItem>
+                                      <SelectItem value="200000">200,000</SelectItem>
+                                      <SelectItem value="250000">250,000</SelectItem>
+                                      <SelectItem value="300000">300,000</SelectItem>
+                                      <SelectItem value="350000">350,000</SelectItem>
+                                      <SelectItem value="400000">400,000</SelectItem>
+                                      <SelectItem value="450000">450,000</SelectItem>
+                                      <SelectItem value="500000">500,000</SelectItem>
+                                      <SelectItem value="1000000">1,000,000+</SelectItem>
+                                      <SelectItem value="2000000">2,000,000+</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                      </div>
                       
                       <FormField
                         control={form.control}
