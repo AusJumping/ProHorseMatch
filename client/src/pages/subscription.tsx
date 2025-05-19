@@ -198,6 +198,12 @@ export default function SubscriptionPage() {
   const [customAmount, setCustomAmount] = useState(20);
   const [isDonating, setIsDonating] = useState(false);
   const { toast } = useToast();
+  
+  // Get authentication status
+  const { data: user, isLoading: isLoadingAuth } = useQuery({
+    queryKey: ['/api/auth/me'],
+    retry: false,
+  });
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   
@@ -205,6 +211,7 @@ export default function SubscriptionPage() {
   const { data: subscriptionData, isLoading: isLoadingSubscription } = useQuery({
     queryKey: ['/api/subscription'],
     retry: false,
+    enabled: !!user // Only run if user is authenticated
   });
   
   // Create subscription mutation
