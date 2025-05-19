@@ -156,7 +156,7 @@ export default function FilterPage() {
       showBackButton
       onBackClick={() => navigate("/browse")}
     >
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-md mx-auto px-4 pb-20">
         <FilterPanel 
           isOpen={true} 
           onClose={() => {}} 
@@ -165,7 +165,7 @@ export default function FilterPage() {
           horseCount={horses?.length || 0}
         />
         
-        <div className="w-full flex justify-center mt-6">
+        <div className="w-full flex justify-center mt-6 mb-10">
           <Button
             variant="default"
             className="w-full max-w-[200px] py-3"

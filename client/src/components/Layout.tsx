@@ -75,7 +75,7 @@ const Layout = ({
                   <ArrowLeft size={18} />
                 </Button>
               )}
-              {pageTitle && <h2 className="font-accent font-bold text-xl">{pageTitle}</h2>}
+              {pageTitle && <h2 className="font-accent font-bold text-xl whitespace-normal break-words pr-2">{pageTitle}</h2>}
             </div>
 
             <div className="flex items-center gap-2">
