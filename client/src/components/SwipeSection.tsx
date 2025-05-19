@@ -136,10 +136,10 @@ const SwipeSection = ({
         <Button
           size="icon"
           variant="outline"
-          className="info-button w-12 h-12 rounded-full"
+          className="info-button w-14 h-14 rounded-full"
           onClick={() => onShowMore(currentHorse.id)}
         >
-          <Info className="h-5 w-5" />
+          <Info className="h-6 w-6" />
         </Button>
         <Button
           size="icon"
