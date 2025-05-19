@@ -336,10 +336,10 @@
         "id": 1,
         "customer_id": 4,
         "owner_id": 3,
-        "horse_id": 11,
-        "content": "really nice?",
+        "horse_id": 10,
+        "content": "What colour is Flame?",
         "sender_type": "customer",
-        "created_at": "2025-05-18T07:00:13.758Z",
+        "created_at": "2025-05-19T04:25:58.123Z",
         "is_read": true
       }
     ],
@@ -417,9 +417,9 @@
         "customer_id": 4,
         "owner_id": 3,
         "horse_id": 10,
-        "last_message_id": 6,
-        "last_message_time": "2025-05-18T07:21:29.309Z",
-        "unread_count": 1
+        "last_message_id": 1,
+        "last_message_time": "2025-05-19T04:25:58.123Z",
+        "unread_count": 2
       }
     ],
     [
