@@ -169,7 +169,7 @@ const FilterPanel = ({
         {/* Filter Forms */}
         <div className="space-y-6">
           {/* Disciplines */}
-          <div className="filter-group">
+          <div className="filter-group mt-4">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Disciplines</Label>
             <Select 
               value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"} 
