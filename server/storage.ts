@@ -537,6 +537,19 @@ export class MemStorage implements IStorage {
         return false;
       }
       
+      // Filter by height range if specified
+      if (filters.height_min !== undefined && filters.height_min !== null) {
+        if (horse.height_hands < filters.height_min) {
+          return false;
+        }
+      }
+      
+      if (filters.height_max !== undefined && filters.height_max !== null) {
+        if (horse.height_hands > filters.height_max) {
+          return false;
+        }
+      }
+      
       // Filter by price range if specified
       if (filters.price_min !== undefined && filters.price_min !== null) {
         if (horse.price_max < filters.price_min) {
