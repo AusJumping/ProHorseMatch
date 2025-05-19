@@ -217,55 +217,15 @@ export default function SubscriptionPage() {
   // Create subscription mutation
   const { mutate: createSubscription, isPending: isCreatingSubscription } = useMutation({
     mutationFn: async (planId: string) => {
-      try {
-        // Use fetch directly for better control over the response
-        const response = await fetch('/api/subscription', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ planId }),
-          credentials: 'include'
-        });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          let errorMessage = 'Failed to create subscription';
-          try {
-            const errorData = JSON.parse(errorText);
-            if (errorData.message) errorMessage = errorData.message;
-          } catch (e) {
-            // If JSON parsing fails, use the raw error text
-            if (errorText) errorMessage = errorText;
-          }
-          throw new Error(errorMessage);
-        }
-        
-        // Parse response as JSON
-        const responseText = await response.text();
-        if (!responseText) {
-          return { success: true }; // Empty but successful response
-        }
-        
-        try {
-          return JSON.parse(responseText);
-        } catch (e) {
-          console.error('Failed to parse subscription response:', e);
-          throw new Error('Invalid response format from server');
-        }
-      } catch (error: any) {
-        console.error('Subscription error:', error);
-        throw error;
+      const response = await apiRequest('POST', '/api/subscription', { planId });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create subscription');
       }
+      return response.json();
     },
     onSuccess: (data) => {
-      if (data && data.clientSecret) {
-        setClientSecret(data.clientSecret);
-      } else {
-        toast({
-          title: 'Subscription Error',
-          description: 'Missing client secret in response',
-          variant: 'destructive',
-        });
-      }
+      setClientSecret(data.clientSecret);
     },
     onError: (error: Error) => {
       toast({
@@ -305,17 +265,6 @@ export default function SubscriptionPage() {
   
   // When plan is selected, create a subscription intent
   const handleSelectPlan = (planId: string) => {
-    // Check if user is logged in
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please log in to continue with subscription",
-        variant: "destructive",
-      });
-      navigate('/login');
-      return;
-    }
-    
     setSelectedPlan(planId);
     createSubscription(planId);
   };
@@ -363,8 +312,32 @@ export default function SubscriptionPage() {
     });
   };
   
-  // We don't show a login required message here anymore since this can be the first page
-  // users land on. Instead, we'll prompt for login when they try to take an action.
+  // Show login message if user is not authenticated
+  if (!user && !isLoadingAuth) {
+    return (
+      <Layout pageTitle="Subscription Plans">
+        <div className="container mx-auto py-20 max-w-md">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-accent">Login Required</CardTitle>
+              <CardDescription>
+                You need to be logged in to access subscription features
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p>Please log in to view subscription options and manage your subscription.</p>
+              <Button onClick={() => navigate('/login')} className="w-full">
+                Log In
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/')} className="w-full">
+                Return to Home
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
   
   if (isLoadingAuth || isLoadingSubscription) {
     return (
