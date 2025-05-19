@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import FilterPanel from "@/components/FilterPanel";
 import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useToast } from "@/hooks/use-toast";
 import { Horse } from "@shared/schema";
 
 interface Filter {
@@ -25,6 +26,7 @@ interface Filter {
 export default function FilterPage() {
   const [, navigate] = useLocation();
   const { currentCurrency } = useCurrency();
+  const { toast } = useToast();
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
     breeds: [],       // Empty array for All Breeds
