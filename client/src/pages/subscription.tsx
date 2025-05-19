@@ -217,12 +217,8 @@ export default function SubscriptionPage() {
   // Create subscription mutation
   const { mutate: createSubscription, isPending: isCreatingSubscription } = useMutation({
     mutationFn: async (planId: string) => {
-      const response = await apiRequest('POST', '/api/subscription', { planId });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create subscription');
-      }
-      return response.json();
+      // Using apiRequest which already handles JSON parsing and errors
+      return await apiRequest('POST', '/api/subscription', { planId });
     },
     onSuccess: (data) => {
       setClientSecret(data.clientSecret);
@@ -239,12 +235,8 @@ export default function SubscriptionPage() {
   // Cancel subscription mutation
   const { mutate: cancelSubscription, isPending: isCancellingSubscription } = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('DELETE', '/api/subscription');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to cancel subscription');
-      }
-      return response.json();
+      // Using apiRequest which already handles JSON parsing and errors
+      return await apiRequest('DELETE', '/api/subscription');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
