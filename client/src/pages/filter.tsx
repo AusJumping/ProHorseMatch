@@ -159,7 +159,7 @@ export default function FilterPage() {
       <div className="max-w-md mx-auto px-4">
         <FilterPanel 
           isOpen={true} 
-          onClose={() => {}} 
+          onClose={() => navigate("/browse")} 
           activeFilters={activeFilters}
           onApplyFilters={handleApplyFilters}
           horseCount={horses?.length || 0}

@@ -277,7 +277,11 @@
         "is_searching": true,
         "name": null,
         "created_at": "2025-05-15T10:50:29.882Z",
-        "stripe_customer_id": "cus_SL2W1lkYR609pn"
+        "stripe_customer_id": "cus_SL2W1lkYR609pn",
+        "stripe_subscription_id": "beta-1747651498227",
+        "subscription_status": "active",
+        "subscription_plan": "beta-seller",
+        "subscription_end_date": "2025-08-17T10:44:58.228Z"
       }
     ],
     [

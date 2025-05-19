@@ -131,6 +131,10 @@ const FilterPanel = ({
 
   const handleApply = () => {
     onApplyFilters(filters);
+    // Close the filter panel on mobile after applying filters
+    if (isMobile) {
+      onClose();
+    }
   };
 
   const handleReset = () => {
