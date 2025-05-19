@@ -1,26 +1,45 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Share2, Loader2, Heart } from "lucide-react";
+import { Share2, Loader2, Heart, X } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { useMobile } from "@/hooks/use-mobile";
 import MediaCarousel from "@/components/MediaCarousel";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useState, useEffect } from "react";
 import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/lib/auth";
 
 interface HorseCardProps {
   horse: Horse;
   onShowMore: (horseId: number) => void;
   onLike?: (horseId: number) => void;
   showFavoriteButton?: boolean;
+  matchStatus?: { is_liked?: boolean } | null; // Optional prop to pass in match status directly
 }
 
-const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false }: HorseCardProps) => {
+const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matchStatus }: HorseCardProps) => {
   const isMobile = useMobile();
   const isTouchDevice = useIsTouchDevice();
-  const { currentCurrency, convertPrice, formatPrice, isLoading } = useCurrency();
+  const { user, isAuthenticated } = useAuth();
+  const { currentCurrency, convertPrice, formatPrice, isLoading: currencyLoading } = useCurrency();
   const [convertedMinPrice, setConvertedMinPrice] = useState<number | null>(null);
   const [convertedMaxPrice, setConvertedMaxPrice] = useState<number | null>(null);
+  
+  // Fetch match status if not directly provided
+  const { data: matches = [] } = useQuery({
+    queryKey: ['/api/matches'],
+    enabled: isAuthenticated && !matchStatus, // Only fetch if we're authenticated and don't have status passed in
+  });
+  
+  // Determine if this horse has been liked or dismissed
+  const matchInfo = matchStatus || (Array.isArray(matches) ? 
+    matches.find((match: any) => match.horse_id === horse.id) : 
+    null
+  );
+  const hasBeenLiked = matchInfo?.is_liked === true;
+  const hasBeenDismissed = matchInfo?.is_liked === false;
   
   // Convert price range when currency or horse changes
   useEffect(() => {
@@ -72,6 +91,22 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false }: Ho
           media={horse.photos || []} 
           videos={horse.videos || []} 
         />
+        
+        {/* Semi-transparent overlay for liked/dismissed horses - Only show on mobile */}
+        {isMobile && (hasBeenLiked || hasBeenDismissed) && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
+            {hasBeenLiked && (
+              <div className="bg-white/80 w-16 h-16 rounded-full flex items-center justify-center">
+                <Heart className="h-10 w-10 text-[#cdac6e] fill-[#cdac6e]" />
+              </div>
+            )}
+            {hasBeenDismissed && (
+              <div className="bg-white/80 w-16 h-16 rounded-full flex items-center justify-center">
+                <X className="h-10 w-10 text-black" />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Horse Info Section */}
