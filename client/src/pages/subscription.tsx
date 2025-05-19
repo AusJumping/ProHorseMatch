@@ -312,7 +312,34 @@ export default function SubscriptionPage() {
     });
   };
   
-  if (isLoadingSubscription) {
+  // Show login message if user is not authenticated
+  if (!user && !isLoadingAuth) {
+    return (
+      <Layout pageTitle="Subscription Plans">
+        <div className="container mx-auto py-20 max-w-md">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-accent">Login Required</CardTitle>
+              <CardDescription>
+                You need to be logged in to access subscription features
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p>Please log in to view subscription options and manage your subscription.</p>
+              <Button onClick={() => navigate('/login')} className="w-full">
+                Log In
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/')} className="w-full">
+                Return to Home
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+  
+  if (isLoadingAuth || isLoadingSubscription) {
     return (
       <Layout pageTitle="Subscription Plans">
         <div className="container mx-auto py-20 flex flex-col items-center justify-center">
