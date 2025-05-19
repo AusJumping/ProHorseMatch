@@ -51,10 +51,56 @@ const FilterPanel = ({
   }, [activeFilters]);
 
   const handleChange = (key: string, value: any) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    setFilters(prev => {
+      // Validation for min/max pairs to ensure max is not less than min
+      if (key === 'price_min' && prev.price_max && value > prev.price_max && prev.price_max !== 999999999) {
+        // If new min is greater than current max, set max to null or a higher value
+        return {
+          ...prev,
+          [key]: value,
+          price_max: 999999999 // Reset to "No Max" when min exceeds max
+        };
+      }
+      
+      if (key === 'price_max' && prev.price_min && value < prev.price_min && value !== 999999999) {
+        // If new max is less than current min, don't update
+        return prev;
+      }
+      
+      if (key === 'age_min' && prev.age_max && value > prev.age_max && prev.age_max !== 999) {
+        // If new min is greater than current max, set max to null or a higher value
+        return {
+          ...prev,
+          [key]: value,
+          age_max: 999 // Reset to "No Max" when min exceeds max
+        };
+      }
+      
+      if (key === 'age_max' && prev.age_min && value < prev.age_min && value !== 999) {
+        // If new max is less than current min, don't update
+        return prev;
+      }
+      
+      if (key === 'height_min' && prev.height_max && value > prev.height_max && prev.height_max !== 999) {
+        // If new min is greater than current max, set max to null or a higher value
+        return {
+          ...prev,
+          [key]: value,
+          height_max: 999 // Reset to "No Max" when min exceeds max
+        };
+      }
+      
+      if (key === 'height_max' && prev.height_min && value < prev.height_min && value !== 999) {
+        // If new max is less than current min, don't update
+        return prev;
+      }
+      
+      // Default case: just update the value
+      return {
+        ...prev,
+        [key]: value
+      };
+    });
     
     // Also update currency context if currency is changed
     if (key === 'currency') {
