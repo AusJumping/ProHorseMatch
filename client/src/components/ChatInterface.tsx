@@ -151,7 +151,7 @@ const ChatInterface = ({ conversation, messages, isLoading }: ChatInterfaceProps
           )}
           
           <div>
-            <h3 className="font-medium">{conversation.otherParty?.name || "User"}</h3>
+            <h3 className="font-accent font-medium">{conversation.otherParty?.name || "User"}</h3>
             <p className="text-sm text-neutral-500">
               {conversation.horse?.name && `About ${conversation.horse.name}`}
             </p>
