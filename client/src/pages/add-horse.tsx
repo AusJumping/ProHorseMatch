@@ -21,7 +21,6 @@ import { Separator } from "@/components/ui/separator";
 import { useMobile } from "@/hooks/use-mobile";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { useToast } from "@/hooks/use-toast";
 
 // Form schema for adding a horse
 const horseFormSchema = z.object({
@@ -299,8 +298,11 @@ export default function AddHorse() {
                                         if (currentMaxPrice < newValue) {
                                           // Update max price to match min price
                                           form.setValue("price_max", newValue);
+                                          toast({
+                                            description: "Maximum price has been adjusted to match the new minimum price.",
+                                          });
                                         }
-                                      }} defaultValue={field.value?.toString()}>
+                                      }} value={field.value?.toString()}>
                                         <FormControl>
                                           <SelectTrigger>
                                             <SelectValue placeholder="Minimum Price" />
@@ -506,7 +508,7 @@ export default function AddHorse() {
                                           if (newValue >= currentMinPrice) {
                                             field.onChange(newValue);
                                           } else {
-                                            // Show an error toast instead of a form validation error
+                                            // Keep the current value and show an error toast
                                             toast({
                                               title: "Invalid price range",
                                               description: "Maximum price must be greater than or equal to minimum price",
