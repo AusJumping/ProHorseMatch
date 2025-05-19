@@ -92,6 +92,14 @@ export default function Home() {
         params.append('max_age', activeFilters.age_max?.toString() || '999');
       }
       
+      if (activeFilters.height_min !== null) {
+        params.append('min_height', activeFilters.height_min?.toString() || '0');
+      }
+      
+      if (activeFilters.height_max !== null) {
+        params.append('max_height', activeFilters.height_max?.toString() || '999');
+      }
+      
       if (activeFilters.price_min !== null) {
         params.append('min_price', activeFilters.price_min?.toString() || '0');
       }

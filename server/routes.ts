@@ -1033,12 +1033,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.location_country = req.query.location_country as string;
       }
       
+      // Handle price filters
       if (req.query.min_price && req.query.min_price !== '0' && req.query.min_price !== 'null') {
         filters.price_min = parseInt(req.query.min_price as string);
       }
       
       if (req.query.max_price && req.query.max_price !== '999999999' && req.query.max_price !== 'null') {
         filters.price_max = parseInt(req.query.max_price as string);
+      }
+      
+      // Handle age filters
+      if (req.query.min_age && req.query.min_age !== '0' && req.query.min_age !== 'null') {
+        filters.age_min = parseInt(req.query.min_age as string);
+      }
+      
+      if (req.query.max_age && req.query.max_age !== '999' && req.query.max_age !== 'null') {
+        filters.age_max = parseInt(req.query.max_age as string);
+      }
+      
+      // Handle height filters
+      if (req.query.min_height && req.query.min_height !== '0' && req.query.min_height !== 'null') {
+        filters.height_min = parseFloat(req.query.min_height as string);
+      }
+      
+      if (req.query.max_height && req.query.max_height !== '999' && req.query.max_height !== 'null') {
+        filters.height_max = parseFloat(req.query.max_height as string);
       }
       
       console.log("GET /api/horses - parsed filters:", filters);
