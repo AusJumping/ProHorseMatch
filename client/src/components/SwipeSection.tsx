@@ -123,7 +123,7 @@ const SwipeSection = ({
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Bookmark className="text-white w-20 h-20" />
+                  <Heart className="text-white w-20 h-20" />
                   <p className="text-white text-xl font-bold mt-4 text-center">Added to Favorites!</p>
                 </motion.div>
               </div>
@@ -160,9 +160,9 @@ const SwipeSection = ({
           size="icon"
           className="like-button w-14 h-14 rounded-full"
           onClick={handleButtonLike}
-          style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
+          style={{ backgroundColor: "#e74c3c", borderColor: "#e74c3c" }}
         >
-          <Bookmark className="h-6 w-6" />
+          <Heart className="h-6 w-6" />
         </Button>
         <Button
           size="icon"
