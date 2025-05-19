@@ -211,8 +211,8 @@ const MobileNavbar = () => {
         </SheetContent>
       </Sheet>
       
-      {/* Bottom Navigation Bar */}
-      <nav className="bg-white border-t border-neutral-200 py-2 px-4">
+      {/* Bottom Navigation Bar - Fixed at bottom */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 py-2 px-4 z-40">
         <div className="flex justify-around items-center">
           <button 
             className="flex flex-col items-center text-neutral-500"
@@ -290,6 +290,9 @@ const MobileNavbar = () => {
           </button>
         </div>
       </nav>
+      
+      {/* Add padding at the bottom to prevent content from being hidden behind the fixed navbar */}
+      <div className="h-16"></div>
     </>
   );
 };
