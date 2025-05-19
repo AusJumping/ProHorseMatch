@@ -527,7 +527,7 @@ const FilterPanel = ({
           
           {/* Height Range */}
           <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Height Range (1 hand = 10.16 cm)</Label>
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Height Range</Label>
             <div className="flex gap-3">
               <div className="flex-1">
                 <Select 
@@ -543,15 +543,15 @@ const FilterPanel = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">No Min</SelectItem>
-                    <SelectItem value="12.0">12.0 hh (122 cm)</SelectItem>
-                    <SelectItem value="12.1">12.1 hh (123 cm)</SelectItem>
-                    <SelectItem value="12.2">12.2 hh (124 cm)</SelectItem>
-                    <SelectItem value="12.3">12.3 hh (126 cm)</SelectItem>
-                    <SelectItem value="13.0">13.0 hh (132 cm)</SelectItem>
-                    <SelectItem value="13.1">13.1 hh (133 cm)</SelectItem>
-                    <SelectItem value="13.2">13.2 hh (135 cm)</SelectItem>
-                    <SelectItem value="13.3">13.3 hh (137 cm)</SelectItem>
-                    <SelectItem value="14.0">14.0 hh (142 cm)</SelectItem>
+                    <SelectItem value="12.0">12.0 hh (121.9 cm)</SelectItem>
+                    <SelectItem value="12.1">12.1 hh (122.6 cm)</SelectItem>
+                    <SelectItem value="12.2">12.2 hh (123.2 cm)</SelectItem>
+                    <SelectItem value="12.3">12.3 hh (123.8 cm)</SelectItem>
+                    <SelectItem value="13.0">13.0 hh (132.1 cm)</SelectItem>
+                    <SelectItem value="13.1">13.1 hh (132.7 cm)</SelectItem>
+                    <SelectItem value="13.2">13.2 hh (133.4 cm)</SelectItem>
+                    <SelectItem value="13.3">13.3 hh (134.0 cm)</SelectItem>
+                    <SelectItem value="14.0">14.0 hh (142.2 cm)</SelectItem>
                     <SelectItem value="14.1">14.1 hh (144 cm)</SelectItem>
                     <SelectItem value="14.2">14.2 hh (145 cm)</SelectItem>
                     <SelectItem value="14.3">14.3 hh (147 cm)</SelectItem>
