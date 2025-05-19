@@ -47,7 +47,6 @@ const sexes = ["Mare", "Gelding", "Stallion"];
 const breeds = [
   "Warmblood", 
   "Thoroughbred", 
-  "OTT Thoroughbred", 
   "Other"
 ];
 const characteristics = [
