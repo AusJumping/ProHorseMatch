@@ -1718,6 +1718,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update user with beta subscription info
       await storage.updateUserSubscription(userId, {
+        stripe_subscription_id: `beta-${Date.now()}`, // Create a unique ID for the beta subscription
         subscription_status: 'active',
         subscription_plan: planId,
         subscription_end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days from now
