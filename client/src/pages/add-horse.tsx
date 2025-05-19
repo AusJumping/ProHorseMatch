@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { useMobile } from "@/hooks/use-mobile";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useToast } from "@/hooks/use-toast";
 
 // Form schema for adding a horse
 const horseFormSchema = z.object({
@@ -103,6 +104,11 @@ export default function AddHorse() {
   });
 
   // This function is called when the form is submitted
+  // Function to check if price range is valid
+  const isPriceRangeValid = (min: number, max: number) => {
+    return max >= min;
+  };
+  
   const onSubmit = async (data: HorseFormValues) => {
     console.log("Form submission started", data);
     
@@ -490,20 +496,24 @@ export default function AddHorse() {
                                   name="price_max"
                                   render={({ field }) => (
                                     <FormItem>
-                                      <Select onValueChange={value => {
-                                        const newValue = parseInt(value);
-                                        const currentMinPrice = form.getValues("price_min");
-                                        
-                                        // Only update if the new max price is greater than or equal to min price
-                                        if (newValue >= currentMinPrice) {
-                                          field.onChange(newValue);
-                                        } else {
-                                          // Show validation error
-                                          setTimeout(() => {
-                                            form.trigger("price_max");
-                                          }, 100);
-                                        }
-                                      }} defaultValue={field.value?.toString()}>
+                                      <Select 
+                                        value={field.value?.toString()}
+                                        onValueChange={value => {
+                                          const newValue = parseInt(value);
+                                          const currentMinPrice = form.getValues("price_min");
+                                          
+                                          // Only update if the new max price is greater than or equal to min price
+                                          if (newValue >= currentMinPrice) {
+                                            field.onChange(newValue);
+                                          } else {
+                                            // Show an error toast instead of a form validation error
+                                            toast({
+                                              title: "Invalid price range",
+                                              description: "Maximum price must be greater than or equal to minimum price",
+                                              variant: "destructive"
+                                            });
+                                          }
+                                        }}>
                                         <FormControl>
                                           <SelectTrigger>
                                             <SelectValue placeholder="Maximum Price" />
