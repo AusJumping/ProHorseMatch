@@ -29,7 +29,7 @@ const betaPlans = [
       'List unlimited horses for sale',
       'Detailed horse profile creation',
       'Connect with interested buyers',
-      'Notification options',
+      'Unlimited searches',
       'No payment details required'
     ],
     buttonText: 'Get Started'
