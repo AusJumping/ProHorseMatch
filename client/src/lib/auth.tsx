@@ -18,7 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   isError: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User | null>;
   logout: () => Promise<void>;
   register: (userData: any, userType: string) => Promise<void>;
 }
@@ -108,8 +108,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Navigate to home page using client-side routing
-      navigate('/');
+      // Return the user data so the calling function can check subscription status
+      return userData;
     } catch (error) {
       console.error('Login error:', error);
       throw error;

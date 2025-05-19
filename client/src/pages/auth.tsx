@@ -95,14 +95,19 @@ export default function Auth() {
       console.log("Submitting login form with data:", data);
       
       // Use the auth context login function
-      await login(data.email, data.password);
+      const userData = await login(data.email, data.password);
       
       // No success toast - removed per user request
       
-      // Navigate directly to the subscription page after login
-      // Use a small delay to ensure the auth state is properly set
+      // Check if the user has an active subscription before redirecting
       setTimeout(() => {
-        navigate("/subscription");
+        // Check userData to see if user has active subscription
+        if (userData && userData.subscription_status === 'active') {
+          navigate("/browse");
+        } else {
+          // Otherwise, go to subscription page to select a plan
+          navigate("/subscription");
+        }
       }, 300);
     } catch (error: any) {
       toast({
