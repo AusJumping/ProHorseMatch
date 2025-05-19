@@ -626,7 +626,17 @@ export class MemStorage implements IStorage {
       videos: update.videos || horse.videos
     };
     
-    const updatedHorse = { ...horse, ...updateData };
+    // Create a clean copy of the horse without the legacy price field
+    let updatedHorse = { ...horse, ...updateData };
+    
+    // If we have price_min and price_max fields, remove any legacy price field
+    if ('price_min' in updateData && 'price_max' in updateData && 'price' in updatedHorse) {
+      // Create a new object without the price field
+      const { price, ...horseWithoutPrice } = updatedHorse;
+      updatedHorse = horseWithoutPrice;
+      console.log("Removed legacy 'price' field from horse to prevent conflicts with price_min/price_max");
+    }
+    
     this.horses.set(id, updatedHorse);
     
     // Make sure global storage is synced with our local state
