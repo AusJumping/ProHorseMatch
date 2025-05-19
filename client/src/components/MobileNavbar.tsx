@@ -99,7 +99,7 @@ const MobileNavbar = () => {
           </>
         )}
         
-        {isAuthenticated && !isOwner && (
+        {isAuthenticated && (
           <SheetClose asChild>
             <Button 
               variant="ghost" 
@@ -107,7 +107,7 @@ const MobileNavbar = () => {
               onClick={() => navigate("/favorites")}
             >
               <Heart className="mr-3 h-5 w-5" />
-              <span>Favorites</span>
+              <span>My Favourites</span>
             </Button>
           </SheetClose>
         )}
