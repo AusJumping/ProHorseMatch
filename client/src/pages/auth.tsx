@@ -105,7 +105,7 @@ export default function Auth() {
       // Navigate directly to the browse page after login
       // Use a small delay to ensure the auth state is properly set
       setTimeout(() => {
-        navigate("/browse");
+        navigate("/filter");
       }, 300);
     } catch (error: any) {
       toast({

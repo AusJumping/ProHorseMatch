@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import FilterPanel from "@/components/FilterPanel";
 import { Button } from "@/components/ui/button";
-import { Horse } from "@shared/schema";
-import { useQuery } from "@tanstack/react-query";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { Horse } from "@shared/schema";
 
 interface Filter {
   disciplines: string[];
@@ -26,9 +26,9 @@ export default function FilterPage() {
   const [, navigate] = useLocation();
   const { currentCurrency } = useCurrency();
   const [activeFilters, setActiveFilters] = useState<Filter>({
-    disciplines: [],
-    breeds: [],
-    sexes: [],
+    disciplines: [],  // Empty array for All Disciplines
+    breeds: [],       // Empty array for All Breeds
+    sexes: [],        // Empty array for Any Sex
     location_country: null,
     location_radius_km: null,
     age_min: null,
@@ -40,8 +40,8 @@ export default function FilterPage() {
     currency: currentCurrency,
   });
 
-  // Query for horses count with filters
-  const { data: horses } = useQuery<Horse[]>({
+  // Query for horse count with filters
+  const { data: horses, isLoading } = useQuery<Horse[]>({
     queryKey: ['/api/horses', activeFilters],
     queryFn: async () => {
       // Build query parameters from activeFilters
@@ -90,7 +90,6 @@ export default function FilterPage() {
       // Always send currency
       params.append('currency', activeFilters.currency || currentCurrency);
       
-      // Fetch horses with filters
       const response = await fetch(`/api/horses?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch horses');
@@ -98,8 +97,7 @@ export default function FilterPage() {
       return response.json();
     }
   });
-  
-  // Handle filter application
+
   const handleApplyFilters = (newFilters: Filter) => {
     setActiveFilters(newFilters);
     
@@ -148,8 +146,8 @@ export default function FilterPage() {
     
     params.append('currency', newFilters.currency || currentCurrency);
     
-    // Redirect to browse page with filters applied
-    window.location.href = `/browse?${params.toString()}`;
+    // Navigate to browse page with filters
+    navigate(`/browse?${params.toString()}`);
   };
 
   return (
@@ -158,7 +156,7 @@ export default function FilterPage() {
       showBackButton
       onBackClick={() => navigate("/browse")}
     >
-      <div className="w-full max-w-lg mx-auto px-4">
+      <div className="max-w-md mx-auto px-4">
         <FilterPanel 
           isOpen={true} 
           onClose={() => {}} 
@@ -171,9 +169,9 @@ export default function FilterPage() {
           <Button
             variant="default"
             className="w-full max-w-[200px] py-3"
-            onClick={() => window.location.href = "/browse"}
+            onClick={() => navigate(`/browse`)}
           >
-            Show Results ({horses?.length || 0})
+            Show Results ({isLoading ? '...' : horses?.length || 0})
           </Button>
         </div>
       </div>

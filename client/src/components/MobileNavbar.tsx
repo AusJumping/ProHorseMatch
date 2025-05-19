@@ -64,8 +64,8 @@ const MobileNavbar = () => {
             className={`justify-start h-12 ${location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
             onClick={() => {
               setTimeout(() => {
-                window.location.href = "/browse";
-              }, 100);
+                navigate("/filter");
+              }, 300);
             }}
           >
             <Home className="mr-3 h-5 w-5" />
@@ -197,8 +197,8 @@ const MobileNavbar = () => {
               className="justify-start h-12"
               onClick={() => {
                 setTimeout(() => {
-                  window.location.href = "/auth";
-                }, 100);
+                  navigate("/auth");
+                }, 300);
               }}
             >
               <LogOut className="mr-3 h-5 w-5 transform rotate-180" />
@@ -235,7 +235,9 @@ const MobileNavbar = () => {
               location === "/browse" ? "text-primary" : "text-neutral-500"
             }`}
             onClick={() => {
-              window.location.href = "/browse";
+              setTimeout(() => {
+                navigate("/filter");
+              }, 300);
             }}
           >
             <Home className="h-5 w-5" />
