@@ -130,6 +130,7 @@ const FilterPanel = ({
   };
 
   const handleApply = () => {
+    console.log("Apply button clicked with filters:", filters);
     onApplyFilters(filters);
     // Close the filter panel on mobile after applying filters
     if (isMobile) {

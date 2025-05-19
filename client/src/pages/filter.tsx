@@ -169,7 +169,57 @@ export default function FilterPage() {
           <Button
             variant="default"
             className="w-full max-w-[200px] py-3"
-            onClick={() => navigate(`/browse`)}
+            onClick={() => {
+              console.log("Navigating to browse with filters:", activeFilters);
+              
+              // Build query parameters from activeFilters
+              const params = new URLSearchParams();
+              
+              if (activeFilters.disciplines && activeFilters.disciplines.length > 0) {
+                activeFilters.disciplines.forEach((d: string) => params.append('disciplines', d));
+              }
+              
+              if (activeFilters.breeds && activeFilters.breeds.length > 0) {
+                activeFilters.breeds.forEach((b: string) => params.append('breeds', b));
+              }
+              
+              if (activeFilters.sexes && activeFilters.sexes.length > 0) {
+                activeFilters.sexes.forEach((s: string) => params.append('sexes', s));
+              }
+              
+              if (activeFilters.location_country) {
+                params.append('location_country', activeFilters.location_country);
+              }
+              
+              if (activeFilters.age_min !== null) {
+                params.append('min_age', activeFilters.age_min?.toString() || '0');
+              }
+              
+              if (activeFilters.age_max !== null) {
+                params.append('max_age', activeFilters.age_max?.toString() || '100');
+              }
+              
+              if (activeFilters.height_min !== null) {
+                params.append('min_height', activeFilters.height_min?.toString() || '0');
+              }
+              
+              if (activeFilters.height_max !== null) {
+                params.append('max_height', activeFilters.height_max?.toString() || '20');
+              }
+              
+              if (activeFilters.price_min !== null) {
+                params.append('min_price', activeFilters.price_min?.toString() || '0');
+              }
+              
+              if (activeFilters.price_max !== null) {
+                params.append('max_price', activeFilters.price_max?.toString() || '1000000');
+              }
+              
+              // Always send currency
+              params.append('currency', activeFilters.currency || currentCurrency);
+              
+              navigate(`/browse?${params.toString()}`);
+            }}
           >
             Show Results ({isLoading ? '...' : horses?.length || 0})
           </Button>
