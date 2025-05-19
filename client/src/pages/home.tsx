@@ -35,11 +35,12 @@ interface Filter {
 export default function Home() {
   const isMobile = useMobile();
   const isTouchDevice = useIsTouchDevice();
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const { currentCurrency } = useCurrency();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
     breeds: [],       // Empty array for All Breeds
@@ -54,9 +55,16 @@ export default function Home() {
     price_max: null,
     currency: "AUD",
   });
+  
+  // Check if this is the discover route to show filter by default
+  useEffect(() => {
+    if (location === "/discover") {
+      setShowFilter(true);
+    }
+  }, [location]);
 
   // Debug log
-  console.log("Home - Auth state:", { isAuthenticated, is_selling: user?.is_selling, is_searching: user?.is_searching });
+  console.log("Home - Auth state:", { isAuthenticated, is_selling: user?.is_selling, is_searching: user?.is_searching, location, showFilter });
 
   const [swipingIndex, setSwipingIndex] = useState(0);
 
@@ -352,9 +360,9 @@ export default function Home() {
       onFilterClick={toggleFilterPanel}
     >
       <div className="flex w-full h-full">
-        {/* Filter sidebar - desktop only */}
-        {!isMobile && (
-          <div className="w-72 bg-white rounded-xl p-5 shadow-sm h-fit mr-6">
+        {/* Filter sidebar - desktop only or when on discover route */}
+        {(!isMobile || (location === "/discover" && showFilter)) && (
+          <div className={`${isMobile ? 'w-full' : 'w-72'} bg-white rounded-xl p-5 shadow-sm h-fit ${isMobile ? 'mb-6' : 'mr-6'}`}>
             <FilterPanel 
               isOpen={true} 
               onClose={() => {}} 
