@@ -25,7 +25,8 @@
         "dam": "Snow Mum",
         "dam_sire": "Snow Granddad",
         "characteristics": [
-          "Careful"
+          "Careful",
+          "Scope"
         ],
         "price_min": 20000,
         "price_max": 250000,
@@ -275,7 +276,8 @@
         "is_selling": true,
         "is_searching": true,
         "name": null,
-        "created_at": "2025-05-15T10:50:29.882Z"
+        "created_at": "2025-05-15T10:50:29.882Z",
+        "stripe_customer_id": "cus_SL2W1lkYR609pn"
       }
     ],
     [
