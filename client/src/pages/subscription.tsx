@@ -217,15 +217,34 @@ export default function SubscriptionPage() {
   // Create subscription mutation
   const { mutate: createSubscription, isPending: isCreatingSubscription } = useMutation({
     mutationFn: async (planId: string) => {
-      const response = await apiRequest('POST', '/api/subscription', { planId });
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create subscription');
+      try {
+        const response = await apiRequest('POST', '/api/subscription', { planId });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create subscription');
+        }
+        
+        // Handle the response properly
+        const responseData = await response.json();
+        return responseData;
+      } catch (error: any) {
+        // If there's a JSON parsing error, handle it gracefully
+        if (error.message && error.message.includes('json')) {
+          throw new Error('Invalid server response. Please try again.');
+        }
+        throw error;
       }
-      return response.json();
     },
     onSuccess: (data) => {
-      setClientSecret(data.clientSecret);
+      if (data && data.clientSecret) {
+        setClientSecret(data.clientSecret);
+      } else {
+        toast({
+          title: 'Subscription Error',
+          description: 'Missing client secret in response',
+          variant: 'destructive',
+        });
+      }
     },
     onError: (error: Error) => {
       toast({
