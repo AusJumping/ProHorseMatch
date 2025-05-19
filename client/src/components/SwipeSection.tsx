@@ -146,7 +146,7 @@ const SwipeSection = ({
           className="pass-button w-14 h-14 rounded-full"
           onClick={handleButtonDislike}
         >
-          <X className="h-6 w-6" />
+          <X className="h-8 w-8" />
         </Button>
         <Button
           size="icon"
@@ -154,7 +154,7 @@ const SwipeSection = ({
           className="info-button w-14 h-14 rounded-full"
           onClick={() => onShowMore(currentHorse.id)}
         >
-          <Info className="h-6 w-6" />
+          <Info className="h-8 w-8" />
         </Button>
         <Button
           size="icon"
@@ -162,15 +162,15 @@ const SwipeSection = ({
           onClick={handleButtonLike}
           style={{ backgroundColor: "#e74c3c", borderColor: "#e74c3c" }}
         >
-          <Heart className="h-6 w-6" />
+          <Heart className="h-8 w-8" />
         </Button>
         <Button
           size="icon"
           variant="outline"
-          className="next-button w-12 h-12 rounded-full"
+          className="next-button w-14 h-14 rounded-full"
           onClick={handleNextHorse}
         >
-          <ArrowRight className="h-5 w-5" />
+          <ArrowRight className="h-8 w-8" />
         </Button>
       </div>
     </div>
