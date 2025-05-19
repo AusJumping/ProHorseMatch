@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
+import { X, Menu } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMobile } from "@/hooks/use-mobile";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { CurrencySelector } from "@/components/CurrencySelector";
+import MobileNavbar from "@/components/MobileNavbar";
 
 interface FilterPanelProps {
   isOpen: boolean;
@@ -163,13 +164,17 @@ const FilterPanel = ({
         <div className="flex justify-between items-center mb-5">
           <h2 className="font-accent font-bold text-xl">Find Horse</h2>
           {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={onClose}
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="mobileMenu">
+              <div className="menuButton">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={onClose}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
         
