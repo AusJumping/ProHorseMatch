@@ -261,11 +261,14 @@ export default function SubscriptionPage() {
     
     // For beta plans, just show a success message without payment details
     if (planId.startsWith('beta-')) {
-      // Skip the backend call for beta plans and just show success message
+      // Check if we're on a mobile device for auto-dismissing toast
+      const isMobile = window.innerWidth <= 768;
+      
+      // Show toast with auto-dismiss on mobile
       toast({
         title: 'Beta Subscription Activated',
         description: 'You are now subscribed to the Beta version of this site. This subscription is free and is for a limited time only. Enjoy exploring the features of this app. We hope you find your perfect match!',
-        duration: 6000, // Longer duration for this important message
+        duration: isMobile ? 2000 : 6000, // 2 seconds on mobile, 6 seconds on desktop
       });
       
       // Always redirect to filter page regardless of subscription type
