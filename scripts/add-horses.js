@@ -1,10 +1,9 @@
-// Script to update all horses to belong to owner@example.com account (ID: 4)
-// Also correctly recreates the horses with all necessary details
+// Script to add horses to the owner@example.com account (ID: 3)
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-console.log('Starting horse ownership update...');
+console.log('Starting to add horses...');
 
 // Get current directory in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -20,12 +19,12 @@ if (!fs.existsSync(dataPath) || !fs.existsSync(persistentStoragePath)) {
   process.exit(1);
 }
 
-// Define the horses with names from your request
+// Define horses with the correct owner ID (3)
 const predefinedHorses = [
   {
     id: 9,
     name: 'Snow',
-    owner_id: 4,
+    owner_id: 3,
     location_country: 'Australia',
     location_radius_km: 100,
     price_min: 30000,
@@ -46,12 +45,12 @@ const predefinedHorses = [
     photos: [
       'https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
     ],
-    created_at: new Date()
+    created_at: new Date().toISOString()
   },
   {
     id: 10,
     name: 'Flame',
-    owner_id: 4,
+    owner_id: 3,
     location_country: 'Australia',
     location_radius_km: 100,
     price_min: 55000,
@@ -72,12 +71,12 @@ const predefinedHorses = [
     photos: [
       'https://images.unsplash.com/photo-1566251037378-5e04e3bec343?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
     ],
-    created_at: new Date()
+    created_at: new Date().toISOString()
   },
   {
     id: 11,
     name: 'Misty',
-    owner_id: 4,
+    owner_id: 3,
     location_country: 'Australia',
     location_radius_km: 100,
     price_min: 25000,
@@ -98,12 +97,12 @@ const predefinedHorses = [
     photos: [
       'https://images.unsplash.com/photo-1551884831-bbf3cdc6469e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
     ],
-    created_at: new Date()
+    created_at: new Date().toISOString()
   },
   {
     id: 12,
     name: 'Midnight',
-    owner_id: 4,
+    owner_id: 3,
     location_country: 'Australia',
     location_radius_km: 100,
     price_min: 15000,
@@ -124,12 +123,12 @@ const predefinedHorses = [
     photos: [
       'https://images.unsplash.com/photo-1569470144685-470246e54ac4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
     ],
-    created_at: new Date()
+    created_at: new Date().toISOString()
   },
   {
     id: 13,
     name: 'Goldie',
-    owner_id: 4,
+    owner_id: 3,
     location_country: 'Australia',
     location_radius_km: 100,
     price_min: 40000,
@@ -150,7 +149,7 @@ const predefinedHorses = [
     photos: [
       'https://images.unsplash.com/photo-1553284965-fa99c8749230?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'
     ],
-    created_at: new Date()
+    created_at: new Date().toISOString()
   }
 ];
 
@@ -160,22 +159,23 @@ try {
   
   console.log('Current database loaded.');
   
-  // Update horses map with our predefined horses
-  const horsesMap = {};
-  predefinedHorses.forEach(horse => {
-    horsesMap[horse.id] = horse;
-  });
+  // Create horses map if it doesn't exist
+  if (!dbData.horses) {
+    dbData.horses = {};
+  }
   
-  // Replace horses object with our updated one
-  dbData.horses = horsesMap;
+  // Add our predefined horses
+  predefinedHorses.forEach(horse => {
+    dbData.horses[horse.id] = horse;
+  });
   
   // Save the updated database
   fs.writeFileSync(persistentStoragePath, JSON.stringify(dbData, null, 2));
   
-  console.log(`Successfully added ${predefinedHorses.length} horses to owner@example.com (ID: 4).`);
+  console.log(`Successfully added ${predefinedHorses.length} horses to the database for owner ID: 3`);
 } catch (error) {
-  console.error('Error updating horse ownership:', error);
+  console.error('Error adding horses:', error);
   process.exit(1);
 }
 
-console.log('Horse ownership update completed successfully.');
+console.log('Horse addition completed successfully.');
