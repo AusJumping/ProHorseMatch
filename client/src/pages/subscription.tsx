@@ -334,6 +334,22 @@ export default function SubscriptionPage() {
     });
   };
   
+  // Render the auth notification when not logged in
+  const renderAuthNotification = () => {
+    return (
+      <div className="my-10 p-8 bg-muted rounded-lg max-w-xl mx-auto text-center">
+        <h3 className="text-2xl font-accent font-semibold mb-4">Login Required</h3>
+        <p className="mb-6">You need to be logged in to manage your subscription. Please log in to continue.</p>
+        <Button 
+          onClick={() => navigate('/auth?redirect=/subscription')}
+          className="bg-accent hover:bg-accent/90 text-accent-foreground"
+        >
+          Log In Now
+        </Button>
+      </div>
+    );
+  };
+  
   if (isLoadingSubscription) {
     return (
       <Layout pageTitle="Subscription Plans">
@@ -441,6 +457,9 @@ export default function SubscriptionPage() {
             <h1 className="text-3xl font-accent font-bold mb-2">Beta Access</h1>
             <p className="text-muted-foreground">Enjoy full access FREE during our Beta launch period</p>
           </div>
+          
+          {/* Show login notification when not authenticated */}
+          {!isAuthenticated && renderAuthNotification()}
           
           {!clientSecret ? (
             <>
