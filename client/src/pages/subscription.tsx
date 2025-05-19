@@ -261,32 +261,19 @@ export default function SubscriptionPage() {
     
     // For beta plans, just show a success message without payment details
     if (planId.startsWith('beta-')) {
-      // Update user with beta subscription details without payment
-      apiRequest('POST', '/api/subscription/beta', { planId })
-        .then(() => {
-          queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
-          queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-          
-          toast({
-            title: 'Beta Subscription Activated',
-            description: 'You are now subscribed to the Beta version of this site. This subscription is free and is for a limited time only. Enjoy exploring the features of this app. We hope you find your perfect match!',
-            duration: 6000, // Longer duration for this important message
-          });
-          
-          // Redirect to appropriate page based on subscription type
-          if (planId === 'beta-seller') {
-            setTimeout(() => navigate('/my-horses'), 2000);
-          } else {
-            setTimeout(() => navigate('/filter'), 2000);
-          }
-        })
-        .catch(error => {
-          toast({
-            title: 'Subscription Error',
-            description: error.message,
-            variant: 'destructive',
-          });
-        });
+      // Skip the backend call for beta plans and just show success message
+      toast({
+        title: 'Beta Subscription Activated',
+        description: 'You are now subscribed to the Beta version of this site. This subscription is free and is for a limited time only. Enjoy exploring the features of this app. We hope you find your perfect match!',
+        duration: 6000, // Longer duration for this important message
+      });
+      
+      // Redirect to appropriate page based on subscription type
+      if (planId === 'beta-seller') {
+        setTimeout(() => navigate('/my-horses'), 2000);
+      } else {
+        setTimeout(() => navigate('/filter'), 2000);
+      }
     } else {
       // For paid plans, create a payment intent
       createSubscription(planId);
