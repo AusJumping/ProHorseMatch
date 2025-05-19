@@ -85,6 +85,27 @@
 }
 
 @layer components {
+  /* Menu rollover styling */
+  .hover\:bg-accent:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+  }
+  
+  .hover\:bg-sidebar-accent:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+  }
+  
+  .hover\:bg-neutral-50:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+  }
+  
+  .hover\:bg-neutral-100:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+  }
+  
   .horse-card {
     height: calc(100vh - 180px);
     max-height: 700px;
