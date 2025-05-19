@@ -2035,9 +2035,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Get the amount based on the plan or use a default
+      let amount = 1999; // Default to $19.99 if plan not found
+      if (planId === 'basic') {
+        amount = 1999; // $19.99
+      } else if (planId === 'pro') {
+        amount = 4999; // $49.99
+      } else if (planId === 'premium') {
+        amount = 9999; // $99.99
+      }
+      
       // Create a subscription
       const paymentIntent = await stripe.paymentIntents.create({
-        amount: priceAmounts[planId],
+        amount: amount,
         currency: 'usd',
         customer: customerId,
         setup_future_usage: 'off_session',
