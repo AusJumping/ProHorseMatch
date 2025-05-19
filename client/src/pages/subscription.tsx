@@ -363,32 +363,8 @@ export default function SubscriptionPage() {
     });
   };
   
-  // Show login message if user is not authenticated
-  if (!user && !isLoadingAuth) {
-    return (
-      <Layout pageTitle="Subscription Plans">
-        <div className="container mx-auto py-20 max-w-md">
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-accent">Login Required</CardTitle>
-              <CardDescription>
-                You need to be logged in to access subscription features
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>Please log in to view subscription options and manage your subscription.</p>
-              <Button onClick={() => navigate('/login')} className="w-full">
-                Log In
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/')} className="w-full">
-                Return to Home
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </Layout>
-    );
-  }
+  // We don't show a login required message here anymore since this can be the first page
+  // users land on. Instead, we'll prompt for login when they try to take an action.
   
   if (isLoadingAuth || isLoadingSubscription) {
     return (
