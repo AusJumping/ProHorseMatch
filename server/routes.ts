@@ -1007,6 +1007,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("GET /api/horses - query params:", req.query);
       
+      // Debug entire query object to see all parameters
+      const allParams = Object.entries(req.query).map(([key, value]) => `${key}: ${value}`).join(', ');
+      console.log("All query parameters:", allParams);
+      
       // Convert query params to filters
       const filters: any = {};
       
@@ -1042,22 +1046,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.price_max = parseInt(req.query.max_price as string);
       }
       
-      // Handle age filters
-      if (req.query.min_age && req.query.min_age !== '0' && req.query.min_age !== 'null') {
-        filters.age_min = parseInt(req.query.min_age as string);
+      // Handle age filters - convert from string directly
+      if (req.query.max_age) {
+        const maxAge = parseInt(req.query.max_age as string);
+        if (!isNaN(maxAge) && maxAge !== 999) {
+          filters.age_max = maxAge;
+          console.log("Setting age_max filter to:", maxAge);
+        }
       }
       
-      if (req.query.max_age && req.query.max_age !== '999' && req.query.max_age !== 'null') {
-        filters.age_max = parseInt(req.query.max_age as string);
+      if (req.query.min_age) {
+        const minAge = parseInt(req.query.min_age as string);
+        if (!isNaN(minAge) && minAge !== 0) {
+          filters.age_min = minAge;
+          console.log("Setting age_min filter to:", minAge);
+        }
       }
       
-      // Handle height filters
-      if (req.query.min_height && req.query.min_height !== '0' && req.query.min_height !== 'null') {
-        filters.height_min = parseFloat(req.query.min_height as string);
+      // Handle height filters - convert from string directly
+      if (req.query.max_height) {
+        const maxHeight = parseFloat(req.query.max_height as string);
+        if (!isNaN(maxHeight) && maxHeight !== 999) {
+          filters.height_max = maxHeight;
+          console.log("Setting height_max filter to:", maxHeight);
+        }
       }
       
-      if (req.query.max_height && req.query.max_height !== '999' && req.query.max_height !== 'null') {
-        filters.height_max = parseFloat(req.query.max_height as string);
+      if (req.query.min_height) {
+        const minHeight = parseFloat(req.query.min_height as string);
+        if (!isNaN(minHeight) && minHeight !== 0) {
+          filters.height_min = minHeight;
+          console.log("Setting height_min filter to:", minHeight);
+        }
       }
       
       console.log("GET /api/horses - parsed filters:", filters);
