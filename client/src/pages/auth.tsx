@@ -99,10 +99,10 @@ export default function Auth() {
       
       // No success toast - removed per user request
       
-      // Navigate directly to the browse page after login
+      // Navigate directly to the subscription page after login
       // Use a small delay to ensure the auth state is properly set
       setTimeout(() => {
-        navigate("/filter");
+        navigate("/subscription");
       }, 300);
     } catch (error: any) {
       toast({
@@ -134,8 +134,8 @@ export default function Auth() {
         description: "Welcome to ProHorseMatch",
       });
       
-      // Force full page reload to ensure auth state is picked up
-      window.location.href = "/";
+      // Redirect to subscription page after registration
+      window.location.href = "/subscription";
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -166,8 +166,8 @@ export default function Auth() {
         description: "Welcome to ProHorseMatch",
       });
       
-      // Force full page reload to ensure auth state is picked up
-      window.location.href = "/add-horse";
+      // Redirect to subscription page after registration
+      window.location.href = "/subscription";
     } catch (error: any) {
       toast({
         title: "Registration failed",
