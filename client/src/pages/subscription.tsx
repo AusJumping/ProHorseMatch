@@ -218,20 +218,41 @@ export default function SubscriptionPage() {
   const { mutate: createSubscription, isPending: isCreatingSubscription } = useMutation({
     mutationFn: async (planId: string) => {
       try {
-        const response = await apiRequest('POST', '/api/subscription', { planId });
+        // Use fetch directly for better control over the response
+        const response = await fetch('/api/subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planId }),
+          credentials: 'include'
+        });
+        
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to create subscription');
+          const errorText = await response.text();
+          let errorMessage = 'Failed to create subscription';
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.message) errorMessage = errorData.message;
+          } catch (e) {
+            // If JSON parsing fails, use the raw error text
+            if (errorText) errorMessage = errorText;
+          }
+          throw new Error(errorMessage);
         }
         
-        // Handle the response properly
-        const responseData = await response.json();
-        return responseData;
-      } catch (error: any) {
-        // If there's a JSON parsing error, handle it gracefully
-        if (error.message && error.message.includes('json')) {
-          throw new Error('Invalid server response. Please try again.');
+        // Parse response as JSON
+        const responseText = await response.text();
+        if (!responseText) {
+          return { success: true }; // Empty but successful response
         }
+        
+        try {
+          return JSON.parse(responseText);
+        } catch (e) {
+          console.error('Failed to parse subscription response:', e);
+          throw new Error('Invalid response format from server');
+        }
+      } catch (error: any) {
+        console.error('Subscription error:', error);
         throw error;
       }
     },
@@ -284,6 +305,17 @@ export default function SubscriptionPage() {
   
   // When plan is selected, create a subscription intent
   const handleSelectPlan = (planId: string) => {
+    // Check if user is logged in
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to continue with subscription",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
+    
     setSelectedPlan(planId);
     createSubscription(planId);
   };
