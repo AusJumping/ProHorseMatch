@@ -97,11 +97,6 @@ export default function Auth() {
       // Use the auth context login function
       await login(data.email, data.password);
       
-      toast({
-        title: "Login successful",
-        description: "Welcome back to ProHorseMatch",
-      });
-      
       // Navigate directly to the browse page after login
       // Use a small delay to ensure the auth state is properly set
       setTimeout(() => {
