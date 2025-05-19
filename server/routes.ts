@@ -918,7 +918,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dam: "Diamant's Girl",
           dam_sire: "Diamant de Semilly",
           characteristics: ["Brave", "Careful"],
-          price: 35000,
+          price_min: 30000,
+          price_max: 35000,
           currency: "AUD",
           description: "Talented jumper with a great temperament",
           photos: [
@@ -943,7 +944,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           dam: "Dancing Queen",
           dam_sire: "De Niro",
           characteristics: ["Expressive", "Powerful"],
-          price: 45000,
+          price_min: 40000,
+          price_max: 45000,
           currency: "AUD",
           description: "Impressive young dressage prospect with three excellent gaits",
           photos: [
