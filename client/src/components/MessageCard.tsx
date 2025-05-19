@@ -79,7 +79,7 @@ const MessageCard = ({ conversation, onClick, isActive = false }: MessageCardPro
         <div className="flex items-center justify-between">
           <p className="text-sm text-neutral-700 line-clamp-1">
             {conversation.horse 
-              ? `${conversation.horse.age}yo ${conversation.horse.breeds[0]} ${conversation.horse.sex}`
+              ? `${conversation.horse.name}`
               : "No horse details"}
           </p>
           {conversation.unread_count > 0 && (
