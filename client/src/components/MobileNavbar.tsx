@@ -226,9 +226,8 @@ const MobileNavbar = () => {
             className={`flex flex-col items-center ${
               location === "/browse" ? "text-primary" : "text-neutral-500"
             }`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/browse");
+            onClick={() => {
+              window.location.href = "/browse";
             }}
           >
             <Home className="h-5 w-5" />
