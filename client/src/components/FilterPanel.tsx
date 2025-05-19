@@ -623,7 +623,6 @@ const FilterPanel = ({
                 <SelectItem value="all_breeds">All Breeds</SelectItem>
                 <SelectItem value="Warmblood">Warmblood</SelectItem>
                 <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
-                <SelectItem value="OTT Thoroughbred">OTT Thoroughbred</SelectItem>
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>

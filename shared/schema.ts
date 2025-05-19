@@ -176,7 +176,6 @@ export const sexes = ["Mare", "Gelding", "Stallion"];
 export const breeds = [
   "Warmblood", 
   "Thoroughbred", 
-  "OTT Thoroughbred", 
   "Other"
 ];
 export const characteristics = [
