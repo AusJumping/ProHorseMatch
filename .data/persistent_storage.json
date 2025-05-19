@@ -49,7 +49,7 @@
           "Eventing"
         ],
         "levels": [
-          "5*"
+          "3*"
         ],
         "breeds": [
           "OTT Thoroughbred"
@@ -65,7 +65,7 @@
           "Bold"
         ],
         "price_min": 40000,
-        "price_max": 400000,
+        "price_max": 2000000,
         "currency": "AUD",
         "description": "",
         "photos": [
@@ -141,8 +141,8 @@
         "characteristics": [
           "Honest"
         ],
-        "price_min": 70000,
-        "price_max": 90000,
+        "price_min": 80000,
+        "price_max": 200000,
         "currency": "AUD",
         "description": "Very nice horse",
         "photos": [

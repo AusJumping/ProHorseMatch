@@ -29,19 +29,35 @@ export default function MyHorses() {
     enabled: !!user
   });
   
-  // Effect to detect when returning back to this page
+  // Always refetch data when this page mounts to ensure fresh data
+  useEffect(() => {
+    const fetchFreshData = async () => {
+      console.log('My Horses page mounted, ensuring fresh data');
+      // First invalidate all horse-related queries to clear cache
+      await queryClient.invalidateQueries({ queryKey: ["/api/horses"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/my-horses"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/horses/owner"] });
+      
+      // Force a refetch to get fresh data from server
+      await refetch();
+      console.log('My Horses data refreshed');
+    };
+    
+    fetchFreshData();
+  }, [queryClient, refetch]);
+  
+  // Additional effect to detect when returning back to this page
   useEffect(() => {
     // If we've changed location (returned to this page) from edit-horse
     if (prevLocation.includes('/edit-horse/') && location === '/my-horses') {
       console.log('Returned from edit page, refreshing horse data');
-      // Invalidate and refetch horses
-      queryClient.invalidateQueries({ queryKey: ["/api/my-horses"] });
+      // Force immediate refetch to get latest data
       refetch();
     }
     
     // Update previous location
     setPrevLocation(location);
-  }, [location, prevLocation, queryClient, refetch]);
+  }, [location, prevLocation, refetch]);
 
   const handleEdit = (horseId: number) => {
     // Navigate to the edit horse page
