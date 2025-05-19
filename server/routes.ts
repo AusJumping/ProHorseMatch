@@ -2035,6 +2035,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check if the plan ID is valid
+      if (!priceAmounts[planId]) {
+        return res.status(400).json({ 
+          message: "Invalid plan ID",
+          error: `Plan ID '${planId}' not found in available plans` 
+        });
+      }
+      
       // Create a subscription
       const paymentIntent = await stripe.paymentIntents.create({
         amount: priceAmounts[planId],
