@@ -85,7 +85,21 @@
 }
 
 @layer components {
-  /* Menu rollover styling */
+  /* Sidebar and navigation menu styling */
+  /* Global rollover styling for sidebar and navigation menus */
+  .sidebar nav a:hover,
+  .sidebar button:hover,
+  .sidebar [role="menuitem"]:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+  }
+  
+  /* Specific tailwind classes targeting different menu components */
+  a:hover, button:hover, [role="menuitem"]:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+  }
+  
   .hover\:bg-accent:hover {
     background-color: #cdac6e !important;
     color: white !important;
@@ -102,6 +116,20 @@
   }
   
   .hover\:bg-neutral-100:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+  }
+  
+  /* Override focus states for consistency */
+  .focus\:bg-accent:focus {
+    background-color: #cdac6e !important;
+    color: white !important;
+  }
+  
+  /* Active menu states */
+  [data-active=true], 
+  [data-state=open],
+  .active {
     background-color: #cdac6e !important;
     color: white !important;
   }
