@@ -62,7 +62,7 @@ const Layout = ({
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className={`bg-white border-b border-neutral-200 p-4 ${isMobile ? 'pt-8' : ''}`}>
+        <header className={`bg-white border-b border-neutral-200 p-4 ${isMobile ? 'pt-12 pb-6' : ''}`}>
           <div className="flex justify-between items-center">
             <div className="flex items-center max-w-[70%]">
               {showBackButton && (
