@@ -42,6 +42,15 @@ export default function FilterPage() {
     currency: currentCurrency,
   });
 
+  // Show popup message when page loads
+  useEffect(() => {
+    toast({
+      title: "Apply filters to find your match",
+      description: "Set your preferences to discover the perfect horse for you.",
+      duration: 5000,
+    });
+  }, [toast]);
+
   // Query for horse count with filters
   const { data: horses, isLoading } = useQuery<Horse[]>({
     queryKey: ['/api/horses', activeFilters],
