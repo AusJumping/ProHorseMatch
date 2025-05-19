@@ -164,15 +164,6 @@ const FilterPanel = ({
           {!isMobile && (
             <h2 className="font-accent font-bold text-xl">Find Horse</h2>
           )}
-          {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={onClose}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          )}
         </div>
         
         {/* Filter Forms */}
