@@ -206,12 +206,9 @@ const MobileNavbar = () => {
     <>
       {/* Side Menu */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetPortal>
-          <SheetOverlay className="fixed inset-0 z-50 bg-black/80" />
-          <SheetContent side="left" className="fixed inset-y-0 left-0 z-50 h-full w-[80%] border-r bg-white p-4 shadow-lg sm:max-w-sm">
-            {renderMobileMenu()}
-          </SheetContent>
-        </SheetPortal>
+        <SheetContent side="left" className="fixed inset-y-0 left-0 z-50 h-full w-[80%] border-r bg-white p-4 shadow-lg sm:max-w-sm">
+          {renderMobileMenu()}
+        </SheetContent>
       </Sheet>
       
       {/* Bottom Navigation Bar */}
