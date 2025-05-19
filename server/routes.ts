@@ -1007,8 +1007,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("GET /api/horses - query params:", req.query);
       
-      // Debug entire query object to see all parameters
-      const allParams = Object.entries(req.query).map(([key, value]) => `${key}: ${value}`).join(', ');
+      // Log all query parameters to understand exactly what's being sent
+      const allParams = Object.entries(req.query).map(([key, value]) => `${key}: ${typeof value === 'object' ? JSON.stringify(value) : value}`).join(', ');
       console.log("All query parameters:", allParams);
       
       // Convert query params to filters

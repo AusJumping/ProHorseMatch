@@ -470,10 +470,19 @@ export class MemStorage implements IStorage {
   }
   
   async getHorsesByFilters(filters: any): Promise<Horse[]> {
+    // Enhanced debugging for filters
     console.log("MemStorage.getHorsesByFilters - filters:", JSON.stringify(filters, null, 2));
+    console.log("MemStorage.getHorsesByFilters - filter types:", 
+      Object.entries(filters).map(([k, v]) => `${k}: ${typeof v}`).join(', '));
     
     const horses = Array.from(this.horses.values());
-    console.log("MemStorage.getHorsesByFilters - all horses:", horses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+    console.log("MemStorage.getHorsesByFilters - all horses:", horses.map(h => ({ 
+      id: h.id, 
+      name: h.name, 
+      owner_id: h.owner_id,
+      age: h.age,
+      height_hands: h.height_hands
+    })));
     
     // If no filters are provided (empty object), return all horses
     if (Object.keys(filters).length === 0) {
@@ -539,13 +548,16 @@ export class MemStorage implements IStorage {
       
       // Filter by height range if specified
       if (filters.height_min !== undefined && filters.height_min !== null) {
-        if (horse.height_hands < filters.height_min) {
+        // Handle null height_hands values - consider a null height as not matching any min filter
+        if (horse.height_hands === null || horse.height_hands < filters.height_min) {
           return false;
         }
       }
       
       if (filters.height_max !== undefined && filters.height_max !== null) {
-        if (horse.height_hands > filters.height_max) {
+        // For maximum height, null heights should be included in results when filtering
+        // This lets users find horses where height isn't specified
+        if (horse.height_hands !== null && horse.height_hands > filters.height_max) {
           return false;
         }
       }
