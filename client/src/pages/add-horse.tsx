@@ -45,6 +45,12 @@ const horseFormSchema = z.object({
   additional_info: z.string().optional(),
   photos: z.array(z.string()).min(1, "At least one photo is required"),
   videos: z.array(z.string()).optional(),
+}).refine((data) => {
+  // Ensure that price_max is greater than or equal to price_min
+  return data.price_max >= data.price_min;
+}, {
+  message: "Maximum price must be greater than or equal to minimum price",
+  path: ["price_max"] // Show the error on the price_max field
 });
 
 type HorseFormValues = z.infer<typeof horseFormSchema>;
