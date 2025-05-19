@@ -62,7 +62,11 @@ const MobileNavbar = () => {
           <Button 
             variant="ghost" 
             className={`justify-start h-12 ${location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-            onClick={() => window.location.href = "/browse"}
+            onClick={() => {
+              setTimeout(() => {
+                window.location.href = "/browse";
+              }, 100);
+            }}
           >
             <Home className="mr-3 h-5 w-5" />
             <span>Discover</span>
@@ -191,7 +195,11 @@ const MobileNavbar = () => {
             <Button 
               variant="ghost" 
               className="justify-start h-12"
-              onClick={() => window.location.href = "/auth"}
+              onClick={() => {
+                setTimeout(() => {
+                  window.location.href = "/auth";
+                }, 100);
+              }}
             >
               <LogOut className="mr-3 h-5 w-5 transform rotate-180" />
               <span>Login</span>
