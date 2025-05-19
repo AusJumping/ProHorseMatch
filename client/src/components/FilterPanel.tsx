@@ -527,7 +527,7 @@ const FilterPanel = ({
           
           {/* Height Range */}
           <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Height Range</Label>
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Height Range (1 hand = 10.16 cm)</Label>
             <div className="flex gap-3">
               <div className="flex-1">
                 <Select 
