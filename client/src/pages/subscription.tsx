@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, ChevronRight, CheckCircle2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Check, CheckCircle2 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
@@ -32,8 +31,7 @@ const betaPlans = [
       'Notification options',
       'No payment details required'
     ],
-    buttonText: 'Get Started',
-    isBeta: true
+    buttonText: 'Get Started'
   },
   {
     id: 'beta-searching',
@@ -48,8 +46,7 @@ const betaPlans = [
       'Notification options',
       'No payment details required'
     ],
-    buttonText: 'Get Started',
-    isBeta: true
+    buttonText: 'Get Started'
   }
 ];
 
@@ -119,7 +116,6 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { toast } = useToast();
-  const [, navigate] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -322,7 +318,7 @@ export default function SubscriptionPage() {
     const { status, currentPeriodEnd, planId } = subscriptionData;
     // Find the plan from beta or future plans
     const allPlans = [...betaPlans, ...futurePlans];
-    const plan = allPlans.find(p => p.id === planId) || { name: 'Unknown', price: 0, features: [] };
+    const plan = allPlans.find(p => p.id === planId) || { name: 'Unknown', price: 0, features: [] as string[] };
     
     return (
       <div className="container mx-auto py-20 max-w-4xl">
@@ -388,167 +384,169 @@ export default function SubscriptionPage() {
   
   // Show subscription plans for new subscribers
   return (
-    <div className="container mx-auto py-10 max-w-6xl">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-accent font-bold mb-2">Beta Access</h1>
-        <p className="text-muted-foreground">Enjoy full access FREE during our Beta launch period</p>
-      </div>
-      
-      {!clientSecret ? (
-        <>
-          {/* Beta Plans Section */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-            {betaPlans.map((plan) => (
-              <Card key={plan.id} className="overflow-hidden flex flex-col">
-                <CardHeader className="pb-4">
-                  <CardTitle className="font-accent">{plan.name}</CardTitle>
-                  <div className="flex items-baseline mt-2">
-                    <span className="text-xl font-medium">{plan.price === 0 ? 'Free for a limited time' : `$${plan.price}/${plan.interval}`}</span>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="flex-grow">
-                  <ul className="space-y-2 mb-6">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                
-                <div className="px-6 pb-6 mt-auto">
-                  <Button 
-                    onClick={() => handleSelectPlan(plan.id)} 
-                    className="w-full"
-                  >
-                    {plan.buttonText || "Get Started"}
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-          
-          {/* Future Plans Section */}
-          <div className="text-center mb-8 mt-20">
-            <h2 className="text-2xl font-accent font-bold mb-2">Choose Your Perfect Plan</h2>
-            <p className="text-muted-foreground">When the full version goes live you will be able to select a subscription that matches your needs</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            {futurePlans.map((plan) => (
-              <Card 
-                key={plan.id} 
-                className={`overflow-hidden flex flex-col ${plan.isPopular ? 'ring-2 ring-[#cdac6e] relative' : ''}`}
-              >
-                {plan.isPopular && (
-                  <div className="absolute top-0 right-0 bg-[#cdac6e] text-white px-4 py-1 text-xs font-medium">
-                    Popular
-                  </div>
-                )}
-                <CardHeader className="pb-4">
-                  <CardTitle className="font-accent">{plan.name}</CardTitle>
-                  <div className="flex items-baseline mt-2">
-                    <span className="text-3xl font-bold">${plan.price}</span>
-                    <span className="text-sm text-muted-foreground ml-1">/{plan.interval}</span>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="flex-grow">
-                  <ul className="space-y-2 mb-6">
-                    {plan.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                
-                <div className="px-6 pb-6 mt-auto">
-                  <Button 
-                    className="w-full"
-                    variant="outline"
-                    disabled={true}
-                  >
-                    {plan.buttonText || "Coming Soon"}
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </>
-      ) : (
-        <div className="max-w-md mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-accent">Complete Your Subscription</CardTitle>
-              <CardDescription>
-                Enter your payment details to start your {betaPlans.concat(futurePlans).find(p => p.id === selectedPlan)?.name} subscription
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
-                <CheckoutForm onSuccess={handlePaymentSuccess} />
-              </Elements>
-            </CardContent>
-          </Card>
+    <div className="w-full py-10" style={{ backgroundColor: "#e4e2dd" }}>
+      <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-accent font-bold mb-2">Beta Access</h1>
+          <p className="text-muted-foreground">Enjoy full access FREE during our Beta launch period</p>
         </div>
-      )}
-      
-      {/* Donation Section */}
-      <div className="max-w-2xl mx-auto mt-20 mb-10 bg-[#e4e2dd] rounded-lg p-6 border border-[#d1cfc8]">
-        <div className="text-center">
-          <h3 className="text-xl font-accent font-semibold mb-3">Support Our Development</h3>
-          <p className="text-muted-foreground mb-6">
-            Help us make Pro Horse Match the #1 horse sale app with a one-time donation. 
-            Every contribution helps us build new features and improve the platform.
-          </p>
-          
-          <div className="flex flex-wrap justify-center gap-4 mb-6">
-            {[10, 25, 50, 100].map((amount) => (
+        
+        {!clientSecret ? (
+          <>
+            {/* Beta Plans Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+              {betaPlans.map((plan) => (
+                <Card key={plan.id} className="overflow-hidden flex flex-col">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="font-accent">{plan.name}</CardTitle>
+                    <div className="flex items-baseline mt-2">
+                      <span className="text-xl font-medium">{plan.price === 0 ? 'Free for a limited time' : `$${plan.price}/${plan.interval}`}</span>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="flex-grow">
+                    <ul className="space-y-2 mb-6">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  
+                  <div className="px-6 pb-6 mt-auto">
+                    <Button 
+                      onClick={() => handleSelectPlan(plan.id)} 
+                      className="w-full"
+                    >
+                      {plan.buttonText || "Get Started"}
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            
+            {/* Future Plans Section */}
+            <div className="text-center mb-8 mt-20">
+              <h2 className="text-2xl font-accent font-bold mb-2">Choose Your Perfect Plan</h2>
+              <p className="text-muted-foreground">When the full version goes live you will be able to select a subscription that matches your needs</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+              {futurePlans.map((plan) => (
+                <Card 
+                  key={plan.id} 
+                  className={`overflow-hidden flex flex-col ${plan.isPopular ? 'ring-2 ring-[#cdac6e] relative' : ''}`}
+                >
+                  {plan.isPopular && (
+                    <div className="absolute top-0 right-0 bg-[#cdac6e] text-white px-4 py-1 text-xs font-medium">
+                      Popular
+                    </div>
+                  )}
+                  <CardHeader className="pb-4">
+                    <CardTitle className="font-accent">{plan.name}</CardTitle>
+                    <div className="flex items-baseline mt-2">
+                      <span className="text-3xl font-bold">${plan.price}</span>
+                      <span className="text-sm text-muted-foreground ml-1">/{plan.interval}</span>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="flex-grow">
+                    <ul className="space-y-2 mb-6">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  
+                  <div className="px-6 pb-6 mt-auto">
+                    <Button 
+                      className="w-full"
+                      variant="outline"
+                      disabled={true}
+                    >
+                      {plan.buttonText || "Coming Soon"}
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="max-w-md mx-auto">
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-accent">Complete Your Subscription</CardTitle>
+                <CardDescription>
+                  Enter your payment details to start your subscription
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
+                  <CheckoutForm onSuccess={handlePaymentSuccess} />
+                </Elements>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+        
+        {/* Donation Section */}
+        <div className="max-w-2xl mx-auto mt-20 mb-10 bg-white rounded-lg p-6 border border-[#d1cfc8]">
+          <div className="text-center">
+            <h3 className="text-xl font-accent font-semibold mb-3">Support Our Development</h3>
+            <p className="text-muted-foreground mb-6">
+              Help us make Pro Horse Match the #1 horse sale app with a one-time donation. 
+              Every contribution helps us build new features and improve the platform.
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-4 mb-6">
+              {[10, 25, 50, 100].map((amount) => (
+                <Button 
+                  key={amount}
+                  variant="outline" 
+                  className="min-w-[80px] bg-white hover:bg-[#cdac6e] hover:text-white border-[#d1cfc8]"
+                  onClick={() => handleDonation(amount)}
+                  disabled={isDonating}
+                >
+                  ${amount}
+                </Button>
+              ))}
               <Button 
-                key={amount}
                 variant="outline" 
-                className="min-w-[80px] bg-white hover:bg-[#cdac6e] hover:text-white border-[#d1cfc8]"
-                onClick={() => handleDonation(amount)}
+                className="min-w-[80px] bg-white hover:bg-primary hover:text-white border-amber-300"
+                onClick={() => setShowCustomAmount(true)}
                 disabled={isDonating}
               >
-                ${amount}
+                Custom
               </Button>
-            ))}
-            <Button 
-              variant="outline" 
-              className="min-w-[80px] bg-white hover:bg-primary hover:text-white border-amber-300"
-              onClick={() => setShowCustomAmount(true)}
-              disabled={isDonating}
-            >
-              Custom
-            </Button>
-          </div>
-          
-          {showCustomAmount && (
-            <div className="max-w-xs mx-auto mb-6">
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="Enter amount"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={customAmount}
-                  onChange={(e) => setCustomAmount(Number(e.target.value))}
-                  min={1}
-                />
-                <Button 
-                  variant="default" 
-                  onClick={() => handleDonation(customAmount)}
-                  disabled={isDonating || customAmount <= 0}
-                >
-                  Donate
-                </Button>
-              </div>
             </div>
-          )}
+            
+            {showCustomAmount && (
+              <div className="max-w-xs mx-auto mb-6">
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Enter amount"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={customAmount}
+                    onChange={(e) => setCustomAmount(Number(e.target.value))}
+                    min={1}
+                  />
+                  <Button 
+                    variant="default" 
+                    onClick={() => handleDonation(customAmount)}
+                    disabled={isDonating || customAmount <= 0}
+                  >
+                    Donate
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
