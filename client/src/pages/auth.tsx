@@ -102,8 +102,11 @@ export default function Auth() {
         description: "Welcome back to ProHorseMatch",
       });
       
-      // Navigate to browse page (home) after successful login
-      window.location.href = "/browse";
+      // Navigate directly to the browse page after login
+      // Use a small delay to ensure the auth state is properly set
+      setTimeout(() => {
+        navigate("/browse");
+      }, 300);
     } catch (error: any) {
       toast({
         title: "Login failed",
