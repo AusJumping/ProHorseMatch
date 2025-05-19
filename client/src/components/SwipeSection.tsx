@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from "react";
-import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 import HorseCard from "./HorseCard";
 import { Button } from "@/components/ui/button";
-import { Heart, X, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, X, Info } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -23,35 +22,29 @@ const SwipeSection = ({
   onDislike,
   onShowMore,
 }: SwipeSectionProps) => {
-  const [exitX, setExitX] = useState<number | null>(null);
-  const dragX = useMotionValue(0);
-  const rotate = useTransform(dragX, [-200, 0, 200], [-10, 0, 10]);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [localIndex, setLocalIndex] = useState(activeIndex);
+  const currentHorse = horses[localIndex];
 
-  const currentHorse = horses[activeIndex];
+  const goToNextHorse = () => {
+    if (localIndex < horses.length - 1) {
+      setLocalIndex(localIndex + 1);
+    }
+  };
 
-  useEffect(() => {
-    setExitX(null);
-  }, [activeIndex]);
-
-  const handleDragEnd = (event: any, info: any) => {
-    if (info.offset.x > 100) {
-      setExitX(200);
-      onLike(currentHorse.id);
-    } else if (info.offset.x < -100) {
-      setExitX(-200);
-      onDislike(currentHorse.id);
+  const goToPrevHorse = () => {
+    if (localIndex > 0) {
+      setLocalIndex(localIndex - 1);
     }
   };
 
   const handleButtonLike = () => {
-    setExitX(200);
     onLike(currentHorse.id);
+    goToNextHorse();
   };
 
   const handleButtonDislike = () => {
-    setExitX(-200);
     onDislike(currentHorse.id);
+    goToNextHorse();
   };
 
   if (isLoading) {
@@ -79,58 +72,60 @@ const SwipeSection = ({
     );
   }
 
-  if (activeIndex >= horses.length) {
+  if (localIndex >= horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
         <h3 className="text-xl font-display font-bold mb-4">No more horses</h3>
         <p className="text-neutral-600 mb-6">
           You've seen all the horses matching your criteria
         </p>
-        <Button onClick={() => window.location.reload()}>Start Over</Button>
+        <Button onClick={() => setLocalIndex(0)}>Start Over</Button>
       </div>
     );
   }
 
   return (
     <div className="w-full max-w-lg mx-auto">
-      <div className="relative">
-        <AnimatePresence>
-          <motion.div
-            ref={cardRef}
-            key={currentHorse.id}
-            style={{
-              x: dragX,
-              rotate: rotate,
-            }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            onDragEnd={handleDragEnd}
-            animate={exitX !== null ? { x: exitX } : undefined}
-            transition={{ type: "spring", damping: 20, stiffness: 100 }}
-            className="absolute top-0 left-0 right-0 z-10"
-          >
-            <HorseCard 
-              horse={currentHorse} 
-              onShowMore={onShowMore} 
-              onLike={onLike}
-              showFavoriteButton={true}
-            />
-          </motion.div>
-        </AnimatePresence>
+      {/* Navigation indicators */}
+      <div className="mb-2 text-center text-xs text-gray-500">
+        Horse {localIndex + 1} of {horses.length}
+      </div>
 
-        {/* Backup card (shows the next horse) */}
-        {horses[activeIndex + 1] && (
-          <div className="absolute top-0 left-0 right-0 z-0">
-            <HorseCard 
-              horse={horses[activeIndex + 1]} 
-              onShowMore={onShowMore}
-            />
-          </div>
+      {/* Horse card with navigation buttons */}
+      <div className="relative mb-4">
+        <HorseCard 
+          horse={currentHorse} 
+          onShowMore={onShowMore} 
+          onLike={onLike}
+          showFavoriteButton={true}
+        />
+        
+        {/* Navigation buttons */}
+        {localIndex > 0 && (
+          <Button 
+            variant="secondary" 
+            size="icon" 
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md z-20"
+            onClick={goToPrevHorse}
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+        )}
+        
+        {localIndex < horses.length - 1 && (
+          <Button 
+            variant="secondary" 
+            size="icon" 
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md z-20"
+            onClick={goToNextHorse}
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
         )}
       </div>
 
-      {/* Swipe Buttons */}
-      <div className="swipe-buttons flex justify-center gap-4 mt-5">
+      {/* Action Buttons */}
+      <div className="flex justify-center gap-4 mt-5">
         <Button
           size="icon"
           className="pass-button w-14 h-14 rounded-full"
