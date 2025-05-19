@@ -17,16 +17,15 @@
   --primary-foreground: 0 0% 100%;
   --secondary: 36 37% 41%;
   --secondary-foreground: 0 0% 100%;
-  /* Gold brand color: #cdac6e */
-  --accent: 41 53% 62%;
+  --accent: 43 68% 59%;
   --accent-foreground: 45 10% 17%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 60 9.1% 97.8%;
   --success: 0 0% 17%;
-  --ring: 41 53% 62%; /* Using gold for focus rings too */
+  --ring: 0 0% 17%;
   --chart-1: 0 0% 17%;
   --chart-2: 36 37% 41%;
-  --chart-3: 41 53% 62%; /* Updated chart color to match accent */
+  --chart-3: 43 68% 59%;
   --chart-4: 214 80% 56%;
   --chart-5: 262 80% 55%;
   --radius: 0.5rem;
@@ -47,9 +46,8 @@
   --primary-foreground: 0 0% 98%;
   --secondary: 36 37% 41%;
   --secondary-foreground: 0 0% 98%;
-  /* Gold brand color in dark mode too */
-  --accent: 41 53% 62%;
-  --accent-foreground: 0 0% 10%;
+  --accent: 43 68% 59%;
+  --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 0 0% 98%;
   --success: 142 70% 45%;
@@ -87,21 +85,7 @@
 }
 
 @layer components {
-  /* Sidebar and navigation menu styling */
-  /* Global rollover styling for sidebar and navigation menus */
-  .sidebar nav a:hover,
-  .sidebar button:hover,
-  .sidebar [role="menuitem"]:hover {
-    background-color: #cdac6e !important;
-    color: white !important;
-  }
-  
-  /* Specific tailwind classes targeting different menu components */
-  a:hover, button:hover, [role="menuitem"]:hover {
-    background-color: #cdac6e !important;
-    color: white !important;
-  }
-  
+  /* Menu rollover styling */
   .hover\:bg-accent:hover {
     background-color: #cdac6e !important;
     color: white !important;
@@ -118,20 +102,6 @@
   }
   
   .hover\:bg-neutral-100:hover {
-    background-color: #cdac6e !important;
-    color: white !important;
-  }
-  
-  /* Override focus states for consistency */
-  .focus\:bg-accent:focus {
-    background-color: #cdac6e !important;
-    color: white !important;
-  }
-  
-  /* Active menu states */
-  [data-active=true], 
-  [data-state=open],
-  .active {
     background-color: #cdac6e !important;
     color: white !important;
   }

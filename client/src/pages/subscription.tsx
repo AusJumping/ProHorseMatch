@@ -207,27 +207,9 @@ export default function SubscriptionPage() {
     retry: false,
   });
   
-  // Authentication state
-  const { data: userData, isLoading: isLoadingAuth } = useQuery({
-    queryKey: ['/api/auth/me'],
-    retry: false,
-  });
-  
-  const isAuthenticated = !!userData;
-  
   // Create subscription mutation
   const { mutate: createSubscription, isPending: isCreatingSubscription } = useMutation({
     mutationFn: async (planId: string) => {
-      if (!isAuthenticated) {
-        // If not authenticated, redirect to login
-        toast({
-          title: 'Authentication Required',
-          description: 'Please log in to subscribe to a plan',
-        });
-        navigate('/auth?redirect=/subscription');
-        throw new Error('Authentication required');
-      }
-      
       const response = await apiRequest('POST', '/api/subscription', { planId });
       if (!response.ok) {
         const errorData = await response.json();
@@ -239,13 +221,11 @@ export default function SubscriptionPage() {
       setClientSecret(data.clientSecret);
     },
     onError: (error: Error) => {
-      if (error.message !== 'Authentication required') {
-        toast({
-          title: 'Subscription Error',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
+      toast({
+        title: 'Subscription Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     },
   });
   
@@ -276,17 +256,8 @@ export default function SubscriptionPage() {
     },
   });
   
-  // When plan is selected, create a subscription intent or redirect to login
+  // When plan is selected, create a subscription intent
   const handleSelectPlan = (planId: string) => {
-    if (!isAuthenticated) {
-      toast({
-        title: 'Login Required',
-        description: 'Please log in to subscribe to a plan',
-      });
-      navigate('/auth?redirect=/subscription');
-      return;
-    }
-    
     setSelectedPlan(planId);
     createSubscription(planId);
   };
@@ -334,22 +305,6 @@ export default function SubscriptionPage() {
     });
   };
   
-  // Render the auth notification when not logged in
-  const renderAuthNotification = () => {
-    return (
-      <div className="my-10 p-8 bg-muted rounded-lg max-w-xl mx-auto text-center">
-        <h3 className="text-2xl font-accent font-semibold mb-4">Login Required</h3>
-        <p className="mb-6">You need to be logged in to manage your subscription. Please log in to continue.</p>
-        <Button 
-          onClick={() => navigate('/auth?redirect=/subscription')}
-          className="bg-accent hover:bg-accent/90 text-accent-foreground"
-        >
-          Log In Now
-        </Button>
-      </div>
-    );
-  };
-  
   if (isLoadingSubscription) {
     return (
       <Layout pageTitle="Subscription Plans">
@@ -361,25 +316,9 @@ export default function SubscriptionPage() {
     );
   }
   
-  // Show current subscription if the user has one and is authenticated
-  interface SubscriptionData {
-    hasSubscription: boolean;
-    status: string;
-    currentPeriodEnd: number;
-    planId: string;
-  }
-  
-  if (isAuthenticated && 
-      subscriptionData && 
-      typeof subscriptionData === 'object' && 
-      'hasSubscription' in subscriptionData && 
-      (subscriptionData as SubscriptionData).hasSubscription) {
-    const { status, currentPeriodEnd, planId } = subscriptionData as {
-      hasSubscription: boolean;
-      status: string;
-      currentPeriodEnd: number;
-      planId: string;
-    };
+  // Show current subscription if the user has one
+  if (subscriptionData?.hasSubscription) {
+    const { status, currentPeriodEnd, planId } = subscriptionData;
     // Find the plan from beta or future plans
     const allPlans = [...betaPlans, ...futurePlans];
     const plan = allPlans.find(p => p.id === planId) || { name: 'Unknown', price: 0, features: [] as string[] };
@@ -457,9 +396,6 @@ export default function SubscriptionPage() {
             <h1 className="text-3xl font-accent font-bold mb-2">Beta Access</h1>
             <p className="text-muted-foreground">Enjoy full access FREE during our Beta launch period</p>
           </div>
-          
-          {/* Show login notification when not authenticated */}
-          {!isAuthenticated && renderAuthNotification()}
           
           {!clientSecret ? (
             <>
