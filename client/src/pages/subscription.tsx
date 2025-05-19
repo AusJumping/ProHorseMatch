@@ -255,12 +255,16 @@ export default function SubscriptionPage() {
     },
   });
   
-  // When plan is selected, handle beta or paid subscriptions accordingly
-  const handleSelectPlan = (planId: string) => {
-    setSelectedPlan(planId);
-    
-    // For beta plans, just show a success message without payment details
-    if (planId.startsWith('beta-')) {
+  // Beta subscription activation mutation
+  const { mutate: activateBetaSubscription, isPending: isActivatingBeta } = useMutation({
+    mutationFn: async (planId: string) => {
+      return await apiRequest('POST', '/api/subscription/beta', { planId });
+    },
+    onSuccess: () => {
+      // Invalidate queries to refresh subscription data
+      queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      
       // Check if we're on a mobile device for auto-dismissing toast
       const isMobile = window.innerWidth <= 768;
       
@@ -273,6 +277,23 @@ export default function SubscriptionPage() {
       
       // Always redirect to filter page regardless of subscription type
       setTimeout(() => navigate('/filter'), 2000);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Subscription Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // When plan is selected, handle beta or paid subscriptions accordingly
+  const handleSelectPlan = (planId: string) => {
+    setSelectedPlan(planId);
+    
+    // For beta plans, activate the subscription with the API
+    if (planId.startsWith('beta-')) {
+      activateBetaSubscription(planId);
     } else {
       // For paid plans, create a payment intent
       createSubscription(planId);
