@@ -162,7 +162,7 @@ const FilterPanel = ({
           : 'h-full'}
       `}>
         <div className="flex justify-between items-center mb-5">
-          <h2 className="font-accent font-bold text-xl">Find Horse</h2>
+          <h2 className="font-accent font-bold text-xl">Search</h2>
           {isMobile && (
             <div className="mobileMenu">
               <MobileNavbar />
