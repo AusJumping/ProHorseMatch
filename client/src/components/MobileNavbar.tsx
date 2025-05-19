@@ -214,94 +214,15 @@ const MobileNavbar = () => {
     <>
       {/* Side Menu */}
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="left" className="fixed inset-y-0 left-0 z-50 h-full w-[80%] border-r bg-white p-4 shadow-lg sm:max-w-sm">
+        <SheetTrigger asChild>
+          <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Menu">
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="right" className="fixed inset-y-0 right-0 z-50 h-full w-[80%] border-l bg-white p-4 shadow-lg sm:max-w-sm">
           {renderMobileMenu()}
         </SheetContent>
       </Sheet>
-      
-      {/* Bottom Navigation Bar - Fixed at bottom */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 py-2 px-4 z-40">
-        <div className="flex justify-around items-center">
-          <button 
-            className="flex flex-col items-center text-neutral-500"
-            onClick={() => setOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-            <span className="text-xs mt-1 font-medium">Menu</span>
-          </button>
-          
-          <button 
-            className={`flex flex-col items-center ${
-              location === "/browse" ? "text-primary" : "text-neutral-500"
-            }`}
-            onClick={() => {
-              setTimeout(() => {
-                navigate("/filter");
-              }, 300);
-            }}
-          >
-            <Home className="h-5 w-5" />
-            <span className="text-xs mt-1 font-medium">Discover</span>
-          </button>
-          
-          {isOwner ? (
-            <button 
-              className={`flex flex-col items-center ${
-                location === "/my-horses" ? "text-primary" : "text-neutral-500"
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/my-horses");
-              }}
-            >
-              <List className="h-5 w-5" />
-              <span className="text-xs mt-1">My Horses</span>
-            </button>
-          ) : (
-            <button 
-              className={`flex flex-col items-center ${
-                location === "/favorites" ? "text-primary" : "text-neutral-500"
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/favorites");
-              }}
-            >
-              <Heart className="h-5 w-5" />
-              <span className="text-xs mt-1">Favorites</span>
-            </button>
-          )}
-          
-          <button 
-            className={`flex flex-col items-center ${
-              location === "/messages" ? "text-primary" : "text-neutral-500"
-            }`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/messages");
-            }}
-          >
-            <MessageSquare className="h-5 w-5" />
-            <span className="text-xs mt-1">Messages</span>
-          </button>
-          
-          <button 
-            className={`flex flex-col items-center ${
-              location === "/profile" ? "text-primary" : "text-neutral-500"
-            }`}
-            onClick={(e) => {
-              e.preventDefault();
-              navigate("/profile");
-            }}
-          >
-            <User className="h-5 w-5" />
-            <span className="text-xs mt-1">Profile</span>
-          </button>
-        </div>
-      </nav>
-      
-      {/* Add padding at the bottom to prevent content from being hidden behind the fixed navbar */}
-      <div className="h-16"></div>
     </>
   );
 };

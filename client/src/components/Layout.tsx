@@ -43,7 +43,7 @@ const Layout = ({
     window.location.reload();
   };
 
-  const isOwner = user?.type === "owner";
+  const isOwner = user?.is_selling;
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -105,6 +105,11 @@ const Layout = ({
                   <Filter size={18} />
                 </Button>
               )}
+              
+              {/* Mobile Menu Button */}
+              {isMobile && (
+                <MobileNavbar />
+              )}
             </div>
 
             {/* Desktop Header Content */}
@@ -152,9 +157,6 @@ const Layout = ({
         <main className="flex-1 p-4 md:p-6 overflow-auto">
           {children}
         </main>
-
-        {/* Mobile Navbar */}
-        {isMobile && <MobileNavbar />}
       </div>
     </div>
   );
