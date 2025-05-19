@@ -62,7 +62,7 @@ const MobileNavbar = () => {
           <Button 
             variant="ghost" 
             className={`justify-start h-12 ${location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-            onClick={() => window.location.href = "/browse"}
+            onClick={() => window.location.href = "/discover"}
           >
             <Home className="mr-3 h-5 w-5" />
             <span>Discover</span>
