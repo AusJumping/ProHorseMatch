@@ -207,9 +207,27 @@ export default function SubscriptionPage() {
     retry: false,
   });
   
+  // Authentication state
+  const { data: userData, isLoading: isLoadingAuth } = useQuery({
+    queryKey: ['/api/auth/me'],
+    retry: false,
+  });
+  
+  const isAuthenticated = !!userData;
+  
   // Create subscription mutation
   const { mutate: createSubscription, isPending: isCreatingSubscription } = useMutation({
     mutationFn: async (planId: string) => {
+      if (!isAuthenticated) {
+        // If not authenticated, redirect to login
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to subscribe to a plan',
+        });
+        navigate('/auth?redirect=/subscription');
+        throw new Error('Authentication required');
+      }
+      
       const response = await apiRequest('POST', '/api/subscription', { planId });
       if (!response.ok) {
         const errorData = await response.json();
@@ -221,11 +239,13 @@ export default function SubscriptionPage() {
       setClientSecret(data.clientSecret);
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Subscription Error',
-        description: error.message,
-        variant: 'destructive',
-      });
+      if (error.message !== 'Authentication required') {
+        toast({
+          title: 'Subscription Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+      }
     },
   });
   
@@ -256,8 +276,17 @@ export default function SubscriptionPage() {
     },
   });
   
-  // When plan is selected, create a subscription intent
+  // When plan is selected, create a subscription intent or redirect to login
   const handleSelectPlan = (planId: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: 'Login Required',
+        description: 'Please log in to subscribe to a plan',
+      });
+      navigate('/auth?redirect=/subscription');
+      return;
+    }
+    
     setSelectedPlan(planId);
     createSubscription(planId);
   };
@@ -316,9 +345,25 @@ export default function SubscriptionPage() {
     );
   }
   
-  // Show current subscription if the user has one
-  if (subscriptionData?.hasSubscription) {
-    const { status, currentPeriodEnd, planId } = subscriptionData;
+  // Show current subscription if the user has one and is authenticated
+  interface SubscriptionData {
+    hasSubscription: boolean;
+    status: string;
+    currentPeriodEnd: number;
+    planId: string;
+  }
+  
+  if (isAuthenticated && 
+      subscriptionData && 
+      typeof subscriptionData === 'object' && 
+      'hasSubscription' in subscriptionData && 
+      (subscriptionData as SubscriptionData).hasSubscription) {
+    const { status, currentPeriodEnd, planId } = subscriptionData as {
+      hasSubscription: boolean;
+      status: string;
+      currentPeriodEnd: number;
+      planId: string;
+    };
     // Find the plan from beta or future plans
     const allPlans = [...betaPlans, ...futurePlans];
     const plan = allPlans.find(p => p.id === planId) || { name: 'Unknown', price: 0, features: [] as string[] };
