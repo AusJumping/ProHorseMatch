@@ -165,15 +165,7 @@ const FilterPanel = ({
           <h2 className="font-accent font-bold text-xl">Find Horse</h2>
           {isMobile && (
             <div className="mobileMenu">
-              <div className="menuButton">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={onClose}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
+              <MobileNavbar />
             </div>
           )}
         </div>
