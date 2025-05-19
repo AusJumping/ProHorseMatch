@@ -101,11 +101,13 @@ export default function Auth() {
       
       // Check if the user has an active subscription before redirecting
       setTimeout(() => {
-        // Check userData to see if user has active subscription
+        // If user has an active subscription, go directly to browse page
         if (userData && userData.subscription_status === 'active') {
+          console.log("User has active subscription, redirecting to browse");
           navigate("/browse");
         } else {
-          // Otherwise, go to subscription page to select a plan
+          // Otherwise, redirect to subscription page
+          console.log("User has no active subscription, redirecting to subscription page");
           navigate("/subscription");
         }
       }, 300);

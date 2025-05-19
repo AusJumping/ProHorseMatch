@@ -11,6 +11,11 @@ interface User {
   is_searching: boolean;
   is_selling: boolean;
   profile?: any;
+  stripe_customer_id?: string;
+  stripe_subscription_id?: string;
+  subscription_status?: string;
+  subscription_plan?: string;
+  subscription_end_date?: string;
 }
 
 interface AuthContextType {
@@ -28,7 +33,7 @@ const AuthContext = createContext<AuthContextType>({
   isLoading: true,
   isError: false,
   isAuthenticated: false,
-  login: async () => {},
+  login: async () => null,
   logout: async () => {},
   register: async () => {},
 });
@@ -83,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Debug log for auth state
   console.log("Auth state:", { isAuthenticated: !!user });
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User | null> => {
     try {
       console.log("Attempting login for:", { email });
       
@@ -99,7 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(error.message || 'Login failed');
       }
 
-      const userData = await response.json();
+      const userData = await response.json() as User;
       console.log("Login successful, user data:", userData);
       
       // Store user in localStorage for quick recovery if session issues occur
@@ -113,7 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Login error:', error);
       throw error;
-    }
+    }}
   };
 
   const logout = async () => {
