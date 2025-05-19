@@ -349,10 +349,10 @@
         "id": 2,
         "customer_id": 4,
         "owner_id": 3,
-        "horse_id": 11,
-        "content": "Yes, Misty is one of our best horses with a gentle temperament, perfect for jumping.",
+        "horse_id": 10,
+        "content": "Chestnut",
         "sender_type": "owner",
-        "created_at": "2025-05-18T07:01:35.271Z",
+        "created_at": "2025-05-19T04:26:41.765Z",
         "is_read": true
       }
     ],
@@ -417,9 +417,9 @@
         "customer_id": 4,
         "owner_id": 3,
         "horse_id": 10,
-        "last_message_id": 1,
-        "last_message_time": "2025-05-19T04:25:58.123Z",
-        "unread_count": 2
+        "last_message_id": 2,
+        "last_message_time": "2025-05-19T04:26:41.765Z",
+        "unread_count": 3
       }
     ],
     [
