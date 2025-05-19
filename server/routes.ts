@@ -2003,16 +2003,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Price IDs for each plan
       const prices = {
-        basic: 'price_basic', // Replace with actual Stripe price IDs
-        pro: 'price_pro',
-        premium: 'price_premium'
+        'beta-seller': 'price_beta_seller',
+        'beta-searching': 'price_beta_searching',
+        'searching': 'price_searching',
+        'professional': 'price_professional',
+        'elite': 'price_elite',
+        // Legacy IDs for backward compatibility
+        'basic': 'price_basic',
+        'pro': 'price_pro',
+        'premium': 'price_premium'
       };
       
-      // For testing without real price IDs
+      // For testing without real price IDs - match frontend plan IDs
       const priceAmounts = {
-        basic: 1999, // $19.99
-        pro: 4999,   // $49.99
-        premium: 9999 // $99.99
+        'beta-seller': 0,      // Free during beta
+        'beta-searching': 0,   // Free during beta
+        'searching': 695,      // $6.95
+        'professional': 3995,  // $39.95
+        'elite': 9995,         // $99.95
+        // Legacy amounts for backward compatibility
+        'basic': 1999,         // $19.99
+        'pro': 4999,           // $49.99
+        'premium': 9999        // $99.99
       };
       
       // Create or retrieve a customer
