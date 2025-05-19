@@ -83,7 +83,7 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
           />
         </div>
       ) : (
-        <div className="w-full h-full relative">
+        <div className="w-full h-full relative bg-gray-100">
           {safeMedia.length > 0 ? (
             <img 
               className="w-full h-full object-cover object-center"
@@ -92,7 +92,7 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
               style={{ objectPosition: "center 35%" }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+            <div className="w-full h-full flex items-center justify-center">
               <p className="text-gray-500">No images available</p>
             </div>
           )}
