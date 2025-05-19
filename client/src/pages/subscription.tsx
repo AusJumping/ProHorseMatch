@@ -284,7 +284,15 @@ export default function SubscriptionPage() {
   const handlePaymentSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
     queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-    navigate('/subscription/success');
+    
+    toast({
+      title: 'Subscription Active',
+      description: 'Your subscription has been successfully activated!',
+      duration: 5000,
+    });
+    
+    // Redirect to filter page after successful payment
+    setTimeout(() => navigate('/filter'), 2000);
   };
   
   // Handle donation
