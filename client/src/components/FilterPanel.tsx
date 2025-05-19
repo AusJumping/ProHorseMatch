@@ -157,19 +157,26 @@ const FilterPanel = ({
     <div className={`${isMobile ? 'fixed inset-0 bg-black bg-opacity-50 z-20' : ''}`}>
       <div className={`
         ${isMobile 
-          ? 'absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-5 max-h-[90vh] overflow-y-auto pb-28' 
+          ? 'absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-5 max-h-[85vh] overflow-y-auto' 
           : 'h-full'}
       `}>
         <div className="flex justify-between items-center mb-5">
-          {!isMobile && (
-            <h2 className="font-accent font-bold text-xl">Find Horse</h2>
+          <h2 className="font-accent font-bold text-xl">Find Horse</h2>
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={onClose}
+            >
+              <X className="h-5 w-5" />
+            </Button>
           )}
         </div>
         
         {/* Filter Forms */}
         <div className="space-y-6">
           {/* Disciplines */}
-          <div className="filter-group mt-8">
+          <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Disciplines</Label>
             <Select 
               value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"} 

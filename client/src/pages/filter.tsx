@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import Layout from "@/components/Layout";
 import FilterPanel from "@/components/FilterPanel";
 import { Button } from "@/components/ui/button";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { useToast } from "@/hooks/use-toast";
 import { Horse } from "@shared/schema";
 
 interface Filter {
@@ -26,7 +25,6 @@ interface Filter {
 export default function FilterPage() {
   const [, navigate] = useLocation();
   const { currentCurrency } = useCurrency();
-  const { toast } = useToast();
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
     breeds: [],       // Empty array for All Breeds
@@ -41,15 +39,6 @@ export default function FilterPage() {
     price_max: null,
     currency: currentCurrency,
   });
-
-  // Show popup message when page loads
-  useEffect(() => {
-    toast({
-      title: "Apply filters to find your match",
-      description: "Set your preferences to discover the perfect horse for you.",
-      duration: 5000,
-    });
-  }, [toast]);
 
   // Query for horse count with filters
   const { data: horses, isLoading } = useQuery<Horse[]>({
