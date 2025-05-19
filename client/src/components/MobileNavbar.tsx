@@ -62,7 +62,7 @@ const MobileNavbar = () => {
           <Button 
             variant="ghost" 
             className={`justify-start h-12 ${location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/browse")}
           >
             <Home className="mr-3 h-5 w-5" />
             <span>Discover</span>
@@ -224,11 +224,11 @@ const MobileNavbar = () => {
           
           <button 
             className={`flex flex-col items-center ${
-              location === "/" ? "text-primary" : "text-neutral-500"
+              location === "/browse" ? "text-primary" : "text-neutral-500"
             }`}
             onClick={(e) => {
               e.preventDefault();
-              navigate("/");
+              navigate("/browse");
             }}
           >
             <Home className="h-5 w-5" />
