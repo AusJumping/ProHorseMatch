@@ -157,7 +157,7 @@ const FilterPanel = ({
     <div className={`${isMobile ? 'fixed inset-0 bg-black bg-opacity-50 z-20' : ''}`}>
       <div className={`
         ${isMobile 
-          ? 'absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-5 max-h-[85vh] overflow-y-auto' 
+          ? 'absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-5 max-h-[90vh] overflow-y-auto pb-28' 
           : 'h-full'}
       `}>
         <div className="flex justify-between items-center mb-5">
