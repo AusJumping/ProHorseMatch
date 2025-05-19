@@ -61,24 +61,21 @@ const Layout = ({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Fixed space for mobile URLs bar */}
-        {isMobile && <div className="h-16 bg-neutral-100"></div>}
-        
         {/* Header */}
-        <header className={`bg-white border-b border-neutral-200 p-4 ${isMobile ? 'py-6' : ''}`}>
+        <header className="bg-white border-b border-neutral-200 p-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center max-w-[70%]">
+            <div className="flex items-center">
               {showBackButton && (
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="mr-2 flex-shrink-0" 
+                  className="mr-2" 
                   onClick={handleBack}
                 >
                   <ArrowLeft size={18} />
                 </Button>
               )}
-              {pageTitle && !isMobile && <h2 className="font-accent font-bold text-xl whitespace-normal break-words pr-2">{pageTitle}</h2>}
+              {pageTitle && <h2 className="font-accent font-bold text-xl">{pageTitle}</h2>}
             </div>
 
             <div className="flex items-center gap-2">

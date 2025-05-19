@@ -143,34 +143,34 @@ const SwipeSection = ({
       <div className="flex justify-center gap-4 mt-5">
         <Button
           size="icon"
-          className="pass-button w-14 h-14 rounded-full"
+          className="pass-button w-16 h-16 rounded-full"
           onClick={handleButtonDislike}
         >
-          <X className="h-8 w-8" />
+          <X className="h-10 w-10" />
         </Button>
         <Button
           size="icon"
           variant="outline"
-          className="info-button w-14 h-14 rounded-full"
+          className="info-button w-16 h-16 rounded-full"
           onClick={() => onShowMore(currentHorse.id)}
         >
-          <Info className="h-8 w-8" />
+          <Info className="h-10 w-10" />
         </Button>
         <Button
           size="icon"
-          className="like-button w-14 h-14 rounded-full"
+          className="like-button w-16 h-16 rounded-full"
           onClick={handleButtonLike}
           style={{ backgroundColor: "#e74c3c", borderColor: "#e74c3c" }}
         >
-          <Heart className="h-8 w-8" />
+          <Heart className="h-10 w-10" />
         </Button>
         <Button
           size="icon"
           variant="outline"
-          className="next-button w-14 h-14 rounded-full"
+          className="next-button w-16 h-16 rounded-full"
           onClick={handleNextHorse}
         >
-          <ArrowRight className="h-8 w-8" />
+          <ArrowRight className="h-10 w-10" />
         </Button>
       </div>
     </div>
