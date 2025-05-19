@@ -31,7 +31,6 @@ function Router() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/browse" component={Home} />
-      <Route path="/discover" component={Home} />
       <Route path="/auth" component={Auth} />
       <Route path="/horse/:id" component={HorseDetail} />
       <Route path="/messages" component={Messages} />
