@@ -1697,6 +1697,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Handle beta subscriptions (no payment required)
+  app.post("/api/subscription/beta", isAuthenticated, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const { planId } = req.body;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      if (!planId || !planId.startsWith('beta-')) {
+        return res.status(400).json({ message: "Invalid beta plan" });
+      }
+      
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update user with beta subscription info
+      await storage.updateUserSubscription(userId, {
+        subscription_status: 'active',
+        subscription_plan: planId,
+        subscription_end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days from now
+      });
+      
+      res.json({
+        success: true,
+        message: "Beta subscription activated",
+        planId: planId
+      });
+    } catch (error: any) {
+      console.error("Error creating beta subscription:", error);
+      res.status(500).json({ 
+        message: "Failed to activate beta subscription", 
+        error: error.message 
+      });
+    }
+  });
+  
   // Get subscription status
   app.get("/api/subscription", isAuthenticated, async (req, res) => {
     try {
