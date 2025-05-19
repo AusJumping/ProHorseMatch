@@ -481,7 +481,7 @@ export default function SubscriptionPage() {
               {/* Future Plans Section */}
               <div className="text-center mb-8 mt-20">
                 <h1 className="text-3xl font-accent font-bold mb-2">Select Your Plan</h1>
-                <p className="text-muted-foreground">When the full version goes live you will be able to select a subscription that matches your needs</p>
+                <p className="text-muted-foreground">When we approach the end of the Beta phase, we will notify you well in advance via email. At that time, if you would would like to continue using the platform, simply select the subscription level below that best suits your needs.</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
