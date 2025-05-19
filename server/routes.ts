@@ -289,14 +289,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
       
-      return res.json({ 
+      // Return full user data including subscription info
+      return res.json({
         id: user.id,
         name: user.name,
         business_name: user.business_name,
         contact_name: user.contact_name,
         email: user.email,
         is_searching: user.is_searching,
-        is_selling: user.is_selling
+        is_selling: user.is_selling,
+        stripe_customer_id: user.stripe_customer_id,
+        stripe_subscription_id: user.stripe_subscription_id,
+        subscription_status: user.subscription_status,
+        subscription_plan: user.subscription_plan,
+        subscription_end_date: user.subscription_end_date
       });
     } catch (error: any) {
       console.error("Login error:", error);
