@@ -480,7 +480,7 @@ export default function SubscriptionPage() {
               
               {/* Future Plans Section */}
               <div className="text-center mb-8 mt-20">
-                <h2 className="text-2xl font-accent font-bold mb-2">Select Your Plan</h2>
+                <h1 className="text-3xl font-accent font-bold mb-2">Select Your Plan</h1>
                 <p className="text-muted-foreground">When the full version goes live you will be able to select a subscription that matches your needs</p>
               </div>
               
