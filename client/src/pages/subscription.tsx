@@ -268,12 +268,8 @@ export default function SubscriptionPage() {
         duration: 6000, // Longer duration for this important message
       });
       
-      // Redirect to appropriate page based on subscription type
-      if (planId === 'beta-seller') {
-        setTimeout(() => navigate('/my-horses'), 2000);
-      } else {
-        setTimeout(() => navigate('/filter'), 2000);
-      }
+      // Always redirect to filter page regardless of subscription type
+      setTimeout(() => navigate('/filter'), 2000);
     } else {
       // For paid plans, create a payment intent
       createSubscription(planId);
