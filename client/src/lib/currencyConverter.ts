@@ -59,8 +59,8 @@ export function formatPrice(price: number, currency: string): string {
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
   
   return formatter.format(price);

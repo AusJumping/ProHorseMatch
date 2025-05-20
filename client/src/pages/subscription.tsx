@@ -626,7 +626,7 @@ export default function SubscriptionPage() {
                           </div>
                           {currentCurrency !== 'AUD' && (
                             <span className="text-xs text-muted-foreground">
-                              Original price: A${futurePlan.currency === 'AUD' ? futurePlan.price : ''}
+                              Original price: A${futurePlan.price.toFixed(2)}
                             </span>
                           )}
                         </CardHeader>
