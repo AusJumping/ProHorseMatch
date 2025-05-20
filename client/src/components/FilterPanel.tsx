@@ -154,17 +154,16 @@ const FilterPanel = ({
     // Add additional logging for debugging
     console.log("Sending processed filters:", filtersToApply);
     
-    // For mobile devices, close the panel first to improve responsiveness
-    if (isMobile) {
-      onClose();
-    }
+    // Apply the filters immediately - on mobile, we'll handle UI later
+    // This fixes the issue where the first click was "lost" due to panel closing
+    onApplyFilters(filtersToApply);
     
-    // Apply the filters with the cleaned-up data
-    // Use a very short delay to allow the touch event to complete fully
-    // This resolves the double-click issue on mobile
-    requestAnimationFrame(() => {
-      onApplyFilters(filtersToApply);
-    });
+    // For mobile, close the panel after applying filters
+    if (isMobile) {
+      setTimeout(() => {
+        onClose();
+      }, 50);
+    }
   };
 
   const handleReset = () => {

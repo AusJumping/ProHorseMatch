@@ -57,12 +57,99 @@ export default function Home() {
     currency: "AUD",
   });
   
-  // Check if this is the discover route to show filter by default
+  // Parse URL parameters when the page loads to set initial filters
   useEffect(() => {
+    // Check if this is the discover route to show filter by default
     if (location === "/discover") {
       setShowFilter(true);
     }
-  }, [location]);
+    
+    // Parse URL search parameters to set initial filters from the URL
+    if (location.includes('?')) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const filtersFromUrl: Filter = {
+        disciplines: [],
+        breeds: [],
+        sexes: [],
+        location_country: null,
+        location_radius_km: null,
+        age_min: null,
+        age_max: null,
+        height_min: null,
+        height_max: null,
+        price_min: null,
+        price_max: null,
+        currency: currentCurrency,
+      };
+      
+      // Get all discipline values
+      urlParams.getAll('disciplines').forEach(discipline => {
+        filtersFromUrl.disciplines.push(discipline);
+      });
+      
+      // Get all breed values
+      urlParams.getAll('breeds').forEach(breed => {
+        filtersFromUrl.breeds.push(breed);
+      });
+      
+      // Get all sex values
+      urlParams.getAll('sexes').forEach(sex => {
+        filtersFromUrl.sexes.push(sex);
+      });
+      
+      // Get location country
+      const locationCountry = urlParams.get('location_country');
+      if (locationCountry) {
+        filtersFromUrl.location_country = locationCountry;
+      }
+      
+      // Get min age
+      const minAge = urlParams.get('min_age');
+      if (minAge && minAge !== '0') {
+        filtersFromUrl.age_min = parseInt(minAge);
+      }
+      
+      // Get max age
+      const maxAge = urlParams.get('max_age');
+      if (maxAge && maxAge !== '100') {
+        filtersFromUrl.age_max = parseInt(maxAge);
+      }
+      
+      // Get min height
+      const minHeight = urlParams.get('min_height');
+      if (minHeight && minHeight !== '0') {
+        filtersFromUrl.height_min = parseFloat(minHeight);
+      }
+      
+      // Get max height
+      const maxHeight = urlParams.get('max_height');
+      if (maxHeight && maxHeight !== '20') {
+        filtersFromUrl.height_max = parseFloat(maxHeight);
+      }
+      
+      // Get min price
+      const minPrice = urlParams.get('min_price');
+      if (minPrice && minPrice !== '0') {
+        filtersFromUrl.price_min = parseInt(minPrice);
+      }
+      
+      // Get max price
+      const maxPrice = urlParams.get('max_price');
+      if (maxPrice && maxPrice !== '1000000') {
+        filtersFromUrl.price_max = parseInt(maxPrice);
+      }
+      
+      // Get currency
+      const currency = urlParams.get('currency');
+      if (currency) {
+        filtersFromUrl.currency = currency;
+      }
+      
+      // Update the active filters with the URL parameters
+      console.log("Setting filters from URL parameters:", filtersFromUrl);
+      setActiveFilters(filtersFromUrl);
+    }
+  }, [location, currentCurrency]);
 
   // Debug log
   console.log("Home - Auth state:", { isAuthenticated, is_selling: user?.is_selling, is_searching: user?.is_searching, location, showFilter });
