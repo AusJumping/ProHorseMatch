@@ -789,11 +789,66 @@ export default function SubscriptionPage() {
                   className="text-base font-medium cursor-pointer"
                   onClick={() => setTosAgreed(!tosAgreed)}
                 >
-                  I agree to the <TermsDialog />
+                  I agree to the Terms of Service
                 </label>
                 <p className="text-sm text-muted-foreground mb-2">
                   You must agree to our Terms of Service before subscribing to any plan.
                 </p>
+                
+                {/* View Terms of Service Button */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="mb-2">
+                      View Terms of Service
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[800px]">
+                    <DialogHeader>
+                      <DialogTitle>Pro Horse Match - Terms of Service</DialogTitle>
+                      <DialogDescription>
+                        Last Updated: May 20, 2025
+                      </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="h-[450px] mt-4">
+                      <div className="text-sm space-y-4 pr-4">
+                        <h3 className="text-lg font-bold">1. Introduction</h3>
+                        <p>Welcome to Pro Horse Match ("we," "our," or "us"). By accessing or using our website, mobile application, and services (collectively, the "Services"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Services.</p>
+                        
+                        <h3 className="text-lg font-bold">2. Definitions</h3>
+                        <p>"User" refers to any individual who accesses or uses our Services, including horse owners, prospective buyers, and browsers.</p>
+                        <p>"Content" refers to all information, text, images, videos, and other material provided by Users for listing horses or interacting on our platform.</p>
+                        
+                        <h3 className="text-lg font-bold">3. Account Registration</h3>
+                        <p>To access certain features of our Services, you may need to register for an account. You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete.</p>
+                        
+                        <h3 className="text-lg font-bold">4. Horse Listings</h3>
+                        <p>Users who list horses for sale or lease ("Sellers") are solely responsible for the accuracy and completeness of their listings, including but not limited to the horse's description, characteristics, health status, price, and images.</p>
+                        
+                        <h3 className="text-lg font-bold">5. Transactions Between Users</h3>
+                        <p>Our Services facilitate connections between Sellers and prospective buyers. We are not a party to any transaction between Users.</p>
+                        
+                        <h3 className="text-lg font-bold">6. Subscription Services</h3>
+                        <p>We offer various subscription plans that provide enhanced features and services. The specific features included in each plan are described on our website or app.</p>
+                        
+                        <h3 className="text-lg font-bold">7. Prohibited Content and Conduct</h3>
+                        <p>Users may not post Content or engage in conduct that is misleading, deceptive, or violates any applicable laws.</p>
+                        
+                        <h3 className="text-lg font-bold">8. Disclaimer of Warranties</h3>
+                        <p>Our Services are provided on an "as is" and "as available" basis. We make no warranties regarding the reliability, accuracy, or availability of our Services.</p>
+                        
+                        <h3 className="text-lg font-bold">9. Limitation of Liability</h3>
+                        <p>To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our Services.</p>
+                        
+                        <h3 className="text-lg font-bold">10. Governing Law</h3>
+                        <p>These Terms shall be governed by and construed in accordance with the laws of Australia.</p>
+                      </div>
+                    </ScrollArea>
+                    <DialogClose asChild>
+                      <Button className="mt-4">I Understand</Button>
+                    </DialogClose>
+                  </DialogContent>
+                </Dialog>
+                
                 {!tosAgreed && (
                   <p className="text-sm text-red-500 font-medium">
                     Please check this box to continue
