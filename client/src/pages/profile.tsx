@@ -406,7 +406,7 @@ export default function Profile() {
                           {/* Price range options only shown after currency is selected */}
                           {profileForm.watch("currency") && (
                             <>
-                              <FormLabel className="block mb-2">Price Range (in {profileForm.watch("currency")})</FormLabel>
+                              <FormLabel className={`block mb-2 ${isMobile ? 'hidden' : ''}`}>Price Range (in {profileForm.watch("currency")})</FormLabel>
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Min Price */}
                                 <FormField
@@ -483,7 +483,7 @@ export default function Profile() {
                       
                       <div>
                         <div className="space-y-6">
-                          <FormLabel className="block mb-2">Age Range (in years)</FormLabel>
+                          <FormLabel className={`block mb-2 ${isMobile ? 'hidden' : ''}`}>Age Range (in years)</FormLabel>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Min Age */}
                             <FormField
@@ -546,7 +546,7 @@ export default function Profile() {
                             />
                           </div>
                           
-                          <FormLabel className="block mb-2">Height Range (in hands)</FormLabel>
+                          <FormLabel className={`block mb-2 ${isMobile ? 'hidden' : ''}`}>Height Range (in hands)</FormLabel>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Min Height */}
                             <FormField
