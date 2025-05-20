@@ -136,16 +136,26 @@ export default function Profile() {
       await apiRequest("PATCH", `/api/customers/${user?.id}`, data);
       
       toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
+        title: "Preferences saved",
+        description: "Your preferences have been saved successfully.",
       });
       
       // Invalidate the user query to refetch the updated data
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      
+      // Determine which tab we're in and navigate accordingly
+      const activeTab = document.querySelector('[data-state="active"][role="tab"]')?.getAttribute('data-value');
+      
+      // If we're in the preferences tab, redirect to filter page
+      if (activeTab === 'preferences') {
+        setTimeout(() => {
+          navigate("/filter");
+        }, 1000); // Short delay to allow the toast to be seen
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: error.message || "Failed to update profile",
+        description: error.message || "Failed to save preferences",
         variant: "destructive",
       });
     }
@@ -738,9 +748,9 @@ export default function Profile() {
                 </ScrollArea>
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button type="submit" onClick={profileForm.handleSubmit(onProfileSubmit)}>
+                <Button type="submit" onClick={profileForm.handleSubmit(onProfileSubmit)} className="bg-primary hover:bg-primary/90">
                   <Save className="mr-2 h-4 w-4" />
-                  Save Preferences
+                  Save & Return to Horses
                 </Button>
               </CardFooter>
             </Card>
