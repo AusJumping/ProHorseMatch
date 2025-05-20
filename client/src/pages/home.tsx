@@ -8,7 +8,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { X, PlusCircle } from "lucide-react";
+import { X, PlusCircle, Heart, Info } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
@@ -462,7 +462,7 @@ export default function Home() {
                           variant="outline" 
                           size="sm"
                           className="flex-1 bg-white hover:bg-neutral-50" 
-                          onClick={() => onDislike(horse.id)}
+                          onClick={() => handleDislike(horse.id)}
                         >
                           <X className="h-4 w-4 mr-1" />
                           Pass
@@ -470,7 +470,7 @@ export default function Home() {
                         <Button 
                           size="sm"
                           className="flex-1 bg-white border border-[#cdac6e] text-[#cdac6e] hover:bg-[#f9f5eb]" 
-                          onClick={() => onLike(horse.id)}
+                          onClick={() => handleLike(horse.id)}
                         >
                           <Heart className="h-4 w-4 mr-1" />
                           Like
@@ -479,7 +479,7 @@ export default function Home() {
                           variant="outline" 
                           size="sm"
                           className="bg-white hover:bg-neutral-50"
-                          onClick={() => onShowMore(horse.id)}
+                          onClick={() => handleShowMore(horse.id)}
                         >
                           <Info className="h-4 w-4" />
                         </Button>
