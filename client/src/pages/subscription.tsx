@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { useLocation } from 'wouter';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import Layout from '@/components/Layout';
+import { useCurrency } from '@/contexts/CurrencyContext';
 
 // Ensure we have the public key
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
@@ -197,7 +198,9 @@ export default function SubscriptionPage() {
   const [showCustomAmount, setShowCustomAmount] = useState(false);
   const [customAmount, setCustomAmount] = useState(20);
   const [isDonating, setIsDonating] = useState(false);
+  const [convertedFuturePlans, setConvertedFuturePlans] = useState(futurePlans);
   const { toast } = useToast();
+  const { currentCurrency, convertPrice, formatPrice } = useCurrency();
   
   // Get authentication status
   const { data: user, isLoading: isLoadingAuth } = useQuery({
@@ -206,6 +209,33 @@ export default function SubscriptionPage() {
   });
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
+  
+  // Convert subscription prices to user's preferred currency
+  useEffect(() => {
+    const convertPrices = async () => {
+      try {
+        // Only convert if we have a different currency than AUD (base currency for plans)
+        if (currentCurrency !== 'AUD') {
+          const newPlans = await Promise.all(futurePlans.map(async (plan) => {
+            const convertedPrice = await convertPrice(plan.price, 'AUD');
+            return {
+              ...plan,
+              price: parseFloat(convertedPrice.toFixed(2))
+            };
+          }));
+          setConvertedFuturePlans(newPlans);
+        } else {
+          setConvertedFuturePlans(futurePlans);
+        }
+      } catch (error) {
+        console.error('Error converting prices:', error);
+        // Fallback to original prices if conversion fails
+        setConvertedFuturePlans(futurePlans);
+      }
+    };
+    
+    convertPrices();
+  }, [currentCurrency, convertPrice]);
   
   // Get current subscription status - handle failures gracefully
   const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({
@@ -581,7 +611,7 @@ export default function SubscriptionPage() {
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    {futurePlans.map((futurePlan) => (
+                    {convertedFuturePlans.map((futurePlan) => (
                       <Card key={futurePlan.id} className={`border ${futurePlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
                         <CardHeader className="pb-2">
                           {futurePlan.isPopular && (
@@ -591,9 +621,14 @@ export default function SubscriptionPage() {
                           )}
                           <CardTitle className="text-lg font-accent">{futurePlan.name}</CardTitle>
                           <div className="flex items-baseline mt-1">
-                            <span className="text-xl font-bold">${futurePlan.price}</span>
+                            <span className="text-xl font-bold">{formatPrice(futurePlan.price)}</span>
                             <span className="text-muted-foreground ml-1">/month</span>
                           </div>
+                          {currentCurrency !== 'AUD' && (
+                            <span className="text-xs text-muted-foreground">
+                              Original price: A${futurePlan.currency === 'AUD' ? futurePlan.price : ''}
+                            </span>
+                          )}
                         </CardHeader>
                         <CardContent className="pt-0">
                           <Button 
