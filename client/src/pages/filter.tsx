@@ -103,50 +103,70 @@ export default function FilterPage() {
     
     console.log("Applying filters and navigating to browse:", newFilters);
     
+    // Clean up filter values before navigation
+    const filtersToApply = {...newFilters};
+    
+    // Ensure discipline is properly formatted for the API
+    if (filtersToApply.disciplines && filtersToApply.disciplines[0] === "all_disciplines") {
+      filtersToApply.disciplines = [];
+    }
+    
+    // Ensure breeds is properly formatted
+    if (filtersToApply.breeds && filtersToApply.breeds[0] === "all_breeds") {
+      filtersToApply.breeds = [];
+    }
+    
+    // Ensure sexes is properly formatted
+    if (filtersToApply.sexes && filtersToApply.sexes[0] === "any_sex") {
+      filtersToApply.sexes = [];
+    }
+    
     // After applying filters, navigate to browse page
     const params = new URLSearchParams();
     
-    if (newFilters.disciplines && newFilters.disciplines.length > 0) {
-      newFilters.disciplines.forEach(d => params.append('disciplines', d));
+    if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
+      filtersToApply.disciplines.forEach(d => params.append('disciplines', d));
     }
     
-    if (newFilters.breeds && newFilters.breeds.length > 0) {
-      newFilters.breeds.forEach(b => params.append('breeds', b));
+    if (filtersToApply.breeds && filtersToApply.breeds.length > 0) {
+      filtersToApply.breeds.forEach(b => params.append('breeds', b));
     }
     
-    if (newFilters.sexes && newFilters.sexes.length > 0) {
-      newFilters.sexes.forEach(s => params.append('sexes', s));
+    if (filtersToApply.sexes && filtersToApply.sexes.length > 0) {
+      filtersToApply.sexes.forEach(s => params.append('sexes', s));
     }
     
-    if (newFilters.location_country) {
-      params.append('location_country', newFilters.location_country);
+    if (filtersToApply.location_country) {
+      params.append('location_country', filtersToApply.location_country);
     }
     
-    if (newFilters.age_min !== null) {
-      params.append('min_age', newFilters.age_min?.toString() || '0');
+    if (filtersToApply.age_min !== null) {
+      params.append('min_age', filtersToApply.age_min?.toString() || '0');
     }
     
-    if (newFilters.age_max !== null) {
-      params.append('max_age', newFilters.age_max?.toString() || '100');
+    if (filtersToApply.age_max !== null) {
+      params.append('max_age', filtersToApply.age_max?.toString() || '100');
     }
     
-    if (newFilters.height_min !== null) {
-      params.append('min_height', newFilters.height_min?.toString() || '0');
+    if (filtersToApply.height_min !== null) {
+      params.append('min_height', filtersToApply.height_min?.toString() || '0');
     }
     
-    if (newFilters.height_max !== null) {
-      params.append('max_height', newFilters.height_max?.toString() || '20');
+    if (filtersToApply.height_max !== null) {
+      params.append('max_height', filtersToApply.height_max?.toString() || '20');
     }
     
-    if (newFilters.price_min !== null) {
-      params.append('min_price', newFilters.price_min?.toString() || '0');
+    if (filtersToApply.price_min !== null) {
+      params.append('min_price', filtersToApply.price_min?.toString() || '0');
     }
     
-    if (newFilters.price_max !== null) {
-      params.append('max_price', newFilters.price_max?.toString() || '1000000');
+    if (filtersToApply.price_max !== null) {
+      params.append('max_price', filtersToApply.price_max?.toString() || '1000000');
     }
     
-    params.append('currency', newFilters.currency || currentCurrency);
+    params.append('currency', filtersToApply.currency || currentCurrency);
+    
+    console.log("Sending navigation params:", params.toString());
     
     // Navigate to browse page with filters with a slight delay
     // This ensures state is fully updated before navigation
@@ -175,53 +195,73 @@ export default function FilterPage() {
             variant="default"
             className="w-full max-w-[200px] py-3"
             onClick={() => {
-              console.log("Navigating to browse with filters:", activeFilters);
+              console.log("Navigating to browse with Show Results button:", activeFilters);
+              
+              // Clean up filter values before navigation
+              const filtersToApply = {...activeFilters};
+              
+              // Ensure discipline is properly formatted for the API
+              if (filtersToApply.disciplines && filtersToApply.disciplines[0] === "all_disciplines") {
+                filtersToApply.disciplines = [];
+              }
+              
+              // Ensure breeds is properly formatted
+              if (filtersToApply.breeds && filtersToApply.breeds[0] === "all_breeds") {
+                filtersToApply.breeds = [];
+              }
+              
+              // Ensure sexes is properly formatted
+              if (filtersToApply.sexes && filtersToApply.sexes[0] === "any_sex") {
+                filtersToApply.sexes = [];
+              }
               
               // Build query parameters from activeFilters
               const params = new URLSearchParams();
               
-              if (activeFilters.disciplines && activeFilters.disciplines.length > 0) {
-                activeFilters.disciplines.forEach((d: string) => params.append('disciplines', d));
+              if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
+                filtersToApply.disciplines.forEach((d: string) => params.append('disciplines', d));
               }
               
-              if (activeFilters.breeds && activeFilters.breeds.length > 0) {
-                activeFilters.breeds.forEach((b: string) => params.append('breeds', b));
+              if (filtersToApply.breeds && filtersToApply.breeds.length > 0) {
+                filtersToApply.breeds.forEach((b: string) => params.append('breeds', b));
               }
               
-              if (activeFilters.sexes && activeFilters.sexes.length > 0) {
-                activeFilters.sexes.forEach((s: string) => params.append('sexes', s));
+              if (filtersToApply.sexes && filtersToApply.sexes.length > 0) {
+                filtersToApply.sexes.forEach((s: string) => params.append('sexes', s));
               }
               
-              if (activeFilters.location_country) {
-                params.append('location_country', activeFilters.location_country);
+              if (filtersToApply.location_country) {
+                params.append('location_country', filtersToApply.location_country);
               }
               
-              if (activeFilters.age_min !== null) {
-                params.append('min_age', activeFilters.age_min?.toString() || '0');
+              if (filtersToApply.age_min !== null) {
+                params.append('min_age', filtersToApply.age_min?.toString() || '0');
               }
               
-              if (activeFilters.age_max !== null) {
-                params.append('max_age', activeFilters.age_max?.toString() || '100');
+              if (filtersToApply.age_max !== null) {
+                params.append('max_age', filtersToApply.age_max?.toString() || '100');
               }
               
-              if (activeFilters.height_min !== null) {
-                params.append('min_height', activeFilters.height_min?.toString() || '0');
+              if (filtersToApply.height_min !== null) {
+                params.append('min_height', filtersToApply.height_min?.toString() || '0');
               }
               
-              if (activeFilters.height_max !== null) {
-                params.append('max_height', activeFilters.height_max?.toString() || '20');
+              if (filtersToApply.height_max !== null) {
+                params.append('max_height', filtersToApply.height_max?.toString() || '20');
               }
               
-              if (activeFilters.price_min !== null) {
-                params.append('min_price', activeFilters.price_min?.toString() || '0');
+              if (filtersToApply.price_min !== null) {
+                params.append('min_price', filtersToApply.price_min?.toString() || '0');
               }
               
-              if (activeFilters.price_max !== null) {
-                params.append('max_price', activeFilters.price_max?.toString() || '1000000');
+              if (filtersToApply.price_max !== null) {
+                params.append('max_price', filtersToApply.price_max?.toString() || '1000000');
               }
               
               // Always send currency
-              params.append('currency', activeFilters.currency || currentCurrency);
+              params.append('currency', filtersToApply.currency || currentCurrency);
+              
+              console.log("Show Results - Navigation params:", params.toString());
               
               // Using setTimeout to ensure consistent behavior with the other Apply button
               setTimeout(() => {

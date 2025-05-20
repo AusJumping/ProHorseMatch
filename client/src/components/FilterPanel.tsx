@@ -130,8 +130,33 @@ const FilterPanel = ({
   };
 
   const handleApply = () => {
+    // Verify the filter data before sending it
     console.log("Apply button clicked with filters:", filters);
-    onApplyFilters(filters);
+    
+    // Make a copy of filters to ensure we're not affected by any state issues
+    const filtersToApply = {...filters};
+    
+    // Ensure discipline is properly formatted for the API
+    if (filtersToApply.disciplines && filtersToApply.disciplines[0] === "all_disciplines") {
+      filtersToApply.disciplines = [];
+    }
+    
+    // Ensure breeds is properly formatted
+    if (filtersToApply.breeds && filtersToApply.breeds[0] === "all_breeds") {
+      filtersToApply.breeds = [];
+    }
+    
+    // Ensure sexes is properly formatted
+    if (filtersToApply.sexes && filtersToApply.sexes[0] === "any_sex") {
+      filtersToApply.sexes = [];
+    }
+    
+    // Add additional logging for debugging
+    console.log("Sending processed filters:", filtersToApply);
+    
+    // Apply the filters with the cleaned-up data
+    onApplyFilters(filtersToApply);
+    
     // Close the filter panel on mobile after applying filters
     if (isMobile) {
       // Ensure we have a small delay before closing to allow filters to apply first
