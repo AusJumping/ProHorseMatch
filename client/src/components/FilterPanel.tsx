@@ -219,7 +219,7 @@ const FilterPanel = ({
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Disciplines</Label>
             <Select 
-              value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"} 
+              value="all_disciplines"
               onValueChange={(value) => {
                 if (value === "all_disciplines") {
                   handleChange('disciplines', []);

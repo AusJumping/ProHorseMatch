@@ -230,7 +230,7 @@ export default function FilterPage() {
               />
               
               <div className="mt-4">
-                <h3 className="font-semibold mb-2">Preview ({horses?.length || 0} horses match your filters)</h3>
+                <h3 className="font-semibold mb-2">({horses?.length || 0} horses match your filters)</h3>
                 <HorseGrid horses={horses || []} />
               </div>
             </div>
