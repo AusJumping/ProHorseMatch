@@ -13,7 +13,7 @@ export default function WelcomePage() {
       </Helmet>
       
       <div className="container max-w-3xl mx-auto px-4 py-16 text-center text-white">
-        <h1 className="text-4xl md:text-5xl font-accent font-bold mb-6 text-white">Welcome to ProHorseMatch</h1>
+        <h1 className="text-4xl md:text-5xl font-accent font-bold mb-6 text-white">Welcome to<br />ProHorseMatch</h1>
         
         <p className="text-xl mb-8">
           Using smart technology to connect performance horses with the right owners.
