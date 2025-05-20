@@ -134,7 +134,10 @@ const FilterPanel = ({
     onApplyFilters(filters);
     // Close the filter panel on mobile after applying filters
     if (isMobile) {
-      onClose();
+      // Ensure we have a small delay before closing to allow filters to apply first
+      setTimeout(() => {
+        onClose();
+      }, 300);
     }
   };
 

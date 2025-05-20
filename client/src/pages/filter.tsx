@@ -101,6 +101,8 @@ export default function FilterPage() {
   const handleApplyFilters = (newFilters: Filter) => {
     setActiveFilters(newFilters);
     
+    console.log("Applying filters and navigating to browse:", newFilters);
+    
     // After applying filters, navigate to browse page
     const params = new URLSearchParams();
     
@@ -146,8 +148,11 @@ export default function FilterPage() {
     
     params.append('currency', newFilters.currency || currentCurrency);
     
-    // Navigate to browse page with filters
-    navigate(`/browse?${params.toString()}`);
+    // Navigate to browse page with filters with a slight delay
+    // This ensures state is fully updated before navigation
+    setTimeout(() => {
+      navigate(`/browse?${params.toString()}`);
+    }, 300);
   };
 
   return (
@@ -218,7 +223,10 @@ export default function FilterPage() {
               // Always send currency
               params.append('currency', activeFilters.currency || currentCurrency);
               
-              navigate(`/browse?${params.toString()}`);
+              // Using setTimeout to ensure consistent behavior with the other Apply button
+              setTimeout(() => {
+                navigate(`/browse?${params.toString()}`);
+              }, 300);
             }}
           >
             Show Results ({isLoading ? '...' : horses?.length || 0})
