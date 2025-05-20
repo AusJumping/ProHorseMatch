@@ -31,16 +31,35 @@ export default function Favorites() {
   });
 
   useEffect(() => {
-    // Redirect unauthenticated users but only the first time the component loads
-    // not after clicking buttons within the component
+    // Try to load user data from localStorage if not authenticated through session
+    let currentUser = user;
     if (!isAuthenticated && isLoading) {
-      toast({
-        title: "Login Required",
-        description: "You need to log in to view your favorites.",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          currentUser = JSON.parse(storedUser);
+          console.log("Using cached user from localStorage for favorites:", currentUser);
+        } else {
+          // Only redirect if we can't find a user in local storage
+          toast({
+            title: "Login Required",
+            description: "You need to log in to view your favorites.",
+            variant: "destructive",
+          });
+          navigate("/auth");
+          return;
+        }
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+        // Redirect on error
+        toast({
+          title: "Login Required",
+          description: "You need to log in to view your favorites.",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
     }
 
     // Once we have both matches and horses, filter out the favorite horses
@@ -56,7 +75,7 @@ export default function Favorites() {
       setFavoriteHorses(likedHorses);
       setIsLoading(false);
     }
-  }, [matches, horses, matchesLoading, horsesLoading, isAuthenticated, navigate, toast, isLoading]);
+  }, [matches, horses, matchesLoading, horsesLoading, isAuthenticated, user, navigate, toast, isLoading]);
 
   const handleRemoveFromFavorites = async (horseId: number) => {
     try {

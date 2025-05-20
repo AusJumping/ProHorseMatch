@@ -80,8 +80,24 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
     e.stopPropagation();
     e.preventDefault(); // Prevent any default behavior
     
+    // First try to get a current user from localStorage if React Query hasn't loaded it yet
+    // This helps with mobile browsers that might have session issues
+    let isUserAuthenticated = isAuthenticated;
+    if (!isUserAuthenticated) {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          console.log("Using cached user from localStorage for like button:", user);
+          isUserAuthenticated = true;
+        }
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+      }
+    }
+    
     // Check if user is authenticated before proceeding
-    if (!isAuthenticated) {
+    if (!isUserAuthenticated) {
       // User might need to log in first - display message via parent handler
       if (onLike) {
         onLike(horse.id);
