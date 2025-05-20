@@ -37,9 +37,12 @@ const SwipeSection = ({
     }
   };
 
+  // Modified to handle like without advancing immediately
+  // This allows the parent component to properly handle authentication
   const handleButtonLike = () => {
     onLike(currentHorse.id);
-    goToNextHorse();
+    // Note: we'll let the parent component handle moving to next horse
+    // This prevents issues with authentication
   };
 
   const handleButtonDislike = () => {

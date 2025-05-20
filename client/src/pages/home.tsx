@@ -141,22 +141,34 @@ export default function Home() {
     // Debug logging to help diagnose authentication issues
     console.log("Like horse - Auth state:", { isAuthenticated, user, userId: user?.id });
     
-    // Check if user is authenticated
-    if (!isAuthenticated || !user) {
-      // Just show a message but don't redirect on mobile as it disrupts the experience
+    // First try to get a current user from localStorage if React Query hasn't loaded it yet
+    // This helps with mobile browsers that might have session issues
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          currentUser = JSON.parse(storedUser);
+          console.log("Using cached user from localStorage:", currentUser);
+        }
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+      }
+    }
+    
+    // Now check if we have a valid user
+    if (!currentUser || !currentUser.id) {
       toast({
         title: "Login Required",
         description: "Please log in to save this horse to your favorites.",
         variant: "default",
       });
       
-      // Instead of redirecting, we'll just advance to the next horse on mobile
-      // This prevents the logout issue
       setSwipingIndex(prev => prev + 1);
       return;
     }
     
-    // Now that we've verified the user is logged in, proceed with like
+    // Now that we've verified the user is available, proceed with like
     if (!horseId) {
       toast({
         title: "Error",
@@ -172,7 +184,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer_id: user.id,
+          customer_id: currentUser.id,
           horse_id: horseId,
           is_liked: true
         }),
@@ -181,15 +193,16 @@ export default function Home() {
       
       console.log("Like response status:", response.status);
       
-      // Even if the response isn't 201 (created), it could be 200 (updated)
-      // Both are successful operations
       if (response.ok) {
         toast({
           title: "Horse Liked!",
           description: "This horse has been added to your favorites.",
         });
         
-        setSwipingIndex(prev => prev + 1);
+        // Wait a brief moment before advancing to let the toast appear properly
+        setTimeout(() => {
+          setSwipingIndex(prev => prev + 1);
+        }, 300);
       } else {
         const errorText = await response.text();
         console.error("API error:", errorText);
