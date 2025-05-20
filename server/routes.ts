@@ -866,6 +866,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const createdHorse = await storage.createHorse(horseData);
       console.log("Created sample horse:", createdHorse);
       
+      // If there is an active session, make sure to preserve it
+      if (req.session && req.session.userId) {
+        req.session.touch();
+        req.session.save((err) => {
+          if (err) {
+            console.error("Error saving session after test horse creation:", err);
+          } else {
+            console.log("Session successfully saved after test horse creation");
+          }
+        });
+      }
+      
       return res.status(201).json({
         message: "Successfully created horse",
         horse: createdHorse
