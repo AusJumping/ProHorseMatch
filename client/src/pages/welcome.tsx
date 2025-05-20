@@ -15,8 +15,9 @@ export default function WelcomePage() {
       <div className="container max-w-3xl mx-auto px-4 py-16 text-center text-white">
         <h1 className="text-4xl md:text-5xl font-accent font-bold mb-6 text-white">Welcome to<br />ProHorseMatch</h1>
         
-        <p className="text-xl mb-8">
-          Using smart technology to connect performance horses with the right owners.
+        <p className="text-xl mb-8 max-w-lg mx-auto">
+          Using smart technology to connect performance horses 
+          with the right owners.
         </p>
         
         <div className="space-y-6 text-lg">
