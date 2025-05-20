@@ -140,16 +140,33 @@ export default function EditHorse() {
     try {
       setIsSubmitting(true);
       
-      // Log all form data for debugging
-      console.log("Submitting form data:", JSON.stringify(data, null, 2));
+      // Create a clean request object with proper types
+      const requestData = {
+        ...data,
+        // Ensure numeric fields are numbers
+        age: Number(data.age),
+        height_hands: Number(data.height_hands),
+        height_cm: Number(data.height_cm || 0),
+        price_min: Number(data.price_min),
+        price_max: Number(data.price_max),
+        location_radius_km: Number(data.location_radius_km || 0),
+        // Ensure array fields are properly formatted
+        disciplines: Array.isArray(data.disciplines) ? data.disciplines : [],
+        levels: Array.isArray(data.levels) ? data.levels : [],
+        breeds: Array.isArray(data.breeds) ? data.breeds : [],
+        characteristics: Array.isArray(data.characteristics) ? data.characteristics : [],
+        photos: Array.isArray(data.photos) ? data.photos : [],
+        videos: Array.isArray(data.videos) ? data.videos : [],
+      };
+      
+      // Log the cleaned data for debugging
+      console.log("Submitting form data:", JSON.stringify(requestData, null, 2));
       
       // Make the API request and store the response
-      const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, data);
+      const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, requestData);
       console.log("Response from server:", updatedHorse);
       
-      // Manually update the form with the response data to ensure consistency
-      form.reset(updatedHorse);
-      
+      // Show success message
       toast({
         title: "Horse updated",
         description: "Your horse has been updated successfully",
