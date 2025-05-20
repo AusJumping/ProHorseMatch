@@ -146,11 +146,16 @@ export default function Profile() {
       // Determine which tab we're in and navigate accordingly
       const activeTab = document.querySelector('[data-state="active"][role="tab"]')?.getAttribute('data-value');
       
-      // If we're in the preferences tab, redirect to filter page
+      // Check if we're in the preferences tab and should redirect
       if (activeTab === 'preferences') {
+        // Use a more reliable method for navigation
+        console.log("Redirecting to filter page...");
+        
+        // Small delay to make sure the toast is seen and navigation completes
         setTimeout(() => {
-          navigate("/filter");
-        }, 1000); // Short delay to allow the toast to be seen
+          // Force the navigation to happen
+          window.location.href = "/filter";
+        }, 800);
       }
     } catch (error) {
       toast({

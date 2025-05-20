@@ -297,7 +297,18 @@
         "stripe_subscription_id": "beta-1747710510540",
         "subscription_status": "active",
         "subscription_plan": "beta-searching",
-        "subscription_end_date": "2025-08-18T03:08:30.540Z"
+        "subscription_end_date": "2025-08-18T03:08:30.540Z",
+        "preferred_levels": [],
+        "preferred_breeds": [],
+        "age_range_min": 0,
+        "age_range_max": 999,
+        "height_range_min": 13,
+        "height_range_max": 15.3,
+        "preferred_sexes": [],
+        "breeding_preferences": "",
+        "preferred_characteristics": [],
+        "price_range_min": 0,
+        "price_range_max": 25000
       }
     ]
   ],
