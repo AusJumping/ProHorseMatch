@@ -850,46 +850,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/test/create-sample-horse", async (req, res) => {
     try {
       console.log("Test create sample horse request received");
+      console.log("Request body:", req.body);
       
-      // Create a sample horse
-      const sampleHorse = {
-        owner_id: 3, // Hardcoded to the owner user created during initialization
-        name: "Maestro",
-        location_country: "Australia",
-        location_radius_km: 0,
-        disciplines: ["Jumping", "Dressage"],
-        levels: ["1.30m", "Medium"],
-        breeds: ["Dutch Warmblood"],
-        age: 8,
-        height_hands: 16.2,
-        height_cm: 168,
-        sex: "Gelding",
-        sire: "Jazz",
-        dam: "Mariposa",
-        dam_sire: "Ferro",
-        characteristics: ["Talented", "Gentle"],
-        price: 45000,
-        currency: "AUD",
-        description: "Talented gelding with excellent temperament and scope. Perfect for ambitious amateur or young rider.",
-        photos: [
-          "https://images.unsplash.com/photo-1598974357809-112ca5eaa0b2?q=80&w=2574",
-          "https://images.unsplash.com/photo-1551884831-bbf3cdc6469e?q=80&w=2574"
-        ],
-        videos: []
+      // Always ensure owner_id is set to 3 (the test owner account)
+      const horseData = { 
+        ...req.body,
+        owner_id: 3  // Force owner_id to be 3
       };
       
+      console.log("Creating horse with data:", horseData);
+      
       // Create the horse
-      const createdHorse = await storage.createHorse(sampleHorse);
+      const createdHorse = await storage.createHorse(horseData);
       console.log("Created sample horse:", createdHorse);
       
       return res.status(201).json({
-        message: "Successfully created sample horse for persistence testing",
+        message: "Successfully created horse",
         horse: createdHorse
       });
     } catch (error) {
-      console.error("Create sample horse error:", error);
+      console.error("Create horse error:", error);
       return res.status(500).json({
-        message: "Failed to create sample horse",
+        message: "Failed to create horse",
         error: error.toString()
       });
     }
