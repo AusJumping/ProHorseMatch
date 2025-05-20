@@ -113,8 +113,11 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
       <CardContent className="p-4 flex flex-col justify-between flex-grow">
         <div>
           <h2 className="font-accent font-bold text-xl mb-1">{horse.name}</h2>
+          <p className="text-neutral-800 text-sm mb-1">
+            {horse.age}yo {horse.breeds[0]} {horse.sex}
+          </p>
           <p className="text-neutral-800 text-sm mb-3">
-            {horse.age}yo {horse.breeds[0]} {horse.sex} • {horse.height_hands} hands
+            {horse.height_hands} hands
           </p>
 
           {/* Stats Row */}
