@@ -104,8 +104,8 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
           videos={horse.videos || []} 
         />
         
-        {/* Semi-transparent overlay for liked/dismissed horses - Only show on mobile */}
-        {isMobile && (hasBeenLiked || hasBeenDismissed) && (
+        {/* Semi-transparent overlay for liked/dismissed horses - For mobile only and NOT in the SwipeSection */}
+        {isMobile && (hasBeenLiked || hasBeenDismissed) && !showFavoriteButton && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
             {hasBeenLiked && (
               <div className="bg-white/80 w-16 h-16 rounded-full flex items-center justify-center">
