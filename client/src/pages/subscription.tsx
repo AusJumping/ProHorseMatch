@@ -396,9 +396,16 @@ export default function SubscriptionPage() {
     const allPlans = [...betaPlans, ...futurePlans];
     const plan = allPlans.find(p => p.id === planId) || { name: 'Unknown', price: 0, features: [] as string[] };
     
+    // Check if this is a beta plan
+    const isBetaPlan = planId.startsWith('beta-');
+    // Get other plans that the user could upgrade or switch to
+    const otherPlans = isBetaPlan 
+      ? betaPlans.filter(p => p.id !== planId) 
+      : futurePlans.filter(p => p.id !== planId);
+    
     return (
       <Layout pageTitle="My Subscription">
-        <div className="container mx-auto py-20 max-w-4xl">
+        <div className="container mx-auto py-12 max-w-4xl">
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl font-accent">Your Subscription</CardTitle>
@@ -407,21 +414,39 @@ export default function SubscriptionPage() {
             <CardContent className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Plan Details</h3>
-                  <div className="flex items-center justify-between text-lg">
-                    <span className="font-medium">{plan.name} Plan</span>
-                    <span className="font-bold">${plan.price}/month</span>
+                  <div className="inline-block px-3 py-1 bg-primary/10 text-primary rounded-full mb-2">
+                    Current Plan
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Status: <span className="capitalize">{status}</span>
+                  <h3 className="text-2xl font-semibold font-accent">{plan.name} PLAN</h3>
+                  <div className="text-lg mt-2">
+                    <span className="font-bold">${plan.price}</span>
+                    <span className="text-muted-foreground ml-1">/month</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Status: <span className="capitalize font-medium">{status}</span>
                   </p>
+                  
+                  {isBetaPlan && (
+                    <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800">
+                      <p className="text-sm font-medium">
+                        You're using our free beta plan. Enjoy full access to all features during our beta period.
+                      </p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Billing Cycle</h3>
-                  <p className="text-sm">
-                    Your subscription renews on <span className="font-medium">{formatDate(currentPeriodEnd)}</span>
-                  </p>
+                  <h3 className="text-lg font-semibold">Billing Information</h3>
+                  {isBetaPlan ? (
+                    <p className="text-sm">
+                      Your beta subscription is active until <span className="font-medium">{formatDate(currentPeriodEnd)}</span>
+                    </p>
+                  ) : (
+                    <p className="text-sm">
+                      Your subscription renews on <span className="font-medium">{formatDate(currentPeriodEnd)}</span>
+                    </p>
+                  )}
+                  
                   {status === 'active' && (
                     <Button 
                       variant="destructive" 
@@ -442,8 +467,8 @@ export default function SubscriptionPage() {
                 </div>
               </div>
               
-              <div className="space-y-4 pt-4">
-                <h3 className="text-lg font-semibold">Benefits & Features</h3>
+              <div className="space-y-4 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-semibold">Current Plan Benefits</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {plan.features?.map((feature, i) => (
                     <div key={i} className="flex items-start gap-2">
@@ -453,6 +478,111 @@ export default function SubscriptionPage() {
                   ))}
                 </div>
               </div>
+              
+              {/* Options to switch plans */}
+              {otherPlans.length > 0 && (
+                <div className="space-y-4 pt-6 border-t border-gray-200 mt-6">
+                  <h3 className="text-lg font-semibold">Change Your Plan</h3>
+                  <p className="text-sm text-muted-foreground">
+                    You can switch to another plan that better suits your needs.
+                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    {otherPlans.map((otherPlan) => (
+                      <Card key={otherPlan.id} className={`border ${otherPlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
+                        <CardHeader className="pb-2">
+                          {otherPlan.isPopular && (
+                            <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-md">
+                              Popular
+                            </div>
+                          )}
+                          <CardTitle className="text-xl font-accent">{otherPlan.name}</CardTitle>
+                          <div className="flex items-baseline mt-1">
+                            <span className="text-2xl font-bold">${otherPlan.price}</span>
+                            <span className="text-muted-foreground ml-1">/month</span>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-sm text-muted-foreground mb-4">
+                            {otherPlan.description || `Get all features of the ${otherPlan.name} plan.`}
+                          </div>
+                          <Button 
+                            className="w-full"
+                            variant={otherPlan.isPopular ? "default" : "outline"}
+                            disabled={otherPlan.isComingSoon || isCreatingSubscription}
+                            onClick={() => handleSelectPlan(otherPlan.id)}
+                          >
+                            {isCreatingSubscription && selectedPlan === otherPlan.id ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing...
+                              </>
+                            ) : otherPlan.isComingSoon ? (
+                              'Coming Soon'
+                            ) : (
+                              `Switch to ${otherPlan.name}`
+                            )}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Future paid plans preview (for beta users) */}
+              {isBetaPlan && (
+                <div className="space-y-4 pt-6 border-t border-gray-200 mt-6">
+                  <h3 className="text-lg font-semibold">Coming Soon</h3>
+                  <p className="text-sm text-muted-foreground">
+                    These premium plans will be available after our beta period. 
+                    Enjoy free access now while it lasts!
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    {futurePlans.map((futurePlan) => (
+                      <Card key={futurePlan.id} className={`border ${futurePlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
+                        <CardHeader className="pb-2">
+                          {futurePlan.isPopular && (
+                            <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-md">
+                              Popular
+                            </div>
+                          )}
+                          <CardTitle className="text-lg font-accent">{futurePlan.name}</CardTitle>
+                          <div className="flex items-baseline mt-1">
+                            <span className="text-xl font-bold">${futurePlan.price}</span>
+                            <span className="text-muted-foreground ml-1">/month</span>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <Button 
+                            className="w-full mb-3"
+                            variant="outline"
+                            disabled={true}
+                          >
+                            Coming Soon
+                          </Button>
+                          
+                          <div className="text-xs text-muted-foreground">
+                            {futurePlan.features.slice(0, 3).map((feature, i) => (
+                              <div key={i} className="flex items-start gap-1 mb-1">
+                                <Check className="h-3 w-3 text-green-500 shrink-0 mt-0.5" />
+                                <span>{feature}</span>
+                              </div>
+                            ))}
+                            {futurePlan.features.length > 3 && (
+                              <div className="text-xs text-muted-foreground mt-1">
+                                +{futurePlan.features.length - 3} more features
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
             </CardContent>
           </Card>
         </div>
