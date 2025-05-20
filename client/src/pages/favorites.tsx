@@ -31,7 +31,9 @@ export default function Favorites() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Redirect unauthenticated users but only the first time the component loads
+    // not after clicking buttons within the component
+    if (!isAuthenticated && isLoading) {
       toast({
         title: "Login Required",
         description: "You need to log in to view your favorites.",
@@ -54,7 +56,7 @@ export default function Favorites() {
       setFavoriteHorses(likedHorses);
       setIsLoading(false);
     }
-  }, [matches, horses, matchesLoading, horsesLoading, isAuthenticated, navigate, toast]);
+  }, [matches, horses, matchesLoading, horsesLoading, isAuthenticated, navigate, toast, isLoading]);
 
   const handleRemoveFromFavorites = async (horseId: number) => {
     try {
@@ -123,7 +125,13 @@ export default function Favorites() {
             <Heart className="mx-auto mb-4 h-16 w-16 text-gray-300" />
             <h2 className="text-xl font-semibold mb-2">No favorites yet</h2>
             <p className="text-gray-500 mb-6">You haven't added any horses to your favorites.</p>
-            <Button onClick={() => navigate("/")}>
+            <Button 
+              onClick={(e) => {
+                e.preventDefault(); // Prevent any default behavior
+                // Use the most direct navigation approach to avoid any issues with auth state
+                window.location.href = "/filter";
+              }}
+            >
               Discover Horses
             </Button>
           </div>
