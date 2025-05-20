@@ -475,6 +475,9 @@ const FilterPanel = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999">No Max</SelectItem>
+                    <SelectItem value="1">1 year</SelectItem>
+                    <SelectItem value="2">2 years</SelectItem>
+                    <SelectItem value="3">3 years</SelectItem>
                     <SelectItem value="4">4 years</SelectItem>
                     <SelectItem value="5">5 years</SelectItem>
                     <SelectItem value="6">6 years</SelectItem>
@@ -511,13 +514,19 @@ const FilterPanel = ({
                   <SelectContent>
                     <SelectItem value="13">13.0hh</SelectItem>
                     <SelectItem value="13.2">13.2hh</SelectItem>
+                    <SelectItem value="13.3">13.3hh</SelectItem>
                     <SelectItem value="14">14.0hh</SelectItem>
                     <SelectItem value="14.2">14.2hh</SelectItem>
+                    <SelectItem value="14.3">14.3hh</SelectItem>
                     <SelectItem value="15">15.0hh</SelectItem>
                     <SelectItem value="15.2">15.2hh</SelectItem>
+                    <SelectItem value="15.3">15.3hh</SelectItem>
                     <SelectItem value="16">16.0hh</SelectItem>
                     <SelectItem value="16.2">16.2hh</SelectItem>
+                    <SelectItem value="16.3">16.3hh</SelectItem>
                     <SelectItem value="17">17.0hh</SelectItem>
+                    <SelectItem value="17.2">17.2hh</SelectItem>
+                    <SelectItem value="17.3">17.3hh</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -537,12 +546,16 @@ const FilterPanel = ({
                     <SelectItem value="999">No Max</SelectItem>
                     <SelectItem value="14">14.0hh</SelectItem>
                     <SelectItem value="14.2">14.2hh</SelectItem>
+                    <SelectItem value="14.3">14.3hh</SelectItem>
                     <SelectItem value="15">15.0hh</SelectItem>
                     <SelectItem value="15.2">15.2hh</SelectItem>
+                    <SelectItem value="15.3">15.3hh</SelectItem>
                     <SelectItem value="16">16.0hh</SelectItem>
                     <SelectItem value="16.2">16.2hh</SelectItem>
+                    <SelectItem value="16.3">16.3hh</SelectItem>
                     <SelectItem value="17">17.0hh</SelectItem>
                     <SelectItem value="17.2">17.2hh</SelectItem>
+                    <SelectItem value="17.3">17.3hh</SelectItem>
                     <SelectItem value="18">18.0hh+</SelectItem>
                   </SelectContent>
                 </Select>
