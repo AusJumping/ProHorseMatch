@@ -164,8 +164,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(
     session({
       cookie: { 
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days for longer sessions
-        secure: false, // Setting to false for development
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
+        secure: false, // Setting to false for development and easier testing
         httpOnly: true,
         sameSite: 'lax' // Always use lax to improve session persistence across redirects
       }, 
@@ -176,6 +176,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       resave: true, // Force session to be saved back to the store
       saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
+      // Add rolling: true to update the cookie expiration on every response
+      rolling: true
     })
   );
 
@@ -1146,6 +1148,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const horse = await storage.createHorse(validatedData);
+      
+      // Force session save to maintain login state
+      req.session.touch();
+      req.session.save((err) => {
+        if (err) {
+          console.error("Error saving session after horse creation:", err);
+        } else {
+          console.log("Session successfully saved after horse creation");
+        }
+      });
+      
       return res.status(201).json(horse);
     } catch (error) {
       console.error("Create horse error:", error);
