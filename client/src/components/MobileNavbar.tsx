@@ -73,30 +73,30 @@ const MobileNavbar = () => {
           </Button>
         </SheetClose>
         
+        {isAuthenticated && (
+          <SheetClose asChild>
+            <Button 
+              variant="ghost" 
+              className={`justify-start h-12 ${location === "/my-horses" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+              onClick={() => navigate("/my-horses")}
+            >
+              <List className="mr-3 h-5 w-5" />
+              <span>My Horses</span>
+            </Button>
+          </SheetClose>
+        )}
+        
         {isOwner && (
-          <>
-            <SheetClose asChild>
-              <Button 
-                variant="ghost" 
-                className={`justify-start h-12 ${location === "/my-horses" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-                onClick={() => navigate("/my-horses")}
-              >
-                <List className="mr-3 h-5 w-5" />
-                <span>My Horses</span>
-              </Button>
-            </SheetClose>
-            
-            <SheetClose asChild>
-              <Button 
-                variant="ghost" 
-                className={`justify-start h-12 ${location === "/add-horse" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-                onClick={() => navigate("/add-horse")}
-              >
-                <Plus className="mr-3 h-5 w-5" />
-                <span>Add Horse</span>
-              </Button>
-            </SheetClose>
-          </>
+          <SheetClose asChild>
+            <Button 
+              variant="ghost" 
+              className={`justify-start h-12 ${location === "/add-horse" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+              onClick={() => navigate("/add-horse")}
+            >
+              <Plus className="mr-3 h-5 w-5" />
+              <span>Add Horse</span>
+            </Button>
+          </SheetClose>
         )}
         
         {isAuthenticated && (
