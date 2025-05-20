@@ -117,7 +117,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
             {horse.age}yo {horse.breeds[0]} {horse.sex}
           </p>
           <p className="text-neutral-800 text-sm mb-3">
-            {horse.height_hands} hands
+            {horse.sire && horse.dam_sire ? `${horse.sire} x ${horse.dam_sire}` : "Breeding not specified"}
           </p>
 
           {/* Stats Row */}
