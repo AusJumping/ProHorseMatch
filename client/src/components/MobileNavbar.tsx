@@ -216,7 +216,7 @@ const MobileNavbar = () => {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="h-16 w-16 p-1" aria-label="Menu">
-            <Menu className="h-10 w-10" />
+            <Menu className="h-14 w-14 stroke-[2.5px]" />
           </Button>
         </SheetTrigger>
         <SheetContent side="right" className="fixed inset-y-0 right-0 z-50 h-full w-[80%] border-l bg-white p-4 shadow-lg sm:max-w-sm">
