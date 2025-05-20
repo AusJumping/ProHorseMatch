@@ -171,7 +171,8 @@ const FilterPanel = ({
         onApplyFilters(filtersToApply);
       }, 50);
     } else {
-      // For desktop, apply immediately
+      // For desktop, apply immediately without delay
+      console.log("Desktop: Applying filters directly:", filtersToApply);
       onApplyFilters(filtersToApply);
     }
   };
@@ -219,7 +220,7 @@ const FilterPanel = ({
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Disciplines</Label>
             <Select 
-              value="all_disciplines"
+              value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"}
               onValueChange={(value) => {
                 if (value === "all_disciplines") {
                   handleChange('disciplines', []);

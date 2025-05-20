@@ -207,8 +207,13 @@ export default function FilterPage() {
     const queryString = params.toString();
     console.log("Generated filter query:", queryString);
     
-    // Instead of using navigate(), use direct window.location.href for more reliable navigation on mobile
-    window.location.href = `/browse?${queryString}`;
+    // Use window.location.href for consistent behavior across all devices
+    // Add a small timeout to ensure state updates have processed
+    console.log("Preparing to redirect to browse with query:", `/browse?${queryString}`);
+    setTimeout(() => {
+      console.log("Now redirecting to browse page...");
+      window.location.href = `/browse?${queryString}`;
+    }, 100);
   };
 
   return (
