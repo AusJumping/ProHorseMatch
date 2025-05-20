@@ -207,11 +207,35 @@ export default function SubscriptionPage() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   
-  // Get current subscription status
-  const { data: subscriptionData, isLoading: isLoadingSubscription } = useQuery({
+  // Get current subscription status - handle failures gracefully
+  const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({
     queryKey: ['/api/subscription'],
-    retry: false,
-    enabled: !!user // Only run if user is authenticated
+    retry: 1, // Retry once
+    enabled: !!user, // Only run if user is authenticated
+    // Fallback to provide subscription info from the user object if API fails
+    select: (data) => {
+      if (data?.hasSubscription) {
+        return data;
+      }
+      
+      // Fallback for when the Stripe API call fails but we still have user data
+      // This ensures the subscription page works even if Stripe API is unreachable
+      if (user?.stripe_subscription_id) {
+        const isBetaPlan = user.stripe_subscription_id.startsWith('beta-');
+        
+        return {
+          hasSubscription: true,
+          subscriptionId: user.stripe_subscription_id,
+          status: user.subscription_status || 'active',
+          planId: user.subscription_plan || (isBetaPlan ? 'beta-seller' : 'standard'),
+          currentPeriodEnd: user.subscription_end_date 
+            ? new Date(user.subscription_end_date).getTime() / 1000 
+            : (Date.now() + 90 * 24 * 60 * 60 * 1000) / 1000,
+        };
+      }
+      
+      return data;
+    }
   });
   
   // Create subscription mutation
@@ -389,9 +413,25 @@ export default function SubscriptionPage() {
     );
   }
   
+  // If there was an error fetching subscription data, show a notification but continue
+  if (subscriptionError && user?.stripe_subscription_id) {
+    console.error("Error fetching subscription details:", subscriptionError);
+    toast({
+      title: "Subscription Information",
+      description: "We're having trouble connecting to the subscription service. Showing available information.",
+      variant: "default",
+    });
+  }
+
   // Show current subscription if the user has one
-  if (subscriptionData?.hasSubscription) {
-    const { status, currentPeriodEnd, planId } = subscriptionData;
+  if (subscriptionData?.hasSubscription || user?.stripe_subscription_id) {
+    // Use subscription data if available, otherwise fallback to user data
+    const status = subscriptionData?.status || user?.subscription_status || 'active';
+    const currentPeriodEnd = subscriptionData?.currentPeriodEnd || 
+      (user?.subscription_end_date ? new Date(user.subscription_end_date).getTime() / 1000 : (Date.now() + 90 * 24 * 60 * 60 * 1000) / 1000);
+    const planId = subscriptionData?.planId || user?.subscription_plan || 
+      (user?.stripe_subscription_id?.startsWith('beta-') ? 'beta-seller' : 'standard');
+    
     // Find the plan from beta or future plans
     const allPlans = [...betaPlans, ...futurePlans];
     const plan = allPlans.find(p => p.id === planId) || { name: 'Unknown', price: 0, features: [] as string[] };
