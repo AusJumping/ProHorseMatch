@@ -133,52 +133,46 @@ const FilterPanel = ({
     // Apply button clicked - single click with immediate processing
     console.log("Apply button clicked with filters:", filters);
     
-    // Prevent double-clicking by disabling the button
-    const applyButton = document.getElementById('apply-filters-button');
-    if (applyButton) {
-      applyButton.setAttribute('disabled', 'true');
-      applyButton.classList.add('opacity-70');
-    }
+    // Remove focus from button to prevent accidental double clicks
+    document.activeElement?.blur();
     
-    // Make a copy of filters to ensure we're not affected by any state issues
-    const filtersToApply = {...filters};
+    // Create a direct copy of the filters object to avoid state mutations
+    const filtersToApply = JSON.parse(JSON.stringify(filters));
     
-    // Ensure discipline is properly formatted for the API
+    // Make API request work properly by cleaning up special values
     if (filtersToApply.disciplines && filtersToApply.disciplines[0] === "all_disciplines") {
       filtersToApply.disciplines = [];
     }
     
-    // Ensure breeds is properly formatted
     if (filtersToApply.breeds && filtersToApply.breeds[0] === "all_breeds") {
       filtersToApply.breeds = [];
     }
     
-    // Ensure sexes is properly formatted
     if (filtersToApply.sexes && filtersToApply.sexes[0] === "any_sex") {
       filtersToApply.sexes = [];
     }
     
-    // First apply the filters immediately before doing anything else
-    onApplyFilters(filtersToApply);
+    console.log("Processed filters to apply:", filtersToApply);
     
-    // Then close the panel after applying on mobile
-    // Longer timeout to ensure filter application completes
+    // Store filters in localStorage before applying for backup
+    try {
+      localStorage.setItem('lastAppliedFilters', JSON.stringify(filtersToApply));
+      localStorage.setItem('filtersTimestamp', Date.now().toString());
+    } catch (error) {
+      console.error("Error saving filters to localStorage:", error);
+    }
+    
+    // For mobile devices, first close the panel to prevent UI issues
     if (isMobile) {
+      onClose();
+      
+      // Then apply filters after a tiny delay to ensure the UI update completes
       setTimeout(() => {
-        onClose();
-        
-        // Re-enable button only after the whole process is done
-        if (applyButton) {
-          applyButton.removeAttribute('disabled');
-          applyButton.classList.remove('opacity-70');
-        }
-      }, 500); // Increased from 300ms to 500ms for more reliability
+        onApplyFilters(filtersToApply);
+      }, 50);
     } else {
-      // For desktop, re-enable instantly
-      if (applyButton) {
-        applyButton.removeAttribute('disabled');
-        applyButton.classList.remove('opacity-70');
-      }
+      // For desktop, apply immediately
+      onApplyFilters(filtersToApply);
     }
   };
 
