@@ -39,6 +39,7 @@ export default function Home() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const { currentCurrency } = useCurrency();
+  const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Filter>({
@@ -258,7 +259,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customer_id: user.id,
+          customer_id: currentUser.id,
           horse_id: horseId,
           is_liked: false
         }),
@@ -269,6 +270,9 @@ export default function Home() {
       
       // Any successful response means we can move to the next horse
       if (response.ok) {
+        // Force an immediate invalidation of the matches cache so favorites page will update
+        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+        
         setSwipingIndex(prev => prev + 1);
       } else {
         const errorText = await response.text();
