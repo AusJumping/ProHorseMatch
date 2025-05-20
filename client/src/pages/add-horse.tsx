@@ -161,11 +161,13 @@ export default function AddHorse() {
       
       // Invalidate horses query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
       
       // Use client-side navigation with a delay to allow the toast to display
       setTimeout(() => {
-        navigate("/");
-      }, 1000);
+        // Redirect to My Horses page instead of home
+        navigate("/my-horses");
+      }, 1500);
     } catch (error) {
       console.error("Error submitting horse:", error);
       toast({

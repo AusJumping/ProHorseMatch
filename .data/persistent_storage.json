@@ -38,204 +38,40 @@
       }
     ],
     [
-      17,
+      22,
       {
-        "id": 17,
-        "name": "Snow",
-        "location_country": "Australia",
-        "location_radius_km": 100,
-        "disciplines": [
-          "Jumping"
-        ],
-        "levels": [
-          "Junior"
-        ],
-        "breeds": [
-          "Warmblood"
-        ],
-        "age": 7,
-        "height_hands": 16.1,
-        "height_cm": 165,
-        "sex": "Gelding",
-        "sire": "Chacco Blue",
-        "dam": "Valentina",
-        "dam_sire": "Heartbreaker",
-        "characteristics": [
-          "Brave",
-          "Careful"
-        ],
-        "price_min": 35000,
-        "price_max": 40000,
-        "currency": "AUD",
-        "description": "Talented young jumper with excellent technique and temperament. Perfect for junior or young rider.",
-        "photos": [
-          "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-        ],
-        "videos": [],
+        "id": 22,
         "owner_id": 3,
-        "created_at": "2025-05-20T01:28:44.774Z"
-      }
-    ],
-    [
-      18,
-      {
-        "id": 18,
         "name": "Flame",
         "location_country": "Australia",
-        "location_radius_km": 100,
         "disciplines": [
-          "Jumping",
           "Eventing"
         ],
         "levels": [
-          "Young Rider",
-          "2*"
+          "Young Rider"
         ],
         "breeds": [
           "Thoroughbred"
         ],
-        "age": 8,
-        "height_hands": 16,
-        "height_cm": 163,
-        "sex": "Mare",
-        "sire": "Northern Meteor",
-        "dam": "Fireheart",
-        "dam_sire": "Redoutes Choice",
-        "characteristics": [
-          "Forward",
-          "Brave"
-        ],
-        "price_min": 45000,
-        "price_max": 50000,
-        "currency": "AUD",
-        "description": "Talented, forward mare with excellent movement and brave attitude. Ideal for eventing or jumping.",
-        "photos": [
-          "https://images.unsplash.com/photo-1566251037378-5e04e3bec343?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-        ],
-        "videos": [],
-        "owner_id": 3,
-        "created_at": "2025-05-20T01:28:54.235Z"
-      }
-    ],
-    [
-      19,
-      {
-        "id": 19,
-        "name": "Misty",
-        "location_country": "Australia",
-        "location_radius_km": 100,
-        "disciplines": [
-          "Dressage"
-        ],
-        "levels": [
-          "Elementary"
-        ],
-        "breeds": [
-          "Warmblood"
-        ],
-        "age": 6,
-        "height_hands": 16.2,
-        "height_cm": 168,
-        "sex": "Mare",
-        "sire": "Florencio",
-        "dam": "Morning Star",
-        "dam_sire": "De Niro",
-        "characteristics": [
-          "Sensitive",
-          "Calm"
-        ],
-        "price_min": 40000,
-        "price_max": 45000,
-        "currency": "AUD",
-        "description": "Beautiful young dressage mare with three exceptional gaits and trainable temperament.",
-        "photos": [
-          "https://images.unsplash.com/photo-1600796167252-f2fab7c95ec3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-        ],
-        "videos": [],
-        "owner_id": 3,
-        "created_at": "2025-05-20T01:29:04.068Z"
-      }
-    ],
-    [
-      20,
-      {
-        "id": 20,
-        "name": "Midnight",
-        "location_country": "Australia",
-        "location_radius_km": 100,
-        "disciplines": [
-          "Jumping"
-        ],
-        "levels": [
-          "Amateur"
-        ],
-        "breeds": [
-          "Warmblood"
-        ],
-        "age": 9,
-        "height_hands": 17,
-        "height_cm": 173,
+        "age": 12,
+        "height_hands": 15.1,
+        "height_cm": 153,
         "sex": "Gelding",
-        "sire": "Kannan",
-        "dam": "Dark Star",
-        "dam_sire": "Cardento",
+        "sire": "Flame Dad",
+        "dam": "Flame Mum",
+        "dam_sire": "Flame Grandad",
         "characteristics": [
-          "Scope",
-          "Brave",
-          "Careful"
+          "Scope"
         ],
-        "price_min": 55000,
-        "price_max": 60000,
+        "price_min": 20000,
+        "price_max": 70000,
         "currency": "AUD",
-        "description": "Impressive black gelding with scopey jump and consistent technique. Perfect for amateur rider looking to compete.",
+        "description": "",
         "photos": [
-          "https://images.unsplash.com/photo-1594229685133-90d5d01dfb88?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+          "/uploads/file-1747704699608-581304799.jpg"
         ],
         "videos": [],
-        "owner_id": 3,
-        "created_at": "2025-05-20T01:29:15.393Z"
-      }
-    ],
-    [
-      21,
-      {
-        "id": 21,
-        "name": "Goldie",
-        "location_country": "Australia",
-        "location_radius_km": 100,
-        "disciplines": [
-          "Dressage",
-          "Jumping"
-        ],
-        "levels": [
-          "Novice",
-          "Children"
-        ],
-        "breeds": [
-          "Warmblood"
-        ],
-        "age": 10,
-        "height_hands": 15.2,
-        "height_cm": 158,
-        "sex": "Mare",
-        "sire": "Gold Luck",
-        "dam": "Sunshine",
-        "dam_sire": "San Remo",
-        "characteristics": [
-          "Schoolmaster",
-          "Honest",
-          "Calm"
-        ],
-        "price_min": 30000,
-        "price_max": 35000,
-        "currency": "AUD",
-        "description": "Experienced schoolmaster mare, perfect for beginner or junior rider. Kind temperament with lots to teach.",
-        "photos": [
-          "https://images.unsplash.com/photo-1534773728080-33d31da27ae5?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-        ],
-        "videos": [],
-        "owner_id": 3,
-        "created_at": "2025-05-20T01:29:25.457Z"
+        "created_at": "2025-05-20T01:31:45.870Z"
       }
     ]
   ],
@@ -350,7 +186,7 @@
   "matches": [],
   "messages": [],
   "conversations": [],
-  "horseId": 22,
+  "horseId": 23,
   "userId": 3,
   "matchId": 1,
   "messageId": 1,
