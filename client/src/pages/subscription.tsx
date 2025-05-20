@@ -477,7 +477,7 @@ export default function SubscriptionPage() {
                 </div>
                 
                 <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Billing Information</h3>
+                  <h3 className="text-lg font-semibold font-accent">Billing Information</h3>
                   {isBetaPlan ? (
                     <p className="text-sm">
                       Your beta subscription is active until further notice
@@ -509,7 +509,7 @@ export default function SubscriptionPage() {
               </div>
               
               <div className="space-y-4 pt-6 border-t border-gray-200">
-                <h3 className="text-lg font-semibold">Current Plan Benefits</h3>
+                <h3 className="text-lg font-semibold font-accent">Current Plan Benefits</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {plan.features?.map((feature, i) => (
                     <div key={i} className="flex items-start gap-2">
@@ -574,7 +574,7 @@ export default function SubscriptionPage() {
               {/* Future paid plans preview (for beta users) */}
               {isBetaPlan && (
                 <div className="space-y-4 pt-6 border-t border-gray-200 mt-6">
-                  <h3 className="text-lg font-semibold">Coming Soon</h3>
+                  <h3 className="text-lg font-semibold font-accent">Coming Soon</h3>
                   <p className="text-sm text-muted-foreground">
                     These premium plans will be available after our beta period. 
                     Enjoy free access now while it lasts!
@@ -747,7 +747,7 @@ export default function SubscriptionPage() {
           {/* Donation Section */}
           <div className="max-w-2xl mx-auto mt-20 mb-10 bg-white rounded-lg p-6 border border-[#d1cfc8]">
             <div className="text-center">
-              <h3 className="text-xl font-accent font-semibold mb-3">Support Our Development</h3>
+              <h3 className="text-xl font-accent mb-3">Support Our Development</h3>
               <p className="text-muted-foreground mb-6">
                 Help us make Pro Horse Match the #1 horse sale app with a one-time donation. 
                 Every contribution helps us build new features and improve the platform.
