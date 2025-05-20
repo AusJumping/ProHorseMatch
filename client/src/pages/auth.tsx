@@ -114,8 +114,8 @@ export default function Auth() {
       
       // Direct check for subscription status
       if (userData && userData.subscription_status === 'active') {
-        console.log("User has active subscription, redirecting to browse");
-        window.location.href = "/browse";
+        console.log("User has active subscription, redirecting to welcome page");
+        window.location.href = "/welcome";
       } else {
         console.log("User has no active subscription, redirecting to subscription page");
         window.location.href = "/subscription";

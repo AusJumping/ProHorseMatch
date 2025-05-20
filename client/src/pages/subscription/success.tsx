@@ -92,11 +92,11 @@ export default function SubscriptionSuccessPage() {
           </div>
           
           <div className="space-y-3">
-            <Button className="w-full" onClick={() => navigate('/account-settings')}>
-              Go to My Account
+            <Button className="w-full" onClick={() => navigate('/welcome')}>
+              Get Started
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => navigate('/add-horse')}>
-              Add a Horse Listing
+            <Button variant="outline" className="w-full" onClick={() => navigate('/account-settings')}>
+              Go to My Account
             </Button>
           </div>
         </CardContent>
