@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import SwipeSection from "@/components/SwipeSection";
@@ -194,6 +194,9 @@ export default function Home() {
       console.log("Like response status:", response.status);
       
       if (response.ok) {
+        // Force an immediate invalidation of the matches cache so favorites page will update
+        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+        
         toast({
           title: "Horse Liked!",
           description: "This horse has been added to your favorites.",
@@ -222,8 +225,22 @@ export default function Home() {
     // Debug logging to help diagnose authentication issues
     console.log("Dislike horse - Auth state:", { isAuthenticated, user, userId: user?.id });
     
+    // First try to get a current user from localStorage if React Query hasn't loaded it yet
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          currentUser = JSON.parse(storedUser);
+          console.log("Using cached user from localStorage for dislike:", currentUser);
+        }
+      } catch (e) {
+        console.error("Error parsing stored user:", e);
+      }
+    }
+    
     // Check if user is authenticated
-    if (!isAuthenticated || !user) {
+    if (!currentUser) {
       // For dislikes, we won't show a login message
       // Just advance to the next horse
       setSwipingIndex(prev => prev + 1);
