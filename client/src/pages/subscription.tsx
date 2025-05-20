@@ -402,7 +402,8 @@ export default function SubscriptionPage() {
     );
   }
   
-  if (isLoadingAuth || isLoadingSubscription) {
+  // Only show loading when no fallback data is available
+  if ((isLoadingAuth || (isLoadingSubscription && !user?.stripe_subscription_id))) {
     return (
       <Layout pageTitle="Subscription Plans">
         <div className="container mx-auto py-20 flex flex-col items-center justify-center">
