@@ -165,22 +165,34 @@ export default function Home() {
     }
     
     try {
-      const response = await apiRequest('POST', '/api/matches', {
-        customer_id: user.id,
-        horse_id: horseId,
-        is_liked: true
+      // Use fetch directly to get more control over the response
+      const response = await fetch('/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_id: user.id,
+          horse_id: horseId,
+          is_liked: true
+        }),
+        credentials: 'include'
       });
       
-      if (!response.ok) {
-        throw new Error("Failed to process like request");
+      console.log("Like response status:", response.status);
+      
+      // Even if the response isn't 201 (created), it could be 200 (updated)
+      // Both are successful operations
+      if (response.ok) {
+        toast({
+          title: "Horse Liked!",
+          description: "This horse has been added to your favorites.",
+        });
+        
+        setSwipingIndex(prev => prev + 1);
+      } else {
+        const errorText = await response.text();
+        console.error("API error:", errorText);
+        throw new Error(errorText || "Failed to process like request");
       }
-      
-      toast({
-        title: "Horse Liked!",
-        description: "This horse has been added to your favorites.",
-      });
-      
-      setSwipingIndex(prev => prev + 1);
     } catch (error) {
       console.error("Error liking horse:", error);
       toast({
@@ -195,43 +207,44 @@ export default function Home() {
     // Debug logging to help diagnose authentication issues
     console.log("Dislike horse - Auth state:", { isAuthenticated, user, userId: user?.id });
     
-    // Check if user is authenticated - additional check to handle local storage recovery
-    const storedUser = localStorage.getItem('user');
-    const hasStoredUser = !!storedUser;
-    
-    if (!isAuthenticated && !hasStoredUser) {
+    // Check if user is authenticated
+    if (!isAuthenticated || !user) {
       // For dislikes, we won't show a login message
       // Just advance to the next horse
       setSwipingIndex(prev => prev + 1);
       return;
     }
     
-    // If we have a stored user but not authenticated via context,
-    // try to use the stored user data
-    let customerId = user?.id;
-    if (!customerId && hasStoredUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        customerId = parsedUser.id;
-      } catch (e) {
-        console.error("Error parsing stored user:", e);
-      }
-    }
-    
-    if (!horseId || !customerId) {
+    if (!horseId) {
       setSwipingIndex(prev => prev + 1);
       return;
     }
     
     try {
-      await apiRequest('POST', '/api/matches', {
-        customer_id: customerId,
-        horse_id: horseId,
-        is_liked: false
+      // Use fetch directly to get more control over the response
+      const response = await fetch('/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customer_id: user.id,
+          horse_id: horseId,
+          is_liked: false
+        }),
+        credentials: 'include'
       });
       
-      setSwipingIndex(prev => prev + 1);
+      console.log("Dislike response status:", response.status);
+      
+      // Any successful response means we can move to the next horse
+      if (response.ok) {
+        setSwipingIndex(prev => prev + 1);
+      } else {
+        const errorText = await response.text();
+        console.error("API error on dislike:", errorText);
+        throw new Error(errorText || "Failed to process dislike request");
+      }
     } catch (error) {
+      console.error("Error disliking horse:", error);
       toast({
         title: "Error",
         description: "Failed to dislike horse. Please try again.",
