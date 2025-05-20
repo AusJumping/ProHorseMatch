@@ -564,11 +564,17 @@ export default function Home() {
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col items-center">
-          {/* Check if filters have been applied */}
-          {Object.entries(activeFilters).some(([key, value]) => {
-            // Check if any filter has been applied
+          {/* Check if filters have been applied or if query parameters exist in URL */}
+          {(location.includes('?') && window.location.search.length > 1) || Object.entries(activeFilters).some(([key, value]) => {
+            // Only consider it a filter if it's not the defaults
             if (Array.isArray(value) && value.length > 0) return true;
-            if (value !== null && key !== 'currency') return true;
+            if (key === 'age_min' && value !== null && value > 0) return true;
+            if (key === 'age_max' && value !== null && value < 999) return true;
+            if (key === 'height_min' && value !== null && value > 0) return true;
+            if (key === 'height_max' && value !== null && value < 999) return true;
+            if (key === 'price_min' && value !== null && value > 0) return true;
+            if (key === 'price_max' && value !== null && value < 999999999) return true;
+            if (key !== 'currency' && value !== null && value !== '') return true;
             return false;
           }) ? (
             // If filters are applied, show horses
