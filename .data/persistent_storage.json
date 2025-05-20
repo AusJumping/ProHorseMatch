@@ -111,6 +111,43 @@
         "videos": [],
         "created_at": "2025-05-20T01:58:23.635Z"
       }
+    ],
+    [
+      24,
+      {
+        "id": 24,
+        "owner_id": 3,
+        "name": "Goldie",
+        "location_country": "United States",
+        "disciplines": [
+          "Dressage"
+        ],
+        "levels": [
+          "Advanced"
+        ],
+        "breeds": [
+          "Warmblood"
+        ],
+        "age": 14,
+        "height_hands": null,
+        "height_cm": 0,
+        "sex": "Mare",
+        "sire": "Goldie Mum",
+        "dam": "Goldie Dad",
+        "dam_sire": "Goldie Grandad",
+        "characteristics": [
+          "Calm"
+        ],
+        "price_min": 40000,
+        "price_max": 65000,
+        "currency": "USD",
+        "description": "",
+        "photos": [
+          "/uploads/file-1747706655369-719662994.jpg"
+        ],
+        "videos": [],
+        "created_at": "2025-05-20T02:04:20.728Z"
+      }
     ]
   ],
   "users": [
@@ -224,7 +261,7 @@
   "matches": [],
   "messages": [],
   "conversations": [],
-  "horseId": 24,
+  "horseId": 25,
   "userId": 3,
   "matchId": 1,
   "messageId": 1,

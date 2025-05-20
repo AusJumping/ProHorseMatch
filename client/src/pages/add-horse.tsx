@@ -1226,13 +1226,7 @@ export default function AddHorse() {
                                     formData.append("file", file);
                                     
                                     try {
-                                      // Show loading state
-                                      toast({
-                                        title: "Uploading...",
-                                        description: "Please wait while we upload your image.",
-                                      });
-                                      
-                                      // Upload the file
+                                      // Upload the file directly without loading toast
                                       const response = await fetch("/api/upload", {
                                         method: "POST",
                                         body: formData,
@@ -1250,10 +1244,7 @@ export default function AddHorse() {
                                       // Clear the input
                                       e.target.value = "";
                                       
-                                      toast({
-                                        title: "Upload successful",
-                                        description: "Your image has been uploaded.",
-                                      });
+                                      // Success notification removed
                                     } catch (error) {
                                       console.error("Upload error:", error);
                                       toast({
@@ -1338,13 +1329,7 @@ export default function AddHorse() {
                                     formData.append("file", file);
                                     
                                     try {
-                                      // Show loading state
-                                      toast({
-                                        title: "Uploading...",
-                                        description: "Please wait while we upload your video.",
-                                      });
-                                      
-                                      // Upload the file
+                                      // Upload the file directly without loading toast
                                       const response = await fetch("/api/upload", {
                                         method: "POST",
                                         body: formData,
@@ -1362,10 +1347,7 @@ export default function AddHorse() {
                                       // Clear the input
                                       e.target.value = "";
                                       
-                                      toast({
-                                        title: "Upload successful",
-                                        description: "Your video has been uploaded.",
-                                      });
+                                      // Success notification removed
                                     } catch (error) {
                                       console.error("Upload error:", error);
                                       toast({
