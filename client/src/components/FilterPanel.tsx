@@ -483,11 +483,17 @@ const FilterPanel = ({
                     <SelectItem value="6">6 years</SelectItem>
                     <SelectItem value="7">7 years</SelectItem>
                     <SelectItem value="8">8 years</SelectItem>
+                    <SelectItem value="9">9 years</SelectItem>
                     <SelectItem value="10">10 years</SelectItem>
+                    <SelectItem value="11">11 years</SelectItem>
                     <SelectItem value="12">12 years</SelectItem>
+                    <SelectItem value="13">13 years</SelectItem>
                     <SelectItem value="14">14 years</SelectItem>
+                    <SelectItem value="15">15 years</SelectItem>
                     <SelectItem value="16">16 years</SelectItem>
+                    <SelectItem value="17">17 years</SelectItem>
                     <SelectItem value="18">18 years</SelectItem>
+                    <SelectItem value="19">19 years</SelectItem>
                     <SelectItem value="20">20+ years</SelectItem>
                   </SelectContent>
                 </Select>
