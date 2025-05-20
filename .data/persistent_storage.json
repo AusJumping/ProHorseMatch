@@ -129,7 +129,7 @@
           "Warmblood"
         ],
         "age": 14,
-        "height_hands": null,
+        "height_hands": 15,
         "height_cm": 0,
         "sex": "Mare",
         "sire": "Goldie Mum",
@@ -139,14 +139,15 @@
           "Calm"
         ],
         "price_min": 40000,
-        "price_max": 65000,
+        "price_max": 50000,
         "currency": "USD",
         "description": "",
         "photos": [
           "/uploads/file-1747706655369-719662994.jpg"
         ],
         "videos": [],
-        "created_at": "2025-05-20T02:04:20.728Z"
+        "created_at": "2025-05-20T02:04:20.728Z",
+        "location_radius_km": 0
       }
     ],
     [
@@ -166,7 +167,7 @@
           "Thoroughbred"
         ],
         "age": 14,
-        "height_hands": null,
+        "height_hands": 16.3,
         "height_cm": 0,
         "sex": "Mare",
         "sire": "Misty Dad",
@@ -183,7 +184,8 @@
           "/uploads/file-1747710339929-375400502.jpg"
         ],
         "videos": [],
-        "created_at": "2025-05-20T03:05:41.762Z"
+        "created_at": "2025-05-20T03:05:41.762Z",
+        "location_radius_km": 0
       }
     ]
   ],

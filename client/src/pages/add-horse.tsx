@@ -24,25 +24,34 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 
 // Form schema for adding a horse
 const horseFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
-  owner_id: z.number(),
+  // Required fields - all dropdown selections must be completed
   location_country: z.string().min(1, "Country is required"),
   disciplines: z.array(z.string()).min(1, "Select at least one discipline"),
   levels: z.array(z.string()).min(1, "Select at least one level"),
   breeds: z.array(z.string()).min(1, "Select at least one breed"),
+  sex: z.string().min(1, "Sex is required"),
+  currency: z.string().min(1, "Currency is required"),
+  
+  // Required numeric fields
   age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
   height_hands: z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+  price_min: z.number().min(1, "Minimum price must be at least 1"),
+  price_max: z.number().min(1, "Maximum price must be at least 1"),
+  
+  // Required for the form to work
+  owner_id: z.number(),
+  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
+  
+  // Optional text/input fields
   height_cm: z.number().optional(),
-  sex: z.string().min(1, "Sex is required"),
   sire: z.string().optional(),
   dam: z.string().optional(),
   dam_sire: z.string().optional(),
   characteristics: z.array(z.string()).optional(),
-  price_min: z.number().min(1, "Minimum price must be at least 1"),
-  price_max: z.number().min(1, "Maximum price must be at least 1"),
-  currency: z.string().min(1, "Currency is required"),
   description: z.string().optional(),
   additional_info: z.string().optional(),
+  
+  // Media requirements
   photos: z.array(z.string()).min(1, "At least one photo is required"),
   videos: z.array(z.string()).optional(),
 }).refine((data) => {
