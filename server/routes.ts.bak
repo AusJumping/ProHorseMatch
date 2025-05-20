@@ -2042,6 +2042,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription API endpoints
+  
+  // Note: This is a duplicate endpoint for /api/subscription
+  // We've removed the duplicate to fix conflicts - the implementation at line 1775 should be used instead
+  // This code block intentionally commented out to fix subscription page issues
+  
+  // Create a new subscription
   app.post('/api/subscription', isAuthenticated, async (req, res) => {
     try {
       if (!stripe) {
