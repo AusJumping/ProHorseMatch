@@ -777,19 +777,28 @@ export default function SubscriptionPage() {
               <Checkbox 
                 id="terms-global" 
                 checked={tosAgreed}
-                onCheckedChange={(checked) => setTosAgreed(checked === true)}
+                onCheckedChange={(checked) => {
+                  setTosAgreed(checked === true);
+                  console.log("Terms agreed:", checked === true);
+                }}
                 className="mt-1"
               />
               <div>
                 <label
                   htmlFor="terms-global"
                   className="text-base font-medium cursor-pointer"
+                  onClick={() => setTosAgreed(!tosAgreed)}
                 >
                   I agree to the <TermsDialog />
                 </label>
                 <p className="text-sm text-muted-foreground mb-2">
                   You must agree to our Terms of Service before subscribing to any plan.
                 </p>
+                {!tosAgreed && (
+                  <p className="text-sm text-red-500 font-medium">
+                    Please check this box to continue
+                  </p>
+                )}
               </div>
             </div>
           </div>
