@@ -64,91 +64,147 @@ export default function Home() {
       setShowFilter(true);
     }
     
-    // Parse URL search parameters to set initial filters from the URL
+    // Initialize filter object with defaults
+    let filtersToApply: Filter = {
+      disciplines: [],
+      breeds: [],
+      sexes: [],
+      location_country: null,
+      location_radius_km: null,
+      age_min: null,
+      age_max: null,
+      height_min: null,
+      height_max: null,
+      price_min: null,
+      price_max: null,
+      currency: currentCurrency,
+    };
+    
+    // First try to get filters from URL parameters
+    let foundFiltersInUrl = false;
+    
     if (location.includes('?')) {
       const urlParams = new URLSearchParams(window.location.search);
-      const filtersFromUrl: Filter = {
-        disciplines: [],
-        breeds: [],
-        sexes: [],
-        location_country: null,
-        location_radius_km: null,
-        age_min: null,
-        age_max: null,
-        height_min: null,
-        height_max: null,
-        price_min: null,
-        price_max: null,
-        currency: currentCurrency,
-      };
       
       // Get all discipline values
-      urlParams.getAll('disciplines').forEach(discipline => {
-        filtersFromUrl.disciplines.push(discipline);
-      });
+      const disciplines = urlParams.getAll('disciplines');
+      if (disciplines.length > 0) {
+        filtersToApply.disciplines = disciplines;
+        foundFiltersInUrl = true;
+      }
       
       // Get all breed values
-      urlParams.getAll('breeds').forEach(breed => {
-        filtersFromUrl.breeds.push(breed);
-      });
+      const breeds = urlParams.getAll('breeds');
+      if (breeds.length > 0) {
+        filtersToApply.breeds = breeds;
+        foundFiltersInUrl = true;
+      }
       
       // Get all sex values
-      urlParams.getAll('sexes').forEach(sex => {
-        filtersFromUrl.sexes.push(sex);
-      });
+      const sexes = urlParams.getAll('sexes');
+      if (sexes.length > 0) {
+        filtersToApply.sexes = sexes;
+        foundFiltersInUrl = true;
+      }
       
       // Get location country
       const locationCountry = urlParams.get('location_country');
       if (locationCountry) {
-        filtersFromUrl.location_country = locationCountry;
+        filtersToApply.location_country = locationCountry;
+        foundFiltersInUrl = true;
       }
       
       // Get min age
       const minAge = urlParams.get('min_age');
       if (minAge && minAge !== '0') {
-        filtersFromUrl.age_min = parseInt(minAge);
+        filtersToApply.age_min = parseInt(minAge);
+        foundFiltersInUrl = true;
       }
       
       // Get max age
       const maxAge = urlParams.get('max_age');
       if (maxAge && maxAge !== '100') {
-        filtersFromUrl.age_max = parseInt(maxAge);
+        filtersToApply.age_max = parseInt(maxAge);
+        foundFiltersInUrl = true;
       }
       
       // Get min height
       const minHeight = urlParams.get('min_height');
       if (minHeight && minHeight !== '0') {
-        filtersFromUrl.height_min = parseFloat(minHeight);
+        filtersToApply.height_min = parseFloat(minHeight);
+        foundFiltersInUrl = true;
       }
       
       // Get max height
       const maxHeight = urlParams.get('max_height');
       if (maxHeight && maxHeight !== '20') {
-        filtersFromUrl.height_max = parseFloat(maxHeight);
+        filtersToApply.height_max = parseFloat(maxHeight);
+        foundFiltersInUrl = true;
       }
       
       // Get min price
       const minPrice = urlParams.get('min_price');
       if (minPrice && minPrice !== '0') {
-        filtersFromUrl.price_min = parseInt(minPrice);
+        filtersToApply.price_min = parseInt(minPrice);
+        foundFiltersInUrl = true;
       }
       
       // Get max price
       const maxPrice = urlParams.get('max_price');
       if (maxPrice && maxPrice !== '1000000') {
-        filtersFromUrl.price_max = parseInt(maxPrice);
+        filtersToApply.price_max = parseInt(maxPrice);
+        foundFiltersInUrl = true;
       }
       
       // Get currency
       const currency = urlParams.get('currency');
       if (currency) {
-        filtersFromUrl.currency = currency;
+        filtersToApply.currency = currency;
+        foundFiltersInUrl = true;
       }
       
-      // Update the active filters with the URL parameters
-      console.log("Setting filters from URL parameters:", filtersFromUrl);
-      setActiveFilters(filtersFromUrl);
+      // If we found filters in URL, update localStorage for future use
+      if (foundFiltersInUrl) {
+        try {
+          localStorage.setItem('lastAppliedFilters', JSON.stringify(filtersToApply));
+          localStorage.setItem('filtersTimestamp', Date.now().toString());
+        } catch (error) {
+          console.error("Error saving filters to localStorage:", error);
+        }
+      }
     }
+    
+    // If no filters found in URL, try to load from localStorage backup
+    // This helps on mobile where URL params sometimes fail to pass correctly
+    if (!foundFiltersInUrl) {
+      try {
+        const savedFiltersJson = localStorage.getItem('lastAppliedFilters');
+        if (savedFiltersJson) {
+          const savedFilters = JSON.parse(savedFiltersJson);
+          console.log("Loading filters from localStorage backup:", savedFilters);
+          
+          // When using saved filters, make sure it's a recent navigation
+          const timestamp = localStorage.getItem('filtersTimestamp');
+          const now = Date.now();
+          const threshold = 60000; // 1 minute threshold
+          
+          if (timestamp && now - parseInt(timestamp) < threshold) {
+            console.log("Using recently saved filters from localStorage");
+            filtersToApply = savedFilters;
+          } else {
+            // Clear old saved filters if they're too old
+            localStorage.removeItem('lastAppliedFilters');
+            localStorage.removeItem('filtersTimestamp');
+          }
+        }
+      } catch (error) {
+        console.error("Error loading filters from localStorage:", error);
+      }
+    }
+    
+    // Update the active filters
+    console.log("Setting filters:", filtersToApply);
+    setActiveFilters(filtersToApply);
   }, [location, currentCurrency]);
 
   // Debug log

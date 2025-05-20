@@ -124,22 +124,30 @@ export default function FilterPage() {
     // After applying filters, navigate to browse page
     const params = new URLSearchParams();
     
+    // Format all filter parameters in exactly the same way the home page expects them
+    // This ensures filters are properly applied after navigation
+    
+    // Add disciplines
     if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
       filtersToApply.disciplines.forEach(d => params.append('disciplines', d));
     }
     
+    // Add breeds
     if (filtersToApply.breeds && filtersToApply.breeds.length > 0) {
       filtersToApply.breeds.forEach(b => params.append('breeds', b));
     }
     
+    // Add sexes
     if (filtersToApply.sexes && filtersToApply.sexes.length > 0) {
       filtersToApply.sexes.forEach(s => params.append('sexes', s));
     }
     
+    // Add location
     if (filtersToApply.location_country) {
       params.append('location_country', filtersToApply.location_country);
     }
     
+    // Add age range
     if (filtersToApply.age_min !== null) {
       params.append('min_age', filtersToApply.age_min?.toString() || '0');
     }
@@ -148,6 +156,7 @@ export default function FilterPage() {
       params.append('max_age', filtersToApply.age_max?.toString() || '100');
     }
     
+    // Add height range
     if (filtersToApply.height_min !== null) {
       params.append('min_height', filtersToApply.height_min?.toString() || '0');
     }
@@ -156,6 +165,7 @@ export default function FilterPage() {
       params.append('max_height', filtersToApply.height_max?.toString() || '20');
     }
     
+    // Add price range
     if (filtersToApply.price_min !== null) {
       params.append('min_price', filtersToApply.price_min?.toString() || '0');
     }
@@ -164,15 +174,22 @@ export default function FilterPage() {
       params.append('max_price', filtersToApply.price_max?.toString() || '1000000');
     }
     
+    // Always include currency
     params.append('currency', filtersToApply.currency || currentCurrency);
+    
+    // Store the filters in localStorage as a backup
+    // This helps with filter persistence between pages when 
+    // URL parameters might be lost during certain mobile navigations
+    try {
+      localStorage.setItem('lastAppliedFilters', JSON.stringify(filtersToApply));
+    } catch (e) {
+      console.error("Failed to save filters to localStorage:", e);
+    }
     
     console.log("Sending navigation params:", params.toString());
     
-    // Navigate to browse page with filters with a slight delay
-    // This ensures state is fully updated before navigation
-    setTimeout(() => {
-      navigate(`/browse?${params.toString()}`);
-    }, 300);
+    // Navigate to browse page immediately - delays can cause problems on mobile
+    navigate(`/browse?${params.toString()}`);
   };
 
   return (
