@@ -26,19 +26,19 @@ const profileFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }).optional(),
   email: z.string().email({ message: "Please enter a valid email address" }).optional(),
   location_country: z.string().optional(),
-  preferred_disciplines: z.array(z.string()).optional(),
-  preferred_levels: z.array(z.string()).optional(),
-  preferred_breeds: z.array(z.string()).optional(),
-  age_range_min: z.number().min(0).optional(),
-  age_range_max: z.number().min(0).optional(),
-  height_range_min: z.number().min(13).optional(),
-  height_range_max: z.number().min(13).optional(),
-  preferred_sexes: z.array(z.string()).optional(),
-  breeding_preferences: z.string().optional(),
-  preferred_characteristics: z.array(z.string()).optional(),
-  price_range_min: z.number().min(0).optional(),
-  price_range_max: z.number().min(0).optional(),
-  currency: z.string().optional(),
+  preferred_disciplines: z.array(z.string()).optional().default([]),
+  preferred_levels: z.array(z.string()).optional().default([]),
+  preferred_breeds: z.array(z.string()).optional().default([]),
+  age_range_min: z.number().min(0).optional().or(z.literal('')).transform(val => typeof val === 'string' ? 0 : val),
+  age_range_max: z.number().min(0).optional().or(z.literal('')).transform(val => typeof val === 'string' ? 999 : val),
+  height_range_min: z.number().min(13).optional().or(z.literal('')).transform(val => typeof val === 'string' ? 13 : val),
+  height_range_max: z.number().min(13).optional().or(z.literal('')).transform(val => typeof val === 'string' ? 99 : val),
+  preferred_sexes: z.array(z.string()).optional().default([]),
+  breeding_preferences: z.string().optional().default(""),
+  preferred_characteristics: z.array(z.string()).optional().default([]),
+  price_range_min: z.number().min(0).optional().or(z.literal('')).transform(val => typeof val === 'string' ? 0 : val),
+  price_range_max: z.number().min(0).optional().or(z.literal('')).transform(val => typeof val === 'string' ? 999999999 : val),
+  currency: z.string().optional().default("AUD"),
 })
 .refine(data => {
   // Skip validation if either field is undefined/null
@@ -751,9 +751,28 @@ export default function Profile() {
                 <Button 
                   type="button" 
                   onClick={() => {
-                    profileForm.handleSubmit((data) => {
-                      onProfileSubmit(data);
-                    })();
+                    const dirtyValues = profileForm.getValues();
+                    
+                    // Create a safe version of the data with defaults for empty values
+                    const safeData = {
+                      ...dirtyValues,
+                      preferred_disciplines: dirtyValues.preferred_disciplines || [],
+                      preferred_levels: dirtyValues.preferred_levels || [],
+                      preferred_breeds: dirtyValues.preferred_breeds || [],
+                      preferred_sexes: dirtyValues.preferred_sexes || [],
+                      preferred_characteristics: dirtyValues.preferred_characteristics || [],
+                      breeding_preferences: dirtyValues.breeding_preferences || "",
+                      age_range_min: Number(dirtyValues.age_range_min) || 0,
+                      age_range_max: Number(dirtyValues.age_range_max) || 999,
+                      height_range_min: Number(dirtyValues.height_range_min) || 13,
+                      height_range_max: Number(dirtyValues.height_range_max) || 99,
+                      price_range_min: Number(dirtyValues.price_range_min) || 0,
+                      price_range_max: Number(dirtyValues.price_range_max) || 999999999,
+                      currency: dirtyValues.currency || "AUD"
+                    };
+                    
+                    // Call onProfileSubmit directly with safe data
+                    onProfileSubmit(safeData);
                   }} 
                   className="bg-primary hover:bg-primary/90"
                 >
