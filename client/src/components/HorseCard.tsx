@@ -207,20 +207,20 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
             {isMobile ? "More Info" : "View Full Profile"}
           </Button>
           
-          {/* Add Like button for mobile users or when explicitly requested */}
-          {(isTouchDevice || showFavoriteButton) && onLike && (
+          {/* Like button - only show in Favorites view or when explicitly requested */}
+          {showFavoriteButton && onLike && (
             <Button
               variant="outline"
               size="icon"
               className="w-10 h-10 flex items-center justify-center like-button"
               onClick={handleLike}
               style={{ 
-                backgroundColor: "#cdac6e", 
+                backgroundColor: hasBeenLiked ? "#cdac6e" : "white", 
                 borderColor: "#cdac6e", 
-                color: "white" 
+                color: hasBeenLiked ? "white" : "#cdac6e"
               }}
             >
-              <Heart size={18} />
+              <Heart size={18} fill={hasBeenLiked ? "currentColor" : "none"} />
             </Button>
           )}
           
