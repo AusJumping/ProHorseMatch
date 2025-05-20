@@ -428,17 +428,85 @@ export default function Home() {
         {/* Main content area */}
         <div className="flex-1 flex flex-col items-center">
           {isTouchDevice ? (
-            /* Horse swiping area for touch devices */
-            <SwipeSection 
-              horses={horses || []}
-              isLoading={isLoading}
-              activeIndex={swipingIndex}
-              onLike={handleLike}
-              onDislike={handleDislike}
-              onShowMore={handleShowMore}
-            />
+            /* Horse grid for mobile touch devices (moving away from SwipeSection) */
+            <div className="w-full">
+              <h3 className="text-sm text-neutral-500 mb-3">
+                {horses?.length || 0} {horses?.length === 1 ? 'horse' : 'horses'} match your criteria
+              </h3>
+              <div className="space-y-4">
+                {horses && horses.map(horse => (
+                  <div key={horse.id} className="rounded-xl shadow-sm overflow-hidden bg-white">
+                    <div className="aspect-[4/3] relative">
+                      {horse.photos && horse.photos.length > 0 ? (
+                        <img 
+                          src={horse.photos[0]} 
+                          alt={horse.name} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-neutral-200 flex items-center justify-center">
+                          <span className="text-neutral-500">No image</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-accent font-bold text-lg">{horse.name}</h3>
+                      <p className="text-sm text-neutral-600">
+                        {horse.age}yo {horse.breeds[0]} {horse.sex}
+                      </p>
+                      <p className="text-sm text-neutral-600 mb-2">
+                        {horse.disciplines.join(', ')}
+                      </p>
+                      <div className="flex gap-2 mt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="flex-1 bg-white hover:bg-neutral-50" 
+                          onClick={() => onDislike(horse.id)}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Pass
+                        </Button>
+                        <Button 
+                          size="sm"
+                          className="flex-1 bg-white border border-[#cdac6e] text-[#cdac6e] hover:bg-[#f9f5eb]" 
+                          onClick={() => onLike(horse.id)}
+                        >
+                          <Heart className="h-4 w-4 mr-1" />
+                          Like
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="bg-white hover:bg-neutral-50"
+                          onClick={() => onShowMore(horse.id)}
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Show a message when no horses are found */}
+                {(!horses || horses.length === 0) && !isLoading && (
+                  <div className="p-6 text-center bg-white rounded-xl shadow-sm">
+                    <h3 className="font-semibold mb-2">No horses found</h3>
+                    <p className="text-neutral-600 text-sm">Try adjusting your filters to see more horses</p>
+                  </div>
+                )}
+                
+                {/* Loading state */}
+                {isLoading && (
+                  <div className="p-8 text-center">
+                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                    <p className="text-neutral-600">Loading horses...</p>
+                  </div>
+                )}
+              </div>
+            </div>
           ) : (
-            /* Horse grid for non-touch devices */
+            /* Horse grid for desktop */
             <HorseGrid
               horses={horses || []}
               onLike={handleLike}
