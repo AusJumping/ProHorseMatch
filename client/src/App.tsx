@@ -25,6 +25,7 @@ import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import FilterPage from "@/pages/filter";
 import WelcomePage from "@/pages/welcome";
+import Browse from "@/pages/browse";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
@@ -32,7 +33,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
-      <Route path="/browse" component={Home} />
+      <Route path="/browse" component={Browse} />
       <Route path="/auth" component={Auth} />
       <Route path="/horse/:id" component={HorseDetail} />
       <Route path="/messages" component={Messages} />
