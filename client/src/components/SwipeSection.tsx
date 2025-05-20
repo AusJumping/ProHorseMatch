@@ -91,7 +91,7 @@ const SwipeSection = ({
         Horse {localIndex + 1} of {horses.length}
       </div>
 
-      {/* Horse card with navigation buttons */}
+      {/* Horse card */}
       <div className="relative mb-4">
         <HorseCard 
           horse={currentHorse} 
@@ -99,33 +99,27 @@ const SwipeSection = ({
           onLike={onLike}
           showFavoriteButton={true}
         />
-        
-        {/* Navigation buttons */}
+      </div>
+
+      {/* Action Buttons with navigation arrows on sides */}
+      <div className="flex items-center justify-center gap-4 mt-5">
+        {/* Left navigation arrow */}
         {localIndex > 0 && (
           <Button 
             variant="secondary" 
             size="icon" 
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md z-20"
+            className="w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md z-20"
             onClick={goToPrevHorse}
           >
             <ChevronLeft className="h-6 w-6" />
           </Button>
         )}
-        
-        {localIndex < horses.length - 1 && (
-          <Button 
-            variant="secondary" 
-            size="icon" 
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md z-20"
-            onClick={goToNextHorse}
-          >
-            <ChevronRight className="h-6 w-6" />
-          </Button>
+        {/* Spacer when no left arrow */}
+        {localIndex === 0 && (
+          <div className="w-10"></div>
         )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-4 mt-5">
+        
+        {/* Main action buttons */}
         <Button
           size="icon"
           className="pass-button w-14 h-14 rounded-full"
@@ -149,6 +143,22 @@ const SwipeSection = ({
         >
           <Heart className="h-6 w-6" />
         </Button>
+        
+        {/* Right navigation arrow */}
+        {localIndex < horses.length - 1 && (
+          <Button 
+            variant="secondary" 
+            size="icon" 
+            className="w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md z-20"
+            onClick={goToNextHorse}
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
+        )}
+        {/* Spacer when no right arrow */}
+        {localIndex >= horses.length - 1 && (
+          <div className="w-10"></div>
+        )}
       </div>
     </div>
   );
