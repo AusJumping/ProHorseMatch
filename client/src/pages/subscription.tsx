@@ -434,8 +434,8 @@ export default function SubscriptionPage() {
         duration: 4000,
       });
       
-      // Scroll to the terms section and highlight it
-      const termsSection = document.getElementById('terms-section');
+      // Find the appropriate terms section - works for both initial and plan change pages
+      const termsSection = document.getElementById('terms-section') || document.getElementById('plan-change-terms-section');
       if (termsSection) {
         termsSection.scrollIntoView({ behavior: 'smooth' });
         termsSection.classList.add('border-red-500');
