@@ -755,29 +755,15 @@ export default function Profile() {
               <CardFooter className="flex justify-end">
                 <Button 
                   type="button"
-                  // Use a custom component with extra protection against double-clicks/taps
-                  // Track if the button is in a processing state
-                  disabled={profileForm.formState.isSubmitting}
-                  // Use a div wrapper with pointer-events-none to prevent ghost clicks
-                  onClick={async (e) => {
-                    // Prevent all default behaviors, both click and touch
+                  // Key changes for mobile: Use a simpler approch with fewer async operations
+                  // and a more immediate redirect
+                  onTouchStart={(e) => { 
+                    // Prevent the default action to avoid double-tap issues on mobile
                     e.preventDefault();
-                    // Add stopper for double-tap issues on mobile
-                    e.stopPropagation();
-                    
-                    // Don't proceed if already submitting
-                    if (profileForm.formState.isSubmitting) {
-                      return;
-                    }
-                    
-                    // Lock the form state to prevent double submissions
-                    profileForm.formState.isSubmitting = true;
-                    
-                    // Show saving toast immediately to provide visual feedback
-                    toast({
-                      title: "Saving preferences...",
-                      description: "Please wait",
-                    });
+                  }}
+                  onClick={async (e) => {
+                    // Prevent default action to ensure we handle the redirect
+                    e.preventDefault();
                     
                     const dirtyValues = profileForm.getValues();
                     
@@ -802,18 +788,22 @@ export default function Profile() {
                     // Only proceed if we have a valid user ID
                     if (user?.id) {
                       try {
-                        // Direct API call to save preferences
-                        const response = await apiRequest("PATCH", `/api/customers/${user.id}`, safeData);
-                        console.log("Successfully saved preferences");
+                        // Show saving toast immediately to provide visual feedback
+                        toast({
+                          title: "Saving preferences...",
+                          description: "Please wait",
+                        });
+                        
+                        // Direct API call instead of using the onProfileSubmit function
+                        await apiRequest("PATCH", `/api/customers/${user.id}`, safeData);
                         
                         // Invalidate the user query to refetch the updated data
-                        await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+                        queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
                         
-                        // Force the direct hardcoded navigation to happen immediately
-                        // This bypasses any React router and goes straight to browser navigation
-                        window.location.replace("/filter");
+                        // Use the most direct approach for navigation - set location immediately
+                        // This works better with mobile browsers that might have touch event quirks
+                        window.location.href = "/filter";
                       } catch (error: any) {
-                        profileForm.formState.isSubmitting = false;
                         toast({
                           title: "Error",
                           description: error.message || "Failed to save preferences",
@@ -821,7 +811,6 @@ export default function Profile() {
                         });
                       }
                     } else {
-                      profileForm.formState.isSubmitting = false;
                       toast({
                         title: "Error",
                         description: "You must be logged in to save preferences",
@@ -829,12 +818,10 @@ export default function Profile() {
                       });
                     }
                   }} 
-                  className="bg-primary hover:bg-primary/90 active:bg-primary/80 relative"
+                  className="bg-primary hover:bg-primary/90 active:bg-primary/80"
                 >
-                  <div className="flex items-center justify-center">
-                    <Save className="mr-2 h-4 w-4" />
-                    Save & Return to Horses
-                  </div>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save & Return to Horses
                 </Button>
               </CardFooter>
             </Card>

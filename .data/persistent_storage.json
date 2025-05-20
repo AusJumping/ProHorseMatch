@@ -307,7 +307,7 @@
         "preferred_sexes": [],
         "breeding_preferences": "",
         "preferred_characteristics": [],
-        "price_range_min": 20000,
+        "price_range_min": 0,
         "price_range_max": 25000
       }
     ]
