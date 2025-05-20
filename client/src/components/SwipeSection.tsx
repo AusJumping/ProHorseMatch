@@ -108,10 +108,10 @@ const SwipeSection = ({
           <Button 
             variant="secondary" 
             size="icon" 
-            className="w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md z-20"
+            className="w-10 h-10 rounded-full bg-white hover:bg-white/90 shadow-md z-20"
             onClick={goToPrevHorse}
           >
-            <ChevronLeft className="h-6 w-6" />
+            <ChevronLeft className="h-6 w-6 text-black" />
           </Button>
         )}
         {/* Spacer when no left arrow */}
@@ -149,10 +149,10 @@ const SwipeSection = ({
           <Button 
             variant="secondary" 
             size="icon" 
-            className="w-10 h-10 rounded-full bg-white/80 hover:bg-white shadow-md z-20"
+            className="w-10 h-10 rounded-full bg-white hover:bg-white/90 shadow-md z-20"
             onClick={goToNextHorse}
           >
-            <ChevronRight className="h-6 w-6" />
+            <ChevronRight className="h-6 w-6 text-black" />
           </Button>
         )}
         {/* Spacer when no right arrow */}
