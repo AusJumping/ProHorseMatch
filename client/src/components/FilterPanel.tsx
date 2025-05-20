@@ -444,6 +444,7 @@ const FilterPanel = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="0">No Min</SelectItem>
+                    <SelectItem value="1">1 year</SelectItem>
                     <SelectItem value="2">2 years</SelectItem>
                     <SelectItem value="3">3 years</SelectItem>
                     <SelectItem value="4">4 years</SelectItem>
@@ -456,6 +457,7 @@ const FilterPanel = ({
                     <SelectItem value="12">12 years</SelectItem>
                     <SelectItem value="14">14 years</SelectItem>
                     <SelectItem value="16">16 years</SelectItem>
+                    <SelectItem value="17">17 years</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
