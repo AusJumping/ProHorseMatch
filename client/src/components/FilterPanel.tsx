@@ -426,52 +426,126 @@ const FilterPanel = ({
             </Select>
           </div>
           
-          {/* Age */}
+          {/* Age Range */}
           <div className="filter-group">
-            <div className="flex items-center justify-between mb-2">
-              <Label className="font-accent font-semibold text-neutral-800">Age (years)</Label>
-              <div className="text-sm text-muted-foreground">
-                {filters.age_min !== null ? filters.age_min : '0'} - {filters.age_max !== null ? filters.age_max : '20+'}
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Age Range (years)</Label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Select 
+                  value={filters.age_min?.toString() || "0"} 
+                  onValueChange={(value) => handleChange('age_min', parseInt(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    {filters.age_min !== null ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Min Age</span>
+                    )}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No Min</SelectItem>
+                    <SelectItem value="2">2 years</SelectItem>
+                    <SelectItem value="3">3 years</SelectItem>
+                    <SelectItem value="4">4 years</SelectItem>
+                    <SelectItem value="5">5 years</SelectItem>
+                    <SelectItem value="6">6 years</SelectItem>
+                    <SelectItem value="7">7 years</SelectItem>
+                    <SelectItem value="8">8 years</SelectItem>
+                    <SelectItem value="9">9 years</SelectItem>
+                    <SelectItem value="10">10 years</SelectItem>
+                    <SelectItem value="12">12 years</SelectItem>
+                    <SelectItem value="14">14 years</SelectItem>
+                    <SelectItem value="16">16 years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Select 
+                  value={filters.age_max?.toString() || "999"} 
+                  onValueChange={(value) => handleChange('age_max', parseInt(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    {filters.age_max !== null && filters.age_max !== 999 ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Max Age</span>
+                    )}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="999">No Max</SelectItem>
+                    <SelectItem value="4">4 years</SelectItem>
+                    <SelectItem value="5">5 years</SelectItem>
+                    <SelectItem value="6">6 years</SelectItem>
+                    <SelectItem value="7">7 years</SelectItem>
+                    <SelectItem value="8">8 years</SelectItem>
+                    <SelectItem value="10">10 years</SelectItem>
+                    <SelectItem value="12">12 years</SelectItem>
+                    <SelectItem value="14">14 years</SelectItem>
+                    <SelectItem value="16">16 years</SelectItem>
+                    <SelectItem value="18">18 years</SelectItem>
+                    <SelectItem value="20">20+ years</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            
-            <Slider
-              defaultValue={[filters.age_min || 0, filters.age_max || 20]}
-              min={0}
-              max={20}
-              step={1}
-              className="my-5"
-              onValueCommit={(values) => {
-                if (values.length === 2) {
-                  handleChange('age_min', values[0]);
-                  handleChange('age_max', values[1]);
-                }
-              }}
-            />
           </div>
           
-          {/* Height */}
+          {/* Height Range */}
           <div className="filter-group">
-            <div className="flex items-center justify-between mb-2">
-              <Label className="font-accent font-semibold text-neutral-800">Height (hands)</Label>
-              <div className="text-sm text-muted-foreground">
-                {filters.height_min !== null ? filters.height_min : '13'} - {filters.height_max !== null ? filters.height_max : '18+'}
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Height Range (hands)</Label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Select 
+                  value={filters.height_min?.toString() || "13"} 
+                  onValueChange={(value) => handleChange('height_min', parseFloat(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    {filters.height_min !== null ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Min Height</span>
+                    )}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="13">13.0hh</SelectItem>
+                    <SelectItem value="13.2">13.2hh</SelectItem>
+                    <SelectItem value="14">14.0hh</SelectItem>
+                    <SelectItem value="14.2">14.2hh</SelectItem>
+                    <SelectItem value="15">15.0hh</SelectItem>
+                    <SelectItem value="15.2">15.2hh</SelectItem>
+                    <SelectItem value="16">16.0hh</SelectItem>
+                    <SelectItem value="16.2">16.2hh</SelectItem>
+                    <SelectItem value="17">17.0hh</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex-1">
+                <Select 
+                  value={filters.height_max?.toString() || "999"} 
+                  onValueChange={(value) => handleChange('height_max', parseFloat(value))}
+                >
+                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                    {filters.height_max !== null && filters.height_max !== 999 ? (
+                      <SelectValue />
+                    ) : (
+                      <span className="text-muted-foreground">Max Height</span>
+                    )}
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="999">No Max</SelectItem>
+                    <SelectItem value="14">14.0hh</SelectItem>
+                    <SelectItem value="14.2">14.2hh</SelectItem>
+                    <SelectItem value="15">15.0hh</SelectItem>
+                    <SelectItem value="15.2">15.2hh</SelectItem>
+                    <SelectItem value="16">16.0hh</SelectItem>
+                    <SelectItem value="16.2">16.2hh</SelectItem>
+                    <SelectItem value="17">17.0hh</SelectItem>
+                    <SelectItem value="17.2">17.2hh</SelectItem>
+                    <SelectItem value="18">18.0hh+</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            
-            <Slider
-              defaultValue={[filters.height_min || 13, filters.height_max || 18]}
-              min={13}
-              max={18}
-              step={0.1}
-              className="my-5"
-              onValueCommit={(values) => {
-                if (values.length === 2) {
-                  handleChange('height_min', values[0]);
-                  handleChange('height_max', values[1]);
-                }
-              }}
-            />
           </div>
           
           {/* Location */}
