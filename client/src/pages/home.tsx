@@ -564,24 +564,44 @@ export default function Home() {
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col items-center">
-          {isTouchDevice ? (
-            /* Horse swiping area for touch devices */
-            <SwipeSection 
-              horses={horses || []}
-              isLoading={isLoading}
-              activeIndex={swipingIndex}
-              onLike={handleLike}
-              onDislike={handleDislike}
-              onShowMore={handleShowMore}
-            />
+          {/* Check if filters have been applied */}
+          {Object.entries(activeFilters).some(([key, value]) => {
+            // Check if any filter has been applied
+            if (Array.isArray(value) && value.length > 0) return true;
+            if (value !== null && key !== 'currency') return true;
+            return false;
+          }) ? (
+            // If filters are applied, show horses
+            isTouchDevice ? (
+              /* Horse swiping area for touch devices */
+              <SwipeSection 
+                horses={horses || []}
+                isLoading={isLoading}
+                activeIndex={swipingIndex}
+                onLike={handleLike}
+                onDislike={handleDislike}
+                onShowMore={handleShowMore}
+              />
+            ) : (
+              /* Horse grid for non-touch devices */
+              <HorseGrid
+                horses={horses || []}
+                onLike={handleLike}
+                onDislike={handleDislike}
+                onShowMore={handleShowMore}
+              />
+            )
           ) : (
-            /* Horse grid for non-touch devices */
-            <HorseGrid
-              horses={horses || []}
-              onLike={handleLike}
-              onDislike={handleDislike}
-              onShowMore={handleShowMore}
-            />
+            // If no filters are applied, show a message prompting the user to apply filters
+            <div className="flex flex-col items-center justify-center h-96 w-full max-w-lg mx-auto bg-white rounded-xl p-8 text-center">
+              <h3 className="text-xl font-display font-bold mb-4">Apply Filters to View Horses</h3>
+              <p className="text-neutral-600 mb-6">
+                Please select your preferences using the filter panel to see available horses.
+              </p>
+              <Button onClick={toggleFilterPanel}>
+                Open Filter Panel
+              </Button>
+            </div>
           )}
         </div>
 

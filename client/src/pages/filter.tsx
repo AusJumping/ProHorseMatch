@@ -219,9 +219,6 @@ export default function FilterPage() {
     >
       <div className="filterPage">
         <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Find Your Perfect Match</h1>
-          <p className="text-muted-foreground">Use the filters below to narrow down your horse search</p>
-          
           <div className="grid md:grid-cols-2 gap-4 mt-4">
             <div>
               <FilterPanel 
