@@ -132,11 +132,17 @@ export default function Home() {
       }
       
       const result = await response.json();
-      // Reset the active index to 0 whenever we get new data
-      setSwipingIndex(0);
       return result;
     }
   });
+  
+  // Ensure we reset the swiping index whenever our horses list changes
+  useEffect(() => {
+    if (horses) {
+      console.log('Horses data changed - resetting swiping index, horse count:', horses.length);
+      setSwipingIndex(0);
+    }
+  }, [horses]);
 
   const handleLike = async (horseId: number) => {
     // Debug logging to help diagnose authentication issues
