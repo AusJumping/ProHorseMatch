@@ -14,14 +14,12 @@ interface HorseGridProps {
 }
 
 const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) => {
-  // Only show no horses message if the data has already been loaded
-  // This prevents the "No horses" flash while filters are being applied
   if (!horses.length) {
     return (
       <div className="w-full flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-display font-bold mb-4">No horses match your filters</h3>
+        <h3 className="text-xl font-display font-bold mb-4">No horses in database</h3>
         <p className="text-neutral-600 mb-6">
-          Try adjusting your filters to see more horses.
+          There are currently no horses in the database. Add some horses to get started.
         </p>
         <Button onClick={() => window.location.reload()}>Refresh</Button>
       </div>

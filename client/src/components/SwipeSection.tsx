@@ -63,7 +63,7 @@ const SwipeSection = ({
     );
   }
 
-  if (!horses.length && !isLoading) {
+  if (!horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
         <h3 className="text-xl font-display font-bold mb-4">No horses in database</h3>
