@@ -239,7 +239,10 @@ export default function FilterPage() {
           <Button 
             className="mt-8 w-full md:w-auto"
             size="lg"
-            onClick={() => handleApplyFilters(activeFilters)}
+            onClick={() => {
+              console.log("Apply button clicked with filters:", activeFilters);
+              handleApplyFilters(activeFilters);
+            }}
           >
             Show Results ({isLoading ? '...' : horses?.length || 0})
           </Button>
