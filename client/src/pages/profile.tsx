@@ -754,8 +754,17 @@ export default function Profile() {
               </CardContent>
               <CardFooter className="flex justify-end">
                 <Button 
-                  type="button" 
-                  onClick={async () => {
+                  type="button"
+                  // Key changes for mobile: Use a simpler approch with fewer async operations
+                  // and a more immediate redirect
+                  onTouchStart={(e) => { 
+                    // Prevent the default action to avoid double-tap issues on mobile
+                    e.preventDefault();
+                  }}
+                  onClick={async (e) => {
+                    // Prevent default action to ensure we handle the redirect
+                    e.preventDefault();
+                    
                     const dirtyValues = profileForm.getValues();
                     
                     // Create a safe version of the data with defaults for empty values
@@ -779,24 +788,21 @@ export default function Profile() {
                     // Only proceed if we have a valid user ID
                     if (user?.id) {
                       try {
+                        // Show saving toast immediately to provide visual feedback
+                        toast({
+                          title: "Saving preferences...",
+                          description: "Please wait",
+                        });
+                        
                         // Direct API call instead of using the onProfileSubmit function
                         await apiRequest("PATCH", `/api/customers/${user.id}`, safeData);
-                        
-                        toast({
-                          title: "Preferences saved",
-                          description: "Your preferences have been saved successfully.",
-                        });
                         
                         // Invalidate the user query to refetch the updated data
                         queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
                         
-                        // Force redirect to filter page with a page reload approach
-                        console.log("Redirecting to filter page...");
-                        
-                        // Use a more reliable location change that forces navigation
-                        setTimeout(() => {
-                          window.location.href = "/filter";
-                        }, 500);
+                        // Use the most direct approach for navigation - set location immediately
+                        // This works better with mobile browsers that might have touch event quirks
+                        window.location.href = "/filter";
                       } catch (error: any) {
                         toast({
                           title: "Error",
@@ -812,7 +818,7 @@ export default function Profile() {
                       });
                     }
                   }} 
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-primary hover:bg-primary/90 active:bg-primary/80"
                 >
                   <Save className="mr-2 h-4 w-4" />
                   Save & Return to Horses
