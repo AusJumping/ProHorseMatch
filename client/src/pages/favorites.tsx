@@ -119,6 +119,7 @@ export default function Favorites() {
         toast({
           title: "Removed from favorites",
           description: "Horse has been removed from your favorites.",
+          duration: 800, // Very brief notification (just under 1 second)
         });
       }
     } catch (error) {
@@ -126,6 +127,7 @@ export default function Favorites() {
         title: "Error",
         description: "Failed to remove horse from favorites.",
         variant: "destructive",
+        duration: 800, // Very brief error notification to match others
       });
     }
   };
