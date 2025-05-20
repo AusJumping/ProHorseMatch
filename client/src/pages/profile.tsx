@@ -771,8 +771,16 @@ export default function Profile() {
                       currency: dirtyValues.currency || "AUD"
                     };
                     
-                    // Call onProfileSubmit directly with safe data
-                    onProfileSubmit(safeData);
+                    // Only proceed if we have a valid user ID
+                    if (user?.id) {
+                      onProfileSubmit(safeData);
+                    } else {
+                      toast({
+                        title: "Error",
+                        description: "You must be logged in to save preferences",
+                        variant: "destructive",
+                      });
+                    }
                   }} 
                   className="bg-primary hover:bg-primary/90"
                 >
