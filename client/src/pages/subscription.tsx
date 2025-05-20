@@ -425,14 +425,24 @@ export default function SubscriptionPage() {
   
   // When plan is selected, handle beta or paid subscriptions accordingly
   const handleSelectPlan = (planId: string) => {
-    // Verify that user has agreed to Terms of Service
+    // Always verify that user has agreed to Terms of Service
     if (!tosAgreed) {
       toast({
         title: 'Terms of Service Required',
         description: 'Please agree to the Terms of Service before subscribing.',
         variant: 'destructive',
-        duration: 3000,
+        duration: 4000,
       });
+      
+      // Scroll to the terms section and highlight it
+      const termsSection = document.getElementById('terms-section');
+      if (termsSection) {
+        termsSection.scrollIntoView({ behavior: 'smooth' });
+        termsSection.classList.add('border-red-500');
+        setTimeout(() => {
+          termsSection.classList.remove('border-red-500');
+        }, 3000);
+      }
       return;
     }
     
@@ -772,7 +782,7 @@ export default function SubscriptionPage() {
           </div>
           
           {/* Terms of Service Agreement - Global for all plans */}
-          <div className="mb-8 p-4 border border-gray-300 rounded-lg bg-white">
+          <div id="terms-section" className="mb-8 p-4 border border-gray-300 rounded-lg bg-white transition-colors duration-300">
             <div className="flex items-start space-x-3">
               <Checkbox 
                 id="terms-global" 
@@ -792,13 +802,13 @@ export default function SubscriptionPage() {
                   I agree to the Terms of Service
                 </label>
                 <p className="text-sm text-muted-foreground mb-2">
-                  You must agree to our Terms of Service before subscribing to any plan.
+                  You must agree to our Terms of Service before subscribing to any plan or changing your subscription.
                 </p>
                 
                 {/* View Terms of Service Button */}
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="mb-2">
+                    <Button variant="outline" size="sm" className="mb-2 font-medium">
                       View Terms of Service
                     </Button>
                   </DialogTrigger>
