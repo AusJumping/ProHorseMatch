@@ -766,6 +766,30 @@ export default function SubscriptionPage() {
             <p className="text-muted-foreground">Enjoy full access during our Beta Launch Period. This subscription is free and is for a limited time only. Enjoy exploring the features of this app. We hope you find your perfect match!</p>
           </div>
           
+          {/* Terms of Service Agreement - Global for all plans */}
+          <div className="mb-8 p-4 border border-gray-300 rounded-lg bg-white">
+            <div className="flex items-start space-x-3">
+              <Checkbox 
+                id="terms-global" 
+                checked={tosAgreed}
+                onCheckedChange={(checked) => setTosAgreed(checked === true)}
+                className="mt-1"
+              />
+              <div>
+                <label
+                  htmlFor="terms-global"
+                  className="text-base font-medium cursor-pointer"
+                >
+                  I agree to the Terms of Service
+                </label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  You must agree to our Terms of Service before subscribing to any plan.
+                </p>
+                <TermsOfServiceDialog />
+              </div>
+            </div>
+          </div>
+          
           {!clientSecret ? (
             <>
               {/* Beta Plans Section */}
@@ -789,35 +813,16 @@ export default function SubscriptionPage() {
                         ))}
                       </ul>
                       
-                      {/* Terms of Service Agreement */}
-                      <div className="mb-4 flex items-start space-x-2">
-                        <Checkbox 
-                          id={`terms-${plan.id}`} 
-                          checked={tosAgreed}
-                          onCheckedChange={(checked) => setTosAgreed(checked === true)}
-                          className="mt-1"
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                          <label
-                            htmlFor={`terms-${plan.id}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            I agree to the <TermsOfServiceDialog />
-                          </label>
-                          <p className="text-xs text-muted-foreground">
-                            You must agree to our Terms of Service before subscribing.
-                          </p>
-                        </div>
-                      </div>
+
                     </CardContent>
                     
                     <div className="px-6 pb-6 mt-auto">
                       <Button 
                         onClick={() => handleSelectPlan(plan.id)} 
                         className="w-full"
-                        disabled={!tosAgreed && isPendingBeta}
+                        disabled={!tosAgreed || isPendingActivateBeta}
                       >
-                        {isPendingBeta ? (
+                        {isPendingActivateBeta ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Processing...
