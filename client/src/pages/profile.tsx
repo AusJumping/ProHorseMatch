@@ -39,6 +39,30 @@ const profileFormSchema = z.object({
   price_range_min: z.number().min(0).optional(),
   price_range_max: z.number().min(0).optional(),
   currency: z.string().optional(),
+})
+.refine(data => {
+  // Skip validation if either field is undefined/null
+  if (data.price_range_min === undefined || data.price_range_max === undefined) return true;
+  return data.price_range_max >= data.price_range_min;
+}, {
+  message: "Maximum price must be greater than or equal to minimum price",
+  path: ["price_range_max"]
+})
+.refine(data => {
+  // Skip validation if either field is undefined/null
+  if (data.age_range_min === undefined || data.age_range_max === undefined) return true;
+  return data.age_range_max >= data.age_range_min;
+}, {
+  message: "Maximum age must be greater than or equal to minimum age",
+  path: ["age_range_max"]
+})
+.refine(data => {
+  // Skip validation if either field is undefined/null
+  if (data.height_range_min === undefined || data.height_range_max === undefined) return true;
+  return data.height_range_max >= data.height_range_min;
+}, {
+  message: "Maximum height must be greater than or equal to minimum height",
+  path: ["height_range_max"]
 });
 
 // Define the constants from the schema
