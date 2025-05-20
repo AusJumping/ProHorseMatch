@@ -280,6 +280,7 @@ export default function SubscriptionPage() {
   const [isDonating, setIsDonating] = useState(false);
   const [convertedFuturePlans, setConvertedFuturePlans] = useState(futurePlans);
   const [tosAgreed, setTosAgreed] = useState(false);
+  const [isPendingSubscribe, setIsPendingSubscribe] = useState(false);
   const { toast } = useToast();
   const { currentCurrency, convertPrice, formatPrice } = useCurrency();
   
@@ -439,9 +440,11 @@ export default function SubscriptionPage() {
     
     // For beta plans, activate the subscription with the API
     if (planId.startsWith('beta-')) {
+      setIsPendingSubscribe(true);
       activateBetaSubscription(planId);
     } else {
       // For paid plans, create a payment intent
+      setIsPendingSubscribe(true);
       createSubscription(planId);
     }
   };
@@ -782,12 +785,11 @@ export default function SubscriptionPage() {
                   htmlFor="terms-global"
                   className="text-base font-medium cursor-pointer"
                 >
-                  I agree to the Terms of Service
+                  I agree to the <TermsDialog />
                 </label>
                 <p className="text-sm text-muted-foreground mb-2">
                   You must agree to our Terms of Service before subscribing to any plan.
                 </p>
-                <TermsOfServiceDialog />
               </div>
             </div>
           </div>
@@ -822,9 +824,9 @@ export default function SubscriptionPage() {
                       <Button 
                         onClick={() => handleSelectPlan(plan.id)} 
                         className="w-full"
-                        disabled={!tosAgreed || isPendingActivateBeta}
+                        disabled={!tosAgreed || isPendingSubscribe}
                       >
-                        {isPendingActivateBeta ? (
+                        {isPendingSubscribe ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                             Processing...
