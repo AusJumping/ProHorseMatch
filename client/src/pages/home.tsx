@@ -201,7 +201,7 @@ export default function Home() {
         toast({
           title: "Horse Liked!",
           description: "This horse has been added to your favorites.",
-          duration: 2000, // Reduce duration to 2 seconds (default is around 8 seconds)
+          duration: 800, // Very brief notification (just under 1 second)
         });
         
         // Wait a brief moment before advancing to let the toast appear properly
@@ -286,7 +286,7 @@ export default function Home() {
         title: "Error",
         description: "Failed to dislike horse. Please try again.",
         variant: "destructive",
-        duration: 2000, // Reduce duration to 2 seconds to match the "Horse Liked!" toast
+        duration: 800, // Very brief error notification to match the "Horse Liked!" toast
       });
     }
   };
