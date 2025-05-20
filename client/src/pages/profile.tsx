@@ -54,8 +54,7 @@ const characteristics = [
   "Honest", "Bold", "Sensitive", "Calm"
 ];
 const countries = [
-  "Germany", "Netherlands", "Belgium", "France", "United Kingdom", 
-  "United States", "Ireland", "Sweden", "Denmark", "Spain", "Italy"
+  "Australia", "United States"
 ];
 const priceValues = [
   0, 5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 
