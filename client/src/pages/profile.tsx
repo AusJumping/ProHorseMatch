@@ -748,7 +748,15 @@ export default function Profile() {
                 </ScrollArea>
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button type="submit" onClick={profileForm.handleSubmit(onProfileSubmit)} className="bg-primary hover:bg-primary/90">
+                <Button 
+                  type="button" 
+                  onClick={() => {
+                    profileForm.handleSubmit((data) => {
+                      onProfileSubmit(data);
+                    })();
+                  }} 
+                  className="bg-primary hover:bg-primary/90"
+                >
                   <Save className="mr-2 h-4 w-4" />
                   Save & Return to Horses
                 </Button>
