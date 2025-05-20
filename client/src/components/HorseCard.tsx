@@ -76,8 +76,20 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
     }
   };
   
-  const handleLike = (e: React.MouseEvent) => {
+  const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault(); // Prevent any default behavior
+    
+    // Check if user is authenticated before proceeding
+    if (!isAuthenticated) {
+      // User might need to log in first - display message via parent handler
+      if (onLike) {
+        onLike(horse.id);
+      }
+      return;
+    }
+    
+    // User is authenticated, proceed with like operation
     if (onLike) {
       onLike(horse.id);
     }

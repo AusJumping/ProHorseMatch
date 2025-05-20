@@ -141,45 +141,39 @@ export default function Home() {
     // Debug logging to help diagnose authentication issues
     console.log("Like horse - Auth state:", { isAuthenticated, user, userId: user?.id });
     
-    // Check if user is authenticated - additional check to handle local storage recovery
-    const storedUser = localStorage.getItem('user');
-    const hasStoredUser = !!storedUser;
-    
-    if (!isAuthenticated && !hasStoredUser) {
+    // Check if user is authenticated
+    if (!isAuthenticated || !user) {
       toast({
         title: "Login Required",
         description: "Please log in to save this horse to your favorites.",
         variant: "default",
       });
       
-      // Still advance to the next horse
-      setSwipingIndex(prev => prev + 1);
+      // Redirect to login page instead of advancing
+      navigate('/auth');
       return;
     }
     
-    // If we have a stored user but not authenticated via context,
-    // try to use the stored user data
-    let customerId = user?.id;
-    if (!customerId && hasStoredUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        customerId = parsedUser.id;
-      } catch (e) {
-        console.error("Error parsing stored user:", e);
-      }
-    }
-    
-    if (!horseId || !customerId) {
-      setSwipingIndex(prev => prev + 1);
+    // Now that we've verified the user is logged in, proceed with like
+    if (!horseId) {
+      toast({
+        title: "Error",
+        description: "Invalid horse selection. Please try again.",
+        variant: "destructive",
+      });
       return;
     }
     
     try {
-      await apiRequest('POST', '/api/matches', {
-        customer_id: customerId,
+      const response = await apiRequest('POST', '/api/matches', {
+        customer_id: user.id,
         horse_id: horseId,
         is_liked: true
       });
+      
+      if (!response.ok) {
+        throw new Error("Failed to process like request");
+      }
       
       toast({
         title: "Horse Liked!",
@@ -188,6 +182,7 @@ export default function Home() {
       
       setSwipingIndex(prev => prev + 1);
     } catch (error) {
+      console.error("Error liking horse:", error);
       toast({
         title: "Error",
         description: "Failed to like horse. Please try again.",
