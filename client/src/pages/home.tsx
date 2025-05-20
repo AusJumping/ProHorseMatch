@@ -212,27 +212,9 @@ export default function Home() {
 
   const [swipingIndex, setSwipingIndex] = useState(0);
 
-  // Check if any real filters have been applied (not just currency)
-  const hasRealFilters = () => {
-    // Consider the search active if any criteria besides currency is set
-    return (
-      (activeFilters.disciplines && activeFilters.disciplines.length > 0) ||
-      (activeFilters.breeds && activeFilters.breeds.length > 0) ||
-      (activeFilters.sexes && activeFilters.sexes.length > 0) ||
-      activeFilters.location_country !== null ||
-      activeFilters.age_min !== null ||
-      activeFilters.age_max !== null ||
-      activeFilters.height_min !== null ||
-      activeFilters.height_max !== null ||
-      activeFilters.price_min !== null ||
-      activeFilters.price_max !== null
-    );
-  };
-  
-  // Query for horses with filters - only runs if real filters have been applied
+  // Query for horses with filters
   const { data: horses, isLoading, isError } = useQuery<Horse[]>({
     queryKey: ['/api/horses', activeFilters],
-    enabled: hasRealFilters(), // Only run the query if actual filters are applied
     queryFn: async () => {
       // Build query parameters from activeFilters
       const params = new URLSearchParams();
@@ -582,53 +564,29 @@ export default function Home() {
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col items-center">
-          {!hasRealFilters() ? (
-            /* Welcome screen when no filters are applied yet */
-            <div className="w-full flex flex-col items-center justify-center p-12 bg-white rounded-xl border border-neutral-200 text-center">
-              <h2 className="text-xl font-bold mb-4">Welcome to Pro Horse Match</h2>
-              <p className="text-neutral-600 mb-6 max-w-lg">
-                Use the search filters to find your perfect equine partner. Select disciplines, breeds, age ranges and more to see matching horses.
-              </p>
-              {isMobile ? (
-                <Button onClick={() => setIsFilterOpen(true)} className="bg-[#cdac6e] hover:bg-[#b69a5d]">
-                  Start Your Search
-                </Button>
-              ) : (
-                <p className="text-sm text-neutral-500">
-                  Use the filter panel on the left to begin your search
-                </p>
-              )}
-            </div>
-          ) : isLoading ? (
-            <div className="w-full flex justify-center py-12">
-              <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" aria-label="Loading"/>
-            </div>
+          {isTouchDevice ? (
+            /* Horse swiping area for touch devices */
+            <SwipeSection 
+              horses={horses || []}
+              isLoading={isLoading}
+              activeIndex={swipingIndex}
+              onLike={handleLike}
+              onDislike={handleDislike}
+              onShowMore={handleShowMore}
+            />
           ) : (
-            /* Display horses if filters are applied and data is loaded */
-            isTouchDevice ? (
-              /* Horse swiping area for touch devices */
-              <SwipeSection 
-                horses={horses || []}
-                isLoading={isLoading}
-                activeIndex={swipingIndex}
-                onLike={handleLike}
-                onDislike={handleDislike}
-                onShowMore={handleShowMore}
-              />
-            ) : (
-              /* Horse grid for non-touch devices */
-              <HorseGrid
-                horses={horses || []}
-                onLike={handleLike}
-                onDislike={handleDislike}
-                onShowMore={handleShowMore}
-              />
-            )
+            /* Horse grid for non-touch devices */
+            <HorseGrid
+              horses={horses || []}
+              onLike={handleLike}
+              onDislike={handleDislike}
+              onShowMore={handleShowMore}
+            />
           )}
         </div>
 
-        {/* Right sidebar - only show when filters are applied (desktop only) */}
-        {!isMobile && hasRealFilters() && horses && horses.length > 0 && (
+        {/* Right sidebar - recently viewed (desktop only) */}
+        {!isMobile && (
           <div className="w-72 bg-white rounded-xl p-5 shadow-sm h-fit ml-6">
             <h3 
               className="font-accent font-bold text-lg mb-4 flex items-center cursor-pointer hover:text-primary transition-colors" 
@@ -641,14 +599,14 @@ export default function Home() {
             </h3>
             
             <div className="space-y-4">
-              {horses.slice(0, 3).map((horse) => (
+              {horses?.slice(0, 3).map((horse) => (
                 <div 
                   key={horse.id} 
                   className="flex gap-3 hover:bg-neutral-50 p-2 rounded-lg cursor-pointer transition-colors"
                   onClick={() => navigate(`/horse/${horse.id}`)}
                 >
                   <img 
-                    src={horse.photos?.[0] || ''} 
+                    src={horse.photos[0]} 
                     alt={`${horse.name}'s portrait`} 
                     className="w-16 h-16 object-cover rounded-lg" 
                   />
@@ -657,7 +615,7 @@ export default function Home() {
                     <p className="text-xs text-neutral-600">
                       {horse.sire && horse.dam_sire 
                         ? `${horse.sire} x ${horse.dam_sire}`
-                        : horse.breeds?.[0] || "Breeding not specified"}
+                        : horse.breeds[0] || "Breeding not specified"}
                     </p>
                     <p className="text-xs text-neutral-700 mt-1">
                       {horse.age}yo • {horse.sex}
@@ -666,8 +624,10 @@ export default function Home() {
                 </div>
               ))}
               
-              {horses.length > 3 && (
-                <div className="text-center pt-2 border-t border-neutral-100">
+              {horses && horses.length > 3 && (
+                <div 
+                  className="text-center pt-2 border-t border-neutral-100"
+                >
                   <button 
                     onClick={() => navigate('/horses')} 
                     className="text-sm text-primary hover:text-primary-dark font-medium"
@@ -677,6 +637,8 @@ export default function Home() {
                 </div>
               )}
             </div>
+            
+
           </div>
         )}
 

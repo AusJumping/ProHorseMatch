@@ -134,9 +134,7 @@ const FilterPanel = ({
     console.log("Apply button clicked with filters:", filters);
     
     // Remove focus from button to prevent accidental double clicks
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
+    document.activeElement?.blur();
     
     // Create a direct copy of the filters object to avoid state mutations
     const filtersToApply = JSON.parse(JSON.stringify(filters));
@@ -164,64 +162,16 @@ const FilterPanel = ({
       console.error("Error saving filters to localStorage:", error);
     }
     
-    // On mobile, perform direct window location navigation after storing in localStorage
-    // This solves the double-click issue by using direct navigation instead of React routing
+    // For mobile devices, first close the panel to prevent UI issues
     if (isMobile) {
-      // First close the panel
       onClose();
       
-      // Build the query string for direct navigation
-      const queryParams = new URLSearchParams();
-      
-      // Add all filter parameters to URL
-      if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
-        filtersToApply.disciplines.forEach((d: string) => queryParams.append('disciplines', d));
-      }
-      
-      if (filtersToApply.breeds && filtersToApply.breeds.length > 0) {
-        filtersToApply.breeds.forEach((b: string) => queryParams.append('breeds', b));
-      }
-      
-      if (filtersToApply.sexes && filtersToApply.sexes.length > 0) {
-        filtersToApply.sexes.forEach((s: string) => queryParams.append('sexes', s));
-      }
-      
-      if (filtersToApply.location_country) {
-        queryParams.append('location_country', filtersToApply.location_country);
-      }
-      
-      if (filtersToApply.age_min !== null) {
-        queryParams.append('min_age', filtersToApply.age_min?.toString() || '0');
-      }
-      
-      if (filtersToApply.age_max !== null) {
-        queryParams.append('max_age', filtersToApply.age_max?.toString() || '999');
-      }
-      
-      if (filtersToApply.height_min !== null) {
-        queryParams.append('min_height', filtersToApply.height_min?.toString() || '0');
-      }
-      
-      if (filtersToApply.height_max !== null) {
-        queryParams.append('max_height', filtersToApply.height_max?.toString() || '999');
-      }
-      
-      if (filtersToApply.price_min !== null) {
-        queryParams.append('min_price', filtersToApply.price_min?.toString() || '0');
-      }
-      
-      if (filtersToApply.price_max !== null) {
-        queryParams.append('max_price', filtersToApply.price_max?.toString() || '999999999');
-      }
-      
-      if (filtersToApply.currency) {
-        queryParams.append('currency', filtersToApply.currency);
-      }
-      
-      // Perform direct navigation with generated query string
-      window.location.href = `/?${queryParams.toString()}`;
+      // Then apply filters after a tiny delay to ensure the UI update completes
+      setTimeout(() => {
+        onApplyFilters(filtersToApply);
+      }, 50);
     } else {
-      // For desktop, use React navigation through the callback
+      // For desktop, apply immediately
       onApplyFilters(filtersToApply);
     }
   };
