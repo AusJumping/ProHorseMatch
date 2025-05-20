@@ -44,9 +44,9 @@ const horseFormSchema = z.object({
   
   // Optional text/input fields
   height_cm: z.number().optional(),
-  sire: z.string().optional(),
+  sire: z.string().min(1, "Sire information is required"),
   dam: z.string().optional(),
-  dam_sire: z.string().optional(),
+  dam_sire: z.string().min(1, "Dam Sire information is required"),
   characteristics: z.array(z.string()).optional(),
   description: z.string().optional(),
   additional_info: z.string().optional(),
