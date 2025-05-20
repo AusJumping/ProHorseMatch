@@ -480,7 +480,7 @@ export default function SubscriptionPage() {
                   <h3 className="text-lg font-semibold">Billing Information</h3>
                   {isBetaPlan ? (
                     <p className="text-sm">
-                      Your beta subscription is active until <span className="font-medium">{formatDate(currentPeriodEnd)}</span>
+                      Your beta subscription is active until further notice
                     </p>
                   ) : (
                     <p className="text-sm">
