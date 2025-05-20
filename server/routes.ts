@@ -1789,26 +1789,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ hasSubscription: false });
       }
       
-      if (!stripe) {
-        return res.status(500).json({ message: "Stripe is not configured" });
+      // For beta subscriptions or when Stripe is not available, use local data
+      const isBetaSubscription = user.stripe_subscription_id.startsWith('beta-');
+      
+      if (isBetaSubscription || !stripe) {
+        console.log(`Using local subscription data for user ${userId} with ${isBetaSubscription ? 'beta subscription' : 'no Stripe config'}`);
+        
+        // Return subscription info from local user data
+        return res.json({
+          hasSubscription: true,
+          subscriptionId: user.stripe_subscription_id,
+          status: user.subscription_status || 'active',
+          planId: user.subscription_plan || (isBetaSubscription ? 'beta-seller' : 'standard'),
+          currentPeriodEnd: user.subscription_end_date ? Math.floor(new Date(user.subscription_end_date).getTime() / 1000) : Math.floor((Date.now() + 90 * 24 * 60 * 60 * 1000) / 1000),
+        });
       }
       
-      // Get the latest subscription status from Stripe
-      const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
-      
-      // Update local subscription status
-      await storage.updateUserSubscription(userId, {
-        subscription_status: subscription.status,
-        subscription_end_date: new Date(subscription.current_period_end * 1000)
-      });
-      
-      res.json({
-        hasSubscription: true,
-        subscriptionId: user.stripe_subscription_id,
-        status: subscription.status,
-        planId: subscription.items.data[0].price.id,
-        currentPeriodEnd: subscription.current_period_end,
-      });
+      try {
+        // Try to get the latest subscription status from Stripe
+        const subscription = await stripe.subscriptions.retrieve(user.stripe_subscription_id);
+        
+        // Update local subscription status
+        await storage.updateUserSubscription(userId, {
+          subscription_status: subscription.status,
+          subscription_end_date: new Date(subscription.current_period_end * 1000)
+        });
+        
+        return res.json({
+          hasSubscription: true,
+          subscriptionId: user.stripe_subscription_id,
+          status: subscription.status,
+          planId: subscription.items.data[0].price.id,
+          currentPeriodEnd: subscription.current_period_end,
+        });
+      } catch (stripeError) {
+        console.error("Stripe API error:", stripeError);
+        
+        // Fallback to local subscription data if Stripe API fails
+        console.log(`Falling back to local subscription data for user ${userId} due to Stripe API error`);
+        
+        return res.json({
+          hasSubscription: true,
+          subscriptionId: user.stripe_subscription_id,
+          status: user.subscription_status || 'active',
+          planId: user.subscription_plan || 'standard',
+          currentPeriodEnd: user.subscription_end_date ? Math.floor(new Date(user.subscription_end_date).getTime() / 1000) : Math.floor((Date.now() + 90 * 24 * 60 * 60 * 1000) / 1000),
+          stripeError: true
+        });
+      }
     } catch (error: any) {
       console.error("Error getting subscription:", error);
       res.status(500).json({ 
