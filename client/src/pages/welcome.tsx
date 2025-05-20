@@ -16,7 +16,7 @@ export default function WelcomePage() {
         <h1 className="text-4xl md:text-5xl font-accent font-bold mb-6 text-white">Welcome to ProHorseMatch</h1>
         
         <p className="text-xl mb-8">
-          Using smart technology to connect performance horses with the right riders.
+          Using smart technology to connect performance horses with the right owners.
         </p>
         
         <div className="space-y-6 text-lg">
