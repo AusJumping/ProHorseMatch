@@ -47,7 +47,6 @@ const FilterPanel = ({
     }
   }, [currentCurrency]);
 
-  // Keep local filters in sync with active filters from parent
   useEffect(() => {
     setFilters(activeFilters);
   }, [activeFilters]);
