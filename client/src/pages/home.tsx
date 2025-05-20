@@ -143,14 +143,16 @@ export default function Home() {
     
     // Check if user is authenticated
     if (!isAuthenticated || !user) {
+      // Just show a message but don't redirect on mobile as it disrupts the experience
       toast({
         title: "Login Required",
         description: "Please log in to save this horse to your favorites.",
         variant: "default",
       });
       
-      // Redirect to login page instead of advancing
-      navigate('/auth');
+      // Instead of redirecting, we'll just advance to the next horse on mobile
+      // This prevents the logout issue
+      setSwipingIndex(prev => prev + 1);
       return;
     }
     
