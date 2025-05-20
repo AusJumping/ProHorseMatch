@@ -20,13 +20,15 @@ export default function WelcomePage() {
         </p>
         
         <div className="space-y-6 text-lg">
-          <p>
-            Whether you're searching for your next top-level prospect or listing a quality horse for sale, 
-            ProHorseMatch helps you find the perfect match — fast.
+          <p className="max-w-lg mx-auto">
+            Whether you're searching for your next top-level prospect 
+            or listing a quality horse for sale, ProHorseMatch helps 
+            you find the perfect match — fast.
           </p>
           
-          <p>
-            Filter by discipline, level, price, location and more to connect with listings tailored to your goals.
+          <p className="max-w-lg mx-auto">
+            Filter by discipline, level, price, location and more
+            to connect with listings tailored to your goals.
           </p>
         </div>
         
