@@ -52,7 +52,7 @@ const FilterPanel = ({
   }, [activeFilters]);
 
   const handleChange = (key: string, value: any) => {
-    setFilters(prev => {
+    setFilters((prev: any) => {
       // Validation for min/max pairs to ensure max is not less than min
       if (key === 'price_min' && prev.price_max && value > prev.price_max && prev.price_max !== 999999999) {
         // If new min is greater than current max, set max to null or a higher value
@@ -110,7 +110,7 @@ const FilterPanel = ({
   };
 
   const toggleItem = (key: string, value: string) => {
-    setFilters(prev => {
+    setFilters((prev: any) => {
       const currentArray = [...(prev[key] || [])];
       const index = currentArray.indexOf(value);
       
@@ -130,8 +130,15 @@ const FilterPanel = ({
   };
 
   const handleApply = () => {
-    // Verify the filter data before sending it
+    // Apply button clicked - single click with immediate processing
     console.log("Apply button clicked with filters:", filters);
+    
+    // Prevent double-clicking by disabling the button
+    const applyButton = document.getElementById('apply-filters-button');
+    if (applyButton) {
+      applyButton.setAttribute('disabled', 'true');
+      applyButton.classList.add('opacity-70');
+    }
     
     // Make a copy of filters to ensure we're not affected by any state issues
     const filtersToApply = {...filters};
@@ -151,18 +158,27 @@ const FilterPanel = ({
       filtersToApply.sexes = [];
     }
     
-    // Add additional logging for debugging
-    console.log("Sending processed filters:", filtersToApply);
-    
-    // Apply the filters immediately - on mobile, we'll handle UI later
-    // This fixes the issue where the first click was "lost" due to panel closing
+    // First apply the filters immediately before doing anything else
     onApplyFilters(filtersToApply);
     
-    // For mobile, close the panel after applying filters
+    // Then close the panel after applying on mobile
+    // Longer timeout to ensure filter application completes
     if (isMobile) {
       setTimeout(() => {
         onClose();
-      }, 50);
+        
+        // Re-enable button only after the whole process is done
+        if (applyButton) {
+          applyButton.removeAttribute('disabled');
+          applyButton.classList.remove('opacity-70');
+        }
+      }, 500); // Increased from 300ms to 500ms for more reliability
+    } else {
+      // For desktop, re-enable instantly
+      if (applyButton) {
+        applyButton.removeAttribute('disabled');
+        applyButton.classList.remove('opacity-70');
+      }
     }
   };
 
@@ -297,49 +313,21 @@ const FilterPanel = ({
                           {filters.currency === "USD" ? "$20,000" : 
                            filters.currency === "AUD" ? "A$20,000" : ""}
                         </SelectItem>
-                        <SelectItem value="25000">
-                          {filters.currency === "USD" ? "$25,000" : 
-                           filters.currency === "AUD" ? "A$25,000" : ""}
-                        </SelectItem>
                         <SelectItem value="30000">
                           {filters.currency === "USD" ? "$30,000" : 
                            filters.currency === "AUD" ? "A$30,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="35000">
-                          {filters.currency === "USD" ? "$35,000" : 
-                           filters.currency === "AUD" ? "A$35,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="40000">
-                          {filters.currency === "USD" ? "$40,000" : 
-                           filters.currency === "AUD" ? "A$40,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="45000">
-                          {filters.currency === "USD" ? "$45,000" : 
-                           filters.currency === "AUD" ? "A$45,000" : ""}
                         </SelectItem>
                         <SelectItem value="50000">
                           {filters.currency === "USD" ? "$50,000" : 
                            filters.currency === "AUD" ? "A$50,000" : ""}
                         </SelectItem>
-                        <SelectItem value="55000">
-                          {filters.currency === "USD" ? "$55,000" : 
-                           filters.currency === "AUD" ? "A$55,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="60000">
-                          {filters.currency === "USD" ? "$60,000" : 
-                           filters.currency === "AUD" ? "A$60,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="65000">
-                          {filters.currency === "USD" ? "$65,000" : 
-                           filters.currency === "AUD" ? "A$65,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="70000">
-                          {filters.currency === "USD" ? "$70,000" : 
-                           filters.currency === "AUD" ? "A$70,000" : ""}
-                        </SelectItem>
                         <SelectItem value="75000">
                           {filters.currency === "USD" ? "$75,000" : 
                            filters.currency === "AUD" ? "A$75,000" : ""}
+                        </SelectItem>
+                        <SelectItem value="100000">
+                          {filters.currency === "USD" ? "$100,000" : 
+                           filters.currency === "AUD" ? "A$100,000" : ""}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -358,121 +346,33 @@ const FilterPanel = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="999999999">No Max</SelectItem>
-                        <SelectItem value="5000">
-                          {filters.currency === "USD" ? "$5,000" : 
-                           filters.currency === "AUD" ? "A$5,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="10000">
-                          {filters.currency === "USD" ? "$10,000" : 
-                           filters.currency === "AUD" ? "A$10,000" : ""}
-                        </SelectItem>
                         <SelectItem value="15000">
                           {filters.currency === "USD" ? "$15,000" : 
-                           filters.currency === "AUD" ? "A$15,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="20000">
-                          {filters.currency === "USD" ? "$20,000" : 
-                           filters.currency === "AUD" ? "A$20,000" : ""}
+                          filters.currency === "AUD" ? "A$15,000" : ""}
                         </SelectItem>
                         <SelectItem value="25000">
                           {filters.currency === "USD" ? "$25,000" : 
-                           filters.currency === "AUD" ? "A$25,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="30000">
-                          {filters.currency === "USD" ? "$30,000" : 
-                           filters.currency === "AUD" ? "A$30,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="35000">
-                          {filters.currency === "USD" ? "$35,000" : 
-                           filters.currency === "AUD" ? "A$35,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="40000">
-                          {filters.currency === "USD" ? "$40,000" : 
-                           filters.currency === "AUD" ? "A$40,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="45000">
-                          {filters.currency === "USD" ? "$45,000" : 
-                           filters.currency === "AUD" ? "A$45,000" : ""}
+                          filters.currency === "AUD" ? "A$25,000" : ""}
                         </SelectItem>
                         <SelectItem value="50000">
                           {filters.currency === "USD" ? "$50,000" : 
-                           filters.currency === "AUD" ? "A$50,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="55000">
-                          {filters.currency === "USD" ? "$55,000" : 
-                           filters.currency === "AUD" ? "A$55,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="60000">
-                          {filters.currency === "USD" ? "$60,000" : 
-                           filters.currency === "AUD" ? "A$60,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="65000">
-                          {filters.currency === "USD" ? "$65,000" : 
-                           filters.currency === "AUD" ? "A$65,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="70000">
-                          {filters.currency === "USD" ? "$70,000" : 
-                           filters.currency === "AUD" ? "A$70,000" : ""}
+                          filters.currency === "AUD" ? "A$50,000" : ""}
                         </SelectItem>
                         <SelectItem value="75000">
                           {filters.currency === "USD" ? "$75,000" : 
-                           filters.currency === "AUD" ? "A$75,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="80000">
-                          {filters.currency === "USD" ? "$80,000" : 
-                           filters.currency === "AUD" ? "A$80,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="85000">
-                          {filters.currency === "USD" ? "$85,000" : 
-                           filters.currency === "AUD" ? "A$85,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="90000">
-                          {filters.currency === "USD" ? "$90,000" : 
-                           filters.currency === "AUD" ? "A$90,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="95000">
-                          {filters.currency === "USD" ? "$95,000" : 
-                           filters.currency === "AUD" ? "A$95,000" : ""}
+                          filters.currency === "AUD" ? "A$75,000" : ""}
                         </SelectItem>
                         <SelectItem value="100000">
                           {filters.currency === "USD" ? "$100,000" : 
-                           filters.currency === "AUD" ? "A$100,000" : ""}
+                          filters.currency === "AUD" ? "A$100,000" : ""}
                         </SelectItem>
                         <SelectItem value="150000">
                           {filters.currency === "USD" ? "$150,000" : 
-                           filters.currency === "AUD" ? "A$150,000" : ""}
+                          filters.currency === "AUD" ? "A$150,000" : ""}
                         </SelectItem>
                         <SelectItem value="200000">
                           {filters.currency === "USD" ? "$200,000" : 
-                           filters.currency === "AUD" ? "A$200,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="250000">
-                          {filters.currency === "USD" ? "$250,000" : 
-                           filters.currency === "AUD" ? "A$250,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="300000">
-                          {filters.currency === "USD" ? "$300,000" : 
-                           filters.currency === "AUD" ? "A$300,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="350000">
-                          {filters.currency === "USD" ? "$350,000" : 
-                           filters.currency === "AUD" ? "A$350,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="400000">
-                          {filters.currency === "USD" ? "$400,000" : 
-                           filters.currency === "AUD" ? "A$400,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="450000">
-                          {filters.currency === "USD" ? "$450,000" : 
-                           filters.currency === "AUD" ? "A$450,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="500000">
-                          {filters.currency === "USD" ? "$500,000" : 
-                           filters.currency === "AUD" ? "A$500,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="999999">
-                          {filters.currency === "USD" ? "Over $500,000" : 
-                           filters.currency === "AUD" ? "Over A$500,000" : ""}
+                          filters.currency === "AUD" ? "A$200,000" : ""}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -482,156 +382,7 @@ const FilterPanel = ({
             )}
           </div>
           
-          {/* Age Range */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Age Range</Label>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <Select 
-                  value={filters.age_min?.toString() || "0"} 
-                  onValueChange={(value) => handleChange('age_min', parseInt(value))}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    {filters.age_min && filters.age_min !== 0 ? (
-                      <SelectValue />
-                    ) : (
-                      <span className="text-muted-foreground">Min</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">No Min</SelectItem>
-                    <SelectItem value="1">1 year</SelectItem>
-                    <SelectItem value="2">2 years</SelectItem>
-                    <SelectItem value="3">3 years</SelectItem>
-                    <SelectItem value="4">4 years</SelectItem>
-                    <SelectItem value="5">5 years</SelectItem>
-                    <SelectItem value="6">6 years</SelectItem>
-                    <SelectItem value="7">7 years</SelectItem>
-                    <SelectItem value="8">8 years</SelectItem>
-                    <SelectItem value="9">9 years</SelectItem>
-                    <SelectItem value="10">10 years</SelectItem>
-                    <SelectItem value="11">11 years</SelectItem>
-                    <SelectItem value="12">12 years</SelectItem>
-                    <SelectItem value="13">13 years</SelectItem>
-                    <SelectItem value="14">14 years</SelectItem>
-                    <SelectItem value="15">15 years</SelectItem>
-                    <SelectItem value="16">16 years</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <Select 
-                  value={filters.age_max?.toString() || "999"} 
-                  onValueChange={(value) => handleChange('age_max', parseInt(value))}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    {filters.age_max && filters.age_max !== 999 ? (
-                      <SelectValue />
-                    ) : (
-                      <span className="text-muted-foreground">Max</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="999">No Max</SelectItem>
-                    <SelectItem value="1">1 year</SelectItem>
-                    <SelectItem value="2">2 years</SelectItem>
-                    <SelectItem value="3">3 years</SelectItem>
-                    <SelectItem value="4">4 years</SelectItem>
-                    <SelectItem value="5">5 years</SelectItem>
-                    <SelectItem value="6">6 years</SelectItem>
-                    <SelectItem value="7">7 years</SelectItem>
-                    <SelectItem value="8">8 years</SelectItem>
-                    <SelectItem value="9">9 years</SelectItem>
-                    <SelectItem value="10">10 years</SelectItem>
-                    <SelectItem value="11">11 years</SelectItem>
-                    <SelectItem value="12">12 years</SelectItem>
-                    <SelectItem value="13">13 years</SelectItem>
-                    <SelectItem value="14">14 years</SelectItem>
-                    <SelectItem value="15">15 years</SelectItem>
-                    <SelectItem value="16">16 years</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          
-          {/* Height Range */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Height Range</Label>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <Select 
-                  value={filters.height_min?.toString() || "0"} 
-                  onValueChange={(value) => handleChange('height_min', parseFloat(value))}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    {filters.height_min && filters.height_min !== 0 ? (
-                      <SelectValue />
-                    ) : (
-                      <span className="text-muted-foreground">Min</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">No Min</SelectItem>
-                    <SelectItem value="12.0">12.0 hh</SelectItem>
-                    <SelectItem value="12.1">12.1 hh</SelectItem>
-                    <SelectItem value="12.2">12.2 hh</SelectItem>
-                    <SelectItem value="12.3">12.3 hh</SelectItem>
-                    <SelectItem value="13.0">13.0 hh</SelectItem>
-                    <SelectItem value="13.1">13.1 hh</SelectItem>
-                    <SelectItem value="13.2">13.2 hh</SelectItem>
-                    <SelectItem value="13.3">13.3 hh</SelectItem>
-                    <SelectItem value="14.0">14.0 hh</SelectItem>
-                    <SelectItem value="14.1">14.1 hh</SelectItem>
-                    <SelectItem value="14.2">14.2 hh</SelectItem>
-                    <SelectItem value="14.3">14.3 hh</SelectItem>
-                    <SelectItem value="15.0">15.0 hh</SelectItem>
-                    <SelectItem value="15.1">15.1 hh</SelectItem>
-                    <SelectItem value="15.2">15.2 hh</SelectItem>
-                    <SelectItem value="15.3">15.3 hh</SelectItem>
-                    <SelectItem value="16.0">16.0 hh</SelectItem>
-                    <SelectItem value="16.1">16.1 hh</SelectItem>
-                    <SelectItem value="16.2">16.2 hh</SelectItem>
-                    <SelectItem value="16.3">16.3 hh</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <Select 
-                  value={filters.height_max?.toString() || "999"} 
-                  onValueChange={(value) => handleChange('height_max', parseFloat(value))}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    {filters.height_max && filters.height_max !== 999 ? (
-                      <SelectValue />
-                    ) : (
-                      <span className="text-muted-foreground">Max</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="999">No Max</SelectItem>
-                    <SelectItem value="13.1">13.1 hh</SelectItem>
-                    <SelectItem value="13.2">13.2 hh</SelectItem>
-                    <SelectItem value="13.3">13.3 hh</SelectItem>
-                    <SelectItem value="14.0">14.0 hh</SelectItem>
-                    <SelectItem value="14.1">14.1 hh</SelectItem>
-                    <SelectItem value="14.2">14.2 hh</SelectItem>
-                    <SelectItem value="14.3">14.3 hh</SelectItem>
-                    <SelectItem value="15.0">15.0 hh</SelectItem>
-                    <SelectItem value="15.1">15.1 hh</SelectItem>
-                    <SelectItem value="15.2">15.2 hh</SelectItem>
-                    <SelectItem value="15.3">15.3 hh</SelectItem>
-                    <SelectItem value="16.0">16.0 hh</SelectItem>
-                    <SelectItem value="16.1">16.1 hh</SelectItem>
-                    <SelectItem value="16.2">16.2 hh</SelectItem>
-                    <SelectItem value="16.3">16.3 hh</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          
-          {/* Breed */}
+          {/* Breeds */}
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Breed</Label>
             <Select 
@@ -649,9 +400,9 @@ const FilterPanel = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all_breeds">All Breeds</SelectItem>
-                <SelectItem value="Warmblood">Warmblood</SelectItem>
-                <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
+                {constants?.breeds?.map((breed: string) => (
+                  <SelectItem key={breed} value={breed}>{breed}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -681,45 +432,74 @@ const FilterPanel = ({
             </Select>
           </div>
           
+          {/* Age */}
+          <div className="filter-group">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="font-accent font-semibold text-neutral-800">Age (years)</Label>
+              <div className="text-sm text-muted-foreground">
+                {filters.age_min !== null ? filters.age_min : '0'} - {filters.age_max !== null ? filters.age_max : '20+'}
+              </div>
+            </div>
+            
+            <Slider
+              defaultValue={[filters.age_min || 0, filters.age_max || 20]}
+              min={0}
+              max={20}
+              step={1}
+              className="my-5"
+              onValueCommit={(values) => {
+                if (values.length === 2) {
+                  handleChange('age_min', values[0]);
+                  handleChange('age_max', values[1]);
+                }
+              }}
+            />
+          </div>
+          
+          {/* Height */}
+          <div className="filter-group">
+            <div className="flex items-center justify-between mb-2">
+              <Label className="font-accent font-semibold text-neutral-800">Height (hands)</Label>
+              <div className="text-sm text-muted-foreground">
+                {filters.height_min !== null ? filters.height_min : '13'} - {filters.height_max !== null ? filters.height_max : '18+'}
+              </div>
+            </div>
+            
+            <Slider
+              defaultValue={[filters.height_min || 13, filters.height_max || 18]}
+              min={13}
+              max={18}
+              step={0.1}
+              className="my-5"
+              onValueCommit={(values) => {
+                if (values.length === 2) {
+                  handleChange('height_min', values[0]);
+                  handleChange('height_max', values[1]);
+                }
+              }}
+            />
+          </div>
+          
           {/* Location */}
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Location</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Select 
-                  value={filters.location_country || ""} 
-                  onValueChange={(value) => handleChange('location_country', value)}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Any Location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {countries.map((country) => (
-                      <SelectItem key={country} value={country === "Any Location" ? "any_location" : country}>{country}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="relative w-1/3">
-                <Select 
-                  value={filters.location_radius_km ? `${filters.location_radius_km}km` : ""} 
-                  onValueChange={(value) => handleChange('location_radius_km', parseInt(value) || null)}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {radiusOptions.map((option) => (
-                      <SelectItem key={option} value={option === "Any" ? "any_radius" : option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <Select 
+              value={filters.location_country || "Any Location"} 
+              onValueChange={(value) => {
+                handleChange('location_country', value === "Any Location" ? null : value);
+              }}
+            >
+              <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                <SelectValue placeholder="Any Location" />
+              </SelectTrigger>
+              <SelectContent>
+                {countries.map((country) => (
+                  <SelectItem key={country} value={country}>{country}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        
-
         
         {/* Filter Actions */}
         <div className="flex gap-3 mt-6">
@@ -731,6 +511,7 @@ const FilterPanel = ({
             Reset All
           </Button>
           <Button
+            id="apply-filters-button"
             className="flex-1"
             onClick={handleApply}
           >
