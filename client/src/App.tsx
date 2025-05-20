@@ -24,6 +24,7 @@ import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import FilterPage from "@/pages/filter";
+import WelcomePage from "@/pages/welcome";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/subscription/success" component={SubscriptionSuccess} />
       <Route path="/donation-checkout" component={DonationCheckout} />
       <Route path="/donation-success" component={DonationSuccess} />
+      <Route path="/welcome" component={WelcomePage} />
       <Route path="/filter" component={FilterPage} />
       <Route component={NotFound} />
     </Switch>
