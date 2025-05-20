@@ -37,7 +37,7 @@ function Router() {
       <Route path="/horse/:id" component={HorseDetail} />
       <Route path="/messages" component={Messages} />
       <Route path="/profile" component={Profile} />
-      <Route path="/account-settings" component={AccountSettings} />
+      {/* Account Settings page removed as requested */}
       <Route path="/add-horse" component={AddHorse} />
       <Route path="/my-horses" component={MyHorses} />
       <Route path="/edit-horse/:id" component={EditHorse} />
