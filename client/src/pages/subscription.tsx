@@ -523,7 +523,7 @@ export default function SubscriptionPage() {
               {/* Options to switch plans */}
               {otherPlans.length > 0 && (
                 <div className="space-y-4 pt-6 border-t border-gray-200 mt-6">
-                  <h3 className="text-lg font-semibold">Change Your Plan</h3>
+                  <h3 className="text-lg font-semibold font-accent">Change Your Plan</h3>
                   <p className="text-sm text-muted-foreground">
                     You can switch to another plan that better suits your needs.
                   </p>
