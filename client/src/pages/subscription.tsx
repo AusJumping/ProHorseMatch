@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, CheckCircle2 } from 'lucide-react';
+import { Loader2, Check, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
@@ -10,6 +10,8 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import Layout from '@/components/Layout';
 import { useCurrency } from '@/contexts/CurrencyContext';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 // Ensure we have the public key
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
@@ -191,6 +193,82 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
   );
 };
 
+// Terms of Service Dialog component
+const TermsOfServiceDialog = () => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="link" className="p-0 h-auto text-sm text-primary underline-offset-2" size="sm">
+          Terms of Service <ExternalLink className="h-3 w-3 ml-1 inline" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[80vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Terms of Service</DialogTitle>
+          <DialogDescription>Effective Date: 21 May 2025</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 text-sm">
+          <h3 className="font-bold">Disclaimer of Liability and User Responsibility</h3>
+          
+          <div>
+            <h4 className="font-semibold">1. Content Accuracy and Listings</h4>
+            <p>ProHorseMatch is a platform that facilitates connections between buyers and sellers of performance horses. All listings, including descriptions, images, health records, training history, and other horse-related content, are provided by the users (sellers).</p>
+            <p>ProHorseMatch does not create, verify, or endorse the accuracy, completeness, legality, or authenticity of any listing content. Users of the platform acknowledge and agree that the responsibility for all content posted lies solely with the user who posted it.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold">2. Buyer and Seller Due Diligence</h4>
+            <p>ProHorseMatch strongly recommends that both buyers and sellers conduct their own due diligence before entering into any transaction. This includes, but is not limited to, verifying the identity and reputation of the other party, independently assessing the suitability, training level, and health of the horse, and seeking professional advice or veterinary assessments where appropriate.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold">3. No Warranties or Guarantees</h4>
+            <p>ProHorseMatch makes no representations or warranties of any kind, express or implied, regarding the fitness, performance, soundness, temperament, or suitability of any horse listed on the platform for any specific purpose. All horses are sold "as-is" and "as-available" directly by the seller, and any representations made about a horse are solely the responsibility of the seller.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold">4. Limitation of Liability</h4>
+            <p>To the maximum extent permitted by applicable law, ProHorseMatch disclaims all liability for any direct, indirect, incidental, special, consequential or punitive damages, including but not limited to loss of profits, loss of opportunity, personal injury, or property damage arising out of or in connection with:</p>
+            <ul className="list-disc pl-5">
+              <li>any inaccuracies or omissions in listing content;</li>
+              <li>the condition, health, or behaviour of any horse;</li>
+              <li>any transaction entered into between users of the platform.</li>
+            </ul>
+          </div>
+          
+          <h3 className="font-bold">Subscription Terms</h3>
+          
+          <div>
+            <h4 className="font-semibold">5.1 Billing and Payments</h4>
+            <p>ProHorseMatch offers subscription-based services for sellers and search-only access for buyers. All subscriptions are billed on a monthly basis in advance and are non-refundable. The applicable subscription fees and tier options are clearly stated at the time of sign-up and may vary depending on the user's selected plan.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold">5.2 Auto-Renewal</h4>
+            <p>All subscriptions automatically renew at the end of each billing cycle (monthly) unless the user cancels their subscription before the next billing date. By subscribing, you authorise ProHorseMatch (or its payment processor) to charge your selected payment method on a recurring monthly basis.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold">5.3 Cancellations</h4>
+            <p>You may cancel your subscription at any time via your account settings within the app or website. Cancellations must be made prior to the renewal date to avoid being charged for the next month. If you cancel after a charge has already been processed, access to your subscription benefits will continue until the end of the paid billing period, after which your subscription will not renew.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold">5.4 Changes to Pricing or Subscription Terms</h4>
+            <p>ProHorseMatch reserves the right to modify subscription pricing, plans, or terms at any time. Any changes will be communicated in advance via email or app notification. Continued use of the platform after the effective date of any change constitutes acceptance of the new terms.</p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold">5.5 Beta Subscriptions and Free Trials</h4>
+            <p>Beta subscriptions do not require payment details. You will be notified via email in advance before the beta subscriptions end to allow you to convert to a paid subscription.</p>
+            <p>From time to time, ProHorseMatch may offer free trial subscriptions. These will auto-renew into paid subscriptions unless cancelled before the trial period ends.</p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // Main subscription page component
 export default function SubscriptionPage() {
   const [selectedPlan, setSelectedPlan] = useState('beta-seller');
@@ -199,6 +277,7 @@ export default function SubscriptionPage() {
   const [customAmount, setCustomAmount] = useState(20);
   const [isDonating, setIsDonating] = useState(false);
   const [convertedFuturePlans, setConvertedFuturePlans] = useState(futurePlans);
+  const [tosAgreed, setTosAgreed] = useState(false);
   const { toast } = useToast();
   const { currentCurrency, convertPrice, formatPrice } = useCurrency();
   
@@ -343,6 +422,17 @@ export default function SubscriptionPage() {
   
   // When plan is selected, handle beta or paid subscriptions accordingly
   const handleSelectPlan = (planId: string) => {
+    // Verify that user has agreed to Terms of Service
+    if (!tosAgreed) {
+      toast({
+        title: 'Terms of Service Required',
+        description: 'Please agree to the Terms of Service before subscribing.',
+        variant: 'destructive',
+        duration: 3000,
+      });
+      return;
+    }
+    
     setSelectedPlan(planId);
     
     // For beta plans, activate the subscription with the API
