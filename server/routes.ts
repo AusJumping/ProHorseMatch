@@ -2307,6 +2307,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update customer preferences
+  app.patch("/api/customers/:id", isAuthenticated, async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.id);
+      
+      // Verify user can only update their own profile
+      if (customerId !== req.session.userId) {
+        return res.status(403).json({ message: "You can only update your own profile" });
+      }
+      
+      // Get the user to verify they exist and have searching permissions
+      const user = await storage.getUserById(customerId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      if (!user.is_searching) {
+        return res.status(403).json({ message: "Only users with searching permission can update preferences" });
+      }
+      
+      console.log("PATCH /api/customers/:id - request body:", req.body);
+      
+      // Update the customer using the storage method
+      const updatedCustomer = await storage.updateCustomer(customerId, req.body);
+      
+      console.log("Customer preferences updated successfully:", updatedCustomer);
+      return res.json(updatedCustomer);
+    } catch (error) {
+      console.error("Update customer preferences error:", error);
+      return res.status(400).json({ message: error.message || "Failed to update preferences" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
