@@ -56,7 +56,7 @@ const futurePlans = [
   {
     id: 'searching',
     name: 'SEARCHING',
-    price: 6.95,
+    price: 9.95,
     interval: 'month',
     currency: 'AUD',
     description: '',
