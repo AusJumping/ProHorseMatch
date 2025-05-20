@@ -218,19 +218,7 @@ const Sidebar = () => {
               Subscription
             </Button>
           </li>
-          <li>
-            <Button 
-              variant="outline"
-              className="w-full justify-start px-5 py-3"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/account-settings");
-              }}
-            >
-              <Settings className="mr-3 h-5 w-5" />
-              Account
-            </Button>
-          </li>
+          {/* Account Settings link removed as requested */}
           <li>
             <Button 
               variant="outline"
