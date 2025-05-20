@@ -755,7 +755,7 @@ export default function Profile() {
               <CardFooter className="flex justify-end">
                 <Button 
                   type="button" 
-                  onClick={() => {
+                  onClick={async () => {
                     const dirtyValues = profileForm.getValues();
                     
                     // Create a safe version of the data with defaults for empty values
@@ -778,7 +778,32 @@ export default function Profile() {
                     
                     // Only proceed if we have a valid user ID
                     if (user?.id) {
-                      onProfileSubmit(safeData);
+                      try {
+                        // Direct API call instead of using the onProfileSubmit function
+                        await apiRequest("PATCH", `/api/customers/${user.id}`, safeData);
+                        
+                        toast({
+                          title: "Preferences saved",
+                          description: "Your preferences have been saved successfully.",
+                        });
+                        
+                        // Invalidate the user query to refetch the updated data
+                        queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+                        
+                        // Force redirect to filter page with a page reload approach
+                        console.log("Redirecting to filter page...");
+                        
+                        // Use a more reliable location change that forces navigation
+                        setTimeout(() => {
+                          window.location.href = "/filter";
+                        }, 500);
+                      } catch (error: any) {
+                        toast({
+                          title: "Error",
+                          description: error.message || "Failed to save preferences",
+                          variant: "destructive",
+                        });
+                      }
                     } else {
                       toast({
                         title: "Error",

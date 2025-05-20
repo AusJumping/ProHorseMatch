@@ -301,7 +301,7 @@
         "preferred_levels": [],
         "preferred_breeds": [],
         "age_range_min": 0,
-        "age_range_max": 999,
+        "age_range_max": 19,
         "height_range_min": 13,
         "height_range_max": 15.3,
         "preferred_sexes": [],
