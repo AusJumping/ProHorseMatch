@@ -154,16 +154,17 @@ const FilterPanel = ({
     // Add additional logging for debugging
     console.log("Sending processed filters:", filtersToApply);
     
-    // Apply the filters with the cleaned-up data
-    onApplyFilters(filtersToApply);
-    
-    // Close the filter panel on mobile after applying filters
+    // For mobile devices, close the panel first to improve responsiveness
     if (isMobile) {
-      // Ensure we have a small delay before closing to allow filters to apply first
-      setTimeout(() => {
-        onClose();
-      }, 300);
+      onClose();
     }
+    
+    // Apply the filters with the cleaned-up data
+    // Use a very short delay to allow the touch event to complete fully
+    // This resolves the double-click issue on mobile
+    requestAnimationFrame(() => {
+      onApplyFilters(filtersToApply);
+    });
   };
 
   const handleReset = () => {
