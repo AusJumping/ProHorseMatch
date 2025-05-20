@@ -40,6 +40,207 @@
         "videos": [],
         "created_at": "2025-05-20T00:42:29.557Z"
       }
+    ],
+    [
+      11,
+      {
+        "id": 11,
+        "name": "Snow",
+        "location_country": "Australia",
+        "location_radius_km": 100,
+        "disciplines": [
+          "Jumping"
+        ],
+        "levels": [
+          "Junior"
+        ],
+        "breeds": [
+          "Warmblood"
+        ],
+        "age": 7,
+        "height_hands": 16.1,
+        "height_cm": 165,
+        "sex": "Gelding",
+        "sire": "Chacco Blue",
+        "dam": "Valentina",
+        "dam_sire": "Heartbreaker",
+        "characteristics": [
+          "Brave",
+          "Careful"
+        ],
+        "price_min": 35000,
+        "price_max": 40000,
+        "currency": "AUD",
+        "description": "Talented young jumper with excellent technique and temperament. Perfect for junior or young rider.",
+        "photos": [
+          "/uploads/file-1747701672040-548739528.jpeg"
+        ],
+        "videos": [],
+        "owner_id": 3,
+        "created_at": "2025-05-20T00:43:35.575Z"
+      }
+    ],
+    [
+      12,
+      {
+        "id": 12,
+        "name": "Flame",
+        "location_country": "Australia",
+        "location_radius_km": 100,
+        "disciplines": [
+          "Jumping",
+          "Eventing"
+        ],
+        "levels": [
+          "Young Rider",
+          "2*"
+        ],
+        "breeds": [
+          "Thoroughbred"
+        ],
+        "age": 8,
+        "height_hands": 16,
+        "height_cm": 163,
+        "sex": "Mare",
+        "sire": "Northern Meteor",
+        "dam": "Fireheart",
+        "dam_sire": "Redoutes Choice",
+        "characteristics": [
+          "Forward",
+          "Brave"
+        ],
+        "price_min": 45000,
+        "price_max": 50000,
+        "currency": "AUD",
+        "description": "Talented, forward mare with excellent movement and brave attitude. Ideal for eventing or jumping.",
+        "photos": [
+          "/uploads/file-1747701672040-548739528.jpeg"
+        ],
+        "videos": [],
+        "owner_id": 3,
+        "created_at": "2025-05-20T00:43:53.266Z"
+      }
+    ],
+    [
+      13,
+      {
+        "id": 13,
+        "name": "Misty",
+        "location_country": "Australia",
+        "location_radius_km": 100,
+        "disciplines": [
+          "Dressage"
+        ],
+        "levels": [
+          "Elementary"
+        ],
+        "breeds": [
+          "Warmblood"
+        ],
+        "age": 6,
+        "height_hands": 16.2,
+        "height_cm": 168,
+        "sex": "Mare",
+        "sire": "Florencio",
+        "dam": "Morning Star",
+        "dam_sire": "De Niro",
+        "characteristics": [
+          "Sensitive",
+          "Calm"
+        ],
+        "price_min": 40000,
+        "price_max": 45000,
+        "currency": "AUD",
+        "description": "Beautiful young dressage mare with three exceptional gaits and trainable temperament.",
+        "photos": [
+          "/uploads/file-1747701672040-548739528.jpeg"
+        ],
+        "videos": [],
+        "owner_id": 3,
+        "created_at": "2025-05-20T00:44:00.941Z"
+      }
+    ],
+    [
+      14,
+      {
+        "id": 14,
+        "name": "Midnight",
+        "location_country": "Australia",
+        "location_radius_km": 100,
+        "disciplines": [
+          "Jumping"
+        ],
+        "levels": [
+          "Amateur"
+        ],
+        "breeds": [
+          "Warmblood"
+        ],
+        "age": 9,
+        "height_hands": 17,
+        "height_cm": 173,
+        "sex": "Gelding",
+        "sire": "Kannan",
+        "dam": "Dark Star",
+        "dam_sire": "Cardento",
+        "characteristics": [
+          "Scope",
+          "Brave",
+          "Careful"
+        ],
+        "price_min": 55000,
+        "price_max": 60000,
+        "currency": "AUD",
+        "description": "Impressive black gelding with scopey jump and consistent technique. Perfect for amateur rider looking to compete.",
+        "photos": [
+          "/uploads/file-1747701672040-548739528.jpeg"
+        ],
+        "videos": [],
+        "owner_id": 3,
+        "created_at": "2025-05-20T00:44:10.290Z"
+      }
+    ],
+    [
+      15,
+      {
+        "id": 15,
+        "name": "Goldie",
+        "location_country": "Australia",
+        "location_radius_km": 100,
+        "disciplines": [
+          "Dressage",
+          "Jumping"
+        ],
+        "levels": [
+          "Novice",
+          "Children"
+        ],
+        "breeds": [
+          "Warmblood"
+        ],
+        "age": 10,
+        "height_hands": 15.2,
+        "height_cm": 158,
+        "sex": "Mare",
+        "sire": "Gold Luck",
+        "dam": "Sunshine",
+        "dam_sire": "San Remo",
+        "characteristics": [
+          "Schoolmaster",
+          "Honest",
+          "Calm"
+        ],
+        "price_min": 30000,
+        "price_max": 35000,
+        "currency": "AUD",
+        "description": "Experienced schoolmaster mare, perfect for beginner or junior rider. Kind temperament with lots to teach.",
+        "photos": [
+          "/uploads/file-1747701672040-548739528.jpeg"
+        ],
+        "videos": [],
+        "owner_id": 3,
+        "created_at": "2025-05-20T00:44:20.094Z"
+      }
     ]
   ],
   "users": [
@@ -149,7 +350,7 @@
   "matches": [],
   "messages": [],
   "conversations": [],
-  "horseId": 11,
+  "horseId": 16,
   "userId": 3,
   "matchId": 1,
   "messageId": 1,
