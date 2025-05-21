@@ -432,14 +432,23 @@ export default function Home() {
         <div className="flex-1 flex flex-col items-center">
           {isTouchDevice ? (
             /* Horse swiping area for touch devices */
-            <SwipeSection 
-              horses={horses || []}
-              isLoading={isLoading}
-              activeIndex={swipingIndex}
-              onLike={handleLike}
-              onDislike={handleDislike}
-              onShowMore={handleShowMore}
-            />
+            <>
+              {/* Add status message to show filter results */}
+              {horses && horses.length > 0 && activeFilters.disciplines.length > 0 && (
+                <div className="mb-4 text-center text-sm text-neutral-600">
+                  Showing {horses.length} {horses.length === 1 ? 'horse' : 'horses'} matching "{activeFilters.disciplines.join(', ')}"
+                </div>
+              )}
+              <SwipeSection 
+                key={JSON.stringify(activeFilters)} // Force component remount when filters change
+                horses={horses || []}
+                isLoading={isLoading}
+                activeIndex={0} // Always start at the first horse when filters change
+                onLike={handleLike}
+                onDislike={handleDislike}
+                onShowMore={handleShowMore}
+              />
+            </>
           ) : (
             /* Horse grid for non-touch devices */
             <HorseGrid
