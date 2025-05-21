@@ -1,6 +1,7 @@
 import type { Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
+import { pool } from "./db";
 import session from "express-session";
 import multer from "multer";
 import path from "path";
