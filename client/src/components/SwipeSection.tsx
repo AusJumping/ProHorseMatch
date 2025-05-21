@@ -63,14 +63,23 @@ const SwipeSection = ({
     );
   }
 
-  if (!horses.length) {
+  // Only show the empty state if we're not currently loading
+  // This prevents the "no horses" message from flashing briefly during filter transitions
+  if (!horses.length && !isLoading) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-display font-bold mb-4">No horses in database</h3>
+        <h3 className="text-xl font-display font-bold mb-4">No horses found</h3>
         <p className="text-neutral-600 mb-6">
-          There are currently no horses in the database. Add some horses to get started.
+          No horses match your current search criteria. Try adjusting your filters.
         </p>
-        <Button onClick={() => window.location.reload()}>Refresh</Button>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline"
+            onClick={() => window.location.href = "/"}>
+            Reset Filters
+          </Button>
+          <Button onClick={() => window.location.reload()}>Refresh</Button>
+        </div>
       </div>
     );
   }
