@@ -156,26 +156,46 @@ const FilterPanel = ({
     
     console.log("APPLYING FILTERS:", filtersToApply);
   
-  // First apply the filters for all devices
-  onApplyFilters(filtersToApply);
-  
-  // For mobile devices, handle the panel close with a longer delay
-  // This gives React Query time to complete the filtering operation
+  // For mobile, we'll use a direct approach that bypasses any React state issues
   if (isMobile) {
-    // Show a temporary indication that filters are being applied
-    console.log("Mobile filter - applying filters and will close panel shortly");
+    // Build the URL with filter parameters directly
+    const params = new URLSearchParams();
     
-    // Use a longer delay (500ms) to ensure everything is fully processed
-    setTimeout(() => {
-      console.log("Mobile filter - closing panel after delay");
-      onClose();
-      
-      // Force a refresh of the window location to ensure filter takes effect
-      // This is a drastic but effective measure for mobile browsers
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-    }, 500);
+    // Add discipline filters
+    if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0 && 
+        !filtersToApply.disciplines.includes("all_disciplines")) {
+      filtersToApply.disciplines.forEach(d => params.append('disciplines', d));
+    }
+    
+    // Add breed filters
+    if (filtersToApply.breeds && filtersToApply.breeds.length > 0 && 
+        !filtersToApply.breeds.includes("all_breeds")) {
+      filtersToApply.breeds.forEach(b => params.append('breeds', b));
+    }
+    
+    // Add sex filters
+    if (filtersToApply.sexes && filtersToApply.sexes.length > 0 && 
+        !filtersToApply.sexes.includes("any_sex")) {
+      filtersToApply.sexes.forEach(s => params.append('sexes', s));
+    }
+    
+    // Current currency
+    params.append('currency', 'AUD');
+    
+    // Close the filter panel
+    onClose();
+    
+    // Redirect directly to the filtered URL
+    // This is the most reliable approach for mobile browsers
+    const filterQuery = params.toString();
+    const baseUrl = window.location.pathname;
+    const newUrl = filterQuery ? `${baseUrl}?${filterQuery}` : baseUrl;
+    
+    console.log("Mobile: Redirecting to filtered URL:", newUrl);
+    window.location.href = newUrl;
+  } else {
+    // For desktop, use the normal approach
+    onApplyFilters(filtersToApply);
   }
   };
 
