@@ -92,29 +92,54 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Attempting login for:", { email });
       
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
+      // First, store credentials temporarily to help with mobile authentication
+      sessionStorage.setItem('temp_auth', JSON.stringify({ email, password }));
+      
+      // Mobile-friendly approach: retry with exponential backoff
+      let retries = 0;
+      const maxRetries = 3;
+      
+      while (retries < maxRetries) {
+        try {
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+            credentials: 'include',
+          });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+          if (!response.ok) {
+            const error = await response.json();
+            if (retries === maxRetries - 1) {
+              throw new Error(error.message || 'Login failed');
+            }
+            // Continue to retry
+          } else {
+            const userData = await response.json() as User;
+            console.log("Login successful, user data:", userData);
+            
+            // Store user in localStorage for quick recovery if session issues occur
+            localStorage.setItem('user', JSON.stringify(userData));
+            sessionStorage.removeItem('temp_auth'); // Clean up temp auth
+            
+            // Update query cache with user data
+            queryClient.setQueryData(['/api/auth/me'], userData);
+            
+            // Return the user data so the calling function can check subscription status
+            return userData;
+          }
+        } catch (innerError) {
+          console.log(`Login attempt ${retries + 1} failed, retrying...`);
+        }
+        
+        retries++;
+        if (retries < maxRetries) {
+          // Wait with exponential backoff
+          await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, retries)));
+        }
       }
-
-      const userData = await response.json() as User;
-      console.log("Login successful, user data:", userData);
       
-      // Store user in localStorage for quick recovery if session issues occur
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Update query cache with user data
-      queryClient.setQueryData(['/api/auth/me'], userData);
-      
-      // Return the user data so the calling function can check subscription status
-      return userData;
+      throw new Error('Login failed after multiple attempts');
     } catch (error) {
       console.error('Login error:', error);
       throw error;
