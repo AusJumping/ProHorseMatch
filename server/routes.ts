@@ -177,8 +177,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       resave: true, // Force session to be saved back to the store
       saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      // Add rolling: true to update the cookie expiration on every response
-      rolling: true
+      rolling: true, // Update cookie expiration on every response
+      name: "prohorseapp.sid" // Custom session cookie name to avoid conflicts
     })
   );
 
