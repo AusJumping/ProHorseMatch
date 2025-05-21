@@ -50,25 +50,11 @@ const SwipeSection = ({
     goToNextHorse();
   };
 
+  // Show loading state when loading horses
   if (isLoading) {
     return (
       <div className="w-full max-w-lg mx-auto">
-        <Skeleton className="horse-card rounded-xl" />
-        <div className="flex justify-center mt-4 gap-4">
-          <Skeleton className="w-14 h-14 rounded-full" />
-          <Skeleton className="w-12 h-12 rounded-full" />
-          <Skeleton className="w-14 h-14 rounded-full" />
-        </div>
-      </div>
-    );
-  }
-
-  // Skip the empty state message completely during loading
-  // This removes the flash of "no horses" message when changing filters
-  if (isLoading) {
-    return (
-      <div className="w-full max-w-lg mx-auto">
-        <Skeleton className="horse-card rounded-xl" />
+        <Skeleton className="horse-card rounded-xl h-[450px]" />
         <div className="flex justify-center mt-4 gap-4">
           <Skeleton className="w-14 h-14 rounded-full" />
           <Skeleton className="w-12 h-12 rounded-full" />
@@ -78,8 +64,8 @@ const SwipeSection = ({
     );
   }
   
-  // Only show the empty state after we've confirmed no horses match
-  if (!horses.length) {
+  // Only show the empty state after we've confirmed no horses match and we're not loading
+  if (!horses.length && !isLoading) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
         <h3 className="text-xl font-display font-bold mb-4">No horses found</h3>
@@ -89,7 +75,12 @@ const SwipeSection = ({
         <div className="flex gap-3">
           <Button 
             variant="outline"
-            onClick={() => window.location.href = "/"}>
+            onClick={() => {
+              // Use a more reliable way to reset filters than a full page refresh
+              const url = new URL(window.location.href);
+              url.search = ''; // Clear all query parameters
+              window.location.href = url.toString();
+            }}>
             Reset Filters
           </Button>
           <Button onClick={() => window.location.reload()}>Refresh</Button>

@@ -43,35 +43,84 @@ export default function MobileFilterPage() {
   };
 
   const handleApplyFilters = () => {
-    // Save filters to localStorage
+    // Immediately show loading toast to give feedback
+    toast({
+      title: "Applying Filters",
+      description: "Finding horses that match your criteria...",
+      duration: 1500,
+    });
+    
+    // Build query string parameters for direct navigation instead of using localStorage
+    const params = new URLSearchParams();
+    
+    // Add discipline filter
+    if (filters.disciplines && filters.disciplines.length > 0) {
+      params.set('disciplines', filters.disciplines.join(','));
+    }
+    
+    // Add breed filter
+    if (filters.breeds && filters.breeds.length > 0) {
+      params.set('breeds', filters.breeds.join(','));
+    }
+    
+    // Add sex filter
+    if (filters.sexes && filters.sexes.length > 0) {
+      params.set('sexes', filters.sexes.join(','));
+    }
+    
+    // Add location filter
+    if (filters.location_country) {
+      params.set('location', filters.location_country);
+    }
+    
+    // Add age range
+    if (filters.age_min) {
+      params.set('min_age', filters.age_min.toString());
+    }
+    if (filters.age_max && filters.age_max < 999) {
+      params.set('max_age', filters.age_max.toString());
+    }
+    
+    // Add height range
+    if (filters.height_min) {
+      params.set('min_height', filters.height_min.toString());
+    }
+    if (filters.height_max && filters.height_max < 999) {
+      params.set('max_height', filters.height_max.toString());
+    }
+    
+    // Add price range
+    if (filters.price_min) {
+      params.set('min_price', filters.price_min.toString());
+    }
+    if (filters.price_max && filters.price_max < 999999999) {
+      params.set('max_price', filters.price_max.toString());
+    }
+    
+    // Add currency
+    if (filters.currency) {
+      params.set('currency', filters.currency);
+    }
+    
+    // Add level filter
+    if (filters.levels && filters.levels.length > 0) {
+      params.set('levels', filters.levels.join(','));
+    }
+    
+    // Also save to localStorage as a backup
     try {
-      // First clear any existing filters to prevent conflicts
-      localStorage.removeItem('lastAppliedFilters');
-      localStorage.removeItem('filtersTimestamp');
-      
-      // Then set the new filters with a small delay to ensure they're applied
-      setTimeout(() => {
-        localStorage.setItem('lastAppliedFilters', JSON.stringify(filters));
-        localStorage.setItem('filtersTimestamp', Date.now().toString());
-        
-        // Navigate back to home after ensuring filters are saved
-        navigate('/');
-        
-        toast({
-          title: "Filters Applied",
-          description: "Your search preferences have been applied.",
-          duration: 800,
-        });
-      }, 50);
+      localStorage.setItem('lastAppliedFilters', JSON.stringify(filters));
+      localStorage.setItem('filtersTimestamp', Date.now().toString());
     } catch (error) {
       console.error("Error saving filters to localStorage:", error);
-      
-      // Even if there's an error, still navigate home
-      navigate('/');
     }
+    
+    // Navigate directly with query parameters
+    navigate(`/?${params.toString()}`);
   };
 
   const resetFilters = () => {
+    // Reset filters to default values
     const resetValues = {
       disciplines: [],  // Empty array for All Disciplines
       breeds: [],       // Empty array for All Breeds
@@ -91,7 +140,14 @@ export default function MobileFilterPage() {
     // Set the filters state immediately
     setFilters(resetValues);
     
-    // Clear localStorage immediately
+    // Show toast immediately for quick feedback
+    toast({
+      title: "Filters Reset",
+      description: "Showing all available horses",
+      duration: 1000,
+    });
+    
+    // Clear localStorage
     try {
       localStorage.removeItem('lastAppliedFilters');
       localStorage.removeItem('filtersTimestamp');
@@ -99,25 +155,9 @@ export default function MobileFilterPage() {
       console.error("Error clearing filters from localStorage:", error);
     }
     
-    // Automatically apply these cleared filters after a small delay to ensure state updates
-    setTimeout(() => {
-      try {
-        localStorage.setItem('lastAppliedFilters', JSON.stringify(resetValues));
-        localStorage.setItem('filtersTimestamp', Date.now().toString());
-        
-        // Navigate back to home with reset filters
-        navigate('/');
-        
-        toast({
-          title: "Filters Reset",
-          description: "All filters have been reset to default values.",
-          duration: 800,
-        });
-      } catch (error) {
-        console.error("Error saving reset filters to localStorage:", error);
-        navigate('/');
-      }
-    }, 50);
+    // Navigate directly to home page with no query parameters
+    // This will automatically show all horses without filtering
+    navigate('/');
   };
 
   return (
