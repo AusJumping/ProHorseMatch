@@ -82,9 +82,21 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
       const response = await apiRequest("DELETE", `/api/conversations/${conversation.id}`);
       
       if (response.ok) {
+        // Use a safe way to get the success message
+        let successMessage = "Conversation deleted successfully";
+        try {
+          const responseData = await response.json();
+          if (responseData && responseData.message) {
+            successMessage = responseData.message;
+          }
+        } catch (parseError) {
+          // If we can't parse the response as JSON, just use the default message
+          console.error("Error parsing success response:", parseError);
+        }
+        
         toast({
           title: "Success",
-          description: "Conversation deleted successfully",
+          description: successMessage,
           duration: 800,
         });
         
@@ -96,13 +108,21 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
         // Safe error handling
         let errorMessage = "Failed to delete conversation";
         try {
-          const errorData = await response.text();
-          const parsedError = JSON.parse(errorData);
-          if (parsedError && parsedError.message) {
-            errorMessage = parsedError.message;
+          const responseText = await response.text();
+          if (responseText) {
+            try {
+              const parsedError = JSON.parse(responseText);
+              if (parsedError && parsedError.message) {
+                errorMessage = parsedError.message;
+              }
+            } catch (jsonError) {
+              console.error("Error parsing JSON:", jsonError);
+              // Use the raw text if JSON parsing fails
+              errorMessage = responseText;
+            }
           }
-        } catch (parseError) {
-          console.error("Error parsing error response:", parseError);
+        } catch (textError) {
+          console.error("Error reading response text:", textError);
         }
         throw new Error(errorMessage);
       }

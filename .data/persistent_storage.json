@@ -405,20 +405,7 @@
       }
     ]
   ],
-  "conversations": [
-    [
-      1,
-      {
-        "id": 1,
-        "customer_id": 4,
-        "owner_id": 3,
-        "horse_id": 16,
-        "last_message_id": 1,
-        "last_message_time": "2025-05-20T21:20:26.481Z",
-        "unread_count": 2
-      }
-    ]
-  ],
+  "conversations": [],
   "horseId": 26,
   "userId": 3,
   "matchId": 1,
