@@ -433,21 +433,34 @@ export default function Home() {
           {isTouchDevice ? (
             /* Horse swiping area for touch devices */
             <>
-              {/* Add status message to show filter results */}
-              {horses && horses.length > 0 && activeFilters.disciplines.length > 0 && (
-                <div className="mb-4 text-center text-sm text-neutral-600">
-                  Showing {horses.length} {horses.length === 1 ? 'horse' : 'horses'} matching "{activeFilters.disciplines.join(', ')}"
+              {/* Add a manually filtered list of horses to handle filtering on mobile */}
+              {horses && (
+                <div>
+                  {/* Add filter results message */}
+                  {activeFilters.disciplines.length > 0 && (
+                    <div className="mb-4 text-center text-sm font-semibold p-2 border rounded bg-yellow-50">
+                      Showing only {activeFilters.disciplines.join(', ')} horses
+                    </div>
+                  )}
+                  
+                  {/* Only show the horses that match the discipline filter, this is a simple manual filter */}
+                  <SwipeSection 
+                    key={JSON.stringify(activeFilters)} // Force component remount when filters change
+                    horses={horses.filter(horse => 
+                      // If no discipline filter is selected, show all horses
+                      activeFilters.disciplines.length === 0 || 
+                      // Otherwise, only show horses with matching disciplines
+                      (horse.disciplines && 
+                       horse.disciplines.some(d => activeFilters.disciplines.includes(d)))
+                    )}
+                    isLoading={isLoading}
+                    activeIndex={0} // Always start at the first horse when filters change
+                    onLike={handleLike}
+                    onDislike={handleDislike}
+                    onShowMore={handleShowMore}
+                  />
                 </div>
               )}
-              <SwipeSection 
-                key={JSON.stringify(activeFilters)} // Force component remount when filters change
-                horses={horses || []}
-                isLoading={isLoading}
-                activeIndex={0} // Always start at the first horse when filters change
-                onLike={handleLike}
-                onDislike={handleDislike}
-                onShowMore={handleShowMore}
-              />
             </>
           ) : (
             /* Horse grid for non-touch devices */
