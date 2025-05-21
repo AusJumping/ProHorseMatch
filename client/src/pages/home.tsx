@@ -569,7 +569,7 @@ export default function Home() {
             <div className={`${isMobile ? 'mt-4 pt-2' : ''}`}>
               <SwipeSection 
                 horses={horses || []}
-                isLoading={isLoading}
+                isLoading={isLoading || isFetching}
                 activeIndex={swipingIndex}
                 onLike={handleLike}
                 onDislike={handleDislike}
@@ -582,6 +582,7 @@ export default function Home() {
               onLike={handleLike}
               onDislike={handleDislike}
               onShowMore={handleShowMore}
+              isLoading={isLoading || isFetching}
             />
           )}
         </div>
