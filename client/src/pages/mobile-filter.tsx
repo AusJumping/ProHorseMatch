@@ -14,7 +14,21 @@ export default function MobileFilterPage() {
   const { currentCurrency } = useCurrency();
   
   // Initialize with default filters - explicitly set to empty array for all options
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    disciplines: string[];
+    breeds: string[];
+    sexes: string[];
+    location_country: string | null;
+    location_radius_km: number | null;
+    age_min: number | null;
+    age_max: number | null;
+    height_min: number | null;
+    height_max: number | null;
+    price_min: number | null;
+    price_max: number | null;
+    currency: string;
+    levels: string[];
+  }>({
     disciplines: [], // Empty array for All Disciplines
     breeds: [],
     sexes: [],
@@ -31,7 +45,16 @@ export default function MobileFilterPage() {
   });
 
   // Fetch constants for filter options
-  const { data: constants } = useQuery({
+  const { data: constants } = useQuery<{
+    disciplines: string[];
+    breeds: string[];
+    sexes: string[];
+    levels: {
+      Jumping: string[];
+      Dressage: string[];
+      Eventing: string[];
+    }
+  }>({
     queryKey: ['/api/constants'],
   });
 
@@ -74,27 +97,27 @@ export default function MobileFilterPage() {
     }
     
     // Add age range
-    if (filters.age_min) {
-      params.set('min_age', filters.age_min.toString());
+    if (filters.age_min !== null) {
+      params.set('min_age', String(filters.age_min));
     }
-    if (filters.age_max && filters.age_max < 999) {
-      params.set('max_age', filters.age_max.toString());
+    if (filters.age_max !== null && filters.age_max < 999) {
+      params.set('max_age', String(filters.age_max));
     }
     
     // Add height range
-    if (filters.height_min) {
-      params.set('min_height', filters.height_min.toString());
+    if (filters.height_min !== null) {
+      params.set('min_height', String(filters.height_min));
     }
-    if (filters.height_max && filters.height_max < 999) {
-      params.set('max_height', filters.height_max.toString());
+    if (filters.height_max !== null && filters.height_max < 999) {
+      params.set('max_height', String(filters.height_max));
     }
     
     // Add price range
-    if (filters.price_min) {
-      params.set('min_price', filters.price_min.toString());
+    if (filters.price_min !== null) {
+      params.set('min_price', String(filters.price_min));
     }
-    if (filters.price_max && filters.price_max < 999999999) {
-      params.set('max_price', filters.price_max.toString());
+    if (filters.price_max !== null && filters.price_max < 999999999) {
+      params.set('max_price', String(filters.price_max));
     }
     
     // Add currency
@@ -206,9 +229,9 @@ export default function MobileFilterPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all_disciplines">All Disciplines</SelectItem>
-              {constants?.disciplines?.map((discipline: string) => (
+              {constants && constants.disciplines ? constants.disciplines.map((discipline: string) => (
                 <SelectItem key={discipline} value={discipline}>{discipline}</SelectItem>
-              ))}
+              )) : null}
             </SelectContent>
           </Select>
         </div>
