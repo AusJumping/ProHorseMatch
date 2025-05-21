@@ -154,49 +154,20 @@ const FilterPanel = ({
     // Add additional logging for debugging
     console.log("Sending processed filters:", filtersToApply);
     
-    console.log("APPLYING FILTERS:", filtersToApply);
-  
-  // For mobile, we'll use a direct approach that bypasses any React state issues
-  if (isMobile) {
-    // Build the URL with filter parameters directly
-    const params = new URLSearchParams();
+    // Create a simple global variable to store the last filter selection
+  // This bypasses any React state issues
+  if (typeof window !== 'undefined') {
+    window.lastFilterDiscipline = filtersToApply.disciplines && filtersToApply.disciplines.length > 0 ? 
+                                 filtersToApply.disciplines[0] : null;
     
-    // Add discipline filters
-    if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0 && 
-        !filtersToApply.disciplines.includes("all_disciplines")) {
-      filtersToApply.disciplines.forEach(d => params.append('disciplines', d));
-    }
-    
-    // Add breed filters
-    if (filtersToApply.breeds && filtersToApply.breeds.length > 0 && 
-        !filtersToApply.breeds.includes("all_breeds")) {
-      filtersToApply.breeds.forEach(b => params.append('breeds', b));
-    }
-    
-    // Add sex filters
-    if (filtersToApply.sexes && filtersToApply.sexes.length > 0 && 
-        !filtersToApply.sexes.includes("any_sex")) {
-      filtersToApply.sexes.forEach(s => params.append('sexes', s));
-    }
-    
-    // Current currency
-    params.append('currency', 'AUD');
-    
-    // Close the filter panel
-    onClose();
-    
-    // Redirect directly to the filtered URL
-    // This is the most reliable approach for mobile browsers
-    const filterQuery = params.toString();
-    const baseUrl = window.location.pathname;
-    const newUrl = filterQuery ? `${baseUrl}?${filterQuery}` : baseUrl;
-    
-    console.log("Mobile: Redirecting to filtered URL:", newUrl);
-    window.location.href = newUrl;
-  } else {
-    // For desktop, use the normal approach
-    onApplyFilters(filtersToApply);
+    console.log("Saved filter to window:", window.lastFilterDiscipline);
   }
+  
+  // Close the panel first for better user experience
+  onClose();
+  
+  // Then apply the filters
+  onApplyFilters(filtersToApply);
   };
 
   const handleReset = () => {

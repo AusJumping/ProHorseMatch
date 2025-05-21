@@ -443,16 +443,23 @@ export default function Home() {
                     </div>
                   )}
                   
-                  {/* Only show the horses that match the discipline filter, this is a simple manual filter */}
+                  {/* Create a key for the active discipline filter to force re-rendering */}
                   <SwipeSection 
-                    key={JSON.stringify(activeFilters)} // Force component remount when filters change
-                    horses={horses.filter(horse => 
-                      // If no discipline filter is selected, show all horses
-                      activeFilters.disciplines.length === 0 || 
-                      // Otherwise, only show horses with matching disciplines
-                      (horse.disciplines && 
-                       horse.disciplines.some(d => activeFilters.disciplines.includes(d)))
-                    )}
+                    key={JSON.stringify(activeFilters) + Date.now()} // Force component remount when filters change with unique timestamp
+                    horses={
+                      // If no filter is applied, show all horses
+                      activeFilters.disciplines.length === 0 ? 
+                        horses : 
+                        // Otherwise apply our manual filter
+                        horses.filter(horse => {
+                          console.log("Filtering horse:", horse.name, "disciplines:", horse.disciplines, 
+                                     "against filter:", activeFilters.disciplines);
+                          return horse.disciplines && 
+                                 Array.isArray(horse.disciplines) && 
+                                 horse.disciplines.some(d => 
+                                   activeFilters.disciplines.includes(d));
+                        })
+                    }
                     isLoading={isLoading}
                     activeIndex={0} // Always start at the first horse when filters change
                     onLike={handleLike}
