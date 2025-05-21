@@ -390,21 +390,7 @@
       }
     ]
   ],
-  "messages": [
-    [
-      3,
-      {
-        "id": 3,
-        "customer_id": 4,
-        "owner_id": 3,
-        "horse_id": 24,
-        "content": "That is great",
-        "sender_type": "customer",
-        "created_at": "2025-05-20T08:28:10.396Z",
-        "is_read": true
-      }
-    ]
-  ],
+  "messages": [],
   "conversations": [],
   "horseId": 26,
   "userId": 3,
