@@ -88,9 +88,10 @@ export default function MobileFilterPage() {
       levels: []
     };
     
+    // Set the filters state immediately
     setFilters(resetValues);
     
-    // Also clear localStorage
+    // Clear localStorage immediately
     try {
       localStorage.removeItem('lastAppliedFilters');
       localStorage.removeItem('filtersTimestamp');
@@ -98,11 +99,25 @@ export default function MobileFilterPage() {
       console.error("Error clearing filters from localStorage:", error);
     }
     
-    toast({
-      title: "Filters Reset",
-      description: "All filters have been reset to default values.",
-      duration: 800,
-    });
+    // Automatically apply these cleared filters after a small delay to ensure state updates
+    setTimeout(() => {
+      try {
+        localStorage.setItem('lastAppliedFilters', JSON.stringify(resetValues));
+        localStorage.setItem('filtersTimestamp', Date.now().toString());
+        
+        // Navigate back to home with reset filters
+        navigate('/');
+        
+        toast({
+          title: "Filters Reset",
+          description: "All filters have been reset to default values.",
+          duration: 800,
+        });
+      } catch (error) {
+        console.error("Error saving reset filters to localStorage:", error);
+        navigate('/');
+      }
+    }, 50);
   };
 
   return (
