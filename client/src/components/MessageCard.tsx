@@ -91,7 +91,8 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
           }
         } catch (parseError) {
           // If we can't parse the response as JSON, just use the default message
-          console.error("Error parsing success response:", parseError);
+          // This is normal for some DELETE operations that return 204 No Content
+          // We'll just use our default success message
         }
         
         toast({
@@ -104,8 +105,11 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
         queryClient.invalidateQueries({ 
           queryKey: ['/api/conversations'] 
         });
+        
+        // The operation was successful, so return early without throwing any errors
+        return;
       } else {
-        // Safe error handling
+        // Only handle the error if response is actually not OK (non-2xx)
         let errorMessage = "Failed to delete conversation";
         try {
           const responseText = await response.text();
@@ -116,13 +120,14 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
                 errorMessage = parsedError.message;
               }
             } catch (jsonError) {
-              console.error("Error parsing JSON:", jsonError);
               // Use the raw text if JSON parsing fails
-              errorMessage = responseText;
+              if (responseText.length > 0) {
+                errorMessage = responseText;
+              }
             }
           }
         } catch (textError) {
-          console.error("Error reading response text:", textError);
+          // If we can't read the response, just use the default message
         }
         throw new Error(errorMessage);
       }
