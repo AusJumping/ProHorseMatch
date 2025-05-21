@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HorseCard from "./HorseCard";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Heart, X, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, X, Info, Loader2 } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -23,6 +23,47 @@ const SwipeSection = ({
   onShowMore,
 }: SwipeSectionProps) => {
   const [localIndex, setLocalIndex] = useState(activeIndex);
+  const [previousHorseCount, setPreviousHorseCount] = useState(horses.length);
+  const [showEmptyState, setShowEmptyState] = useState(false);
+  const [loadingDelay, setLoadingDelay] = useState(true);
+  
+  // Immediately detect when horses array changes
+  useEffect(() => {
+    // If horse count changes, this is a filter change
+    if (horses.length !== previousHorseCount) {
+      // Reset index to beginning when filters change
+      setLocalIndex(0);
+      setPreviousHorseCount(horses.length);
+      
+      // Always hide empty state during transitions
+      setShowEmptyState(false);
+      
+      // Show loading for at least 1 second during filter transitions
+      setLoadingDelay(true);
+      const timer = setTimeout(() => {
+        setLoadingDelay(false);
+      }, 1500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [horses.length, previousHorseCount]);
+  
+  // Control when to show empty state
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    
+    if (!isLoading && !loadingDelay && horses.length === 0) {
+      // Delay showing empty state to prevent flash
+      timer = setTimeout(() => {
+        setShowEmptyState(true);
+      }, 1000);
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isLoading, loadingDelay, horses.length]);
+  
   const currentHorse = horses[localIndex];
 
   const goToNextHorse = () => {
@@ -37,24 +78,30 @@ const SwipeSection = ({
     }
   };
 
-  // Modified to handle like without advancing immediately
-  // This allows the parent component to properly handle authentication
+  // Handle like without advancing immediately
   const handleButtonLike = () => {
-    onLike(currentHorse.id);
-    // Note: we'll let the parent component handle moving to next horse
-    // This prevents issues with authentication
+    if (currentHorse) {
+      onLike(currentHorse.id);
+    }
   };
 
   const handleButtonDislike = () => {
-    onDislike(currentHorse.id);
-    goToNextHorse();
+    if (currentHorse) {
+      onDislike(currentHorse.id);
+      goToNextHorse();
+    }
   };
 
-  // Show loading state when loading horses
-  if (isLoading) {
+  // Show skeleton loading state
+  if (isLoading || loadingDelay || (!horses.length && !showEmptyState)) {
     return (
       <div className="w-full max-w-lg mx-auto">
-        <Skeleton className="horse-card rounded-xl h-[450px]" />
+        <div className="horse-card rounded-xl h-[450px] bg-white/50 flex flex-col items-center justify-center">
+          <Skeleton className="w-full h-full rounded-xl" />
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
+          </div>
+        </div>
         <div className="flex justify-center mt-4 gap-4">
           <Skeleton className="w-14 h-14 rounded-full" />
           <Skeleton className="w-12 h-12 rounded-full" />
@@ -64,32 +111,11 @@ const SwipeSection = ({
     );
   }
   
-  // Only show the empty state after we've confirmed no horses match and we're not loading
-  // Adding a minimum delay to prevent flickering during filter transitions
-  const [showNoResults, setShowNoResults] = useState(false);
-  
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    
-    if (!horses.length && !isLoading) {
-      // Wait at least 1 second before showing "no horses found"
-      // This prevents flickering during quick filter transitions
-      timer = setTimeout(() => {
-        setShowNoResults(true);
-      }, 1000);
-    } else {
-      setShowNoResults(false);
-    }
-    
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [horses.length, isLoading]);
-  
-  if (!horses.length && !isLoading && showNoResults) {
+  // Show empty state for no horses
+  if (horses.length === 0 && showEmptyState) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-display font-bold mb-4">No horses found</h3>
+        <h3 className="text-xl font-accent font-bold mb-4">No horses found</h3>
         <p className="text-neutral-600 mb-6">
           No horses match your current search criteria. Try adjusting your filters.
         </p>
@@ -97,7 +123,7 @@ const SwipeSection = ({
           <Button 
             variant="outline"
             onClick={() => {
-              // Use a more reliable way to reset filters than a full page refresh
+              // Cleanly reset filters
               const url = new URL(window.location.href);
               url.search = ''; // Clear all query parameters
               window.location.href = url.toString();
@@ -109,25 +135,12 @@ const SwipeSection = ({
       </div>
     );
   }
-  
-  // Continue showing skeleton if we have no horses but don't want to show "no results" yet
-  if (!horses.length && !showNoResults) {
-    return (
-      <div className="w-full max-w-lg mx-auto">
-        <Skeleton className="horse-card rounded-xl h-[450px]" />
-        <div className="flex justify-center mt-4 gap-4">
-          <Skeleton className="w-14 h-14 rounded-full" />
-          <Skeleton className="w-12 h-12 rounded-full" />
-          <Skeleton className="w-14 h-14 rounded-full" />
-        </div>
-      </div>
-    );
-  }
 
-  if (localIndex >= horses.length) {
+  // Show end of horses message
+  if (horses.length > 0 && localIndex >= horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-display font-bold mb-4">No more horses</h3>
+        <h3 className="text-xl font-accent font-bold mb-4">No more horses</h3>
         <p className="text-neutral-600 mb-6">
           You've seen all the horses matching your criteria
         </p>
@@ -136,6 +149,7 @@ const SwipeSection = ({
     );
   }
 
+  // Normal display when we have horses to show
   return (
     <div className="w-full max-w-lg mx-auto">
       {/* Navigation indicators */}
@@ -184,7 +198,7 @@ const SwipeSection = ({
           variant="outline"
           className="info-button w-14 h-14 rounded-full"
           onClick={() => {
-            if (typeof onShowMore === 'function') {
+            if (typeof onShowMore === 'function' && currentHorse) {
               onShowMore(currentHorse.id);
             }
           }}
