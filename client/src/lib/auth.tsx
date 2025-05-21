@@ -55,8 +55,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userData = await res.json();
         console.log("Auth user data:", userData); // Debug log
         
-        // Store user data in localStorage for persistence
+        // If we have a user, fetch their subscription details to ensure 
+        // subscription info is properly loaded (especially important on mobile)
         if (userData && userData.id) {
+          try {
+            const subRes = await fetch('/api/subscription', {
+              credentials: 'include',
+              cache: 'no-cache'
+            });
+            
+            if (subRes.ok) {
+              const subData = await subRes.json();
+              console.log("Subscription data on user load:", subData);
+              
+              // Enhance user data with subscription information
+              if (subData.hasSubscription) {
+                userData.subscription_status = subData.status;
+                userData.subscription_plan = subData.planId;
+                userData.stripe_subscription_id = subData.subscriptionId;
+                
+                if (subData.currentPeriodEnd) {
+                  userData.subscription_end_date = new Date(subData.currentPeriodEnd * 1000).toISOString();
+                }
+                
+                console.log("Enhanced initial user load with subscription info:", userData);
+              }
+            }
+          } catch (subError) {
+            console.error("Error fetching subscription on initial load:", subError);
+            // Continue with basic user data
+          }
+          
+          // After all enhancements, store user data in localStorage for persistence
           localStorage.setItem('user', JSON.stringify(userData));
         }
         
@@ -106,6 +136,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const userData = await response.json() as User;
       console.log("Login successful, user data:", userData);
+      
+      // Make an additional request to get detailed subscription data
+      // This is especially important for mobile where sessions sometimes have issues
+      try {
+        if (userData.id) {
+          const subscriptionResponse = await fetch('/api/subscription', {
+            credentials: 'include',
+            cache: 'no-cache'
+          });
+          
+          if (subscriptionResponse.ok) {
+            const subscriptionData = await subscriptionResponse.json();
+            console.log("Fetched subscription data:", subscriptionData);
+            
+            // Enhance user data with subscription information from dedicated endpoint
+            if (subscriptionData.hasSubscription) {
+              userData.subscription_status = subscriptionData.status;
+              userData.subscription_plan = subscriptionData.planId;
+              userData.stripe_subscription_id = subscriptionData.subscriptionId;
+              
+              if (subscriptionData.currentPeriodEnd) {
+                userData.subscription_end_date = new Date(subscriptionData.currentPeriodEnd * 1000).toISOString();
+              }
+              
+              console.log("Enhanced user data with subscription info:", userData);
+            }
+          }
+        }
+      } catch (subError) {
+        console.error("Failed to fetch subscription details, using basic user data:", subError);
+        // Continue with basic user data from login endpoint
+      }
       
       // Store user in localStorage for quick recovery if session issues occur
       localStorage.setItem('user', JSON.stringify(userData));
