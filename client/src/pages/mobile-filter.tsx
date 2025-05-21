@@ -66,80 +66,28 @@ export default function MobileFilterPage() {
   };
 
   const handleApplyFilters = () => {
-    // Immediately show loading toast to give feedback
+    // Show loading toast for immediate feedback
     toast({
       title: "Applying Filters",
       description: "Finding horses that match your criteria...",
-      duration: 1500,
+      duration: 1000,
     });
     
-    // Build query string parameters for direct navigation instead of using localStorage
-    const params = new URLSearchParams();
+    // Super simplified approach - generate direct API query URL
+    const url = new URL(window.location.origin);
+    url.pathname = "/";
     
-    // Add discipline filter
+    // Only add the minimum necessary parameters
     if (filters.disciplines && filters.disciplines.length > 0) {
-      params.set('disciplines', filters.disciplines.join(','));
+      url.searchParams.append('disciplines', filters.disciplines[0]);
     }
     
-    // Add breed filter
-    if (filters.breeds && filters.breeds.length > 0) {
-      params.set('breeds', filters.breeds.join(','));
-    }
-    
-    // Add sex filter
-    if (filters.sexes && filters.sexes.length > 0) {
-      params.set('sexes', filters.sexes.join(','));
-    }
-    
-    // Add location filter
-    if (filters.location_country) {
-      params.set('location', filters.location_country);
-    }
-    
-    // Add age range
-    if (filters.age_min !== null) {
-      params.set('min_age', String(filters.age_min));
-    }
-    if (filters.age_max !== null && filters.age_max < 999) {
-      params.set('max_age', String(filters.age_max));
-    }
-    
-    // Add height range
-    if (filters.height_min !== null) {
-      params.set('min_height', String(filters.height_min));
-    }
-    if (filters.height_max !== null && filters.height_max < 999) {
-      params.set('max_height', String(filters.height_max));
-    }
-    
-    // Add price range
-    if (filters.price_min !== null) {
-      params.set('min_price', String(filters.price_min));
-    }
-    if (filters.price_max !== null && filters.price_max < 999999999) {
-      params.set('max_price', String(filters.price_max));
-    }
-    
-    // Add currency
     if (filters.currency) {
-      params.set('currency', filters.currency);
+      url.searchParams.append('currency', filters.currency);
     }
     
-    // Add level filter
-    if (filters.levels && filters.levels.length > 0) {
-      params.set('levels', filters.levels.join(','));
-    }
-    
-    // Also save to localStorage as a backup
-    try {
-      localStorage.setItem('lastAppliedFilters', JSON.stringify(filters));
-      localStorage.setItem('filtersTimestamp', Date.now().toString());
-    } catch (error) {
-      console.error("Error saving filters to localStorage:", error);
-    }
-    
-    // Navigate directly with query parameters
-    navigate(`/?${params.toString()}`);
+    // Simplified way to apply filters - go directly to home with minimal params
+    window.location.href = url.toString();
   };
 
   const resetFilters = () => {
