@@ -272,7 +272,7 @@
         "contact_name": "John Smith",
         "is_selling": true,
         "is_searching": true,
-        "name": "",
+        "name": "Test Owner",
         "created_at": "2025-05-19T23:39:35.028Z",
         "stripe_subscription_id": "beta-1747733745568",
         "subscription_status": "active",
