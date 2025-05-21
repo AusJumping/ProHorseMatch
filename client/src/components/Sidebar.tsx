@@ -236,8 +236,21 @@ const Sidebar = () => {
                   e.preventDefault();
                   // Force enable owner status for testing
                   setIsOwner(true);
-                  // Also try to set in localStorage
+                  
+                  // Make a direct API call to set owner permission in session
                   try {
+                    apiRequest("POST", "/api/dev/enable-owner-mode")
+                      .then(() => {
+                        toast({
+                          title: "Owner Mode Enabled",
+                          description: "You now have access to owner features"
+                        });
+                      })
+                      .catch(err => {
+                        console.error("Failed to enable owner mode via API:", err);
+                      });
+                    
+                    // Also try to set in localStorage
                     const storedUser = localStorage.getItem('user');
                     if (storedUser) {
                       const parsedUser = JSON.parse(storedUser);
