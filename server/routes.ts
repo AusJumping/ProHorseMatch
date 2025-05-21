@@ -1148,8 +1148,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the user with their roles
       const user = await storage.getUserById(req.session.userId);
       
+      // Check if user has selling permission
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
+      }
+      
+      // Check if the user's subscription plan allows them to add horses
+      // This ensures that only users with beta-seller or paid plans can add horses
+      if (user.subscription_plan === 'beta-searching') {
+        return res.status(403).json({ 
+          message: "Your current subscription plan (Searching) does not allow adding horses. Please upgrade to a Seller plan."
+        });
       }
       
       const validatedData = insertHorseSchema.parse(req.body);
