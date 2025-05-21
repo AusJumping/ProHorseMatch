@@ -1023,6 +1023,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.disciplines = Array.isArray(req.query.disciplines) 
           ? req.query.disciplines 
           : [req.query.disciplines];
+        
+        // Direct SQL filtering approach for disciplines
+        if (filters.disciplines.length > 0) {
+          const discipline = filters.disciplines[0];
+          console.log(`Using direct SQL filtering for discipline: ${discipline}`);
+          
+          // We'll use the pool to execute a direct SQL query
+          try {
+            const { rows } = await pool.query(
+              "SELECT * FROM horses WHERE $1 = ANY(disciplines)",
+              [discipline]
+            );
+            console.log(`Found ${rows.length} horses matching discipline: ${discipline}`);
+            return res.json(rows);
+          } catch (sqlError) {
+            console.error("SQL filtering error:", sqlError);
+            // Continue with normal filtering if SQL approach fails
+          }
+        }
       }
       
       if (req.query.breeds && Array.isArray(req.query.breeds) ? req.query.breeds.length > 0 : req.query.breeds) {
