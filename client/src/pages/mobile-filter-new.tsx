@@ -45,41 +45,53 @@ export default function MobileFilterPage() {
     navigate("/");
   };
   
-  // Apply discipline filter directly but with optimized approach
+  // Apply discipline filter with optimized approach and improved loading experience
   const applyDisciplineFilter = (discipline: string) => {
-    // Prefetch the filtered data to avoid loading time
+    // Update UI first for instant feedback
+    setSelectedDiscipline(discipline);
+    
+    // Show immediate visual feedback via toast
+    toast({
+      title: "Filtering by " + discipline,
+      description: "Finding matches for you...",
+      duration: 800, // Shorter duration for better UX
+    });
+    
+    // Prefetch the filtered data to reduce perceived loading time
     queryClient.prefetchQuery({
       queryKey: ['/api/horses', { disciplines: [discipline], currency: currentCurrency }],
     });
     
-    // Show immediate toast feedback
-    toast({
-      title: "Filtering by " + discipline,
-      description: "Finding matching horses...",
-      duration: 800, // Shorter duration for better UX
-    });
-    
-    // Mark the selection visually first (feels faster)
-    setSelectedDiscipline(discipline);
-    
-    // Use navigate for faster client-side navigation
-    navigate(`/?disciplines=${discipline}&currency=${currentCurrency || "AUD"}`);
+    // Artificial short delay to allow the prefetch to work more effectively
+    // This makes the transition feel smoother as data loads in the background
+    setTimeout(() => {
+      // Use navigate for faster client-side navigation
+      navigate(`/?disciplines=${discipline}&currency=${currentCurrency || "AUD"}`);
+    }, 50);
   };
   
-  // Show All Horses - optimized version
+  // Show All Horses - with enhanced loading experience
   const showAllHorses = () => {
+    // Clear selected discipline for immediate visual feedback
+    setSelectedDiscipline("");
+    
     // Show immediate toast feedback
     toast({
       title: "Showing all horses",
-      description: "Displaying all available horses",
+      description: "Loading complete collection...",
       duration: 800,
     });
     
-    // Clear selected discipline for visual feedback
-    setSelectedDiscipline("");
+    // Prefetch all horses data to reduce perceived loading time
+    queryClient.prefetchQuery({
+      queryKey: ['/api/horses', { currency: currentCurrency }],
+    });
     
-    // Use navigate for faster client-side navigation  
-    navigate("/");
+    // Small delay for smoother transition and to allow prefetch to complete
+    setTimeout(() => {
+      // Use navigate for faster client-side navigation  
+      navigate("/");
+    }, 50);
   };
 
   return (
