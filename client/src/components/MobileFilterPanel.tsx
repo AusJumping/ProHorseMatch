@@ -135,13 +135,11 @@ const MobileFilterPanel = ({
       filtersToApply.sexes = [];
     }
     
-    // First close the panel to prevent UI issues
-    onClose();
+    // Apply filters immediately first to prevent delay
+    onApplyFilters(filtersToApply);
     
-    // Then apply filters after a tiny delay to ensure the UI update completes
-    setTimeout(() => {
-      onApplyFilters(filtersToApply);
-    }, 50);
+    // Then close the panel 
+    onClose();
   };
 
   if (!isOpen) return null;
