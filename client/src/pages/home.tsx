@@ -125,26 +125,16 @@ export default function Home() {
       
       // Fetch horses with the filter parameters
       const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await fetch(`/api/horses${queryString}`);
       
-      try {
-        console.log(`Fetching horses with query: /api/horses${queryString}`);
-        const response = await fetch(`/api/horses${queryString}`);
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch horses');
-        }
-        
-        const result = await response.json();
-        console.log(`Received ${result.length} horses from server:`, 
-          result.map((h: Horse) => `${h.id} - ${h.name} - ${h.disciplines?.join(', ')}`));
-        
-        // Reset the active index to 0 whenever we get new data
-        setSwipingIndex(0);
-        return result;
-      } catch (error) {
-        console.error('Error fetching horses:', error);
-        throw error;
+      if (!response.ok) {
+        throw new Error('Failed to fetch horses');
       }
+      
+      const result = await response.json();
+      // Reset the active index to 0 whenever we get new data
+      setSwipingIndex(0);
+      return result;
     }
   });
 

@@ -28,14 +28,10 @@ const SwipeSection = ({
   // When horses array changes (like when filters are applied), reset the index
   // This ensures we're always showing the first horse in the filtered results
   useEffect(() => {
-    // Always reset to the first horse when the filtered horses array changes
     setLocalIndex(0);
-    console.log(`SwipeSection: Received ${horses.length} horses`, 
-      horses.map(h => `${h.id} - ${h.name} - ${h.disciplines?.join(',')}`));
   }, [horses]);
   
-  // Make sure we're accessing a valid horse from the array
-  const currentHorse = horses[localIndex < horses.length ? localIndex : 0];
+  const currentHorse = horses[localIndex];
 
   const goToNextHorse = () => {
     if (localIndex < horses.length - 1) {
