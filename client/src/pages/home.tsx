@@ -559,13 +559,12 @@ export default function Home() {
   return (
     <Layout 
       pageTitle="" 
-      showFilterButton 
-      onFilterClick={toggleFilterPanel}
+      showFilterButton={false} // Removed filter button from header since we have inline filters
     >
       <div className="flex flex-col md:flex-row w-full h-full">
-        {/* Filter sidebar */}
-        {(!isMobile || (location === "/discover" && showFilter)) && (
-          <div className={`${isMobile ? 'w-full' : 'w-72'} bg-white rounded-xl p-5 shadow-sm h-fit ${isMobile ? 'mb-6' : 'mr-6'} flex-shrink-0`}>
+        {/* Desktop Filter sidebar */}
+        {!isMobile && (
+          <div className="w-72 bg-white rounded-xl p-5 shadow-sm h-fit mr-6 flex-shrink-0">
             <FilterPanel 
               isOpen={true} 
               onClose={() => {}} 
@@ -573,6 +572,68 @@ export default function Home() {
               onApplyFilters={handleApplyFilters}
               horseCount={horses?.length || 0}
             />
+          </div>
+        )}
+        
+        {/* Mobile Inline Filter Section */}
+        {isMobile && (
+          <div className="mb-4 bg-white rounded-xl p-4 shadow-sm">
+            <div className="mb-3">
+              <h3 className="text-lg font-semibold mb-1">Find Horses</h3>
+              <p className="text-xs text-gray-500">Filter to find your perfect match</p>
+            </div>
+            
+            {/* Disciplines Quick Filter - Horizontal scrolling buttons */}
+            <div className="mb-3">
+              <label className="block text-sm font-medium mb-2">Discipline</label>
+              <div className="flex space-x-2 overflow-x-auto pb-2 -mx-1 px-1">
+                <button 
+                  className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm ${
+                    activeFilters.disciplines.length === 0 
+                      ? 'bg-primary text-white' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                  onClick={() => handleApplyFilters({...activeFilters, disciplines: []})}
+                >
+                  All
+                </button>
+                
+                {['Jumping', 'Dressage', 'Eventing'].map(discipline => (
+                  <button 
+                    key={discipline}
+                    className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm ${
+                      activeFilters.disciplines.includes(discipline) 
+                        ? 'bg-primary text-white' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}
+                    onClick={() => handleApplyFilters({...activeFilters, disciplines: [discipline]})}
+                  >
+                    {discipline}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Additional filters - Show/Hide toggle */}
+            <div>
+              <Button 
+                variant="outline" 
+                onClick={() => toggleFilterPanel()}
+                className="w-full justify-between"
+              >
+                <span>More Filters</span>
+                <span className="bg-gray-200 text-gray-700 rounded-full px-2 text-xs">
+                  {hasActiveFilters() ? Object.values(activeFilters).flat().filter(Boolean).length : 0}
+                </span>
+              </Button>
+            </div>
+            
+            {/* Active filter pills */}
+            {activeFilters && hasActiveFilters() && (
+              <div className="mt-3">
+                {renderFilterPills()}
+              </div>
+            )}
           </div>
         )}
 
