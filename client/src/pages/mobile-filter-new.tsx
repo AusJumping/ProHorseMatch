@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { Horse } from "@shared/schema";
 
 export default function MobileFilterPage() {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const { currentCurrency } = useCurrency();
+  const queryClient = useQueryClient();
   
   // Fetch constants for discipline options only
   const { data: constants } = useQuery<{
@@ -20,35 +22,64 @@ export default function MobileFilterPage() {
     queryKey: ['/api/constants'],
   });
   
-  // Super simplified approach - track only selected discipline
+  // Pre-fetch all horses to have them ready in cache
+  const { data: allHorses } = useQuery<Horse[]>({
+    queryKey: ['/api/horses', { currency: currentCurrency }],
+  });
+
+  // Get discipline from the URL
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("");
+
+  // Extract current discipline from URL when component mounts
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const disciplineParam = url.searchParams.get('disciplines');
+    if (disciplineParam) {
+      setSelectedDiscipline(disciplineParam);
+    }
+  }, []);
   
   // Return to home page with no filters
   const goHome = () => {
-    window.location.href = "/";
+    // Use navigate instead of direct URL change for faster response
+    navigate("/");
   };
   
-  // Apply discipline filter directly
+  // Apply discipline filter directly but with optimized approach
   const applyDisciplineFilter = (discipline: string) => {
+    // Prefetch the filtered data to avoid loading time
+    queryClient.prefetchQuery({
+      queryKey: ['/api/horses', { disciplines: [discipline], currency: currentCurrency }],
+    });
+    
+    // Show immediate toast feedback
     toast({
       title: "Filtering by " + discipline,
       description: "Finding matching horses...",
-      duration: 1000,
+      duration: 800, // Shorter duration for better UX
     });
     
-    // Direct URL navigation with minimal params
-    window.location.href = `/?disciplines=${discipline}&currency=${currentCurrency || "AUD"}`;
+    // Mark the selection visually first (feels faster)
+    setSelectedDiscipline(discipline);
+    
+    // Use navigate for faster client-side navigation
+    navigate(`/?disciplines=${discipline}&currency=${currentCurrency || "AUD"}`);
   };
   
-  // Show All Horses
+  // Show All Horses - optimized version
   const showAllHorses = () => {
+    // Show immediate toast feedback
     toast({
       title: "Showing all horses",
       description: "Displaying all available horses",
-      duration: 1000,
+      duration: 800,
     });
     
-    window.location.href = "/";
+    // Clear selected discipline for visual feedback
+    setSelectedDiscipline("");
+    
+    // Use navigate for faster client-side navigation  
+    navigate("/");
   };
 
   return (
@@ -76,14 +107,18 @@ export default function MobileFilterPage() {
         </div>
       </div>
 
-      {/* Simple discipline selector */}
+      {/* Simple discipline selector with improved responsiveness */}
       <div className="pt-20 p-4">
         <h2 className="text-lg font-bold mb-4">Select Discipline</h2>
         
         <div className="grid grid-cols-1 gap-2">
           <Button 
             variant="outline"
-            className="justify-start font-normal h-12 px-4 bg-neutral-50 hover:bg-neutral-100"
+            className={`justify-start font-normal h-12 px-4 ${
+              !selectedDiscipline 
+                ? "bg-primary/10 border-primary" 
+                : "bg-neutral-50 hover:bg-neutral-100"
+            }`}
             onClick={showAllHorses}
           >
             All Disciplines
@@ -95,13 +130,10 @@ export default function MobileFilterPage() {
               variant="outline"
               className={`justify-start font-normal h-12 px-4 ${
                 selectedDiscipline === discipline 
-                  ? "bg-primary/10 border-primary" 
+                  ? "bg-primary/10 border-primary font-medium" 
                   : "bg-neutral-50 hover:bg-neutral-100"
               }`}
-              onClick={() => {
-                setSelectedDiscipline(discipline);
-                applyDisciplineFilter(discipline);
-              }}
+              onClick={() => applyDisciplineFilter(discipline)}
             >
               {discipline}
             </Button>
