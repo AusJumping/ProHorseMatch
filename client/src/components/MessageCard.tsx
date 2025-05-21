@@ -79,6 +79,16 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
     try {
       setIsDeleting(true);
       
+      // Close the dialog immediately to give better user feedback
+      setShowDeleteDialog(false);
+      
+      // Show a temporary toast to indicate deletion is in progress
+      toast({
+        title: "Deleting...",
+        description: "Removing conversation and messages",
+        duration: 5000, // Longer duration in case it takes time
+      });
+      
       const response = await apiRequest("DELETE", `/api/conversations/${conversation.id}`);
       
       if (response.ok) {
@@ -92,9 +102,9 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
         } catch (parseError) {
           // If we can't parse the response as JSON, just use the default message
           // This is normal for some DELETE operations that return 204 No Content
-          // We'll just use our default success message
         }
         
+        // Show success toast after the operation completes
         toast({
           title: "Success",
           description: successMessage,
@@ -106,9 +116,8 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
           queryKey: ['/api/conversations'] 
         });
         
-        // The operation was successful
+        // Reset state
         setIsDeleting(false);
-        setShowDeleteDialog(false);
         return;
       } else {
         // Only handle the error if response is actually not OK (non-2xx)
@@ -185,10 +194,10 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
           }`}
           onClick={onClick}
         >
-          {conversation.horse?.photos?.length > 0 ? (
+          {conversation.horse && conversation.horse.photos && conversation.horse.photos.length > 0 ? (
             <img 
               src={conversation.horse.photos[0]} 
-              alt={`${conversation.horse.name}`} 
+              alt={conversation.horse.name || 'Horse'} 
               className="w-12 h-12 rounded-full object-cover" 
             />
           ) : (
