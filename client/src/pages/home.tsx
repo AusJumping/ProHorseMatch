@@ -647,7 +647,10 @@ export default function Home() {
           <FilterPanel 
             isOpen={isFilterOpen} 
             onClose={() => setIsFilterOpen(false)} 
-            activeFilters={activeFilters}
+            activeFilters={{
+              ...activeFilters,
+              disciplines: [] // Force empty disciplines array to ensure "All Disciplines" is default
+            }}
             onApplyFilters={handleApplyFilters}
             horseCount={horses?.length || 0}
           />
