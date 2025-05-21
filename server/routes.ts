@@ -1466,6 +1466,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Delete a message endpoint
+  app.delete("/api/messages/:id", isAuthenticated, async (req, res) => {
+    try {
+      const messageId = parseInt(req.params.id);
+      
+      // Get the message to verify ownership
+      const message = await storage.getMessageById(messageId);
+      
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      
+      // Get the current user with roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Verify that the current user has permission to delete this message
+      // Either the user is the sender of the message or the user has admin rights
+      const isMessageSender = 
+        (message.sender_type === "customer" && message.customer_id === req.session.userId) ||
+        (message.sender_type === "owner" && message.owner_id === req.session.userId);
+      
+      const isAdmin = req.session.userId === 1; // Admin user ID is 1
+      
+      if (!isMessageSender && !isAdmin) {
+        return res.status(403).json({ message: "You don't have permission to delete this message" });
+      }
+      
+      // Delete the message
+      const success = await storage.deleteMessage(messageId);
+      
+      if (success) {
+        return res.status(200).json({ success: true, message: "Message deleted successfully" });
+      } else {
+        return res.status(500).json({ success: false, message: "Failed to delete message" });
+      }
+    } catch (error) {
+      console.error("Delete message error:", error);
+      return res.status(500).json({ message: "Error deleting message" });
+    }
+  });
+
   app.get("/api/messages/:customerId/:ownerId/:horseId", isAuthenticated, async (req, res) => {
     try {
       const customerId = parseInt(req.params.customerId);
