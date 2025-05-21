@@ -57,40 +57,43 @@ const SwipeSection = ({
     }
   };
 
-  // Show loading state
-  if (isLoading) {
+  // Combined loading and empty state handler with improved UX
+  if (isLoading || !horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto">
-        <Skeleton className="horse-card rounded-xl h-[450px]" />
-        <div className="flex justify-center mt-4 gap-4">
-          <Skeleton className="w-14 h-14 rounded-full" />
-          <Skeleton className="w-12 h-12 rounded-full" />
-          <Skeleton className="w-14 h-14 rounded-full" />
-        </div>
-      </div>
-    );
-  }
-  
-  // State when no horses are found
-  if (!horses.length) {
-    return (
-      <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-display font-bold mb-4">Searching for Horses</h3>
-        <p className="text-neutral-600 mb-6">
-          Please wait while we find horses matching your criteria.
-        </p>
-        <div className="flex gap-3">
-          <Button 
-            variant="outline"
-            onClick={() => {
-              // Use a more reliable way to reset filters
-              const url = new URL(window.location.href);
-              url.search = ''; // Clear all query parameters
-              window.location.href = url.toString();
-            }}>
-            Show All Horses
-          </Button>
-          <Button onClick={() => window.location.reload()}>Refresh</Button>
+        <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
+          {/* Show animated loading skeleton during loading */}
+          {isLoading ? (
+            <>
+              <div className="flex items-center justify-center mb-4">
+                <div className="animate-spin w-8 h-8 border-4 border-[#cdac6e] border-t-transparent rounded-full"></div>
+              </div>
+              <h3 className="text-xl font-display font-bold mb-4">Finding Matches...</h3>
+              <p className="text-neutral-600">
+                Searching for the perfect horses for you
+              </p>
+            </>
+          ) : (
+            <>
+              <h3 className="text-xl font-display font-bold mb-4">No Matches Found</h3>
+              <p className="text-neutral-600 mb-6">
+                No horses match your current search criteria. Try adjusting your filters.
+              </p>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    // Use a more reliable way to reset filters
+                    const url = new URL(window.location.href);
+                    url.search = ''; // Clear all query parameters
+                    window.location.href = url.toString();
+                  }}>
+                  Show All Horses
+                </Button>
+                <Button onClick={() => window.location.reload()}>Refresh</Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
