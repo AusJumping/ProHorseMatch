@@ -457,24 +457,21 @@ export default function Home() {
                 <div>
                   {/* Removed yellow filter notification as requested */}
                   
-                  {/* Optional small filter status indicator - removed yellow notification */}
+                  {/* All filter indicators removed as requested */}
                   {activeFilters.disciplines.length > 0 && (
-                    <div className="text-center text-xs text-gray-500 mb-2">
-                      Filter: {activeFilters.disciplines[0]}
-                      <button 
-                        className="ml-2 text-primary hover:underline text-xs"
-                        onClick={() => {
-                          // Clear filter and localStorage
-                          localStorage.removeItem('active_discipline_filter');
-                          setActiveFilters(prev => ({...prev, disciplines: []}));
-                          
-                          // Force page reload to ensure clean state
-                          window.location.reload();
-                        }}
-                      >
-                        clear
-                      </button>
-                    </div>
+                    <button 
+                      className="absolute top-2 right-2 z-20 text-sm text-gray-400 hover:text-gray-600 bg-white bg-opacity-70 px-2 py-1 rounded"
+                      onClick={() => {
+                        // Clear filter and localStorage
+                        localStorage.removeItem('active_discipline_filter');
+                        setActiveFilters(prev => ({...prev, disciplines: []}));
+                        
+                        // Force page reload to ensure clean state
+                        window.location.reload();
+                      }}
+                    >
+                      Clear filter
+                    </button>
                   )}
                   
                   {/* Create a key for the active discipline filter to force re-rendering */}
