@@ -214,7 +214,7 @@ export default function Home() {
   const [swipingIndex, setSwipingIndex] = useState(0);
 
   // Query for horses with filters
-  const { data: horses, isLoading, isError } = useQuery<Horse[]>({
+  const { data: horses, isLoading, isError, isFetching } = useQuery<Horse[]>({
     queryKey: ['/api/horses', activeFilters],
     queryFn: async () => {
       // Build query parameters from activeFilters

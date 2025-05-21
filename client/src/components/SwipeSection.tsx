@@ -63,9 +63,23 @@ const SwipeSection = ({
     );
   }
 
-  // Only show the empty state if we're not currently loading
-  // This prevents the "no horses" message from flashing briefly during filter transitions
-  if (!horses.length && !isLoading) {
+  // Skip the empty state message completely during loading
+  // This removes the flash of "no horses" message when changing filters
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-lg mx-auto">
+        <Skeleton className="horse-card rounded-xl" />
+        <div className="flex justify-center mt-4 gap-4">
+          <Skeleton className="w-14 h-14 rounded-full" />
+          <Skeleton className="w-12 h-12 rounded-full" />
+          <Skeleton className="w-14 h-14 rounded-full" />
+        </div>
+      </div>
+    );
+  }
+  
+  // Only show the empty state after we've confirmed no horses match
+  if (!horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
         <h3 className="text-xl font-display font-bold mb-4">No horses found</h3>
