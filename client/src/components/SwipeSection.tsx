@@ -57,55 +57,31 @@ const SwipeSection = ({
     }
   };
 
-  // Enhanced loading and empty state handler with improved UX
+  // Always show loading animation whether we're fetching or have no results
   if (isLoading || !horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto">
         <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-          {/* Show enhanced animated loading experience during loading */}
-          {isLoading ? (
-            <>
-              <div className="flex flex-col items-center justify-center mb-6">
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="animate-ping w-16 h-16 rounded-full bg-[#cdac6e] opacity-30"></div>
-                  </div>
-                  <div className="relative animate-spin w-16 h-16 border-4 border-[#cdac6e] border-t-transparent rounded-full"></div>
-                </div>
+          {/* Always show enhanced animated loading experience */}
+          <div className="flex flex-col items-center justify-center mb-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="animate-ping w-16 h-16 rounded-full bg-[#cdac6e] opacity-30"></div>
               </div>
-              <h3 className="text-xl font-display font-bold mb-4">Searching for Horses</h3>
-              <div className="flex flex-col gap-2">
-                <p className="text-neutral-600">
-                  Finding the perfect matches for you...
-                </p>
-                <div className="flex justify-center items-center gap-1 mt-1">
-                  <span className="animate-bounce delay-0 w-2 h-2 bg-[#cdac6e] rounded-full"></span>
-                  <span className="animate-bounce delay-150 w-2 h-2 bg-[#cdac6e] rounded-full" style={{animationDelay: '0.15s'}}></span>
-                  <span className="animate-bounce delay-300 w-2 h-2 bg-[#cdac6e] rounded-full" style={{animationDelay: '0.3s'}}></span>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <h3 className="text-xl font-display font-bold mb-4">No Matches Found</h3>
-              <p className="text-neutral-600 mb-6">
-                No horses match your current search criteria. Try adjusting your filters.
-              </p>
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    // Use a more reliable way to reset filters
-                    const url = new URL(window.location.href);
-                    url.search = ''; // Clear all query parameters
-                    window.location.href = url.toString();
-                  }}>
-                  Show All Horses
-                </Button>
-                <Button onClick={() => window.location.reload()}>Refresh</Button>
-              </div>
-            </>
-          )}
+              <div className="relative animate-spin w-16 h-16 border-4 border-[#cdac6e] border-t-transparent rounded-full"></div>
+            </div>
+          </div>
+          <h3 className="text-xl font-display font-bold mb-4">Searching for Horses</h3>
+          <div className="flex flex-col gap-2">
+            <p className="text-neutral-600">
+              Finding the perfect matches for you...
+            </p>
+            <div className="flex justify-center items-center gap-1 mt-1">
+              <span className="animate-bounce delay-0 w-2 h-2 bg-[#cdac6e] rounded-full"></span>
+              <span className="animate-bounce delay-150 w-2 h-2 bg-[#cdac6e] rounded-full" style={{animationDelay: '0.15s'}}></span>
+              <span className="animate-bounce delay-300 w-2 h-2 bg-[#cdac6e] rounded-full" style={{animationDelay: '0.3s'}}></span>
+            </div>
+          </div>
         </div>
       </div>
     );
