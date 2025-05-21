@@ -65,7 +65,28 @@ const SwipeSection = ({
   }
   
   // Only show the empty state after we've confirmed no horses match and we're not loading
-  if (!horses.length && !isLoading) {
+  // Adding a minimum delay to prevent flickering during filter transitions
+  const [showNoResults, setShowNoResults] = useState(false);
+  
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    
+    if (!horses.length && !isLoading) {
+      // Wait at least 1 second before showing "no horses found"
+      // This prevents flickering during quick filter transitions
+      timer = setTimeout(() => {
+        setShowNoResults(true);
+      }, 1000);
+    } else {
+      setShowNoResults(false);
+    }
+    
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [horses.length, isLoading]);
+  
+  if (!horses.length && !isLoading && showNoResults) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
         <h3 className="text-xl font-display font-bold mb-4">No horses found</h3>
@@ -84,6 +105,20 @@ const SwipeSection = ({
             Reset Filters
           </Button>
           <Button onClick={() => window.location.reload()}>Refresh</Button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Continue showing skeleton if we have no horses but don't want to show "no results" yet
+  if (!horses.length && !showNoResults) {
+    return (
+      <div className="w-full max-w-lg mx-auto">
+        <Skeleton className="horse-card rounded-xl h-[450px]" />
+        <div className="flex justify-center mt-4 gap-4">
+          <Skeleton className="w-14 h-14 rounded-full" />
+          <Skeleton className="w-12 h-12 rounded-full" />
+          <Skeleton className="w-14 h-14 rounded-full" />
         </div>
       </div>
     );

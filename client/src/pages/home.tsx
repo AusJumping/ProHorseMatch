@@ -213,10 +213,18 @@ export default function Home() {
 
   const [swipingIndex, setSwipingIndex] = useState(0);
 
+  // State to prevent the "no horses found" message during loading
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  
   // Query for horses with filters
   const { data: horses, isLoading, isError, isFetching } = useQuery<Horse[]>({
     queryKey: ['/api/horses', activeFilters],
+    staleTime: 30000, // Keep data fresh for 30 seconds to prevent flashing
     queryFn: async () => {
+      // Set initial load state to false after first successful query
+      if (isInitialLoad) {
+        setTimeout(() => setIsInitialLoad(false), 1000);
+      }
       // Build query parameters from activeFilters
       const params = new URLSearchParams();
       
