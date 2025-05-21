@@ -107,37 +107,90 @@ export default function MobileFilterPage() {
         </div>
       </div>
 
-      {/* Simple discipline selector with improved responsiveness */}
-      <div className="pt-20 p-4">
-        <h2 className="text-lg font-bold mb-4">Select Discipline</h2>
-        
-        <div className="grid grid-cols-1 gap-2">
-          <Button 
-            variant="outline"
-            className={`justify-start font-normal h-12 px-4 ${
-              !selectedDiscipline 
-                ? "bg-primary/10 border-primary" 
-                : "bg-neutral-50 hover:bg-neutral-100"
-            }`}
-            onClick={showAllHorses}
-          >
-            All Disciplines
-          </Button>
+      {/* Scrollable filter section with disciplines and ages */}
+      <div className="pt-20 p-4 pb-24">
+        <div className="mb-8">
+          <h2 className="text-lg font-bold mb-4">Select Discipline</h2>
           
-          {constants?.disciplines?.map((discipline: string) => (
+          <div className="grid grid-cols-1 gap-2 mb-6">
             <Button 
-              key={discipline}
               variant="outline"
               className={`justify-start font-normal h-12 px-4 ${
-                selectedDiscipline === discipline 
-                  ? "bg-primary/10 border-primary font-medium" 
+                !selectedDiscipline 
+                  ? "bg-primary/10 border-primary" 
                   : "bg-neutral-50 hover:bg-neutral-100"
               }`}
-              onClick={() => applyDisciplineFilter(discipline)}
+              onClick={showAllHorses}
             >
-              {discipline}
+              All Disciplines
             </Button>
-          ))}
+            
+            {constants?.disciplines?.map((discipline: string) => (
+              <Button 
+                key={discipline}
+                variant="outline"
+                className={`justify-start font-normal h-12 px-4 ${
+                  selectedDiscipline === discipline 
+                    ? "bg-primary/10 border-primary font-medium" 
+                    : "bg-neutral-50 hover:bg-neutral-100"
+                }`}
+                onClick={() => applyDisciplineFilter(discipline)}
+              >
+                {discipline}
+              </Button>
+            ))}
+          </div>
+        </div>
+        
+        {/* Age Range Section */}
+        <div>
+          <h2 className="text-lg font-bold mb-4">Age Range (years)</h2>
+          
+          <div className="mb-3">
+            <h3 className="font-medium text-sm mb-2 text-gray-700">Minimum Age</h3>
+            <div className="grid grid-cols-4 gap-2">
+              {[0, 3, 5, 7, 9, 11, 13, 15, 17].map((age) => (
+                <Button
+                  key={`min-${age}`}
+                  variant="outline"
+                  className="h-10 text-sm"
+                  onClick={() => {
+                    // For now, this will just show a toast since we're keeping it simple
+                    toast({
+                      title: `Min age: ${age} years`,
+                      description: "Feature coming soon",
+                      duration: 800,
+                    });
+                  }}
+                >
+                  {age > 0 ? `${age}yo` : "Any"}
+                </Button>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="font-medium text-sm mb-2 text-gray-700">Maximum Age</h3>
+            <div className="grid grid-cols-4 gap-2">
+              {[0, 7, 9, 11, 13, 15, 17, 19, 21].map((age) => (
+                <Button
+                  key={`max-${age}`}
+                  variant="outline"
+                  className="h-10 text-sm"
+                  onClick={() => {
+                    // For now, this will just show a toast
+                    toast({
+                      title: `Max age: ${age > 0 ? age : 'Any'} years`,
+                      description: "Feature coming soon",
+                      duration: 800,
+                    });
+                  }}
+                >
+                  {age > 0 ? `${age}yo` : "Any"}
+                </Button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
