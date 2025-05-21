@@ -177,7 +177,8 @@ const Sidebar = () => {
               <span>Recently Viewed</span>
             </Button>
           </li>
-          {user?.is_selling && (
+          {/* Use our local isOwner state instead of user?.is_selling */}
+          {isOwner ? (
             <>
               <li>
                 <Button
@@ -225,6 +226,33 @@ const Sidebar = () => {
                 </Button>
               </li>
             </>
+          ) : (
+            // Add testing button just for development environment
+            <li>
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-5 py-3 text-green-600"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Force enable owner status for testing
+                  setIsOwner(true);
+                  // Also try to set in localStorage
+                  try {
+                    const storedUser = localStorage.getItem('user');
+                    if (storedUser) {
+                      const parsedUser = JSON.parse(storedUser);
+                      parsedUser.is_selling = true;
+                      localStorage.setItem('user', JSON.stringify(parsedUser));
+                    }
+                  } catch (e) {
+                    console.error("Error updating stored user:", e);
+                  }
+                }}
+              >
+                <PlusCircle className="mr-3 h-5 w-5" />
+                <span>Enable Owner Mode</span>
+              </Button>
+            </li>
           )}
         </ul>
         
