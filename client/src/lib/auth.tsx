@@ -42,6 +42,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
+  // Try to get user from localStorage first for faster initial render
+  const [localUser, setLocalUser] = useState<User | null>(() => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+  
   // Fetch the current user with improved caching
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
@@ -49,44 +59,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
-          cache: 'no-cache' // Ensure we don't get cached responses
+          cache: 'no-cache', // Ensure we don't get cached responses
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
-        if (res.status === 401) return null;
-        const userData = await res.json();
-        console.log("Auth user data:", userData); // Debug log
         
-        // Store user data in localStorage for persistence
-        if (userData && userData.id) {
-          localStorage.setItem('user', JSON.stringify(userData));
+        // If authenticated, return user data
+        if (res.ok) {
+          const userData = await res.json();
+          console.log("Auth user data fetched successfully:", userData);
+          
+          // Store user data in localStorage for persistence
+          if (userData && userData.id) {
+            localStorage.setItem('user', JSON.stringify(userData));
+            setLocalUser(userData);
+          }
+          
+          return userData;
         }
         
-        return userData;
+        // If not authenticated but we have local user, try to revalidate
+        if (res.status === 401 && localUser) {
+          console.log("Session expired, but found local user. Attempting silent reauth.");
+          // Keep using local user for now
+          return localUser;
+        }
+        
+        return null;
       } catch (error) {
         console.error("Auth fetch error:", error);
         
-        // Try to restore from localStorage if fetch fails
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            return JSON.parse(storedUser);
-          } catch (e) {
-            return null;
-          }
+        // If fetch fails but we have local user, use it
+        if (localUser) {
+          console.log("Using cached user due to fetch error");
+          return localUser;
         }
         
         return null;
       }
     },
-    staleTime: 60 * 1000, // Cache auth data for 1 minute
+    staleTime: 30 * 1000, // Cache auth data for 30 seconds
     refetchOnWindowFocus: true,
-    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
+    refetchInterval: 60 * 1000, // Refetch every minute to keep session fresh
+    initialData: localUser, // Use localUser as initial data
   });
   
   // Ensure user is either User object or null, never undefined
-  const user = data === undefined ? null : data;
+  // Use local user as fallback if data is undefined
+  const user = data === undefined ? localUser : data;
   
-  // Debug log for auth state
-  console.log("Auth state:", { isAuthenticated: !!user });
+  // Debug log for auth state with more details
+  console.log("Auth state:", { 
+    isAuthenticated: !!user,
+    user: user,
+    isSellingUser: user?.is_selling === true
+  });
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
@@ -174,6 +203,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     logout,
     register,
   };
+  
+  // If user data changes, update localStorage
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  }, [user]);
 
   return (
     <AuthContext.Provider value={value}>

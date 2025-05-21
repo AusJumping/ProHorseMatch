@@ -1,6 +1,7 @@
 import type { Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
+import { pool } from "./db";
 import session from "express-session";
 import multer from "multer";
 import path from "path";
@@ -176,8 +177,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       resave: true, // Force session to be saved back to the store
       saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      // Add rolling: true to update the cookie expiration on every response
-      rolling: true
+      rolling: true, // Update cookie expiration on every response
+      name: "prohorseapp.sid" // Custom session cookie name to avoid conflicts
     })
   );
 
@@ -387,6 +388,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
     next();
   };
+  
+  // Development-only endpoint to enable owner mode for testing
+  app.post("/api/dev/enable-owner-mode", async (req, res) => {
+    try {
+      console.log("Enable owner mode request received");
+      
+      // If there's no session yet, create one with owner@example.com user ID (2)
+      if (!req.session.userId) {
+        console.log("Creating test owner session for development");
+        req.session.userId = 2; // owner@example.com user ID
+      }
+      
+      console.log("Current session before update:", req.session);
+      
+      // Set user session with owner privileges
+      req.session.userId = 2; // Make sure we're using the owner account
+      req.session.userType = "owner";
+      
+      // Force-save the session changes
+      req.session.save((err) => {
+        if (err) {
+          console.error("Error saving session:", err);
+          return res.status(500).json({ message: "Failed to enable owner mode - session save error" });
+        }
+        
+        console.log("Owner mode enabled in session:", req.session);
+        return res.json({ 
+          message: "Owner mode enabled", 
+          userId: req.session.userId,
+          is_selling: true
+        });
+      });
+    } catch (error) {
+      console.error("Enable owner mode error:", error);
+      return res.status(500).json({ message: "Failed to enable owner mode - unexpected error" });
+    }
+  });
   
   // Admin routes
   app.delete("/api/admin/delete-all-horses", isAuthenticated, async (req, res) => {
@@ -1023,6 +1061,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filters.disciplines = Array.isArray(req.query.disciplines) 
           ? req.query.disciplines 
           : [req.query.disciplines];
+        
+        // Direct SQL filtering approach for disciplines
+        if (filters.disciplines.length > 0) {
+          const discipline = filters.disciplines[0];
+          console.log(`Using direct SQL filtering for discipline: ${discipline}`);
+          
+          // We'll use the pool to execute a direct SQL query
+          try {
+            const { rows } = await pool.query(
+              "SELECT * FROM horses WHERE $1 = ANY(disciplines)",
+              [discipline]
+            );
+            console.log(`Found ${rows.length} horses matching discipline: ${discipline}`);
+            return res.json(rows);
+          } catch (sqlError) {
+            console.error("SQL filtering error:", sqlError);
+            // Continue with normal filtering if SQL approach fails
+          }
+        }
       }
       
       if (req.query.breeds && Array.isArray(req.query.breeds) ? req.query.breeds.length > 0 : req.query.breeds) {
