@@ -71,13 +71,13 @@ const SwipeSection = ({
     );
   }
   
-  // No horses found state
+  // State when no horses are found
   if (!horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-display font-bold mb-4">No horses found</h3>
+        <h3 className="text-xl font-display font-bold mb-4">Searching for Horses</h3>
         <p className="text-neutral-600 mb-6">
-          No horses match your current search criteria. Try adjusting your filters.
+          Please wait while we find horses matching your criteria.
         </p>
         <div className="flex gap-3">
           <Button 
@@ -88,7 +88,7 @@ const SwipeSection = ({
               url.search = ''; // Clear all query parameters
               window.location.href = url.toString();
             }}>
-            Reset Filters
+            Show All Horses
           </Button>
           <Button onClick={() => window.location.reload()}>Refresh</Button>
         </div>

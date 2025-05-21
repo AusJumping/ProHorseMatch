@@ -24,7 +24,7 @@ import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import FilterPage from "@/pages/filter";
-import MobileFilterPage from "@/pages/mobile-filter";
+import MobileFilterPage from "@/pages/mobile-filter-new";
 import WelcomePage from "@/pages/welcome";
 import Browse from "@/pages/browse";
 import { AuthProvider } from "@/lib/auth";
