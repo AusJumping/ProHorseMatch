@@ -455,12 +455,7 @@ export default function Home() {
               {/* Add a manually filtered list of horses to handle filtering on mobile */}
               {horses && (
                 <div>
-                  {/* Add filter results message */}
-                  {activeFilters.disciplines.length > 0 && (
-                    <div className="mb-4 text-center text-sm font-semibold p-2 border rounded bg-yellow-50">
-                      Showing only {activeFilters.disciplines.join(', ')} horses
-                    </div>
-                  )}
+                  {/* Removed yellow filter notification as requested */}
                   
                   {/* Optional small filter status indicator - removed yellow notification */}
                   {activeFilters.disciplines.length > 0 && (
