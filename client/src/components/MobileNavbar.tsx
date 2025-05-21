@@ -215,8 +215,13 @@ const MobileNavbar = () => {
       {/* Side Menu */}
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-16 w-16 p-1" aria-label="Menu">
-            <Menu className="h-14 w-14 stroke-[2.5px]" />
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-16 w-16 p-1 border-2 border-[#cdac6e] hover:bg-[#cdac6e]/10" 
+            aria-label="Menu"
+          >
+            <Menu className="h-14 w-14 stroke-[2.5px] text-[#cdac6e]" />
           </Button>
         </SheetTrigger>
         <SheetContent side="right" className="fixed inset-y-0 right-0 z-50 h-full w-[80%] border-l bg-white p-4 shadow-lg sm:max-w-sm">
