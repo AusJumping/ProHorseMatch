@@ -1031,7 +1031,9 @@ export class DatabaseStorage implements IStorage {
     return horse;
   }
 
-  async getHorsesByFilters(filters: Partial<Horse>): Promise<Horse[]> {
+  async getHorsesByFilters(filters: any): Promise<Horse[]> {
+    console.log("DatabaseStorage.getHorsesByFilters - filters:", JSON.stringify(filters, null, 2));
+    
     let query = db.select().from(horses);
 
     // If filter by owner_id is specified
@@ -1039,10 +1041,39 @@ export class DatabaseStorage implements IStorage {
       query = query.where(eq(horses.owner_id, filters.owner_id));
     }
 
-    // Add other filters as needed for a complete implementation
-    // E.g., disciplines, breeds, age, etc.
+    // Apply discipline filter
+    if (filters.disciplines && filters.disciplines.length > 0) {
+      // For PostgreSQL array contains operator
+      query = query.where(sql`${horses.disciplines} && ${sql.array(filters.disciplines)}::text[]`);
+    }
 
-    return await query;
+    // Apply breeds filter
+    if (filters.breeds && filters.breeds.length > 0) {
+      query = query.where(sql`${horses.breeds} && ${sql.array(filters.breeds)}::text[]`);
+    }
+
+    // Apply sex filter (renamed from sexes in filters)
+    if (filters.sexes && filters.sexes.length > 0) {
+      query = query.where(sql`${horses.sex} = ANY(${sql.array(filters.sexes)}::text[])`);
+    }
+
+    // Filter by age range if specified
+    if (filters.age_min !== undefined && filters.age_min !== null) {
+      query = query.where(sql`${horses.age} >= ${filters.age_min}`);
+    }
+
+    if (filters.age_max !== undefined && filters.age_max !== null) {
+      query = query.where(sql`${horses.age} <= ${filters.age_max}`);
+    }
+
+    // Filter by location if specified
+    if (filters.location_country) {
+      query = query.where(eq(horses.location_country, filters.location_country));
+    }
+
+    const results = await query;
+    console.log("DatabaseStorage.getHorsesByFilters - found horses:", results.length);
+    return results;
   }
 
   async createHorse(horse: InsertHorse): Promise<Horse> {
