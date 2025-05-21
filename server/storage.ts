@@ -56,6 +56,7 @@ export interface IStorage {
   getMessagesByConversationId(customerId: number, ownerId: number, horseId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   updateMessage(id: number, message: Partial<Message>): Promise<Message>;
+  deleteMessage(id: number): Promise<boolean>;
   
   // Conversation methods
   getConversations(): Promise<Conversation[]>;
@@ -870,6 +871,17 @@ export class MemStorage implements IStorage {
     return updatedMessage;
   }
   
+  async deleteMessage(id: number): Promise<boolean> {
+    if (!this.messages.has(id)) {
+      return false;
+    }
+    
+    const deleted = this.messages.delete(id);
+    saveStorageToDisk(); // Save changes to disk
+    
+    return deleted;
+  }
+  
   async createMessage(message: InsertMessage): Promise<Message> {
     const id = this.messageId++;
     const newMessage: Message = { id, ...message, created_at: new Date(), is_read: false };
@@ -1270,6 +1282,29 @@ export class DatabaseStorage implements IStorage {
   async createMessage(message: InsertMessage): Promise<Message> {
     const [newMessage] = await db.insert(messages).values(message).returning();
     return newMessage;
+  }
+  
+  async updateMessage(id: number, update: Partial<Message>): Promise<Message> {
+    const [updatedMessage] = await db
+      .update(messages)
+      .set(update)
+      .where(eq(messages.id, id))
+      .returning();
+    
+    if (!updatedMessage) {
+      throw new Error(`Message with ID ${id} not found`);
+    }
+    
+    return updatedMessage;
+  }
+  
+  async deleteMessage(id: number): Promise<boolean> {
+    const result = await db
+      .delete(messages)
+      .where(eq(messages.id, id))
+      .returning({ id: messages.id });
+    
+    return result.length > 0;
   }
 
   // Conversation methods
