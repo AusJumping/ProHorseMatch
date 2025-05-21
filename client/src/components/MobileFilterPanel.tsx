@@ -32,7 +32,7 @@ const MobileFilterPanel = ({
   // Always start with empty disciplines array to force "All Disciplines" as default
   const [filters, setFilters] = useState({
     ...activeFilters,
-    disciplines: []
+    disciplines: [] // Empty array for All Disciplines
   });
   
   // Fetch constants for filter options
@@ -40,11 +40,12 @@ const MobileFilterPanel = ({
     queryKey: ['/api/constants'],
   });
   
-  // Update filters when activeFilters changes (but keep disciplines empty to force "All Disciplines")
+  // Always ensure "All Disciplines" is the default, even when active filters change
   useEffect(() => {
-    setFilters(prev => ({
+    // Force empty disciplines array, regardless of what comes in from activeFilters
+    setFilters(prevFilters => ({
       ...activeFilters,
-      disciplines: [] // Always force "All Disciplines" as default
+      disciplines: [] // Force "All Disciplines" as default
     }));
   }, [activeFilters]);
 
@@ -161,6 +162,7 @@ const MobileFilterPanel = ({
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Disciplines</Label>
             <Select 
+              defaultValue="all_disciplines"
               value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"}
               onValueChange={(value) => {
                 if (value === "all_disciplines") {
@@ -171,7 +173,7 @@ const MobileFilterPanel = ({
               }}
             >
               <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                <SelectValue placeholder="All Disciplines" />
+                <SelectValue placeholder="All Disciplines">All Disciplines</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all_disciplines">All Disciplines</SelectItem>
