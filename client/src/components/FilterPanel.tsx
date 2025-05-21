@@ -154,18 +154,15 @@ const FilterPanel = ({
     // Add additional logging for debugging
     console.log("Sending processed filters:", filtersToApply);
     
-    // For mobile devices, handle touch events differently to ensure reliability
+    // First apply the filters for both mobile and desktop
+    onApplyFilters(filtersToApply);
+    
+    // For mobile devices only, close the panel after applying filters
     if (isMobile) {
-      // First, apply the filters to ensure they're processed
-      onApplyFilters(filtersToApply);
-      
-      // Wait a tiny bit before closing the panel to ensure the filters are applied
+      // Use a slightly longer delay to ensure filters are applied fully
       setTimeout(() => {
         onClose();
-      }, 50);
-    } else {
-      // For desktop, just apply filters normally
-      onApplyFilters(filtersToApply);
+      }, 200);
     }
   };
 

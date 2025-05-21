@@ -75,6 +75,14 @@ export default function Home() {
 
   // Debug log
   console.log("Home - Auth state:", { isAuthenticated, is_selling: user?.is_selling, is_searching: user?.is_searching, location, showFilter });
+  
+  // Log filtered horses when they change to track what's happening
+  useEffect(() => {
+    if (horses) {
+      console.log(`🏇 Home: Horses updated - now showing ${horses.length} horses:`, 
+        horses.map(h => ({ id: h.id, name: h.name, disciplines: h.disciplines })));
+    }
+  }, [horses]);
 
   const [swipingIndex, setSwipingIndex] = useState(0);
 
