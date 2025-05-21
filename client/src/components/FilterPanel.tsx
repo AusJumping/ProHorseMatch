@@ -154,16 +154,29 @@ const FilterPanel = ({
     // Add additional logging for debugging
     console.log("Sending processed filters:", filtersToApply);
     
-    // First apply the filters for both mobile and desktop
-    onApplyFilters(filtersToApply);
+    console.log("APPLYING FILTERS:", filtersToApply);
+  
+  // First apply the filters for all devices
+  onApplyFilters(filtersToApply);
+  
+  // For mobile devices, handle the panel close with a longer delay
+  // This gives React Query time to complete the filtering operation
+  if (isMobile) {
+    // Show a temporary indication that filters are being applied
+    console.log("Mobile filter - applying filters and will close panel shortly");
     
-    // For mobile devices only, close the panel after applying filters
-    if (isMobile) {
-      // Use a slightly longer delay to ensure filters are applied fully
+    // Use a longer delay (500ms) to ensure everything is fully processed
+    setTimeout(() => {
+      console.log("Mobile filter - closing panel after delay");
+      onClose();
+      
+      // Force a refresh of the window location to ensure filter takes effect
+      // This is a drastic but effective measure for mobile browsers
       setTimeout(() => {
-        onClose();
-      }, 200);
-    }
+        window.location.reload();
+      }, 100);
+    }, 500);
+  }
   };
 
   const handleReset = () => {
