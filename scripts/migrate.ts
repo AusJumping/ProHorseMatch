@@ -34,6 +34,11 @@ CREATE TABLE IF NOT EXISTS "users" (
   "subscription_status" text,
   "subscription_plan" text,
   "subscription_end_date" timestamp,
+  "stripe_customer_id" text,
+  "stripe_subscription_id" text,
+  "subscription_status" text,
+  "subscription_plan" text,
+  "subscription_end_date" timestamp,
   "created_at" timestamp DEFAULT now()
 );
 `;
