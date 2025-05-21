@@ -564,19 +564,18 @@ export default function Home() {
 
         {/* Main content area - positioned below filters on mobile, to the right on desktop */}
         <div className="flex-1 flex flex-col">
-          {/* Always show horses regardless of filters */}
           {isTouchDevice ? (
-            /* Horse swiping area for touch devices */
-            <SwipeSection 
-              horses={horses || []}
-              isLoading={isLoading}
-              activeIndex={swipingIndex}
-              onLike={handleLike}
-              onDislike={handleDislike}
-              onShowMore={handleShowMore}
-            />
+            <div className={`${isMobile ? 'mt-16 pt-4' : ''}`}>
+              <SwipeSection 
+                horses={horses || []}
+                isLoading={isLoading}
+                activeIndex={swipingIndex}
+                onLike={handleLike}
+                onDislike={handleDislike}
+                onShowMore={handleShowMore}
+              />
+            </div>
           ) : (
-            /* Horse grid for non-touch devices */
             <HorseGrid
               horses={horses || []}
               onLike={handleLike}
