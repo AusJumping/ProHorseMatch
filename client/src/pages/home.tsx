@@ -462,14 +462,8 @@ export default function Home() {
                   {/* Create a key for the active discipline filter to force re-rendering */}
                   <SwipeSection 
                     key={`filter-${activeFilters.disciplines.join('-')}-${Date.now()}`} // Force component remount when filters change with unique timestamp
-                    // When Jumping filter is selected, only show horses with ID 23 and 25
-                    horses={horses.length > 0 ? (
-                      activeFilters.disciplines.includes("Jumping") ? 
-                        [
-                          ...horses.filter(horse => horse.id === 23 || horse.id === 25)
-                        ] :
-                        horses
-                    ) : []}
+                    // Show all horses that match the current filters - no hardcoded IDs
+                    horses={horses.length > 0 ? horses : []}
                     isLoading={isLoading}
                     activeIndex={0} // Always start at the first horse when filters change
                     onLike={handleLike}
