@@ -6,11 +6,50 @@ import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCi
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 const Sidebar = () => {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated, logout } = useAuth();
+  
+  // Local state to track if user is an owner (with selling permission)
+  const [isOwner, setIsOwner] = useState(false);
+  
+  // Update owner status whenever user changes
+  useEffect(() => {
+    try {
+      // Check if we have a user and they have selling permission
+      if (user && typeof user === 'object') {
+        // Check both localStorage and the user object
+        const userHasSellingPermission = user.is_selling === true;
+        setIsOwner(userHasSellingPermission);
+        
+        // Debug user status
+        console.log("Owner check:", { 
+          hasUser: !!user,
+          email: user.email, 
+          isSellingFromUser: user.is_selling === true,
+          isOwnerState: isOwner
+        });
+      } else {
+        // Try to check localStorage as a backup
+        try {
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            const storedUserHasSellingPermission = parsedUser.is_selling === true;
+            setIsOwner(storedUserHasSellingPermission);
+            console.log("Owner check from localStorage:", { isSelling: storedUserHasSellingPermission });
+          }
+        } catch (e) {
+          console.error("Error parsing stored user for owner check:", e);
+        }
+      }
+    } catch (e) {
+      console.error("Error determining owner status:", e);
+    }
+  }, [user]);
   
   // Query for conversations to check for unread messages
   const { data: conversations } = useQuery({
@@ -32,7 +71,7 @@ const Sidebar = () => {
     (conversations && Array.isArray(conversations) && conversations.length > 0 ? 1 : 0);
   
   // Debug log with more details
-  console.log("Sidebar - Auth state:", { isAuthenticated, user });
+  console.log("Sidebar - Auth state:", { isAuthenticated, user, isOwner });
 
   const handleLogout = async () => {
     try {
