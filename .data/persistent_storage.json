@@ -290,7 +290,8 @@
         "preferred_characteristics": [],
         "price_range_min": 0,
         "price_range_max": 999999999,
-        "currency": "AUD"
+        "currency": "AUD",
+        "location_country": "Australia"
       }
     ],
     [
