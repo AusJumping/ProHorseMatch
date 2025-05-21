@@ -22,19 +22,20 @@ const SwipeSection = ({
   onDislike,
   onShowMore,
 }: SwipeSectionProps) => {
-  // Instead of maintaining our own state, directly use the activeIndex
-  // This ensures we're always in sync with the parent component
+  // Always track the current index for proper navigation
   const [localIndex, setLocalIndex] = useState(0);
   
-  // Critical: Update our local index when either the activeIndex changes OR the horses array changes
-  // This ensures we always show the correct horse after filtering
+  // Extremely important: Reset index when horses array changes
+  // This ensures when filters are applied, we always start with the first filtered horse
   useEffect(() => {
-    console.log("SwipeSection: Horses or activeIndex changed, resetting to first horse", { 
+    console.log("SwipeSection: horses array changed:", { 
       horseCount: horses.length,
+      horseIds: horses.map(h => h.id),
       activeIndex
     });
+    // Reset to first horse whenever the horses array changes (filters applied)
     setLocalIndex(0);
-  }, [horses, activeIndex]);
+  }, [horses]); // Only depend on horses array, not activeIndex
   
   const currentHorse = horses[localIndex];
 
