@@ -106,7 +106,9 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
           queryKey: ['/api/conversations'] 
         });
         
-        // The operation was successful, so return early without throwing any errors
+        // The operation was successful
+        setIsDeleting(false);
+        setShowDeleteDialog(false);
         return;
       } else {
         // Only handle the error if response is actually not OK (non-2xx)
@@ -139,7 +141,8 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
         variant: "destructive",
         duration: 2000,
       });
-    } finally {
+      // Only reset state if there was an error
+      // (success path already handles this)
       setIsDeleting(false);
       setShowDeleteDialog(false);
     }
