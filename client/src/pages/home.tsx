@@ -566,7 +566,7 @@ export default function Home() {
         {/* Main content area - positioned below filters on mobile, to the right on desktop */}
         <div className="flex-1 flex flex-col">
           {isTouchDevice ? (
-            <div className={`${isMobile ? 'mt-20 pt-8' : ''}`}>
+            <div className={`${isMobile ? 'mt-4 pt-2' : ''}`}>
               <SwipeSection 
                 horses={horses || []}
                 isLoading={isLoading}
