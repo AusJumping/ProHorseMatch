@@ -23,32 +23,61 @@ export default function MobileFilterPage() {
   // Super simplified approach - track only selected discipline
   const [selectedDiscipline, setSelectedDiscipline] = useState<string>("");
   
-  // Return to home page with no filters
+  // Return to home page with no filters - using navigate for faster transition
   const goHome = () => {
-    window.location.href = "/";
+    // Clear any localStorage filter cache
+    try {
+      localStorage.removeItem('lastAppliedFilters');
+    } catch (error) {
+      console.error("Error clearing filters:", error);
+    }
+    
+    // Use navigate instead of window.location for faster transitions
+    navigate("/");
   };
   
-  // Apply discipline filter directly
+  // Apply discipline filter directly - optimized for speed
   const applyDisciplineFilter = (discipline: string) => {
+    // Show a very brief toast with dynamic discipline name
     toast({
-      title: "Filtering by " + discipline,
-      description: "Finding matching horses...",
-      duration: 1000,
+      title: `${discipline} Horses`,
+      description: "Loading...",
+      duration: 800,
     });
     
-    // Direct URL navigation with minimal params
-    window.location.href = `/?disciplines=${discipline}&currency=${currentCurrency || "AUD"}`;
+    // Save filter to localStorage for faster application
+    try {
+      const simpleFilter = {
+        disciplines: [discipline],
+        currency: currentCurrency || "AUD"
+      };
+      localStorage.setItem('lastAppliedFilters', JSON.stringify(simpleFilter));
+    } catch (error) {
+      console.error("Error saving filter:", error);
+    }
+    
+    // Use navigate with query parameter for faster transition
+    navigate(`/browse?disciplines=${discipline}&currency=${currentCurrency || "AUD"}`);
   };
   
-  // Show All Horses
+  // Show All Horses - optimized for speed
   const showAllHorses = () => {
+    // Show a very brief toast
     toast({
-      title: "Showing all horses",
-      description: "Displaying all available horses",
-      duration: 1000,
+      title: "All Horses",
+      description: "Loading...",
+      duration: 800,
     });
     
-    window.location.href = "/";
+    // Clear any localStorage filter cache
+    try {
+      localStorage.removeItem('lastAppliedFilters');
+    } catch (error) {
+      console.error("Error clearing filters:", error);
+    }
+    
+    // Use navigate for faster transition
+    navigate("/browse");
   };
 
   return (
@@ -80,32 +109,46 @@ export default function MobileFilterPage() {
       <div className="pt-20 p-4">
         <h2 className="text-lg font-bold mb-4">Select Discipline</h2>
         
-        <div className="grid grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 gap-3">
           <Button 
             variant="outline"
-            className="justify-start font-normal h-12 px-4 bg-neutral-50 hover:bg-neutral-100"
+            className="justify-start font-semibold h-14 px-4 bg-white hover:bg-[#cdac6e]/10 border-2 rounded-lg shadow-sm"
             onClick={showAllHorses}
           >
-            All Disciplines
+            <span className="flex items-center">
+              <span className="mr-2 text-lg">🏆</span>
+              All Disciplines
+            </span>
           </Button>
           
-          {constants?.disciplines?.map((discipline: string) => (
-            <Button 
-              key={discipline}
-              variant="outline"
-              className={`justify-start font-normal h-12 px-4 ${
-                selectedDiscipline === discipline 
-                  ? "bg-primary/10 border-primary" 
-                  : "bg-neutral-50 hover:bg-neutral-100"
-              }`}
-              onClick={() => {
-                setSelectedDiscipline(discipline);
-                applyDisciplineFilter(discipline);
-              }}
-            >
-              {discipline}
-            </Button>
-          ))}
+          {constants?.disciplines?.map((discipline: string) => {
+            // Get proper emoji for each discipline
+            let emoji = "🐎";
+            if (discipline === "Jumping") emoji = "🏇";
+            if (discipline === "Dressage") emoji = "🎠";
+            if (discipline === "Eventing") emoji = "🏆";
+            
+            return (
+              <Button 
+                key={discipline}
+                variant="outline"
+                className={`justify-start font-normal h-14 px-4 border-2 rounded-lg shadow-sm ${
+                  selectedDiscipline === discipline 
+                    ? "bg-[#cdac6e]/20 border-[#cdac6e] text-[#cdac6e] font-semibold" 
+                    : "bg-white hover:bg-neutral-50"
+                }`}
+                onClick={() => {
+                  setSelectedDiscipline(discipline);
+                  applyDisciplineFilter(discipline);
+                }}
+              >
+                <span className="flex items-center">
+                  <span className="mr-2 text-lg">{emoji}</span>
+                  {discipline}
+                </span>
+              </Button>
+            );
+          })}
         </div>
       </div>
     </div>
