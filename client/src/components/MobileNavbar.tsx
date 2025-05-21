@@ -69,7 +69,7 @@ const MobileNavbar = () => {
             }}
           >
             <Home className="mr-3 h-5 w-5" />
-            <span>Discover</span>
+            <span>Find Horses</span>
           </Button>
         </SheetClose>
         
