@@ -191,7 +191,13 @@ export default function HorseDetail() {
   };
 
   const handleBack = () => {
-    navigate("/");
+    // Check if we have history to go back
+    if (window.history.length > 1) {
+      window.history.back(); // This preserves the user's session and properly returns to previous page
+    } else {
+      // Fallback to home if there's no history
+      navigate("/"); 
+    }
   };
 
   if (isLoading) {
