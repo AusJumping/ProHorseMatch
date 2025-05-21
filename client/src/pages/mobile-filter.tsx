@@ -45,20 +45,30 @@ export default function MobileFilterPage() {
   const handleApplyFilters = () => {
     // Save filters to localStorage
     try {
-      localStorage.setItem('lastAppliedFilters', JSON.stringify(filters));
-      localStorage.setItem('filtersTimestamp', Date.now().toString());
+      // First clear any existing filters to prevent conflicts
+      localStorage.removeItem('lastAppliedFilters');
+      localStorage.removeItem('filtersTimestamp');
+      
+      // Then set the new filters with a small delay to ensure they're applied
+      setTimeout(() => {
+        localStorage.setItem('lastAppliedFilters', JSON.stringify(filters));
+        localStorage.setItem('filtersTimestamp', Date.now().toString());
+        
+        // Navigate back to home after ensuring filters are saved
+        navigate('/');
+        
+        toast({
+          title: "Filters Applied",
+          description: "Your search preferences have been applied.",
+          duration: 800,
+        });
+      }, 50);
     } catch (error) {
       console.error("Error saving filters to localStorage:", error);
+      
+      // Even if there's an error, still navigate home
+      navigate('/');
     }
-    
-    // Navigate back to home
-    navigate('/');
-    
-    toast({
-      title: "Filters Applied",
-      description: "Your search preferences have been applied.",
-      duration: 800,
-    });
   };
 
   const resetFilters = () => {
