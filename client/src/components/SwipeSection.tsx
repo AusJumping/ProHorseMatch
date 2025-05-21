@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import HorseCard from "./HorseCard";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Heart, X, Info, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, X, Info } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -23,46 +23,12 @@ const SwipeSection = ({
   onShowMore,
 }: SwipeSectionProps) => {
   const [localIndex, setLocalIndex] = useState(activeIndex);
-  const [previousHorseCount, setPreviousHorseCount] = useState(horses.length);
-  const [showEmptyState, setShowEmptyState] = useState(false);
-  const [loadingDelay, setLoadingDelay] = useState(true);
   
-  // Immediately detect when horses array changes
+  // Simple effect to reset index when horses array changes
   useEffect(() => {
-    // If horse count changes, this is a filter change
-    if (horses.length !== previousHorseCount) {
-      // Reset index to beginning when filters change
-      setLocalIndex(0);
-      setPreviousHorseCount(horses.length);
-      
-      // Always hide empty state during transitions
-      setShowEmptyState(false);
-      
-      // Show loading for at least 1 second during filter transitions
-      setLoadingDelay(true);
-      const timer = setTimeout(() => {
-        setLoadingDelay(false);
-      }, 1500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [horses.length, previousHorseCount]);
-  
-  // Control when to show empty state
-  useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-    
-    if (!isLoading && !loadingDelay && horses.length === 0) {
-      // Delay showing empty state to prevent flash
-      timer = setTimeout(() => {
-        setShowEmptyState(true);
-      }, 1000);
-    }
-    
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [isLoading, loadingDelay, horses.length]);
+    // Reset to first horse when filters change
+    setLocalIndex(0);
+  }, [horses.length]);
   
   const currentHorse = horses[localIndex];
 
@@ -78,7 +44,6 @@ const SwipeSection = ({
     }
   };
 
-  // Handle like without advancing immediately
   const handleButtonLike = () => {
     if (currentHorse) {
       onLike(currentHorse.id);
@@ -92,16 +57,11 @@ const SwipeSection = ({
     }
   };
 
-  // Show skeleton loading state
-  if (isLoading || loadingDelay || (!horses.length && !showEmptyState)) {
+  // Show loading state
+  if (isLoading) {
     return (
       <div className="w-full max-w-lg mx-auto">
-        <div className="horse-card rounded-xl h-[450px] bg-white/50 flex flex-col items-center justify-center">
-          <Skeleton className="w-full h-full rounded-xl" />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-            <Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" />
-          </div>
-        </div>
+        <Skeleton className="horse-card rounded-xl h-[450px]" />
         <div className="flex justify-center mt-4 gap-4">
           <Skeleton className="w-14 h-14 rounded-full" />
           <Skeleton className="w-12 h-12 rounded-full" />
@@ -111,11 +71,11 @@ const SwipeSection = ({
     );
   }
   
-  // Show empty state for no horses
-  if (horses.length === 0 && showEmptyState) {
+  // No horses found state
+  if (!horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-accent font-bold mb-4">No horses found</h3>
+        <h3 className="text-xl font-display font-bold mb-4">No horses found</h3>
         <p className="text-neutral-600 mb-6">
           No horses match your current search criteria. Try adjusting your filters.
         </p>
@@ -123,7 +83,7 @@ const SwipeSection = ({
           <Button 
             variant="outline"
             onClick={() => {
-              // Cleanly reset filters
+              // Use a more reliable way to reset filters
               const url = new URL(window.location.href);
               url.search = ''; // Clear all query parameters
               window.location.href = url.toString();
@@ -136,11 +96,11 @@ const SwipeSection = ({
     );
   }
 
-  // Show end of horses message
-  if (horses.length > 0 && localIndex >= horses.length) {
+  // End of horses message
+  if (localIndex >= horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-accent font-bold mb-4">No more horses</h3>
+        <h3 className="text-xl font-display font-bold mb-4">No more horses</h3>
         <p className="text-neutral-600 mb-6">
           You've seen all the horses matching your criteria
         </p>
