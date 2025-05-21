@@ -549,7 +549,7 @@ export default function Home() {
       onFilterClick={toggleFilterPanel}
     >
       <div className="flex flex-col md:flex-row w-full h-full">
-        {/* Filter sidebar - desktop only or when on discover route */}
+        {/* Filter sidebar */}
         {(!isMobile || (location === "/discover" && showFilter)) && (
           <div className={`${isMobile ? 'w-full' : 'w-72'} bg-white rounded-xl p-5 shadow-sm h-fit ${isMobile ? 'mb-6' : 'mr-6'} flex-shrink-0`}>
             <FilterPanel 
@@ -562,7 +562,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Main content area - positioned to the right on desktop */}
+        {/* Main content area - positioned below filters on mobile, to the right on desktop */}
         <div className="flex-1 flex flex-col">
           {/* Always show horses regardless of filters */}
           {isTouchDevice ? (

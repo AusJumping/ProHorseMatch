@@ -224,8 +224,8 @@ export default function FilterPage() {
     >
       <div className="filterPage">
         <div className="mb-8">
-          <div className="grid md:grid-cols-2 gap-4 mt-4">
-            <div>
+          <div className="flex flex-col md:flex-row gap-4 mt-4">
+            <div className="md:w-72 flex-shrink-0">
               <FilterPanel 
                 isOpen={isFilterOpen}
                 onClose={() => setIsFilterOpen(false)}
@@ -233,11 +233,11 @@ export default function FilterPage() {
                 onApplyFilters={handleApplyFilters}
                 horseCount={horses?.length}
               />
-              
-              <div className="mt-4">
-                <h3 className="font-semibold mb-2">({horses?.length || 0} horses match your filters)</h3>
-                <HorseGrid horses={horses || []} />
-              </div>
+            </div>
+            
+            <div className="flex-1">
+              <h3 className="font-semibold mb-2">({horses?.length || 0} horses match your filters)</h3>
+              <HorseGrid horses={horses || []} />
             </div>
           </div>
           
