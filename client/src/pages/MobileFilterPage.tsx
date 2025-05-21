@@ -15,7 +15,9 @@ interface FilterProps {
   onApplyFilters: (filters: any) => void;
 }
 
-export default function MobileFilterPage({ initialFilters, onApplyFilters }: FilterProps) {
+export default function MobileFilterPage() {
+  // Since this is a standalone page, we'll handle filter state here
+  const [isFilterUpdated, setIsFilterUpdated] = useState(false);
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const { currentCurrency } = useCurrency();
@@ -41,16 +43,25 @@ export default function MobileFilterPage({ initialFilters, onApplyFilters }: Fil
     queryKey: ['/api/constants'],
   });
 
-  // Effect to set initial filters when component mounts
+  // Effect to load filters from localStorage when the page loads
   useEffect(() => {
-    if (initialFilters) {
-      // Always ensure empty disciplines for "All Disciplines" default
-      setFilters({
-        ...initialFilters,
-        disciplines: []
-      });
+    try {
+      // Try to get saved filters from localStorage
+      const savedFiltersJson = localStorage.getItem('lastAppliedFilters');
+      if (savedFiltersJson) {
+        const savedFilters = JSON.parse(savedFiltersJson);
+        console.log("Loading filters from localStorage:", savedFilters);
+        
+        // Even if we have saved filters, force disciplines to be empty for "All Disciplines"
+        setFilters({
+          ...savedFilters,
+          disciplines: [] // Always force empty array for "All Disciplines"
+        });
+      }
+    } catch (error) {
+      console.error("Error loading filters from localStorage:", error);
     }
-  }, [initialFilters]);
+  }, []);
 
   const handleChangeFilter = (key: string, value: any) => {
     setFilters(prev => {
@@ -81,8 +92,15 @@ export default function MobileFilterPage({ initialFilters, onApplyFilters }: Fil
   };
 
   const handleApplyFilters = () => {
-    // Apply filters and navigate back
-    onApplyFilters(filters);
+    // Save filters to localStorage for the home page to use
+    try {
+      localStorage.setItem('lastAppliedFilters', JSON.stringify(filters));
+      localStorage.setItem('filtersTimestamp', Date.now().toString());
+    } catch (error) {
+      console.error("Error saving filters to localStorage:", error);
+    }
+    
+    // Navigate back to home page
     navigate('/');
     
     toast({

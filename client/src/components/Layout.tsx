@@ -100,7 +100,7 @@ const Layout = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={onFilterClick}
+                  onClick={isMobile ? () => navigate('/mobile-filter') : onFilterClick}
                 >
                   <Filter size={18} />
                 </Button>
