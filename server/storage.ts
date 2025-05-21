@@ -65,6 +65,7 @@ export interface IStorage {
   getConversationsByOwnerId(ownerId: number): Promise<Conversation[]>;
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
+  deleteConversation(id: number): Promise<boolean>;
 }
 
 import * as fs from 'fs';
@@ -980,6 +981,18 @@ export class MemStorage implements IStorage {
     this.conversations.set(id, updatedConversation);
     return updatedConversation;
   }
+  
+  async deleteConversation(id: number): Promise<boolean> {
+    const conversation = this.conversations.get(id);
+    if (!conversation) return false;
+    
+    const deleted = this.conversations.delete(id);
+    
+    // Save changes to disk
+    saveStorageToDisk();
+    
+    return deleted;
+  }
 }
 
 // Database-backed storage implementation
@@ -1348,6 +1361,19 @@ export class DatabaseStorage implements IStorage {
     }
     
     return updatedConversation;
+  }
+  
+  async deleteConversation(id: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(conversations)
+        .where(eq(conversations.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      return false;
+    }
   }
 }
 

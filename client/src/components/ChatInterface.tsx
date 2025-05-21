@@ -171,6 +171,7 @@ const ChatInterface = ({ conversation, messages, isLoading }: ChatInterfaceProps
         toast({
           title: "Success",
           description: "Message deleted successfully",
+          duration: 800,
         });
         
         // Immediately invalidate queries to refetch latest data
@@ -185,8 +186,18 @@ const ChatInterface = ({ conversation, messages, isLoading }: ChatInterfaceProps
           })
         ]);
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to delete message");
+        // Safely handle response errors without assuming .json() is available
+        let errorMessage = "Failed to delete message";
+        try {
+          const errorData = await response.text();
+          const parsedError = JSON.parse(errorData);
+          if (parsedError && parsedError.message) {
+            errorMessage = parsedError.message;
+          }
+        } catch (parseError) {
+          console.error("Error parsing error response:", parseError);
+        }
+        throw new Error(errorMessage);
       }
     } catch (error: any) {
       console.error("Error deleting message:", error);
@@ -194,6 +205,7 @@ const ChatInterface = ({ conversation, messages, isLoading }: ChatInterfaceProps
         title: "Error",
         description: error.message || "Failed to delete message",
         variant: "destructive",
+        duration: 2000,
       });
     } finally {
       setIsDeleting(false);

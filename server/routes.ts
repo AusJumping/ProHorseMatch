@@ -1510,6 +1510,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Error deleting message" });
     }
   });
+  
+  // Delete an entire conversation
+  app.delete("/api/conversations/:id", isAuthenticated, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      
+      // Get the conversation to check ownership
+      const conversation = await storage.getConversationById(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Check if user is authorized to access this conversation
+      const isCustomer = user.is_searching && conversation.customer_id === user.id;
+      const isOwner = user.is_selling && conversation.owner_id === user.id;
+      
+      if (!isCustomer && !isOwner) {
+        return res.status(403).json({ message: "You can only delete conversations you are part of" });
+      }
+      
+      // Get all messages in this conversation
+      const conversationMessages = await storage.getMessagesByConversationId(
+        conversation.customer_id,
+        conversation.owner_id,
+        conversation.horse_id
+      );
+      
+      // Delete all messages in the conversation
+      let allDeleted = true;
+      for (const message of conversationMessages) {
+        const deleted = await storage.deleteMessage(message.id);
+        if (!deleted) {
+          allDeleted = false;
+        }
+      }
+      
+      // Delete the conversation itself
+      const deleted = await storage.deleteConversation(conversationId);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete conversation" });
+      }
+      
+      return res.json({ message: "Conversation deleted successfully" });
+    } catch (error) {
+      console.error("Delete conversation error:", error);
+      return res.status(500).json({ message: "Failed to delete conversation" });
+    }
+  });
 
   app.get("/api/messages/:customerId/:ownerId/:horseId", isAuthenticated, async (req, res) => {
     try {
