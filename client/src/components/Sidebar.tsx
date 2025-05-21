@@ -6,50 +6,11 @@ import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCi
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
 
 const Sidebar = () => {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated, logout } = useAuth();
-  
-  // Local state to track if user is an owner (with selling permission)
-  const [isOwner, setIsOwner] = useState(false);
-  
-  // Update owner status whenever user changes
-  useEffect(() => {
-    try {
-      // Check if we have a user and they have selling permission
-      if (user && typeof user === 'object') {
-        // Check both localStorage and the user object
-        const userHasSellingPermission = user.is_selling === true;
-        setIsOwner(userHasSellingPermission);
-        
-        // Debug user status
-        console.log("Owner check:", { 
-          hasUser: !!user,
-          email: user.email, 
-          isSellingFromUser: user.is_selling === true,
-          isOwnerState: isOwner
-        });
-      } else {
-        // Try to check localStorage as a backup
-        try {
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) {
-            const parsedUser = JSON.parse(storedUser);
-            const storedUserHasSellingPermission = parsedUser.is_selling === true;
-            setIsOwner(storedUserHasSellingPermission);
-            console.log("Owner check from localStorage:", { isSelling: storedUserHasSellingPermission });
-          }
-        } catch (e) {
-          console.error("Error parsing stored user for owner check:", e);
-        }
-      }
-    } catch (e) {
-      console.error("Error determining owner status:", e);
-    }
-  }, [user]);
   
   // Query for conversations to check for unread messages
   const { data: conversations } = useQuery({
@@ -71,7 +32,7 @@ const Sidebar = () => {
     (conversations && Array.isArray(conversations) && conversations.length > 0 ? 1 : 0);
   
   // Debug log with more details
-  console.log("Sidebar - Auth state:", { isAuthenticated, user, isOwner });
+  console.log("Sidebar - Auth state:", { isAuthenticated, user });
 
   const handleLogout = async () => {
     try {
@@ -177,8 +138,7 @@ const Sidebar = () => {
               <span>Recently Viewed</span>
             </Button>
           </li>
-          {/* Use our local isOwner state instead of user?.is_selling */}
-          {isOwner ? (
+          {user?.is_selling && (
             <>
               <li>
                 <Button
@@ -226,46 +186,6 @@ const Sidebar = () => {
                 </Button>
               </li>
             </>
-          ) : (
-            // Add testing button just for development environment
-            <li>
-              <Button
-                variant="ghost"
-                className="w-full justify-start px-5 py-3 text-green-600"
-                onClick={(e) => {
-                  e.preventDefault();
-                  // Force enable owner status for testing
-                  setIsOwner(true);
-                  
-                  // Make a direct API call to set owner permission in session
-                  try {
-                    apiRequest("POST", "/api/dev/enable-owner-mode")
-                      .then(() => {
-                        toast({
-                          title: "Owner Mode Enabled",
-                          description: "You now have access to owner features"
-                        });
-                      })
-                      .catch(err => {
-                        console.error("Failed to enable owner mode via API:", err);
-                      });
-                    
-                    // Also try to set in localStorage
-                    const storedUser = localStorage.getItem('user');
-                    if (storedUser) {
-                      const parsedUser = JSON.parse(storedUser);
-                      parsedUser.is_selling = true;
-                      localStorage.setItem('user', JSON.stringify(parsedUser));
-                    }
-                  } catch (e) {
-                    console.error("Error updating stored user:", e);
-                  }
-                }}
-              >
-                <PlusCircle className="mr-3 h-5 w-5" />
-                <span>Enable Owner Mode</span>
-              </Button>
-            </li>
           )}
         </ul>
         
