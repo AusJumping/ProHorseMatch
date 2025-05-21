@@ -823,6 +823,114 @@ export default function Home() {
                   )}
                 </div>
                 
+                {/* Levels Filter Section */}
+                <div className="border-b pb-2">
+                  <button 
+                    className="flex justify-between items-center w-full py-2 text-left"
+                    onClick={() => toggleSection('level')}
+                  >
+                    <span className="font-medium">Levels</span>
+                    <span className={expandedSection === 'level' ? 'transform rotate-180' : ''}>▼</span>
+                  </button>
+                  
+                  {expandedSection === 'level' && (
+                    <div className="py-2 px-1">
+                      {/* Discipline selector for levels */}
+                      <div className="mb-3">
+                        <label className="text-xs mb-1 block">Select Discipline</label>
+                        <div className="flex flex-wrap gap-2">
+                          {['Jumping', 'Dressage', 'Eventing'].map(discipline => (
+                            <button 
+                              key={discipline}
+                              className={`px-3 py-1 rounded-full text-xs ${
+                                (activeFilters.disciplines.length === 1 && activeFilters.disciplines[0] === discipline)
+                                  ? 'bg-primary text-white' 
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}
+                              onClick={() => handleApplyFilters({...activeFilters, disciplines: [discipline]})}
+                            >
+                              {discipline}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Level options based on selected discipline */}
+                      <div className="max-h-40 overflow-y-auto">
+                        {activeFilters.disciplines.length === 1 && activeFilters.disciplines[0] === 'Jumping' && (
+                          <>
+                            {['Children', 'Junior', 'Amateur', 'Young Rider', 'Mini Prix', 'Grand Prix'].map(level => (
+                              <label key={level} className="flex items-center mb-2">
+                                <input 
+                                  type="checkbox"
+                                  className="mr-2"
+                                  checked={activeFilters.levels?.includes(level) || false}
+                                  onChange={() => {
+                                    const currentLevels = activeFilters.levels || [];
+                                    const newLevels = currentLevels.includes(level)
+                                      ? currentLevels.filter(l => l !== level)
+                                      : [...currentLevels, level];
+                                    handleApplyFilters({...activeFilters, levels: newLevels});
+                                  }}
+                                />
+                                <span className="text-sm">{level}</span>
+                              </label>
+                            ))}
+                          </>
+                        )}
+                        
+                        {activeFilters.disciplines.length === 1 && activeFilters.disciplines[0] === 'Dressage' && (
+                          <>
+                            {['Preliminary', 'Novice', 'Elementary', 'Medium', 'Advanced', 'Prix St. Georges', 'Intermediate I', 'Intermediate II', 'Grand Prix'].map(level => (
+                              <label key={level} className="flex items-center mb-2">
+                                <input 
+                                  type="checkbox"
+                                  className="mr-2"
+                                  checked={activeFilters.levels?.includes(level) || false}
+                                  onChange={() => {
+                                    const currentLevels = activeFilters.levels || [];
+                                    const newLevels = currentLevels.includes(level)
+                                      ? currentLevels.filter(l => l !== level)
+                                      : [...currentLevels, level];
+                                    handleApplyFilters({...activeFilters, levels: newLevels});
+                                  }}
+                                />
+                                <span className="text-sm">{level}</span>
+                              </label>
+                            ))}
+                          </>
+                        )}
+                        
+                        {activeFilters.disciplines.length === 1 && activeFilters.disciplines[0] === 'Eventing' && (
+                          <>
+                            {['EvA60', 'EvA80', 'EvA95', '1*', '2*', '3*', '4*', '5*'].map(level => (
+                              <label key={level} className="flex items-center mb-2">
+                                <input 
+                                  type="checkbox"
+                                  className="mr-2"
+                                  checked={activeFilters.levels?.includes(level) || false}
+                                  onChange={() => {
+                                    const currentLevels = activeFilters.levels || [];
+                                    const newLevels = currentLevels.includes(level)
+                                      ? currentLevels.filter(l => l !== level)
+                                      : [...currentLevels, level];
+                                    handleApplyFilters({...activeFilters, levels: newLevels});
+                                  }}
+                                />
+                                <span className="text-sm">{level}</span>
+                              </label>
+                            ))}
+                          </>
+                        )}
+                        
+                        {(activeFilters.disciplines.length === 0 || activeFilters.disciplines.length > 1) && (
+                          <p className="text-sm text-gray-500">Please select a single discipline to see available levels</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
                 {/* Breed Filter Section */}
                 <div className="border-b pb-2">
                   <button 
