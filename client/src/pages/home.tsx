@@ -462,13 +462,12 @@ export default function Home() {
                     </div>
                   )}
                   
-                  {/* Notification banner showing active filter */}
+                  {/* Optional small filter status indicator - removed yellow notification */}
                   {activeFilters.disciplines.length > 0 && (
-                    <div className="w-full bg-yellow-100 text-yellow-800 p-3 mb-4 rounded-md text-center font-bold">
-                      Showing only {activeFilters.disciplines[0]} horses
-                      
+                    <div className="text-center text-xs text-gray-500 mb-2">
+                      Filter: {activeFilters.disciplines[0]}
                       <button 
-                        className="ml-2 bg-yellow-200 px-2 py-1 rounded-md text-xs"
+                        className="ml-2 text-primary hover:underline text-xs"
                         onClick={() => {
                           // Clear filter and localStorage
                           localStorage.removeItem('active_discipline_filter');
@@ -478,7 +477,7 @@ export default function Home() {
                           window.location.reload();
                         }}
                       >
-                        Clear Filter
+                        clear
                       </button>
                     </div>
                   )}
