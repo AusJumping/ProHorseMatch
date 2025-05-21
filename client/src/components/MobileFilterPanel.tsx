@@ -49,53 +49,60 @@ const MobileFilterPanel = ({
     }));
   }, [activeFilters]);
 
+  // Enhanced handleChange with auto-apply for instant filtering
   const handleChange = (key: string, value: any) => {
     setFilters((prev: any) => {
+      let updatedFilters = { ...prev };
+      
       // Validation for min/max pairs to ensure max is not less than min
       if (key === 'price_min' && prev.price_max && value > prev.price_max && prev.price_max !== 999999999) {
         // If new min is greater than current max, set max to null or a higher value
-        return {
+        updatedFilters = {
           ...prev,
           [key]: value,
           price_max: 999999999 // Reset to "No Max" when min exceeds max
         };
       }
-      
-      if (key === 'price_max' && prev.price_min && value < prev.price_min && value !== 999999999) {
+      else if (key === 'price_max' && prev.price_min && value < prev.price_min && value !== 999999999) {
         // If new max is less than current min, don't update
         return prev;
       }
-      
-      if (key === 'age_min' && prev.age_max && value > prev.age_max && prev.age_max !== 999) {
+      else if (key === 'age_min' && prev.age_max && value > prev.age_max && prev.age_max !== 999) {
         // If new min is greater than current max, set max to null or a higher value
-        return {
+        updatedFilters = {
           ...prev,
           [key]: value,
           age_max: 999 // Reset to "No Max" when min exceeds max
         };
       }
-      
-      if (key === 'age_max' && prev.age_min && value < prev.age_min && value !== 999) {
+      else if (key === 'age_max' && prev.age_min && value < prev.age_min && value !== 999) {
         // If new max is less than current min, don't update
         return prev;
       }
-      
-      if (key === 'height_min' && prev.height_max && value > prev.height_max && prev.height_max !== 999) {
+      else if (key === 'height_min' && prev.height_max && value > prev.height_max && prev.height_max !== 999) {
         // If new min is greater than current max, set max to null or a higher value
-        return {
+        updatedFilters = {
           ...prev,
           [key]: value,
           height_max: 999 // Reset to "No Max" when min exceeds max
         };
       }
-      
-      if (key === 'height_max' && prev.height_min && value < prev.height_min && value !== 999) {
+      else if (key === 'height_max' && prev.height_min && value < prev.height_min && value !== 999) {
         // If new max is less than current min, don't update
         return prev;
       }
+      else {
+        // For all other cases, just update the value
+        updatedFilters = { ...prev, [key]: value };
+      }
       
-      // For all other cases, just update the value
-      return { ...prev, [key]: value };
+      // Auto-apply filter changes after a short delay - this creates a smoother experience
+      // while preventing too many rapid-fire API calls
+      setTimeout(() => {
+        onApplyFilters(updatedFilters);
+      }, 300);
+      
+      return updatedFilters;
     });
   };
 
@@ -410,22 +417,20 @@ const MobileFilterPanel = ({
           </div>
         </div>
         
-        {/* Filter Actions */}
-        <div className="flex gap-3 mt-6">
+        {/* Filter Actions - Simplified with just a Reset button */}
+        <div className="flex mt-6">
           <Button
             variant="outline"
-            className="flex-1"
+            className="w-full"
             onClick={handleReset}
           >
-            Reset All
+            Reset All Filters
           </Button>
-          <Button
-            id="apply-filters-button-mobile"
-            className="flex-1"
-            onClick={handleApply}
-          >
-            Apply Filters ({horseCount || 0})
-          </Button>
+        </div>
+        
+        {/* Floating info badge showing active filter count */}
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-primary text-white font-semibold text-sm px-4 py-2 rounded-full shadow-lg">
+          Showing {horseCount || 0} horses
         </div>
       </div>
     </div>
