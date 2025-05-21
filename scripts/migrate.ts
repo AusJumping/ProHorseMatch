@@ -29,6 +29,11 @@ CREATE TABLE IF NOT EXISTS "users" (
   "price_range_min" integer,
   "price_range_max" integer,
   "currency" text,
+  "stripe_customer_id" text,
+  "stripe_subscription_id" text,
+  "subscription_status" text,
+  "subscription_plan" text,
+  "subscription_end_date" timestamp,
   "created_at" timestamp DEFAULT now()
 );
 `;
