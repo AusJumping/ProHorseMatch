@@ -457,22 +457,7 @@ export default function Home() {
                 <div>
                   {/* Removed yellow filter notification as requested */}
                   
-                  {/* All filter indicators removed as requested */}
-                  {activeFilters.disciplines.length > 0 && (
-                    <button 
-                      className="absolute top-2 right-2 z-20 text-sm text-gray-400 hover:text-gray-600 bg-white bg-opacity-70 px-2 py-1 rounded"
-                      onClick={() => {
-                        // Clear filter and localStorage
-                        localStorage.removeItem('active_discipline_filter');
-                        setActiveFilters(prev => ({...prev, disciplines: []}));
-                        
-                        // Force page reload to ensure clean state
-                        window.location.reload();
-                      }}
-                    >
-                      Clear filter
-                    </button>
-                  )}
+                  {/* All filter indicators completely removed as requested */}
                   
                   {/* Create a key for the active discipline filter to force re-rendering */}
                   <SwipeSection 

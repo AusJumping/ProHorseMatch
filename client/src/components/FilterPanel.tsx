@@ -154,7 +154,7 @@ const FilterPanel = ({
     // Add additional logging for debugging
     console.log("Sending processed filters:", filtersToApply);
     
-    // Use a more direct approach for the filter panel
+    // Keep this simpler for mobile - just apply filters and close panel
   console.log("FILTER PANEL: Applying filters", filtersToApply);
   
   // First apply the filters
@@ -165,18 +165,16 @@ const FilterPanel = ({
     // Then close the panel
     onClose();
     
-    // Critical: Store the filter choice in localStorage for retrieval
+    // Store the filter choice in localStorage for retrieval but don't show any indicators
     if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
       localStorage.setItem('active_discipline_filter', filtersToApply.disciplines[0]);
-      console.log("Saved filter to localStorage:", filtersToApply.disciplines[0]);
       
-      // Add a query parameter to the URL to force a proper page refresh
+      // Add a query parameter to the URL for persistence but don't display anything
       const url = new URL(window.location.href);
       url.searchParams.set('discipline', filtersToApply.disciplines[0]);
       window.history.replaceState(null, "", url.toString());
     } else {
       localStorage.removeItem('active_discipline_filter');
-      console.log("Cleared filter from localStorage");
       
       // Remove query parameter
       const url = new URL(window.location.href);
