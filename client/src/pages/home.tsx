@@ -548,10 +548,10 @@ export default function Home() {
       showFilterButton 
       onFilterClick={toggleFilterPanel}
     >
-      <div className="flex w-full h-full">
+      <div className="flex flex-col md:flex-row w-full h-full">
         {/* Filter sidebar - desktop only or when on discover route */}
         {(!isMobile || (location === "/discover" && showFilter)) && (
-          <div className={`${isMobile ? 'w-full' : 'w-72'} bg-white rounded-xl p-5 shadow-sm h-fit ${isMobile ? 'mb-6' : 'mr-6'}`}>
+          <div className={`${isMobile ? 'w-full' : 'w-72'} bg-white rounded-xl p-5 shadow-sm h-fit ${isMobile ? 'mb-6' : 'mr-6'} flex-shrink-0`}>
             <FilterPanel 
               isOpen={true} 
               onClose={() => {}} 
@@ -562,8 +562,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Main content area */}
-        <div className="flex-1 flex flex-col items-center">
+        {/* Main content area - positioned to the right on desktop */}
+        <div className="flex-1 flex flex-col">
           {/* Always show horses regardless of filters */}
           {isTouchDevice ? (
             /* Horse swiping area for touch devices */
