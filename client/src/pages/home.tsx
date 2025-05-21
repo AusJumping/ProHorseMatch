@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import SwipeSection from "@/components/SwipeSection";
 import HorseGrid from "@/components/HorseGrid";
 import FilterPanel from "@/components/FilterPanel";
+import MobileFilterPanel from "@/components/MobileFilterPanel";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -644,13 +645,10 @@ export default function Home() {
 
         {/* Mobile filter panel */}
         {isMobile && (
-          <FilterPanel 
+          <MobileFilterPanel 
             isOpen={isFilterOpen} 
             onClose={() => setIsFilterOpen(false)} 
-            activeFilters={{
-              ...activeFilters,
-              disciplines: [] // Force empty disciplines array to ensure "All Disciplines" is default
-            }}
+            activeFilters={activeFilters}
             onApplyFilters={handleApplyFilters}
             horseCount={horses?.length || 0}
           />
