@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import HorseCard from "./HorseCard";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Heart, X, Info } from "lucide-react";
@@ -22,7 +22,15 @@ const SwipeSection = ({
   onDislike,
   onShowMore,
 }: SwipeSectionProps) => {
+  // Reset localIndex when horses array changes (when filters are applied)
   const [localIndex, setLocalIndex] = useState(activeIndex);
+  
+  // When horses array changes (like when filters are applied), reset the index
+  // This ensures we're always showing the first horse in the filtered results
+  useEffect(() => {
+    setLocalIndex(0);
+  }, [horses]);
+  
   const currentHorse = horses[localIndex];
 
   const goToNextHorse = () => {
