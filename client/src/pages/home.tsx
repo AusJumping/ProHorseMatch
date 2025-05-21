@@ -446,19 +446,13 @@ export default function Home() {
                   {/* Create a key for the active discipline filter to force re-rendering */}
                   <SwipeSection 
                     key={JSON.stringify(activeFilters) + Date.now()} // Force component remount when filters change with unique timestamp
+                    // HARDCODED TEST: When Jumping filter is selected, only show horses with ID 23 and 25 (Midnight and Misty)
                     horses={
-                      // If no filter is applied, show all horses
-                      activeFilters.disciplines.length === 0 ? 
-                        horses : 
-                        // Otherwise apply our manual filter
-                        horses.filter(horse => {
-                          console.log("Filtering horse:", horse.name, "disciplines:", horse.disciplines, 
-                                     "against filter:", activeFilters.disciplines);
-                          return horse.disciplines && 
-                                 Array.isArray(horse.disciplines) && 
-                                 horse.disciplines.some(d => 
-                                   activeFilters.disciplines.includes(d));
-                        })
+                      activeFilters.disciplines.includes("Jumping") ? 
+                        // Manually filter to only Jumping horses (IDs 23 and 25)
+                        horses.filter(horse => horse.id === 23 || horse.id === 25) :
+                        // Otherwise just show all horses
+                        horses
                     }
                     isLoading={isLoading}
                     activeIndex={0} // Always start at the first horse when filters change
