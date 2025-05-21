@@ -389,6 +389,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
   
+  // Development-only endpoint to enable owner mode for testing
+  app.post("/api/dev/enable-owner-mode", async (req, res) => {
+    try {
+      console.log("Enable owner mode request received");
+      
+      // If there's no session yet, create one with owner@example.com user ID (2)
+      if (!req.session.userId) {
+        console.log("Creating test owner session for development");
+        req.session.userId = 2; // owner@example.com user ID
+      }
+      
+      console.log("Current session before update:", req.session);
+      
+      // Set user session with owner privileges
+      req.session.userId = 2; // Make sure we're using the owner account
+      req.session.userType = "owner";
+      
+      // Force-save the session changes
+      req.session.save((err) => {
+        if (err) {
+          console.error("Error saving session:", err);
+          return res.status(500).json({ message: "Failed to enable owner mode - session save error" });
+        }
+        
+        console.log("Owner mode enabled in session:", req.session);
+        return res.json({ 
+          message: "Owner mode enabled", 
+          userId: req.session.userId,
+          is_selling: true
+        });
+      });
+    } catch (error) {
+      console.error("Enable owner mode error:", error);
+      return res.status(500).json({ message: "Failed to enable owner mode - unexpected error" });
+    }
+  });
+  
   // Admin routes
   app.delete("/api/admin/delete-all-horses", isAuthenticated, async (req, res) => {
     try {
