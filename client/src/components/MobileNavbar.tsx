@@ -73,7 +73,7 @@ const MobileNavbar = () => {
           </Button>
         </SheetClose>
         
-        {isAuthenticated && isOwner && (
+        {isAuthenticated && (
           <SheetClose asChild>
             <Button 
               variant="ghost" 

@@ -1148,17 +1148,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the user with their roles
       const user = await storage.getUserById(req.session.userId);
       
-      // Check if user has selling permission
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
-      }
-      
-      // Check if the user's subscription plan allows them to add horses
-      // This ensures that only users with beta-seller or paid plans can add horses
-      if (user.subscription_plan === 'beta-searching') {
-        return res.status(403).json({ 
-          message: "Your current subscription plan (Searching) does not allow adding horses. Please upgrade to a Seller plan."
-        });
       }
       
       const validatedData = insertHorseSchema.parse(req.body);
@@ -1466,108 +1457,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete a message endpoint
-  app.delete("/api/messages/:id", isAuthenticated, async (req, res) => {
-    try {
-      const messageId = parseInt(req.params.id);
-      
-      // Get the message to verify ownership
-      const message = await storage.getMessageById(messageId);
-      
-      if (!message) {
-        return res.status(404).json({ message: "Message not found" });
-      }
-      
-      // Get the current user with roles
-      const user = await storage.getUserById(req.session.userId);
-      
-      if (!user) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      // Verify that the current user has permission to delete this message
-      // Either the user is the sender of the message or the user has admin rights
-      const isMessageSender = 
-        (message.sender_type === "customer" && message.customer_id === req.session.userId) ||
-        (message.sender_type === "owner" && message.owner_id === req.session.userId);
-      
-      const isAdmin = req.session.userId === 1; // Admin user ID is 1
-      
-      if (!isMessageSender && !isAdmin) {
-        return res.status(403).json({ message: "You don't have permission to delete this message" });
-      }
-      
-      // Delete the message
-      const success = await storage.deleteMessage(messageId);
-      
-      if (success) {
-        return res.status(200).json({ success: true, message: "Message deleted successfully" });
-      } else {
-        return res.status(500).json({ success: false, message: "Failed to delete message" });
-      }
-    } catch (error) {
-      console.error("Delete message error:", error);
-      return res.status(500).json({ message: "Error deleting message" });
-    }
-  });
-  
-  // Delete an entire conversation
-  app.delete("/api/conversations/:id", isAuthenticated, async (req, res) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      
-      // Get the conversation to check ownership
-      const conversation = await storage.getConversationById(conversationId);
-      
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-      
-      // Get the user with their roles
-      const user = await storage.getUserById(req.session.userId);
-      
-      if (!user) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      // Check if user is authorized to access this conversation
-      const isCustomer = user.is_searching && conversation.customer_id === user.id;
-      const isOwner = user.is_selling && conversation.owner_id === user.id;
-      
-      if (!isCustomer && !isOwner) {
-        return res.status(403).json({ message: "You can only delete conversations you are part of" });
-      }
-      
-      // Get all messages in this conversation
-      const conversationMessages = await storage.getMessagesByConversationId(
-        conversation.customer_id,
-        conversation.owner_id,
-        conversation.horse_id
-      );
-      
-      // Delete all messages in the conversation
-      let allDeleted = true;
-      for (const message of conversationMessages) {
-        const deleted = await storage.deleteMessage(message.id);
-        if (!deleted) {
-          allDeleted = false;
-        }
-      }
-      
-      // Delete the conversation itself
-      const deleted = await storage.deleteConversation(conversationId);
-      
-      if (!deleted) {
-        return res.status(500).json({ message: "Failed to delete conversation" });
-      }
-      
-      return res.json({ message: "Conversation deleted successfully" });
-    } catch (error) {
-      console.error("Delete conversation error:", error);
-      return res.status(500).json({ message: "Failed to delete conversation" });
-    }
-  });
-
   app.get("/api/messages/:customerId/:ownerId/:horseId", isAuthenticated, async (req, res) => {
     try {
       const customerId = parseInt(req.params.customerId);

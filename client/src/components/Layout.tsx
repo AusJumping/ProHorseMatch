@@ -95,7 +95,16 @@ const Layout = ({
                 </Button>
               )}
               
-              {/* Filter Button removed as requested */}
+              {/* Filter Button (Mobile only) */}
+              {isMobile && showFilterButton && onFilterClick && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onFilterClick}
+                >
+                  <Filter size={18} />
+                </Button>
+              )}
               
               {/* Mobile Menu Button */}
               {isMobile && (

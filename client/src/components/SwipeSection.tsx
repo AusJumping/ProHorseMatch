@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import HorseCard from "./HorseCard";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Heart, X, Info } from "lucide-react";
@@ -23,13 +23,6 @@ const SwipeSection = ({
   onShowMore,
 }: SwipeSectionProps) => {
   const [localIndex, setLocalIndex] = useState(activeIndex);
-  
-  // Simple effect to reset index when horses array changes
-  useEffect(() => {
-    // Reset to first horse when filters change
-    setLocalIndex(0);
-  }, [horses.length]);
-  
   const currentHorse = horses[localIndex];
 
   const goToNextHorse = () => {
@@ -44,50 +37,44 @@ const SwipeSection = ({
     }
   };
 
+  // Modified to handle like without advancing immediately
+  // This allows the parent component to properly handle authentication
   const handleButtonLike = () => {
-    if (currentHorse) {
-      onLike(currentHorse.id);
-    }
+    onLike(currentHorse.id);
+    // Note: we'll let the parent component handle moving to next horse
+    // This prevents issues with authentication
   };
 
   const handleButtonDislike = () => {
-    if (currentHorse) {
-      onDislike(currentHorse.id);
-      goToNextHorse();
-    }
+    onDislike(currentHorse.id);
+    goToNextHorse();
   };
 
-  // Always show loading animation whether we're fetching or have no results
-  if (isLoading || !horses.length) {
+  if (isLoading) {
     return (
       <div className="w-full max-w-lg mx-auto">
-        <div className="flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-          {/* Always show enhanced animated loading experience */}
-          <div className="flex flex-col items-center justify-center mb-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-ping w-16 h-16 rounded-full bg-[#cdac6e] opacity-30"></div>
-              </div>
-              <div className="relative animate-spin w-16 h-16 border-4 border-[#cdac6e] border-t-transparent rounded-full"></div>
-            </div>
-          </div>
-          <h3 className="text-xl font-display font-bold mb-4">Searching for Horses</h3>
-          <div className="flex flex-col gap-2">
-            <p className="text-neutral-600">
-              Finding the perfect matches for you...
-            </p>
-            <div className="flex justify-center items-center gap-1 mt-1">
-              <span className="animate-bounce delay-0 w-2 h-2 bg-[#cdac6e] rounded-full"></span>
-              <span className="animate-bounce delay-150 w-2 h-2 bg-[#cdac6e] rounded-full" style={{animationDelay: '0.15s'}}></span>
-              <span className="animate-bounce delay-300 w-2 h-2 bg-[#cdac6e] rounded-full" style={{animationDelay: '0.3s'}}></span>
-            </div>
-          </div>
+        <Skeleton className="horse-card rounded-xl" />
+        <div className="flex justify-center mt-4 gap-4">
+          <Skeleton className="w-14 h-14 rounded-full" />
+          <Skeleton className="w-12 h-12 rounded-full" />
+          <Skeleton className="w-14 h-14 rounded-full" />
         </div>
       </div>
     );
   }
 
-  // End of horses message
+  if (!horses.length) {
+    return (
+      <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
+        <h3 className="text-xl font-display font-bold mb-4">No horses in database</h3>
+        <p className="text-neutral-600 mb-6">
+          There are currently no horses in the database. Add some horses to get started.
+        </p>
+        <Button onClick={() => window.location.reload()}>Refresh</Button>
+      </div>
+    );
+  }
+
   if (localIndex >= horses.length) {
     return (
       <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
@@ -100,7 +87,6 @@ const SwipeSection = ({
     );
   }
 
-  // Normal display when we have horses to show
   return (
     <div className="w-full max-w-lg mx-auto">
       {/* Navigation indicators */}
@@ -148,11 +134,7 @@ const SwipeSection = ({
           size="icon"
           variant="outline"
           className="info-button w-14 h-14 rounded-full"
-          onClick={() => {
-            if (typeof onShowMore === 'function' && currentHorse) {
-              onShowMore(currentHorse.id);
-            }
-          }}
+          onClick={() => onShowMore(currentHorse.id)}
         >
           <Info className="h-6 w-6" />
         </Button>

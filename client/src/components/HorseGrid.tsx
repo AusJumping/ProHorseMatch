@@ -3,7 +3,6 @@ import { Horse } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Heart, X, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import Image from "@/components/ui/image";
 import { formatCurrency } from "@/lib/utils";
 
@@ -12,51 +11,17 @@ interface HorseGridProps {
   onLike: (horseId: number) => void;
   onDislike: (horseId: number) => void;
   onShowMore: (horseId: number) => void;
-  isLoading?: boolean;
 }
 
-const HorseGrid = ({ horses, onLike, onDislike, onShowMore, isLoading = false }: HorseGridProps) => {
-  // Show loading skeletons during data fetching
-  if (isLoading) {
-    return (
-      <div className="w-full">
-        <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-8">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="overflow-hidden flex flex-col w-[320px] flex-shrink-0">
-              <Skeleton className="h-48 w-full" />
-              <CardContent className="flex flex-col flex-grow p-4">
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2 mb-2" />
-                <Skeleton className="h-4 w-2/3 mb-4" />
-                <div className="grid grid-cols-3 gap-2 mt-4">
-                  <Skeleton className="h-9 w-full" />
-                  <Skeleton className="h-9 w-full" />
-                  <Skeleton className="h-9 w-full" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  
-  // Show empty state only after loading is complete
+const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) => {
   if (!horses.length) {
     return (
       <div className="w-full flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
-        <h3 className="text-xl font-display font-bold mb-4">No horses found</h3>
+        <h3 className="text-xl font-display font-bold mb-4">No horses in database</h3>
         <p className="text-neutral-600 mb-6">
-          No horses match your current search criteria. Try adjusting your filters.
+          There are currently no horses in the database. Add some horses to get started.
         </p>
-        <div className="flex gap-3">
-          <Button 
-            variant="outline"
-            onClick={() => window.location.href = "/"}>
-            Reset Filters
-          </Button>
-          <Button onClick={() => window.location.reload()}>Refresh</Button>
-        </div>
+        <Button onClick={() => window.location.reload()}>Refresh</Button>
       </div>
     );
   }

@@ -94,47 +94,27 @@ export default function Auth() {
     try {
       console.log("Submitting login form with data:", data);
       
-      // First, use the built-in login function which has been enhanced for mobile support
-      const userData = await login(data.email, data.password);
-      console.log("Login successful via auth context, complete user data:", userData);
+      // Perform direct fetch to get complete user data
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
       
-      if (!userData) {
-        throw new Error("Login unsuccessful - failed to get user data");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
       }
       
-      // After basic login, fetch subscription details explicitly to ensure correct subscription type
-      // This is especially important for mobile users where sessions can be problematic
-      let hasSubscription = false;
-      let isActive = false;
+      const userData = await response.json();
+      console.log("Login successful, complete user data:", userData);
       
-      try {
-        const subResponse = await fetch('/api/subscription', {
-          credentials: 'include',
-          cache: 'no-cache'
-        });
-        
-        if (subResponse.ok) {
-          const subscriptionData = await subResponse.json();
-          console.log("Explicit subscription check after login:", subscriptionData);
-          
-          hasSubscription = subscriptionData.hasSubscription;
-          isActive = subscriptionData.status === 'active' || subscriptionData.status === 'trialing';
-          
-          // If we got valid subscription data, use it for routing decision
-          if (hasSubscription && isActive) {
-            console.log("User has active subscription from subscription endpoint, redirecting to welcome page");
-            window.location.href = "/welcome";
-            return;
-          }
-        }
-      } catch (subError) {
-        console.error("Error checking subscription status:", subError);
-        // Fall back to user data for subscription info
-      }
+      // No need to call login again, we're already logged in
       
-      // Fallback to check subscription status directly from user data
-      if (userData.subscription_status === 'active' || userData.subscription_plan?.startsWith('beta-')) {
-        console.log("User has active subscription from user data, redirecting to welcome page");
+      // Direct check for subscription status
+      if (userData && userData.subscription_status === 'active') {
+        console.log("User has active subscription, redirecting to welcome page");
         window.location.href = "/welcome";
       } else {
         console.log("User has no active subscription, redirecting to subscription page");

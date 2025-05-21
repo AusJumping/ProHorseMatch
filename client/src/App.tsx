@@ -24,9 +24,7 @@ import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import FilterPage from "@/pages/filter";
-import MobileFilterPage from "@/pages/mobile-filter-new";
 import WelcomePage from "@/pages/welcome";
-import Browse from "@/pages/browse";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
@@ -34,7 +32,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Landing} />
-      <Route path="/browse" component={Browse} />
+      <Route path="/browse" component={Home} />
       <Route path="/auth" component={Auth} />
       <Route path="/horse/:id" component={HorseDetail} />
       <Route path="/messages" component={Messages} />
@@ -54,7 +52,6 @@ function Router() {
       <Route path="/donation-success" component={DonationSuccess} />
       <Route path="/welcome" component={WelcomePage} />
       <Route path="/filter" component={FilterPage} />
-      <Route path="/mobile-filter" component={MobileFilterPage} />
       <Route component={NotFound} />
     </Switch>
   );

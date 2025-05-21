@@ -10,34 +10,16 @@ import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth";
-import { useLocation } from "wouter";
 
 interface HorseCardProps {
   horse: Horse;
-  onShowMore?: (horseId: number) => void;
+  onShowMore: (horseId: number) => void;
   onLike?: (horseId: number) => void;
   showFavoriteButton?: boolean;
   matchStatus?: { is_liked?: boolean } | null; // Optional prop to pass in match status directly
 }
 
-const HorseCard = ({ 
-  horse, 
-  onShowMore, 
-  onLike, 
-  showFavoriteButton = false, 
-  matchStatus 
-}: HorseCardProps) => {
-  const [, navigate] = useLocation();
-  
-  // Default handler if onShowMore is not provided
-  const handleShowMore = (horseId: number) => {
-    if (typeof onShowMore === 'function') {
-      onShowMore(horseId);
-    } else {
-      // Default behavior - navigate to horse detail page
-      navigate(`/horse/${horseId}`);
-    }
-  };
+const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matchStatus }: HorseCardProps) => {
   const isMobile = useMobile();
   const isTouchDevice = useIsTouchDevice();
   const { user, isAuthenticated } = useAuth();
@@ -220,7 +202,7 @@ const HorseCard = ({
         <div className="flex gap-2">
           <Button
             className="flex-1 bg-primary hover:bg-primary/90 text-white font-accent font-semibold"
-            onClick={() => handleShowMore(horse.id)}
+            onClick={() => onShowMore(horse.id)}
           >
             {isMobile ? "More Info" : "View Full Profile"}
           </Button>

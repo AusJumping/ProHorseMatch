@@ -104,7 +104,7 @@ export default function AddHorse() {
       characteristics: [],
       price_min: 0,
       price_max: 0,
-      currency: "AUD",
+      currency: "EUR",
       description: "",
       photos: [],
       videos: [],
