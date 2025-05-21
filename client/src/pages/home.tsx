@@ -216,15 +216,20 @@ export default function Home() {
   // State to prevent the "no horses found" message during loading
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
+  // Pre-fetch ALL horses with no filters for fast initial load
+  const { data: allHorses, isLoading: isAllHorsesLoading } = useQuery<Horse[]>({
+    queryKey: ['/api/horses', { currency: currentCurrency }],
+    staleTime: 60000, // Keep all horses cached for 1 minute
+  });
+  
   // Query for horses with filters
   const { data: horses, isLoading, isError, isFetching } = useQuery<Horse[]>({
     queryKey: ['/api/horses', activeFilters],
-    staleTime: 30000, // Keep data fresh for 30 seconds to prevent flashing
+    staleTime: 10000, // Shorter stale time for filtered queries
+    // Use these two options for much faster mobile experience
+    keepPreviousData: true, // Keeps showing the current horses during loading
+    placeholderData: allHorses || [], // Use all horses as temporary data during loading
     queryFn: async () => {
-      // Set initial load state to false after first successful query
-      if (isInitialLoad) {
-        setTimeout(() => setIsInitialLoad(false), 1000);
-      }
       // Build query parameters from activeFilters
       const params = new URLSearchParams();
       
