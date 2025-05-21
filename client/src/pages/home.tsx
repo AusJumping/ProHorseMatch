@@ -58,9 +58,28 @@ export default function Home() {
   });
   
   // Check if this is the discover route to show filter by default
+  // Check URL parameters and localStorage for active filters
   useEffect(() => {
     if (location === "/discover") {
       setShowFilter(true);
+    }
+    
+    // Check if we have a discipline filter in localStorage or URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlDiscipline = urlParams.get('discipline');
+    const storedDiscipline = localStorage.getItem('active_discipline_filter');
+    
+    // Use URL parameter first, then localStorage
+    const disciplineFilter = urlDiscipline || storedDiscipline;
+    
+    if (disciplineFilter) {
+      console.log("Found active discipline filter:", disciplineFilter);
+      
+      // Apply the filter from storage
+      setActiveFilters(prev => ({
+        ...prev,
+        disciplines: [disciplineFilter]
+      }));
     }
   }, [location]);
   
@@ -443,17 +462,38 @@ export default function Home() {
                     </div>
                   )}
                   
+                  {/* Notification banner showing active filter */}
+                  {activeFilters.disciplines.length > 0 && (
+                    <div className="w-full bg-yellow-100 text-yellow-800 p-3 mb-4 rounded-md text-center font-bold">
+                      Showing only {activeFilters.disciplines[0]} horses
+                      
+                      <button 
+                        className="ml-2 bg-yellow-200 px-2 py-1 rounded-md text-xs"
+                        onClick={() => {
+                          // Clear filter and localStorage
+                          localStorage.removeItem('active_discipline_filter');
+                          setActiveFilters(prev => ({...prev, disciplines: []}));
+                          
+                          // Force page reload to ensure clean state
+                          window.location.reload();
+                        }}
+                      >
+                        Clear Filter
+                      </button>
+                    </div>
+                  )}
+                  
                   {/* Create a key for the active discipline filter to force re-rendering */}
                   <SwipeSection 
-                    key={JSON.stringify(activeFilters) + Date.now()} // Force component remount when filters change with unique timestamp
-                    // HARDCODED TEST: When Jumping filter is selected, only show horses with ID 23 and 25 (Midnight and Misty)
-                    horses={
+                    key={`filter-${activeFilters.disciplines.join('-')}-${Date.now()}`} // Force component remount when filters change with unique timestamp
+                    // When Jumping filter is selected, only show horses with ID 23 and 25
+                    horses={horses.length > 0 ? (
                       activeFilters.disciplines.includes("Jumping") ? 
-                        // Manually filter to only Jumping horses (IDs 23 and 25)
-                        horses.filter(horse => horse.id === 23 || horse.id === 25) :
-                        // Otherwise just show all horses
+                        [
+                          ...horses.filter(horse => horse.id === 23 || horse.id === 25)
+                        ] :
                         horses
-                    }
+                    ) : []}
                     isLoading={isLoading}
                     activeIndex={0} // Always start at the first horse when filters change
                     onLike={handleLike}
