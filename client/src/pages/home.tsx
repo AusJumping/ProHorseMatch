@@ -643,12 +643,15 @@ export default function Home() {
           </div>
         )}
 
-        {/* Mobile filter panel */}
+        {/* Mobile filter panel - force empty disciplines for "All Disciplines" */}
         {isMobile && (
           <MobileFilterPanel 
             isOpen={isFilterOpen} 
             onClose={() => setIsFilterOpen(false)} 
-            activeFilters={activeFilters}
+            activeFilters={{
+              ...activeFilters,
+              disciplines: [] // Forcing empty array to ensure "All Disciplines" is default
+            }}
             onApplyFilters={handleApplyFilters}
             horseCount={horses?.length || 0}
           />
