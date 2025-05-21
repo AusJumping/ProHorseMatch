@@ -25,17 +25,28 @@ const SwipeSection = ({
   // Always track the current index for proper navigation
   const [localIndex, setLocalIndex] = useState(0);
   
-  // Extremely important: Reset index when horses array changes
-  // This ensures when filters are applied, we always start with the first filtered horse
+  // Reset index when horses array changes + do thorough debugging
   useEffect(() => {
-    console.log("SwipeSection: horses array changed:", { 
-      horseCount: horses.length,
-      horseIds: horses.map(h => h.id),
-      activeIndex
+    // Detailed debugging for mobile filter issues
+    console.log("SwipeSection: HORSES CHANGED");
+    console.log("Number of horses:", horses.length);
+    
+    // Examine each horse's discipline data
+    horses.forEach(horse => {
+      console.log(`Horse: ${horse.name} (ID: ${horse.id})`);
+      console.log(`- Disciplines: ${JSON.stringify(horse.disciplines || "NONE")}`);
+      console.log(`- Type of disciplines: ${typeof horse.disciplines}`);
+      console.log(`- Is array: ${Array.isArray(horse.disciplines)}`);
+      
+      // For debugging - try to directly access discipline data
+      if (horse.disciplines && Array.isArray(horse.disciplines)) {
+        console.log(`- First discipline: ${horse.disciplines[0]}`);
+      }
     });
-    // Reset to first horse whenever the horses array changes (filters applied)
+    
+    // Reset to first horse
     setLocalIndex(0);
-  }, [horses]); // Only depend on horses array, not activeIndex
+  }, [horses]);
   
   const currentHorse = horses[localIndex];
 
