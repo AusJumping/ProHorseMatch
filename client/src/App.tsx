@@ -25,6 +25,7 @@ import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import FilterPage from "@/pages/filter";
 import WelcomePage from "@/pages/welcome";
+import NotificationSettings from "@/pages/notification-settings";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 

@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import { 
   Home, Heart, Filter, MessageSquare, User, List, CreditCard, 
-  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings
+  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings, Bell
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
@@ -138,6 +138,18 @@ const MobileNavbar = () => {
           </Button>
         </SheetClose>
         
+        {isAuthenticated && (
+          <SheetClose asChild>
+            <Button 
+              variant="ghost" 
+              className={`justify-start h-12 ${location === "/notification-settings" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+              onClick={() => navigate("/notification-settings")}
+            >
+              <Bell className="mr-3 h-5 w-5" />
+              <span>Notifications</span>
+            </Button>
+          </SheetClose>
+        )}
 
       </div>
       
