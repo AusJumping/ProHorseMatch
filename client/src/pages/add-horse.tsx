@@ -149,48 +149,18 @@ export default function AddHorse() {
         submissionData.height_cm = Math.round(submissionData.height_hands * 10.16);
       }
       
-      // Try both endpoints - first the regular one, then the deployment-specific one
-      let response;
-      let errorMessage = "";
+      // Make the API request with the complete data using fetch directly with credentials
+      const response = await fetch("/api/horses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Important! This ensures cookies are sent with the request
+        body: JSON.stringify(submissionData),
+      });
       
-      try {
-        console.log("Trying regular API endpoint...");
-        // First try the regular endpoint
-        response = await fetch("/api/horses", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", // Important! This ensures cookies are sent with the request
-          body: JSON.stringify(submissionData),
-        });
-        
-        if (response.ok) {
-          console.log("Regular endpoint successful");
-        } else {
-          const errorData = await response.json();
-          errorMessage = errorData.message || "Server returned an error";
-          console.log("Regular endpoint failed:", errorMessage);
-          throw new Error("Regular endpoint failed");
-        }
-      } catch (initialError) {
-        console.log("Trying deployment-specific endpoint as fallback...");
-        // Try the deployment-specific endpoint as fallback
-        response = await fetch("/api/deployment/add-horse", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include", 
-          body: JSON.stringify(submissionData),
-        });
-        
-        if (!response.ok) {
-          const fallbackError = await response.json();
-          console.error("Both endpoints failed. Fallback error:", fallbackError);
-          throw new Error(`Failed to add horse: ${errorMessage || fallbackError.message || "Unknown error"}`);
-        }
-        console.log("Deployment endpoint successful");
+      if (!response.ok) {
+        throw new Error("Failed to add horse. Server returned an error.");
       }
       
       toast({
