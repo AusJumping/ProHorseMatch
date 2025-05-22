@@ -200,8 +200,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         credentials: 'include',
       });
 
-      // Clear localStorage
+      // Clear all stored authentication data
       localStorage.removeItem('user');
+      localStorage.removeItem('auth_credentials');
+      sessionStorage.removeItem('temp_auth');
+      
+      console.log("Logged out successfully, cleared all stored auth data");
       
       // Clear the query cache
       queryClient.setQueryData(['/api/auth/me'], null);
