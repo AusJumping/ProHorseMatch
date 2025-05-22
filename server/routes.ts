@@ -199,6 +199,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })
   );
 
+  // Add a get current user endpoint
+  app.get("/api/auth/me", async (req, res) => {
+    console.log("Auth check - Session:", {
+      sessionId: req.sessionID,
+      userId: req.session.userId,
+      sessionContent: req.session
+    });
+    
+    if (!req.session.userId) {
+      console.log("Auth check failed - Not authenticated");
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    try {
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        console.log("Auth check failed - User not found");
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      // Don't send the password in the response
+      const { password, ...userWithoutPassword } = user;
+      console.log("Auth check success - User authenticated:", userWithoutPassword.id);
+      return res.status(200).json(userWithoutPassword);
+    } catch (error) {
+      console.error("Auth check error:", error);
+      return res.status(500).json({ message: "Error fetching user" });
+    }
+  });
+
   // Auth routes
   app.post("/api/auth/register/customer", async (req, res) => {
     try {
@@ -296,6 +326,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       req.session.userId = user.id;
+      
+      // Save session explicitly to ensure it's persisted
+      req.session.save(err => {
+        if (err) {
+          console.error("Error saving session:", err);
+        } else {
+          console.log("Session saved successfully. Session ID:", req.sessionID);
+        }
+      });
       
       // Save session explicitly
       await new Promise<void>((resolve) => {
