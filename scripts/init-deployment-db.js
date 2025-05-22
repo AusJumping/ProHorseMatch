@@ -110,8 +110,15 @@ async function initializeDatabase() {
     // Run the seed test data script to ensure test accounts are present
     try {
       console.log('Running seed test data script...');
-      const scriptPath = path.resolve('./scripts/seed-test-data.js');
-      const { stdout, stderr } = await execPromise(`node ${scriptPath}`);
+      const scriptPath = path.resolve('./scripts/seed-test-data.cjs');
+      
+      // Make sure DATABASE_URL is available to the seed script
+      const env = { ...process.env };  
+      
+      const { stdout, stderr } = await execPromise(`node ${scriptPath}`, { 
+        env: env,
+        maxBuffer: 10 * 1024 * 1024 // Increase buffer size to 10MB
+      });
       
       if (stdout) {
         console.log('Seed script output:', stdout);
@@ -124,6 +131,7 @@ async function initializeDatabase() {
       console.log('Seed test data completed!');
     } catch (seedError) {
       console.error('Failed to run seed test data script:', seedError);
+      console.error('Error details:', seedError.message);
       // We don't exit here as the main initialization was successful
     }
   } catch (error) {

@@ -9,7 +9,6 @@
  */
 
 const { Pool } = require('pg');
-const { drizzle } = require('drizzle-orm/postgres-js');
 const { eq, and } = require('drizzle-orm');
 
 // Get database connection from environment
