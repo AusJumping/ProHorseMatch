@@ -322,17 +322,24 @@ export class MemStorage implements IStorage {
       // Special case when filtering by owner_id only
       console.log(`MemStorage.getHorsesByFilters - filtering by owner_id ${filters.owner_id} specifically`);
       
-      const ownerHorses = horses.filter(horse => horse.owner_id === filters.owner_id);
-      console.log(`MemStorage.getHorsesByFilters - found ${ownerHorses.length} horses for owner ${filters.owner_id}:`, 
-        ownerHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id })));
+      // Convert both to numbers for safer comparison
+      const filterOwnerId = Number(filters.owner_id);
+      const ownerHorses = horses.filter(horse => Number(horse.owner_id) === filterOwnerId);
+      console.log(`MemStorage.getHorsesByFilters - found ${ownerHorses.length} horses for owner ${filters.owner_id} (as number: ${filterOwnerId}):`, 
+        ownerHorses.map(h => ({ id: h.id, name: h.name, owner_id: h.owner_id, owner_id_type: typeof h.owner_id })));
       
       return ownerHorses;
     }
     
     return horses.filter(horse => {
       // Filter by owner_id if specified
-      if (filters.owner_id !== undefined && horse.owner_id !== filters.owner_id) {
-        return false;
+      if (filters.owner_id !== undefined) {
+        // Convert both to numbers for comparison to avoid string/number type issues
+        const filterOwnerId = Number(filters.owner_id);
+        const horseOwnerId = Number(horse.owner_id);
+        if (horseOwnerId !== filterOwnerId) {
+          return false;
+        }
       }
       
       // Filter by disciplines if specified
