@@ -7,7 +7,7 @@ import {
   conversations, type Conversation, type InsertConversation
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Horse methods
@@ -1031,18 +1031,96 @@ export class DatabaseStorage implements IStorage {
     return horse;
   }
 
-  async getHorsesByFilters(filters: Partial<Horse>): Promise<Horse[]> {
-    let query = db.select().from(horses);
+  async getHorsesByFilters(filters: any): Promise<Horse[]> {
+    console.log("DatabaseStorage.getHorsesByFilters - filters:", JSON.stringify(filters, null, 2));
     
-    // If filter by owner_id is specified
-    if (filters.owner_id !== undefined) {
-      query = query.where(eq(horses.owner_id, filters.owner_id));
+    // Get all horses first and filter in JavaScript for now (simpler approach)
+    const allHorses = await db.select().from(horses);
+    console.log(`DatabaseStorage.getHorsesByFilters - total horses in DB: ${allHorses.length}`);
+    
+    // If no filters are provided, return all horses
+    if (Object.keys(filters).length === 0) {
+      console.log("DatabaseStorage.getHorsesByFilters - no filters provided, returning all horses");
+      return allHorses;
     }
     
-    // Add other filters as needed for a complete implementation
-    // E.g., disciplines, breeds, age, etc.
+    // Filter horses in JavaScript (same logic as MemStorage)
+    const filteredHorses = allHorses.filter(horse => {
+      // Filter by owner_id if specified
+      if (filters.owner_id !== undefined && horse.owner_id !== filters.owner_id) {
+        return false;
+      }
+      
+      // Filter by disciplines if specified
+      if (filters.disciplines && filters.disciplines.length > 0) {
+        if (!horse.disciplines.some(d => filters.disciplines.includes(d))) {
+          return false;
+        }
+      }
+      
+      // Filter by breeds if specified
+      if (filters.breeds && filters.breeds.length > 0) {
+        if (!horse.breeds.some(b => filters.breeds.includes(b))) {
+          return false;
+        }
+      }
+      
+      // Filter by sexes if specified
+      if (filters.sexes && filters.sexes.length > 0) {
+        if (!filters.sexes.includes(horse.sex)) {
+          return false;
+        }
+      }
+      
+      // Filter by age range if specified
+      if (filters.age_min !== undefined && filters.age_min !== null) {
+        if (horse.age < filters.age_min) {
+          return false;
+        }
+      }
+      
+      if (filters.age_max !== undefined && filters.age_max !== null) {
+        if (horse.age > filters.age_max) {
+          return false;
+        }
+      }
+      
+      // Filter by location if specified
+      if (filters.location_country && horse.location_country !== filters.location_country) {
+        return false;
+      }
+      
+      // Filter by height range if specified
+      if (filters.height_min !== undefined && filters.height_min !== null) {
+        if (horse.height_hands === null || horse.height_hands < filters.height_min) {
+          return false;
+        }
+      }
+      
+      if (filters.height_max !== undefined && filters.height_max !== null) {
+        if (horse.height_hands !== null && horse.height_hands > filters.height_max) {
+          return false;
+        }
+      }
+      
+      // Filter by price range if specified
+      if (filters.price_min !== undefined && filters.price_min !== null) {
+        if (horse.price_max < filters.price_min) {
+          return false;
+        }
+      }
+      
+      if (filters.price_max !== undefined && filters.price_max !== null) {
+        if (horse.price_min > filters.price_max) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
     
-    return await query;
+    console.log(`DatabaseStorage.getHorsesByFilters - found ${filteredHorses.length} horses after filtering`);
+    return filteredHorses;
   }
 
   async createHorse(horse: InsertHorse): Promise<Horse> {
