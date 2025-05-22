@@ -93,10 +93,23 @@ export async function subscribeToPushNotifications(): Promise<boolean> {
     });
     
     // Send the push subscription to the server
-    await apiRequest('POST', '/api/notifications/subscribe', {
+    const subscribeResponse = await apiRequest('POST', '/api/notifications/subscribe', {
       subscription
     });
     
+    if (!subscribeResponse.ok) {
+      const errorData = await subscribeResponse.json();
+      console.error('Failed to register subscription with server:', errorData.message);
+      
+      // If authentication error, we should refresh the auth status
+      if (subscribeResponse.status === 401) {
+        console.log('Authentication required for notifications. Please log in again.');
+      }
+      
+      return false;
+    }
+    
+    console.log('Successfully subscribed to push notifications');
     return true;
   } catch (error) {
     console.error('Error subscribing to push notifications:', error);

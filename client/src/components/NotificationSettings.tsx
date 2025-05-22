@@ -93,22 +93,33 @@ const NotificationSettings: React.FC = () => {
 
         // Register service worker and subscribe
         try {
-          const registration = await navigator.serviceWorker.register('/sw.js');
-          const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: await (await fetch('/api/notifications/vapid-public-key')).text()
-          });
-
-          // Send subscription to server
-          const response = await apiRequest('POST', '/api/notifications/subscribe', {
-            subscription: JSON.stringify(subscription)
-          });
-
-          if (response.ok) {
+          // Import and use the notification helpers from our lib
+          const { 
+            registerNotificationServiceWorker, 
+            subscribeToPushNotifications 
+          } = await import('@/lib/notifications');
+          
+          // First register the service worker
+          const registered = await registerNotificationServiceWorker();
+          if (!registered) {
+            throw new Error('Failed to register service worker');
+          }
+          
+          // Then subscribe to push notifications
+          const success = await subscribeToPushNotifications();
+          
+          if (success) {
             setSubscribed(true);
             toast({
               title: 'Notifications enabled',
               description: 'You will now receive notifications about new horses and messages.',
+            });
+          } else {
+            // If subscription failed due to auth issues
+            toast({
+              title: 'Authentication required',
+              description: 'Please log in again to enable notifications.',
+              variant: 'destructive',
             });
           }
         } catch (error) {
