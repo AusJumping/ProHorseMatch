@@ -416,7 +416,14 @@ export class MemStorage implements IStorage {
   
   async createHorse(horse: InsertHorse): Promise<Horse> {
     const id = this.horseId++;
-    const newHorse: Horse = { id, ...horse, created_at: new Date() };
+    
+    // Ensure owner_id is a number to avoid type issues
+    const horseData = {
+      ...horse,
+      owner_id: Number(horse.owner_id)
+    };
+    
+    const newHorse: Horse = { id, ...horseData, created_at: new Date() };
     
     // Update the local map
     this.horses.set(id, newHorse);

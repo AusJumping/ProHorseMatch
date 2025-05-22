@@ -1308,7 +1308,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertHorseSchema.parse(req.body);
       
       // Ensure owner_id matches the logged-in owner
-      if (validatedData.owner_id !== req.session.userId) {
+      // Convert both IDs to numbers for proper comparison
+      const requestOwnerId = Number(validatedData.owner_id);
+      const sessionUserId = Number(req.session.userId);
+      
+      console.log(`Horse creation - comparing owner IDs: request=${requestOwnerId} (${typeof requestOwnerId}), session=${sessionUserId} (${typeof sessionUserId})`);
+      
+      if (requestOwnerId !== sessionUserId) {
         return res.status(403).json({ message: "Cannot create horse for another owner" });
       }
       
