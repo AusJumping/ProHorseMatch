@@ -42,7 +42,7 @@ const horseFormSchema = z.object({
   price_max: z.number().min(1, "Maximum price must be at least 1"),
   currency: z.string().min(1, "Currency is required"),
   description: z.string().optional(),
-  photos: z.array(z.string()).optional(),
+  photos: z.array(z.string()).min(1, "At least one photo is required"),
   videos: z.array(z.string()).optional(),
 });
 
