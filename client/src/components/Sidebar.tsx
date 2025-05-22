@@ -170,7 +170,21 @@ const Sidebar = () => {
                   <span>Add Horse</span>
                 </Button>
               </li>
-
+              <li>
+                <Button
+                  variant={location === "/admin" ? "default" : "ghost"}
+                  className={`w-full justify-start px-5 py-3 ${
+                    location === "/admin" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/admin");
+                  }}
+                >
+                  <ShieldAlert className="mr-3 h-5 w-5" />
+                  <span>Admin Panel</span>
+                </Button>
+              </li>
             </>
           )}
         </ul>

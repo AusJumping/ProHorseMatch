@@ -138,7 +138,18 @@ const MobileNavbar = () => {
           </Button>
         </SheetClose>
         
-
+        {user?.id === 1 && (
+          <SheetClose asChild>
+            <Button 
+              variant="ghost" 
+              className={`justify-start h-12 ${location === "/admin" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+              onClick={() => navigate("/admin")}
+            >
+              <ShieldAlert className="mr-3 h-5 w-5" />
+              <span>Admin Panel</span>
+            </Button>
+          </SheetClose>
+        )}
       </div>
       
       {isAuthenticated && (

@@ -94,14 +94,23 @@ export default function Auth() {
     try {
       console.log("Submitting login form with data:", data);
       
-      // Use the login function from Auth context
-      const userData = await login(data.email, data.password);
+      // Perform direct fetch to get complete user data
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+      
+      const userData = await response.json();
       console.log("Login successful, complete user data:", userData);
       
-      // Store user in localStorage for persistence on mobile
-      if (userData) {
-        localStorage.setItem('user', JSON.stringify(userData));
-      }
+      // No need to call login again, we're already logged in
       
       // Direct check for subscription status
       if (userData && userData.subscription_status === 'active') {
