@@ -874,8 +874,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createHorse(horse: InsertHorse): Promise<Horse> {
-    const [newHorse] = await db.insert(horses).values(horse).returning();
-    return newHorse;
+    try {
+      console.log("DatabaseStorage.createHorse - Creating horse with data:", JSON.stringify(horse, null, 2));
+      
+      // Ensure all required fields are present for creating a horse
+      if (!horse.name || !horse.location_country || !horse.disciplines || 
+          !horse.levels || !horse.breeds || !horse.sex || 
+          horse.price_min === undefined || horse.price_max === undefined || 
+          !horse.currency || !horse.owner_id || !horse.photos) {
+        throw new Error("Missing required horse fields");
+      }
+      
+      const [newHorse] = await db.insert(horses).values(horse).returning();
+      console.log("DatabaseStorage.createHorse - Created horse:", JSON.stringify(newHorse, null, 2));
+      return newHorse;
+    } catch (error) {
+      console.error("DatabaseStorage.createHorse - Error creating horse:", error);
+      throw error;
+    }
   }
 
   async updateHorse(id: number, update: Partial<Horse>): Promise<Horse | undefined> {
