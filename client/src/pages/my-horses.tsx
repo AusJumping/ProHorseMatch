@@ -110,9 +110,43 @@ export default function MyHorses() {
             <p className="text-neutral-600 mb-6 max-w-md mx-auto">
               You haven't listed any horses for sale. Add your first horse to start connecting with potential buyers.
             </p>
-            <Button onClick={handleAddHorse}>
-              Add Your First Horse
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <Button onClick={handleAddHorse}>
+                Add Your First Horse
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={async () => {
+                  try {
+                    toast({
+                      title: "Adding sample horses",
+                      description: "Please wait while we add sample horses to your account...",
+                    });
+                    
+                    await apiRequest("POST", "/api/horses/add-samples", {});
+                    
+                    toast({
+                      title: "Success",
+                      description: "Sample horses added to your account!",
+                    });
+                    
+                    // Refresh horse data
+                    await queryClient.invalidateQueries({ queryKey: ["/api/horses"] });
+                    await queryClient.invalidateQueries({ queryKey: ["/api/my-horses"] });
+                    await queryClient.invalidateQueries({ queryKey: ["/api/horses/owner"] });
+                    await refetch();
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to add sample horses. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                Add Sample Horses
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
