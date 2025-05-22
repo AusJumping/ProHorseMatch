@@ -2480,63 +2480,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Horse migration endpoint for admin use
-  app.post('/api/admin/migrate-horses', async (req, res) => {
-    try {
-      // Import and run the migration script
-      const { spawn } = require('child_process');
-      
-      console.log('Starting horse migration process...');
-      
-      const migrationProcess = spawn('node', ['scripts/migrate-horses-to-db.js']);
-      
-      let output = '';
-      let errorOutput = '';
-      
-      migrationProcess.stdout.on('data', (data) => {
-        const message = data.toString();
-        console.log(`Migration stdout: ${message}`);
-        output += message;
-      });
-      
-      migrationProcess.stderr.on('data', (data) => {
-        const message = data.toString();
-        console.error(`Migration stderr: ${message}`);
-        errorOutput += message;
-      });
-      
-      migrationProcess.on('close', (code) => {
-        console.log(`Migration process exited with code ${code}`);
-        
-        if (code === 0) {
-          // Extract the count of migrated horses from the output
-          const countMatch = output.match(/Successfully migrated (\d+) horses/);
-          const count = countMatch ? parseInt(countMatch[1]) : 5;
-          
-          res.json({
-            success: true,
-            message: "Horse migration completed successfully",
-            count,
-            details: output
-          });
-        } else {
-          res.status(500).json({
-            success: false,
-            message: "Horse migration failed",
-            error: errorOutput || "Unknown error occurred"
-          });
-        }
-      });
-    } catch (error) {
-      console.error('Error in migration endpoint:', error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to start migration process",
-        error: error.message
-      });
-    }
-  });
-  
   // Create a special public endpoint for notification preferences
   app.get('/api/notifications/preferences-public', (req, res) => {
     try {
