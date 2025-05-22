@@ -30,13 +30,43 @@ const NotificationSettings: React.FC = () => {
     const fetchPreferences = async () => {
       try {
         setIsLoading(true);
-        const response = await apiRequest('GET', '/api/notifications/preferences');
-        const data = await response.json();
         
-        if (response.ok) {
-          setPreferences(data.preferences);
-          setSubscribed(data.subscribed);
+        // First check if we're authenticated
+        console.log("Checking auth status before fetching notification preferences");
+        const authCheckResponse = await apiRequest('GET', '/api/auth/me');
+        
+        if (!authCheckResponse.ok) {
+          console.log("Auth check failed before notification preferences");
+          toast({
+            title: 'Authentication required',
+            description: 'Please log in to manage notification settings.',
+            variant: 'destructive',
+          });
+          return;
         }
+        
+        console.log("Auth check passed, now fetching notification preferences");
+        const response = await apiRequest('GET', '/api/notifications/preferences');
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Failed to fetch notification preferences:', errorData);
+          toast({
+            title: 'Error fetching preferences',
+            description: errorData.message || 'Failed to load your notification preferences.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        
+        const data = await response.json();
+        console.log("Notification preferences loaded:", data);
+        setPreferences({
+          horses: data.notify_for_matches || false,
+          messages: data.notify_for_messages || false,
+          marketing: false
+        });
+        setSubscribed(data.is_subscribed || false);
       } catch (error) {
         console.error('Failed to fetch notification preferences:', error);
         toast({

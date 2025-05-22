@@ -165,11 +165,38 @@ export const updatePreferences = async (req: Request, res: Response) => {
 // Get user's notification preferences
 export const getPreferences = async (req: Request, res: Response) => {
   try {
+    console.log("Getting notification preferences - Session:", {
+      sessionId: req.sessionID,
+      userId: req.session.userId,
+      sessionContent: req.session
+    });
+    
+    // Default preferences for users without subscriptions
+    const defaultPreferences = {
+      notify_for_matches: true,
+      notify_for_messages: true,
+      marketing: false,
+      is_subscribed: false,
+      preferences: {
+        horses: true,
+        messages: true,
+        marketing: false
+      },
+      subscribed: false
+    };
+    
     if (!req.session.userId) {
-      return res.status(401).json({ message: 'Not authenticated' });
+      console.log("Notification preferences access failed - Not authenticated");
+      
+      // To avoid breaking the UI, we'll return default preferences with an unauthorized status
+      return res.status(401).json({ 
+        message: 'Not authenticated',
+        ...defaultPreferences
+      });
     }
     
     const userId = req.session.userId;
+    console.log("Fetching notification preferences for user:", userId);
     
     // Get user's subscription preferences
     const [subscription] = await db
@@ -179,20 +206,33 @@ export const getPreferences = async (req: Request, res: Response) => {
     
     if (!subscription) {
       return res.status(200).json({
-        notify_for_matches: true,
-        notify_for_messages: true,
-        is_subscribed: false
+        ...defaultPreferences
       });
     }
     
     res.status(200).json({
-      notify_for_matches: subscription.notify_for_matches,
-      notify_for_messages: subscription.notify_for_messages,
-      is_subscribed: true
+      notify_for_matches: subscription.notify_for_matches || true,
+      notify_for_messages: subscription.notify_for_messages || true,
+      marketing: false,
+      is_subscribed: true,
+      preferences: {
+        horses: subscription.notify_for_matches || true,
+        messages: subscription.notify_for_messages || true,
+        marketing: false
+      },
+      subscribed: true
     });
   } catch (error) {
     console.error('Error getting notification preferences:', error);
-    res.status(500).json({ message: 'Failed to get preferences' });
+    res.status(500).json({ 
+      message: 'Failed to get preferences',
+      preferences: {
+        horses: true,
+        messages: true,
+        marketing: false
+      },
+      subscribed: false
+    });
   }
 };
 
