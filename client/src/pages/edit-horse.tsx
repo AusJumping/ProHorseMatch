@@ -107,30 +107,32 @@ export default function EditHorse() {
   // Update form values when horse data is loaded
   useEffect(() => {
     if (horse) {
+      console.log("Loading horse data into form:", horse);
       form.reset({
         id: horse.id,
-        name: horse.name,
+        name: horse.name || "",
         owner_id: horse.owner_id,
-        location_country: horse.location_country,
-        location_radius_km: horse.location_radius_km || 0,
-        disciplines: horse.disciplines,
-        levels: horse.levels,
-        breeds: horse.breeds,
-        age: horse.age,
-        height_hands: horse.height_hands || 0,
-        height_cm: horse.height_cm || 0,
-        sex: horse.sex,
+        location_country: horse.location_country || "",
+        location_radius_km: Number(horse.location_radius_km) || 0,
+        disciplines: Array.isArray(horse.disciplines) ? horse.disciplines : [],
+        levels: Array.isArray(horse.levels) ? horse.levels : [],
+        breeds: Array.isArray(horse.breeds) ? horse.breeds : [],
+        age: Number(horse.age) || 0,
+        height_hands: Number(horse.height_hands) || 0,
+        height_cm: Number(horse.height_cm) || 0,
+        sex: horse.sex || "",
         sire: horse.sire || "",
         dam: horse.dam || "",
         dam_sire: horse.dam_sire || "",
-        characteristics: horse.characteristics || [],
-        price_min: horse.price_min,
-        price_max: horse.price_max,
-        currency: horse.currency,
+        characteristics: Array.isArray(horse.characteristics) ? horse.characteristics : [],
+        price_min: Number(horse.price_min) || 0,
+        price_max: Number(horse.price_max) || 0,
+        currency: horse.currency || "AUD",
         description: horse.description || "",
-        photos: horse.photos || [],
-        videos: horse.videos || [],
+        photos: Array.isArray(horse.photos) ? horse.photos : [],
+        videos: Array.isArray(horse.videos) ? horse.videos : [],
       });
+      console.log("Form values after reset:", form.getValues());
     }
   }, [horse, form]);
 
