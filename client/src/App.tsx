@@ -53,6 +53,7 @@ function Router() {
       <Route path="/donation-success" component={DonationSuccess} />
       <Route path="/welcome" component={WelcomePage} />
       <Route path="/filter" component={FilterPage} />
+      <Route path="/notification-settings" component={NotificationSettings} />
       <Route component={NotFound} />
     </Switch>
   );

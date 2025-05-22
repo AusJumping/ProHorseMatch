@@ -1,18 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '../hooks/useAuth';
-import { 
-  isPushNotificationSupported, 
-  requestNotificationPermission, 
-  isSubscribedToPushNotifications,
-  subscribeToPushNotifications,
-  unsubscribeFromPushNotifications,
-  registerNotificationServiceWorker
-} from '../lib/notifications';
+import { useToast } from '@/hooks/use-toast';
+// Use simpler approach without icons from lucide-react
 
 interface NotificationPreferences {
   horses: boolean;
@@ -21,260 +15,242 @@ interface NotificationPreferences {
 }
 
 const NotificationSettings: React.FC = () => {
+  const { user } = useAuth();
   const { toast } = useToast();
-  const { user, isAuthenticated } = useAuth();
-  const [isSupported, setIsSupported] = useState<boolean>(false);
-  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
-  const [isEnabling, setIsEnabling] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [subscribed, setSubscribed] = useState(false);
   const [preferences, setPreferences] = useState<NotificationPreferences>({
     horses: true,
     messages: true,
-    marketing: false
+    marketing: false,
   });
 
-  // Check if push notifications are supported
+  // Fetch notification preferences
   useEffect(() => {
-    setIsSupported(isPushNotificationSupported());
-    checkSubscriptionStatus();
-    fetchPreferences();
-  }, [isAuthenticated]);
-
-  const checkSubscriptionStatus = async () => {
-    if (isAuthenticated) {
+    const fetchPreferences = async () => {
       try {
-        const subscribed = await isSubscribedToPushNotifications();
-        setIsSubscribed(subscribed);
-      } catch (error) {
-        console.error("Error checking notification subscription:", error);
-      }
-    }
-  };
-
-  const fetchPreferences = async () => {
-    if (!isAuthenticated) return;
-    
-    try {
-      const response = await apiRequest("GET", "/api/notifications/preferences");
-      if (response.ok) {
+        setIsLoading(true);
+        const response = await apiRequest('GET', '/api/notifications/preferences');
         const data = await response.json();
-        setPreferences({
-          horses: data.horses !== false,
-          messages: data.messages !== false,
-          marketing: data.marketing === true
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching notification preferences:", error);
-    }
-  };
-
-  const handleToggleNotifications = async () => {
-    if (!isSupported) {
-      toast({
-        title: "Not Supported",
-        description: "Push notifications are not supported on your device or browser.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsEnabling(true);
-
-    try {
-      if (!isSubscribed) {
-        // Request permission and register service worker
-        const permissionGranted = await requestNotificationPermission();
         
-        if (!permissionGranted) {
-          toast({
-            title: "Permission Denied",
-            description: "Please allow notifications in your browser settings to receive updates.",
-            variant: "destructive",
-          });
-          setIsEnabling(false);
-          return;
+        if (response.ok) {
+          setPreferences(data.preferences);
+          setSubscribed(data.subscribed);
         }
+      } catch (error) {
+        console.error('Failed to fetch notification preferences:', error);
+        toast({
+          title: 'Error fetching preferences',
+          description: 'Failed to load your notification preferences. Please try again later.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-        // Register service worker
-        await registerNotificationServiceWorker();
-        
-        // Subscribe to push notifications
-        const success = await subscribeToPushNotifications();
-        
-        if (success) {
-          setIsSubscribed(true);
+    if (user) {
+      fetchPreferences();
+    }
+  }, [user, toast]);
+
+  // Handle subscription
+  const handleSubscribe = async () => {
+    try {
+      setIsLoading(true);
+      
+      if (subscribed) {
+        // Unsubscribe
+        const response = await apiRequest('POST', '/api/notifications/unsubscribe');
+        if (response.ok) {
+          setSubscribed(false);
           toast({
-            title: "Notifications Enabled",
-            description: "You will now receive notifications about new horses and messages.",
-          });
-        } else {
-          toast({
-            title: "Subscription Failed",
-            description: "Failed to enable notifications. Please try again.",
-            variant: "destructive",
+            title: 'Notifications disabled',
+            description: 'You will no longer receive push notifications.',
           });
         }
       } else {
-        // Unsubscribe from push notifications
-        const success = await unsubscribeFromPushNotifications();
-        
-        if (success) {
-          setIsSubscribed(false);
+        // Check if the browser supports notifications
+        if (!('Notification' in window)) {
           toast({
-            title: "Notifications Disabled",
-            description: "You will no longer receive push notifications.",
+            title: 'Notifications not supported',
+            description: 'Your browser does not support push notifications.',
+            variant: 'destructive',
           });
-        } else {
+          return;
+        }
+
+        // Request permission
+        const permission = await Notification.requestPermission();
+        if (permission !== 'granted') {
           toast({
-            title: "Unsubscription Failed",
-            description: "Failed to disable notifications. Please try again.",
-            variant: "destructive",
+            title: 'Permission denied',
+            description: 'You need to allow notifications from your browser settings.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Register service worker and subscribe
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: await (await fetch('/api/notifications/vapid-public-key')).text()
+          });
+
+          // Send subscription to server
+          const response = await apiRequest('POST', '/api/notifications/subscribe', {
+            subscription: JSON.stringify(subscription)
+          });
+
+          if (response.ok) {
+            setSubscribed(true);
+            toast({
+              title: 'Notifications enabled',
+              description: 'You will now receive notifications about new horses and messages.',
+            });
+          }
+        } catch (error) {
+          console.error('Failed to subscribe to notifications:', error);
+          toast({
+            title: 'Subscription failed',
+            description: 'Failed to enable notifications. Please try again later.',
+            variant: 'destructive',
           });
         }
       }
     } catch (error) {
-      console.error("Error toggling notifications:", error);
+      console.error('Error toggling subscription:', error);
       toast({
-        title: "Error",
-        description: "An error occurred while changing notification settings.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update notification settings. Please try again later.',
+        variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsEnabling(false);
   };
 
+  // Handle preference changes
   const handlePreferenceChange = async (key: keyof NotificationPreferences, value: boolean) => {
-    if (!isAuthenticated) return;
-    
     try {
+      setIsLoading(true);
       const newPreferences = { ...preferences, [key]: value };
-      setPreferences(newPreferences);
       
-      const response = await apiRequest("POST", "/api/notifications/preferences", newPreferences);
+      const response = await apiRequest('POST', '/api/notifications/preferences', {
+        preferences: newPreferences
+      });
       
-      if (!response.ok) {
-        // Revert the change if the request fails
-        setPreferences(preferences);
+      if (response.ok) {
+        setPreferences(newPreferences);
         toast({
-          title: "Update Failed",
-          description: "Failed to update notification preferences.",
-          variant: "destructive",
+          title: 'Preferences updated',
+          description: 'Your notification preferences have been updated.',
         });
       }
     } catch (error) {
-      console.error("Error updating preferences:", error);
-      // Revert the change if the request fails
-      setPreferences(preferences);
+      console.error('Failed to update preferences:', error);
       toast({
-        title: "Update Failed",
-        description: "Failed to update notification preferences.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update notification preferences. Please try again later.',
+        variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  if (!isSupported) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Push Notifications</CardTitle>
-          <CardDescription>
-            Push notifications are not supported in your browser.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
-            To receive notifications, please use a modern browser like Chrome, Firefox, or Edge.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Push Notifications</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Push Notifications
+          </CardTitle>
           <CardDescription>
-            Enable notifications to stay updated on new horses and messages.
+            Receive alerts directly to your device when new horses match your preferences or you get new messages.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between py-2">
+          <div className="flex justify-between items-center py-2">
             <div>
-              <div className="font-medium">Enable Push Notifications</div>
-              <div className="text-sm text-muted-foreground">
-                {isSubscribed ? 'You are currently receiving notifications' : 'You will receive notifications on this device'}
-              </div>
+              <p className="font-medium">Enable push notifications</p>
+              <p className="text-sm text-gray-500">
+                {subscribed 
+                  ? 'Push notifications are currently enabled' 
+                  : 'Enable notifications to stay updated on new horses and messages'}
+              </p>
             </div>
-            <Button 
-              variant={isSubscribed ? "outline" : "default"}
-              onClick={handleToggleNotifications}
-              disabled={isEnabling}
+            <Button
+              onClick={handleSubscribe}
+              disabled={isLoading}
+              variant={subscribed ? "outline" : "default"}
             >
-              {isEnabling ? "Processing..." : isSubscribed ? "Disable" : "Enable"}
+              {isLoading ? 'Processing...' : subscribed ? 'Disable' : 'Enable'}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      {isSubscribed && (
+      {subscribed && (
         <Card>
           <CardHeader>
             <CardTitle>Notification Preferences</CardTitle>
             <CardDescription>
-              Choose which notifications you want to receive.
+              Select which types of notifications you want to receive
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between py-2">
+            <div className="flex justify-between items-center py-2">
               <div>
-                <div className="font-medium">Horse Matches</div>
-                <div className="text-sm text-muted-foreground">
-                  Get notified when horses matching your search criteria are listed
-                </div>
+                <Label htmlFor="horses">New Horse Alerts</Label>
+                <p className="text-sm text-gray-500">Get notified when new horses match your preferences</p>
               </div>
-              <Switch 
-                checked={preferences.horses} 
+              <Switch
+                id="horses"
+                checked={preferences.horses}
                 onCheckedChange={(checked) => handlePreferenceChange('horses', checked)}
+                disabled={isLoading}
               />
             </div>
-            
-            <div className="flex items-center justify-between py-2">
+
+            <div className="flex justify-between items-center py-2">
               <div>
-                <div className="font-medium">Messages</div>
-                <div className="text-sm text-muted-foreground">
-                  Get notified when you receive new messages
-                </div>
+                <Label htmlFor="messages">Message Alerts</Label>
+                <p className="text-sm text-gray-500">Get notified when you receive new messages</p>
               </div>
-              <Switch 
-                checked={preferences.messages} 
+              <Switch
+                id="messages"
+                checked={preferences.messages}
                 onCheckedChange={(checked) => handlePreferenceChange('messages', checked)}
+                disabled={isLoading}
               />
             </div>
-            
-            <div className="flex items-center justify-between py-2">
+
+            <div className="flex justify-between items-center py-2">
               <div>
-                <div className="font-medium">Marketing & Updates</div>
-                <div className="text-sm text-muted-foreground">
-                  Get notified about platform updates and special offers
-                </div>
+                <Label htmlFor="marketing">Updates and Announcements</Label>
+                <p className="text-sm text-gray-500">Receive updates about new features and platform improvements</p>
               </div>
-              <Switch 
-                checked={preferences.marketing} 
+              <Switch
+                id="marketing"
+                checked={preferences.marketing}
                 onCheckedChange={(checked) => handlePreferenceChange('marketing', checked)}
+                disabled={isLoading}
               />
             </div>
           </CardContent>
-          <CardFooter className="border-t px-6 py-4">
-            <p className="text-xs text-muted-foreground">
-              You can change your notification preferences at any time. Your browser may also have additional notification settings.
-            </p>
-          </CardFooter>
         </Card>
       )}
+      
+      <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mt-6">
+        <h3 className="text-amber-800 font-medium mb-2">About Browser Notifications</h3>
+        <p className="text-amber-700 text-sm">
+          Push notifications are only delivered when your browser is open. For the best experience, consider keeping a browser tab 
+          open to ProHorseMatch or allowing background notifications in your browser settings.
+        </p>
+      </div>
     </div>
   );
 };

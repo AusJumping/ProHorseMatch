@@ -1,9 +1,8 @@
 import React from 'react';
-import PageTitle from '../components/ui/page-title';
 import Layout from '../components/Layout';
 import NotificationSettings from '../components/NotificationSettings';
-import { useAuth } from '../hooks/useAuth';
-import { Navigate } from 'wouter';
+import { useAuth } from '../lib/auth';
+import { useLocation } from 'wouter';
 
 const NotificationSettingsPage: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,18 +18,19 @@ const NotificationSettingsPage: React.FC = () => {
     );
   }
 
+  const [_, navigate] = useLocation();
+  
   // Redirect to login if not authenticated
-  if (!isAuthenticated) {
-    return <Navigate to="/auth" />;
+  if (!isAuthenticated && !isLoading) {
+    navigate("/auth");
+    return null;
   }
 
   return (
-    <Layout>
+    <Layout pageTitle="Notification Settings">
       <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <PageTitle 
-          title="Notification Settings" 
-          subtitle="Manage your notification preferences" 
-        />
+        <h2 className="text-2xl font-bold mb-2">Notification Settings</h2>
+        <p className="text-gray-600 mb-6">Manage your notification preferences</p>
         <NotificationSettings />
       </div>
     </Layout>
