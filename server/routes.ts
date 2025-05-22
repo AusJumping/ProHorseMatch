@@ -1775,17 +1775,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/subscription", isAuthenticated, async (req, res) => {
     try {
       const userId = req.session.userId;
+      console.log(`GET /api/subscription - userId: ${userId}`);
       
       if (!userId) {
+        console.log("GET /api/subscription - No userId in session");
         return res.status(401).json({ message: "User not authenticated" });
       }
       
       const user = await storage.getUserById(userId);
+      console.log(`GET /api/subscription - user found:`, user ? {
+        id: user.id,
+        email: user.email,
+        stripe_subscription_id: user.stripe_subscription_id,
+        subscription_status: user.subscription_status,
+        subscription_plan: user.subscription_plan,
+        subscription_end_date: user.subscription_end_date
+      } : 'null');
+      
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
       
       if (!user.stripe_subscription_id) {
+        console.log("GET /api/subscription - No subscription found for user");
         return res.json({ hasSubscription: false });
       }
       
