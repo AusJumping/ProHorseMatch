@@ -61,7 +61,7 @@ const EnableNotificationsPage: React.FC = () => {
           applicationServerKey
         });
         
-        // Store the subscription on the server using our public endpoint
+        // Store the subscription on the server using our completely unautheticated public endpoint
         const storeResponse = await fetch('/api/notifications/subscribe-public', {
           method: 'POST',
           headers: {

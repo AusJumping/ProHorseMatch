@@ -6,6 +6,8 @@ import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
 import * as NotificationService from "./notifications";
+import { db } from "./db";
+import { pushSubscriptions } from "../shared/schema";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -232,14 +234,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store the subscription in the database with a special tag
       const newSubscription = {
         endpoint: endpoint,
-        p256dh: keys.p256dh,
-        auth: keys.auth,
-        user_id: req.session?.userId || null, // Store user ID if available, but not required
+        p256dh_key: keys.p256dh,
+        auth_key: keys.auth,
+        user_id: req.session?.userId || 0, // Store user ID if available, or use 0 for anonymous
         notify_for_matches: true,
         notify_for_messages: true,
-        created_at: new Date(),
-        updated_at: new Date(),
-        subscription_origin: 'public-endpoint' // Tag for tracking
+        subscription_data: JSON.stringify({
+          endpoint,
+          keys,
+          origin: 'public-endpoint' // Tag for tracking
+        })
       };
       
       // Insert directly to avoid authentication requirements
