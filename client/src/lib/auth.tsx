@@ -42,25 +42,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch the current user with improved caching
+  // Fetch the current user with improved caching and better fallback for deployed environments
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
+        // First try to use stored credentials from localStorage if available
+        const storedUser = localStorage.getItem('user');
+        const storedAuth = localStorage.getItem('auth_credentials');
+        
+        // Try server authentication first
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
           cache: 'no-cache' // Ensure we don't get cached responses
         });
-        if (res.status === 401) return null;
-        const userData = await res.json();
-        console.log("Auth user data:", userData); // Debug log
         
-        // Store user data in localStorage for persistence
-        if (userData && userData.id) {
-          localStorage.setItem('user', JSON.stringify(userData));
+        if (res.status === 200) {
+          // Server auth succeeded
+          const userData = await res.json();
+          console.log("Auth user data from server:", userData);
+          
+          // Store user data in localStorage for persistence
+          if (userData && userData.id) {
+            localStorage.setItem('user', JSON.stringify(userData));
+          }
+          
+          return userData;
+        } else if (storedAuth) {
+          // Server auth failed but we have stored credentials - try to login again
+          console.log("Session expired, attempting auto-login with stored credentials");
+          try {
+            const credentials = JSON.parse(storedAuth);
+            const response = await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(credentials),
+              credentials: 'include',
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              console.log("Auto-login successful");
+              localStorage.setItem('user', JSON.stringify(userData));
+              return userData;
+            }
+          } catch (loginError) {
+            console.error("Auto-login failed:", loginError);
+          }
         }
         
-        return userData;
+        // If all server attempts failed, fall back to stored user data
+        if (storedUser) {
+          try {
+            console.log("Using locally stored user data as fallback");
+            return JSON.parse(storedUser);
+          } catch (e) {
+            console.error("Failed to parse stored user data:", e);
+            return null;
+          }
+        }
+        
+        return null;
       } catch (error) {
         console.error("Auth fetch error:", error);
         
@@ -68,6 +110,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           try {
+            console.log("Using locally stored user data due to fetch error");
             return JSON.parse(storedUser);
           } catch (e) {
             return null;
@@ -77,9 +120,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
     },
-    staleTime: 60 * 1000, // Cache auth data for 1 minute
+    staleTime: 30 * 1000, // Cache auth data for 30 seconds
     refetchOnWindowFocus: true,
-    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
+    refetchInterval: 60 * 1000, // Refetch every minute to keep session fresh
   });
   
   // Ensure user is either User object or null, never undefined
@@ -92,8 +135,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Attempting login for:", { email });
       
-      // First, store credentials temporarily to help with mobile authentication
-      sessionStorage.setItem('temp_auth', JSON.stringify({ email, password }));
+      // Store credentials in localStorage for persistent access (used for auto-login)
+      localStorage.setItem('auth_credentials', JSON.stringify({ email, password }));
       
       // Mobile-friendly approach: retry with exponential backoff
       let retries = 0;
@@ -120,10 +163,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             
             // Store user in localStorage for quick recovery if session issues occur
             localStorage.setItem('user', JSON.stringify(userData));
-            sessionStorage.removeItem('temp_auth'); // Clean up temp auth
             
             // Update query cache with user data
             queryClient.setQueryData(['/api/auth/me'], userData);
+            
+            // Clear and immediately refetch authentication to ensure it's properly set
+            setTimeout(() => {
+              refetch();
+            }, 500);
             
             // Return the user data so the calling function can check subscription status
             return userData;
