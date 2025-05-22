@@ -1298,39 +1298,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/horses", isAuthenticated, async (req, res) => {
     try {
-      console.log("POST /api/horses - creating new horse");
+      console.log("POST /api/horses - Creating new horse");
+      
+      // Check if the user is authenticated
+      if (!req.session.userId) {
+        console.error("Authentication failed - no user ID in session");
+        return res.status(401).json({ message: "Authentication required" });
+      }
       
       // Get the user with their roles
       const user = await storage.getUserById(req.session.userId);
-      console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
+      console.log("User found:", user ? "Yes" : "No", user ? `(ID: ${user.id}, is_selling: ${user.is_selling})` : "");
       
-      if (!user || !user.is_selling) {
-        console.log("User doesn't have seller permissions");
+      if (!user) {
+        console.error("User not found in database");
+        return res.status(403).json({ message: "User not found" });
+      }
+      
+      if (!user.is_selling) {
+        console.error("User doesn't have seller permissions");
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
       }
       
       console.log("Horse data received:", JSON.stringify(req.body, null, 2));
       
-      // Make sure owner_id matches the logged-in user
+      // Forcefully set the owner_id to the current authenticated user
       const horseData = {
         ...req.body,
-        owner_id: req.session.userId  // Always set owner_id to current user
+        owner_id: user.id // Explicitly use the user ID from the database
       };
       
       try {
-        // Validate data with better error handling
-        const validatedData = insertHorseSchema.parse(horseData);
-        console.log("Horse data validated successfully");
+        // Skip zod validation here as we'll handle validation in storage
+        // Create the horse with our more robust method
+        console.log("Attempting to create horse with owner ID:", user.id);
+        const horse = await storage.createHorse(horseData);
         
-        // Ensure price_min and price_max fields are present and are numbers
-        if (validatedData.price_min === undefined || validatedData.price_max === undefined) {
-          console.error("Missing price fields");
-          return res.status(400).json({ message: "Price range fields are required" });
-        }
-        
-        // Create the horse
-        console.log("Creating horse with data:", JSON.stringify(validatedData, null, 2));
-        const horse = await storage.createHorse(validatedData);
         console.log("Horse created successfully:", horse.id);
         
         // Force session save to maintain login state
@@ -1343,20 +1346,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
         
-        return res.status(201).json(horse);
-      } catch (validationError) {
-        console.error("Validation error:", validationError);
+        return res.status(201).json({
+          success: true,
+          message: "Horse created successfully",
+          horse
+        });
+      } catch (validationError: any) {
+        console.error("Horse creation failed:", validationError);
+        
+        // Send a more user-friendly error message
         return res.status(400).json({ 
-          message: "Invalid horse data", 
-          error: validationError.message || "Validation failed",
-          details: validationError.errors || []
+          success: false,
+          message: validationError.message || "Failed to create horse",
+          error: validationError.toString()
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Create horse error:", error);
       return res.status(500).json({ 
-        message: "Failed to create horse", 
-        error: error.message || "Server error"
+        success: false,
+        message: "Server error while creating horse", 
+        error: error.message || "Unknown server error"
       });
     }
   });

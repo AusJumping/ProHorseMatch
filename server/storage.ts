@@ -873,20 +873,53 @@ export class DatabaseStorage implements IStorage {
     return await query;
   }
 
-  async createHorse(horse: InsertHorse): Promise<Horse> {
+  async createHorse(horseData: any): Promise<Horse> {
     try {
-      console.log("DatabaseStorage.createHorse - Creating horse with data:", JSON.stringify(horse, null, 2));
+      console.log("DatabaseStorage.createHorse - Creating horse with original data:", JSON.stringify(horseData, null, 2));
       
-      // Ensure all required fields are present for creating a horse
-      if (!horse.name || !horse.location_country || !horse.disciplines || 
-          !horse.levels || !horse.breeds || !horse.sex || 
-          horse.price_min === undefined || horse.price_max === undefined || 
-          !horse.currency || !horse.owner_id || !horse.photos) {
-        throw new Error("Missing required horse fields");
-      }
+      // Normalize the data to ensure it matches our schema
+      const normalizedHorse: InsertHorse = {
+        name: horseData.name || "",
+        owner_id: typeof horseData.owner_id === 'number' ? horseData.owner_id : parseInt(horseData.owner_id) || 0,
+        location_country: horseData.location_country || "",
+        location_radius_km: horseData.location_radius_km || 0,
+        disciplines: Array.isArray(horseData.disciplines) ? horseData.disciplines : [],
+        levels: Array.isArray(horseData.levels) ? horseData.levels : [],
+        breeds: Array.isArray(horseData.breeds) ? horseData.breeds : [],
+        age: typeof horseData.age === 'number' ? horseData.age : parseInt(horseData.age) || 0,
+        height_hands: typeof horseData.height_hands === 'number' ? horseData.height_hands : parseFloat(horseData.height_hands) || 0,
+        height_cm: typeof horseData.height_cm === 'number' ? horseData.height_cm : parseInt(horseData.height_cm) || 0,
+        sex: horseData.sex || "",
+        sire: horseData.sire || "",
+        dam: horseData.dam || "",
+        dam_sire: horseData.dam_sire || "",
+        characteristics: Array.isArray(horseData.characteristics) ? horseData.characteristics : [],
+        price_min: typeof horseData.price_min === 'number' ? horseData.price_min : parseInt(horseData.price_min) || 0,
+        price_max: typeof horseData.price_max === 'number' ? horseData.price_max : parseInt(horseData.price_max) || 0,
+        currency: horseData.currency || "EUR",
+        description: horseData.description || "",
+        photos: Array.isArray(horseData.photos) ? horseData.photos : [],
+        videos: Array.isArray(horseData.videos) ? horseData.videos : [],
+      };
       
-      const [newHorse] = await db.insert(horses).values(horse).returning();
-      console.log("DatabaseStorage.createHorse - Created horse:", JSON.stringify(newHorse, null, 2));
+      console.log("DatabaseStorage.createHorse - Normalized horse data:", JSON.stringify(normalizedHorse, null, 2));
+      
+      // Validate required fields
+      if (!normalizedHorse.name) throw new Error("Horse name is required");
+      if (!normalizedHorse.owner_id) throw new Error("Owner ID is required");
+      if (!normalizedHorse.location_country) throw new Error("Location country is required");
+      if (normalizedHorse.disciplines.length === 0) throw new Error("At least one discipline is required");
+      if (normalizedHorse.levels.length === 0) throw new Error("At least one level is required");
+      if (normalizedHorse.breeds.length === 0) throw new Error("At least one breed is required");
+      if (!normalizedHorse.sex) throw new Error("Sex is required");
+      if (normalizedHorse.photos.length === 0) throw new Error("At least one photo is required");
+      if (normalizedHorse.price_min <= 0) throw new Error("Minimum price must be greater than 0");
+      if (normalizedHorse.price_max <= 0) throw new Error("Maximum price must be greater than 0");
+      if (normalizedHorse.price_max < normalizedHorse.price_min) throw new Error("Maximum price must be greater than or equal to minimum price");
+      
+      // Insert the validated and normalized horse
+      const [newHorse] = await db.insert(horses).values(normalizedHorse).returning();
+      console.log("DatabaseStorage.createHorse - Successfully created horse:", JSON.stringify(newHorse, null, 2));
       return newHorse;
     } catch (error) {
       console.error("DatabaseStorage.createHorse - Error creating horse:", error);
