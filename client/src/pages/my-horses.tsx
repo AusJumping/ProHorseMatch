@@ -118,17 +118,88 @@ export default function MyHorses() {
                 variant="outline" 
                 onClick={async () => {
                   try {
+                    if (!user?.id) {
+                      toast({
+                        title: "Error",
+                        description: "You need to be logged in to add sample horses.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
                     toast({
                       title: "Adding sample horses",
                       description: "Please wait while we add sample horses to your account...",
                     });
                     
-                    await apiRequest("POST", "/api/horses/add-samples", {});
-                    
-                    toast({
-                      title: "Success",
-                      description: "Sample horses added to your account!",
-                    });
+                    // Add sample horses directly using an alternative approach
+                    try {
+                      // First, make sure the user is a seller
+                      if (!user.is_selling) {
+                        await apiRequest("PATCH", `/api/users/${user.id}`, { is_selling: true });
+                      }
+                      
+                      // Create the sample horses directly
+                      const sampleHorses = [
+                        {
+                          name: "Pegasus",
+                          location_country: "Australia", 
+                          currency: "AUD",
+                          owner_id: user.id,
+                          disciplines: ["Jumping"],
+                          levels: ["1.10m"],
+                          breeds: ["Warmblood"],
+                          age: 8,
+                          sex: "Gelding",
+                          price_min: 30000,
+                          price_max: 35000,
+                          photos: ["https://images.unsplash.com/photo-1534307250431-ef2530a9d8c5"],
+                          height_hands: 16.2,
+                          height_cm: 168,
+                          sire: "Cornet Obolensky",
+                          dam: "Diamant's Girl",
+                          dam_sire: "Diamant de Semilly",
+                          characteristics: ["Brave", "Careful"],
+                          description: "Talented jumper with a great temperament"
+                        },
+                        {
+                          name: "Thunder",
+                          location_country: "Australia",
+                          currency: "AUD",
+                          owner_id: user.id,
+                          disciplines: ["Dressage"],
+                          levels: ["Elementary"],
+                          breeds: ["Hanoverian"],
+                          age: 6,
+                          sex: "Stallion",
+                          price_min: 40000,
+                          price_max: 45000,
+                          photos: ["https://images.unsplash.com/photo-1551884831-bbf3cdc6469e"],
+                          height_hands: 17,
+                          height_cm: 173,
+                          sire: "Totilas",
+                          dam: "Dancing Queen",
+                          dam_sire: "De Niro",
+                          characteristics: ["Expressive", "Powerful"],
+                          description: "Impressive young dressage prospect with three excellent gaits"
+                        }
+                      ];
+                      
+                      // Create each horse
+                      const promises = sampleHorses.map(horse => 
+                        apiRequest("POST", "/api/horses", horse)
+                      );
+                      
+                      await Promise.all(promises);
+                      
+                      toast({
+                        title: "Success",
+                        description: "Sample horses added to your account!",
+                      });
+                    } catch (e) {
+                      console.error("Error adding sample horses:", e);
+                      throw e;
+                    }
                     
                     // Refresh horse data
                     await queryClient.invalidateQueries({ queryKey: ["/api/horses"] });
@@ -136,6 +207,7 @@ export default function MyHorses() {
                     await queryClient.invalidateQueries({ queryKey: ["/api/horses/owner"] });
                     await refetch();
                   } catch (error) {
+                    console.error("Error detail:", error);
                     toast({
                       title: "Error",
                       description: "Failed to add sample horses. Please try again.",
