@@ -5,27 +5,11 @@
  * 
  * This script ensures the database schema is correctly set up during deployment.
  * Run this script before starting the application in production to avoid database-related issues.
- * 
- * This script will also call seed-test-data.js to ensure test accounts are available in the deployed environment.
  */
 
-// Create direct database connection instead of importing
-import { Pool } from 'pg';
+import { pool, db } from '../server/db.js';
+import * as schema from '../shared/schema.js';
 import { sql } from 'drizzle-orm';
-
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
-
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-import { sql } from 'drizzle-orm';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
-
-const execPromise = promisify(exec);
 
 async function initializeDatabase() {
   console.log('Starting database initialization...');
@@ -114,153 +98,7 @@ async function initializeDatabase() {
       console.error('Error checking/creating sessions table:', err.message);
     }
     
-    // Check for all required tables in the schema
-    console.log('Checking for all required database tables...');
-    const requiredTables = ['horses', 'matches', 'messages', 'conversations', 'push_subscriptions', 'notifications'];
-    
-    for (const tableName of requiredTables) {
-      try {
-        console.log(`Checking for ${tableName} table...`);
-        const tableCheck = await pool.query(`
-          SELECT 1 FROM information_schema.tables 
-          WHERE table_name = $1
-        `, [tableName]);
-        
-        if (tableCheck.rows.length === 0) {
-          console.log(`Table ${tableName} not found, creating it...`);
-          
-          // Create the table based on our schema definitions
-          if (tableName === 'horses') {
-            await pool.query(`
-              CREATE TABLE IF NOT EXISTS horses (
-                id SERIAL PRIMARY KEY,
-                owner_id INTEGER NOT NULL,
-                name TEXT NOT NULL,
-                location_country TEXT NOT NULL,
-                location_radius_km INTEGER,
-                disciplines TEXT[] NOT NULL,
-                levels TEXT[] NOT NULL,
-                breeds TEXT[] NOT NULL,
-                age INTEGER NOT NULL,
-                height_hands REAL,
-                height_cm INTEGER,
-                sex TEXT NOT NULL,
-                sire TEXT,
-                dam TEXT,
-                dam_sire TEXT,
-                characteristics TEXT[],
-                price_min INTEGER NOT NULL,
-                price_max INTEGER NOT NULL,
-                currency TEXT NOT NULL,
-                description TEXT,
-                photos TEXT[] NOT NULL,
-                videos TEXT[],
-                created_at TIMESTAMP DEFAULT NOW()
-              )
-            `);
-          } else if (tableName === 'matches') {
-            await pool.query(`
-              CREATE TABLE IF NOT EXISTS matches (
-                id SERIAL PRIMARY KEY,
-                customer_id INTEGER NOT NULL,
-                horse_id INTEGER NOT NULL,
-                is_liked BOOLEAN NOT NULL,
-                created_at TIMESTAMP DEFAULT NOW()
-              )
-            `);
-          } else if (tableName === 'messages') {
-            await pool.query(`
-              CREATE TABLE IF NOT EXISTS messages (
-                id SERIAL PRIMARY KEY,
-                customer_id INTEGER NOT NULL,
-                owner_id INTEGER NOT NULL,
-                horse_id INTEGER NOT NULL,
-                content TEXT NOT NULL,
-                sender_type TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT NOW(),
-                is_read BOOLEAN DEFAULT FALSE
-              )
-            `);
-          } else if (tableName === 'conversations') {
-            await pool.query(`
-              CREATE TABLE IF NOT EXISTS conversations (
-                id SERIAL PRIMARY KEY,
-                customer_id INTEGER NOT NULL,
-                owner_id INTEGER NOT NULL,
-                horse_id INTEGER NOT NULL,
-                last_message_id INTEGER,
-                last_message_time TIMESTAMP,
-                unread_count INTEGER DEFAULT 0
-              )
-            `);
-          } else if (tableName === 'push_subscriptions') {
-            await pool.query(`
-              CREATE TABLE IF NOT EXISTS push_subscriptions (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                endpoint TEXT NOT NULL,
-                auth_key TEXT NOT NULL,
-                p256dh_key TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT NOW(),
-                subscription_data JSONB NOT NULL,
-                notify_for_matches BOOLEAN DEFAULT TRUE,
-                notify_for_messages BOOLEAN DEFAULT TRUE
-              )
-            `);
-          } else if (tableName === 'notifications') {
-            await pool.query(`
-              CREATE TABLE IF NOT EXISTS notifications (
-                id SERIAL PRIMARY KEY,
-                user_id INTEGER NOT NULL,
-                type TEXT NOT NULL,
-                title TEXT NOT NULL,
-                message TEXT NOT NULL,
-                is_read BOOLEAN DEFAULT FALSE,
-                created_at TIMESTAMP DEFAULT NOW(),
-                data JSONB,
-                action_url TEXT
-              )
-            `);
-          }
-          
-          console.log(`Table ${tableName} created successfully`);
-        } else {
-          console.log(`Table ${tableName} exists`);
-        }
-      } catch (err) {
-        console.error(`Error checking/creating ${tableName} table:`, err.message);
-      }
-    }
-    
     console.log('Database initialization completed successfully!');
-    
-    // Run the seed test data script to ensure test accounts are present
-    try {
-      console.log('Running seed test data script...');
-      const scriptPath = path.resolve('./scripts/seed-test-data.cjs');
-      
-      // Make sure DATABASE_URL is available to the seed script
-      const env = { ...process.env };  
-      
-      const { stdout, stderr } = await execPromise(`node ${scriptPath}`, { 
-        env: env,
-        maxBuffer: 10 * 1024 * 1024 // Increase buffer size to 10MB
-      });
-      
-      if (stdout) {
-        console.log('Seed script output:', stdout);
-      }
-      
-      if (stderr) {
-        console.error('Seed script error output:', stderr);
-      }
-      
-      console.log('Seed test data completed!');
-    } catch (seedError) {
-      console.error('Failed to run seed test data script:', seedError);
-      console.error('Error details:', seedError.message);
-      // We don't exit here as the main initialization was successful
-    }
   } catch (error) {
     console.error('Database initialization failed:', error);
     process.exit(1);

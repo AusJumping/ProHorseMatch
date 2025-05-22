@@ -1,13 +1,11 @@
-import type { Express, Response, Request, NextFunction } from "express";
+import type { Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
+import session from "express-session";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
-import * as NotificationService from "./notifications";
-import { db } from "./db";
-import { pushSubscriptions } from "../shared/schema";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -149,125 +147,7 @@ const upload = multer({
   }
 });
 
-// Authentication middleware used throughout the API
-function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  console.log("isAuthenticated middleware - Session:", {
-    sessionId: req.sessionID,
-    userId: req.session.userId,
-    cookie: req.session.cookie,
-    path: req.path
-  });
-  
-  if (req.session && req.session.userId) {
-    console.log(`User authenticated in middleware: ${req.session.userId} for path: ${req.path}`);
-    return next();
-  }
-  
-  // For notification endpoints, provide default preferences even on auth failure
-  if (req.path.startsWith('/api/notifications/')) {
-    console.log(`Auth failed for notification endpoint: ${req.path}`);
-    if (req.path === '/api/notifications/preferences' && req.method === 'GET') {
-      return res.status(401).json({ 
-        message: "Not authenticated",
-        preferences: {
-          horses: true,
-          messages: true,
-          marketing: false
-        },
-        subscribed: false,
-        notify_for_matches: true,
-        notify_for_messages: true,
-        is_subscribed: false
-      });
-    }
-  }
-  
-  console.log(`Authentication failed for path: ${req.path}`);
-  return res.status(401).json({ message: "Not authenticated" });
-}
-
 export async function registerRoutes(app: Express): Promise<Server> {
-
-  // Set up notification routes without requiring authentication for key endpoints
-  app.get('/api/notifications/vapid-public-key', NotificationService.getVapidPublicKey);
-  
-  // Create a separate endpoint for direct notification preferences access
-  app.get('/api/notifications/public-preferences', (req, res) => {
-    // Return default notification preferences for any user
-    res.status(200).json({
-      notify_for_matches: true,
-      notify_for_messages: true, 
-      is_subscribed: false,
-      preferences: {
-        horses: true,
-        messages: true,
-        marketing: false
-      },
-      subscribed: false
-    });
-  });
-  
-  // Create a completely public endpoint specifically for the new direct subscription approach
-  app.post('/api/notifications/subscribe-public', async (req, res) => {
-    try {
-      console.log('Public subscription endpoint accessed');
-      const { subscription, preferences } = req.body;
-      
-      if (!subscription) {
-        return res.status(400).json({ message: 'Subscription data is required' });
-      }
-      
-      // Parse the subscription if it's a string
-      const parsedSubscription = typeof subscription === 'string' 
-        ? JSON.parse(subscription) 
-        : subscription;
-      
-      // Extract subscription details directly
-      const { endpoint, keys } = parsedSubscription;
-      
-      if (!endpoint || !keys) {
-        return res.status(400).json({ message: 'Invalid subscription format' });
-      }
-      
-      console.log('Valid subscription received from public endpoint');
-      
-      // Store the subscription in the database with a special tag
-      const newSubscription = {
-        endpoint: endpoint,
-        p256dh_key: keys.p256dh,
-        auth_key: keys.auth,
-        user_id: req.session?.userId || 0, // Store user ID if available, or use 0 for anonymous
-        notify_for_matches: true,
-        notify_for_messages: true,
-        subscription_data: JSON.stringify({
-          endpoint,
-          keys,
-          origin: 'public-endpoint' // Tag for tracking
-        })
-      };
-      
-      // Insert directly to avoid authentication requirements
-      await db.insert(pushSubscriptions).values(newSubscription);
-      
-      console.log('Subscription successfully stored via public endpoint');
-      return res.status(200).json({ success: true, message: 'Subscription successful' });
-    } catch (error) {
-      console.error('Error in public subscription endpoint:', error);
-      return res.status(500).json({ message: 'Subscription failed', error: error.message });
-    }
-  });
-  
-  // Notification endpoints - critical ones without auth requirement for better reliability
-  app.post('/api/notifications/subscribe', NotificationService.subscribe); // No auth required for better mobile support
-  app.post('/api/notifications/subscribe-direct', NotificationService.subscribe); // Alternative endpoint
-  app.post('/api/notifications/unsubscribe', NotificationService.unsubscribe); // No auth for better reliability
-  
-  // Protected notification endpoints
-  app.post('/api/notifications/preferences', isAuthenticated, NotificationService.updatePreferences);
-  app.get('/api/notifications/preferences', isAuthenticated, NotificationService.getPreferences);
-  app.get('/api/notifications/unread', isAuthenticated, NotificationService.getUnreadNotifications);
-  app.post('/api/notifications/:notificationId/read', isAuthenticated, NotificationService.markAsRead);
-  app.post('/api/notifications/read-all', isAuthenticated, NotificationService.markAllAsRead);
   // Initialize Stripe
   if (!process.env.STRIPE_SECRET_KEY) {
     console.warn('Missing STRIPE_SECRET_KEY - Payment features will not work');
@@ -300,36 +180,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       rolling: true
     })
   );
-
-  // Add a get current user endpoint
-  app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Session:", {
-      sessionId: req.sessionID,
-      userId: req.session.userId,
-      sessionContent: req.session
-    });
-    
-    if (!req.session.userId) {
-      console.log("Auth check failed - Not authenticated");
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-    
-    try {
-      const user = await storage.getUserById(req.session.userId);
-      if (!user) {
-        console.log("Auth check failed - User not found");
-        return res.status(401).json({ message: "User not found" });
-      }
-      
-      // Don't send the password in the response
-      const { password, ...userWithoutPassword } = user;
-      console.log("Auth check success - User authenticated:", userWithoutPassword.id);
-      return res.status(200).json(userWithoutPassword);
-    } catch (error) {
-      console.error("Auth check error:", error);
-      return res.status(500).json({ message: "Error fetching user" });
-    }
-  });
 
   // Auth routes
   app.post("/api/auth/register/customer", async (req, res) => {
@@ -428,15 +278,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       req.session.userId = user.id;
-      
-      // Save session explicitly to ensure it's persisted
-      req.session.save(err => {
-        if (err) {
-          console.error("Error saving session:", err);
-        } else {
-          console.log("Session saved successfully. Session ID:", req.sessionID);
-        }
-      });
       
       // Save session explicitly
       await new Promise<void>((resolve) => {
@@ -539,7 +380,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Use the global isAuthenticated middleware
+  // Middleware to check if a user is authenticated
+  const isAuthenticated = (req: any, res: Response, next: any) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  };
   
   // Admin routes
   app.delete("/api/admin/delete-all-horses", isAuthenticated, async (req, res) => {
@@ -1001,127 +848,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Special direct access route for creating horses when authentication is challenging
-  app.post("/api/direct/create-horse", async (req, res) => {
-    try {
-      console.log("Direct horse creation request received");
-      console.log("Request body:", JSON.stringify(req.body, null, 2));
-      
-      // Force the owner_id to a known valid seller (3 = owner@example.com)
-      const horseData = { 
-        ...req.body,
-        owner_id: 3  // Force owner_id to be 3 (test owner account)
-      };
-      
-      console.log("Creating horse with owner ID 3 (test owner account)");
-      
-      try {
-        // Create the horse directly using the storage layer
-        const createdHorse = await storage.createHorse(horseData);
-        console.log("Horse created successfully with direct access:", createdHorse.id);
-        
-        return res.status(201).json({
-          success: true,
-          message: "Horse created successfully",
-          horse: createdHorse
-        });
-      } catch (createError) {
-        console.error("Horse creation error:", createError);
-        return res.status(400).json({
-          success: false,
-          message: "Failed to create horse",
-          error: createError.toString()
-        });
-      }
-    } catch (error) {
-      console.error("Create horse error:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Server error while creating horse", 
-        error: error.toString()
-      });
-    }
-  });
-  
   // Test route to create a sample horse without authentication (for testing persistence only)
   app.post("/api/test/create-sample-horse", async (req, res) => {
     try {
       console.log("Test create sample horse request received");
-      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      console.log("Request body:", req.body);
       
-      // Create a complete, valid horse sample
-      const completeHorseData = { 
-        name: req.body.name || "Test Horse",
-        owner_id: 3,  // Force owner_id to be 3 (test owner account)
-        location_country: req.body.location_country || "Australia",
-        disciplines: Array.isArray(req.body.disciplines) && req.body.disciplines.length > 0 
-          ? req.body.disciplines 
-          : ["Jumping"],
-        levels: Array.isArray(req.body.levels) && req.body.levels.length > 0
-          ? req.body.levels
-          : ["Young Rider"],
-        breeds: Array.isArray(req.body.breeds) && req.body.breeds.length > 0
-          ? req.body.breeds
-          : ["Warmblood"],
-        age: req.body.age || 8,
-        height_hands: req.body.height_hands || 16.2,
-        height_cm: req.body.height_cm || 168,
-        sex: req.body.sex || "Gelding",
-        sire: req.body.sire || "Test Sire",
-        dam: req.body.dam || "Test Dam",
-        dam_sire: req.body.dam_sire || "Test Dam Sire",
-        characteristics: Array.isArray(req.body.characteristics) && req.body.characteristics.length > 0
-          ? req.body.characteristics
-          : ["Brave", "Careful"],
-        price_min: req.body.price_min || 25000,
-        price_max: req.body.price_max || 30000,
-        currency: req.body.currency || "AUD",
-        description: req.body.description || "Test horse description",
-        photos: Array.isArray(req.body.photos) && req.body.photos.length > 0
-          ? req.body.photos
-          : ["https://www.australianjumping.com.au/wp-content/uploads/2025/05/images.jpeg"],
-        videos: Array.isArray(req.body.videos) ? req.body.videos : []
+      // Always ensure owner_id is set to 3 (the test owner account)
+      const horseData = { 
+        ...req.body,
+        owner_id: 3  // Force owner_id to be 3
       };
       
-      console.log("Creating horse with complete data:", JSON.stringify(completeHorseData, null, 2));
+      console.log("Creating horse with data:", horseData);
       
-      // Create the horse with more robust error handling
-      try {
-        const createdHorse = await storage.createHorse(completeHorseData);
-        console.log("Created sample horse successfully:", JSON.stringify(createdHorse, null, 2));
-        
-        // If there is an active session, make sure to preserve it
-        if (req.session && req.session.userId) {
-          req.session.touch();
-          req.session.save((err) => {
-            if (err) {
-              console.error("Error saving session after test horse creation:", err);
-            } else {
-              console.log("Session successfully saved after test horse creation");
-            }
-          });
-        }
-        
-        return res.status(201).json({
-          success: true,
-          message: "Successfully created horse",
-          horse: createdHorse
-        });
-      } catch (createError) {
-        console.error("Horse creation error:", createError);
-        return res.status(400).json({
-          success: false,
-          message: "Failed to create horse - validation error",
-          error: createError.toString(),
-          details: createError.message,
-          data: completeHorseData
+      // Create the horse
+      const createdHorse = await storage.createHorse(horseData);
+      console.log("Created sample horse:", createdHorse);
+      
+      // If there is an active session, make sure to preserve it
+      if (req.session && req.session.userId) {
+        req.session.touch();
+        req.session.save((err) => {
+          if (err) {
+            console.error("Error saving session after test horse creation:", err);
+          } else {
+            console.log("Session successfully saved after test horse creation");
+          }
         });
       }
+      
+      return res.status(201).json({
+        message: "Successfully created horse",
+        horse: createdHorse
+      });
     } catch (error) {
-      console.error("Create sample horse error:", error);
+      console.error("Create horse error:", error);
       return res.status(500).json({
-        success: false,
-        message: "Failed to create horse - server error",
+        message: "Failed to create horse",
         error: error.toString()
       });
     }
@@ -1381,76 +1145,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/horses", isAuthenticated, async (req, res) => {
     try {
-      console.log("POST /api/horses - Creating new horse");
-      
-      // Check if the user is authenticated
-      if (!req.session.userId) {
-        console.error("Authentication failed - no user ID in session");
-        return res.status(401).json({ message: "Authentication required" });
-      }
-      
       // Get the user with their roles
       const user = await storage.getUserById(req.session.userId);
-      console.log("User found:", user ? "Yes" : "No", user ? `(ID: ${user.id}, is_selling: ${user.is_selling})` : "");
       
-      if (!user) {
-        console.error("User not found in database");
-        return res.status(403).json({ message: "User not found" });
-      }
-      
-      if (!user.is_selling) {
-        console.error("User doesn't have seller permissions");
+      if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
       }
       
-      console.log("Horse data received:", JSON.stringify(req.body, null, 2));
+      const validatedData = insertHorseSchema.parse(req.body);
       
-      // Forcefully set the owner_id to the current authenticated user
-      const horseData = {
-        ...req.body,
-        owner_id: user.id // Explicitly use the user ID from the database
-      };
-      
-      try {
-        // Skip zod validation here as we'll handle validation in storage
-        // Create the horse with our more robust method
-        console.log("Attempting to create horse with owner ID:", user.id);
-        const horse = await storage.createHorse(horseData);
-        
-        console.log("Horse created successfully:", horse.id);
-        
-        // Force session save to maintain login state
-        req.session.touch();
-        req.session.save((err) => {
-          if (err) {
-            console.error("Error saving session after horse creation:", err);
-          } else {
-            console.log("Session successfully saved after horse creation");
-          }
-        });
-        
-        return res.status(201).json({
-          success: true,
-          message: "Horse created successfully",
-          horse
-        });
-      } catch (validationError: any) {
-        console.error("Horse creation failed:", validationError);
-        
-        // Send a more user-friendly error message
-        return res.status(400).json({ 
-          success: false,
-          message: validationError.message || "Failed to create horse",
-          error: validationError.toString()
-        });
+      // Ensure owner_id matches the logged-in owner
+      if (validatedData.owner_id !== req.session.userId) {
+        return res.status(403).json({ message: "Cannot create horse for another owner" });
       }
-    } catch (error: any) {
-      console.error("Create horse error:", error);
-      return res.status(500).json({ 
-        success: false,
-        message: "Server error while creating horse", 
-        error: error.message || "Unknown server error"
+      
+      const horse = await storage.createHorse(validatedData);
+      
+      // Force session save to maintain login state
+      req.session.touch();
+      req.session.save((err) => {
+        if (err) {
+          console.error("Error saving session after horse creation:", err);
+        } else {
+          console.log("Session successfully saved after horse creation");
+        }
       });
+      
+      return res.status(201).json(horse);
+    } catch (error) {
+      console.error("Create horse error:", error);
+      return res.status(400).json({ message: error.message || "Invalid request" });
     }
   });
   
@@ -2603,41 +2327,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create a special public endpoint for notification preferences
-  app.get('/api/notifications/preferences-public', (req, res) => {
-    try {
-      // Default preferences that work for everyone
-      const defaultPreferences = {
-        notify_for_matches: true,
-        notify_for_messages: true,
-        marketing: false,
-        is_subscribed: false
-      };
-      
-      // Check if user is authenticated
-      const userId = req.session?.userId;
-      const isAuthenticated = !!userId;
-      
-      console.log(`Public preferences endpoint - Auth status: ${isAuthenticated ? 'Authenticated' : 'Not authenticated'}, User ID: ${userId || 'none'}`);
-      
-      // Return preferences with authentication status
-      res.json({
-        ...defaultPreferences,
-        isAuthenticated,
-        userId: userId || null
-      });
-    } catch (error) {
-      console.error('Error getting notification preferences:', error);
-      res.status(200).json({
-        notify_for_matches: true,
-        notify_for_messages: true,
-        marketing: false,
-        is_subscribed: false,
-        error: true
-      });
-    }
-  });
-  
   // Create HTTP server
   const httpServer = createServer(app);
 

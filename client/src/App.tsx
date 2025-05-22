@@ -25,8 +25,6 @@ import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import FilterPage from "@/pages/filter";
 import WelcomePage from "@/pages/welcome";
-import NotificationSettings from "@/pages/notification-settings";
-import EnableNotifications from "@/pages/enable-notifications";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
@@ -54,8 +52,6 @@ function Router() {
       <Route path="/donation-success" component={DonationSuccess} />
       <Route path="/welcome" component={WelcomePage} />
       <Route path="/filter" component={FilterPage} />
-      <Route path="/notification-settings" component={NotificationSettings} />
-      <Route path="/enable-notifications" component={EnableNotifications} />
       <Route component={NotFound} />
     </Switch>
   );

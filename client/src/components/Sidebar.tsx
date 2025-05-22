@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard, Bell } from "lucide-react";
+import { Home, Heart, MessageSquare, Clock, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
 import { useQuery } from "@tanstack/react-query";
@@ -202,21 +202,6 @@ const Sidebar = () => {
             >
               <CreditCard className="mr-3 h-5 w-5" />
               Subscription
-            </Button>
-          </li>
-          <li>
-            <Button 
-              variant={location === "/notification-settings" ? "default" : "outline"}
-              className={`w-full justify-start px-5 py-3 ${
-                location === "/notification-settings" ? "bg-primary-light bg-opacity-10 text-primary" : ""
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/notification-settings");
-              }}
-            >
-              <Bell className="mr-3 h-5 w-5" />
-              Notifications
             </Button>
           </li>
           {/* Account Settings link removed as requested */}

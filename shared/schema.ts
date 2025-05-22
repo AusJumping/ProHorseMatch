@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb, real, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -169,51 +169,6 @@ export const insertConversationSchema = createInsertSchema(conversations).omit({
 
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Conversation = typeof conversations.$inferSelect;
-
-// Push Notification Subscriptions
-export const pushSubscriptions = pgTable("push_subscriptions", {
-  id: serial("id").primaryKey(),
-  user_id: integer("user_id").notNull(),
-  endpoint: text("endpoint").notNull(),
-  auth_key: text("auth_key").notNull(),
-  p256dh_key: text("p256dh_key").notNull(),
-  created_at: timestamp("created_at").defaultNow(),
-  subscription_data: jsonb("subscription_data").notNull(),
-  
-  // Push notification preferences
-  notify_for_matches: boolean("notify_for_matches").default(true),
-  notify_for_messages: boolean("notify_for_messages").default(true),
-});
-
-export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({
-  id: true,
-  created_at: true,
-});
-
-export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
-export type PushSubscription = typeof pushSubscriptions.$inferSelect;
-
-// Notification Records
-export const notifications = pgTable("notifications", {
-  id: serial("id").primaryKey(),
-  user_id: integer("user_id").notNull(),
-  type: text("type").notNull(), // "new-match" or "new-message"
-  title: text("title").notNull(),
-  message: text("message").notNull(),
-  is_read: boolean("is_read").default(false),
-  created_at: timestamp("created_at").defaultNow(),
-  data: jsonb("data"), // Additional context data (horse_id, message_id, etc.)
-  action_url: text("action_url"),
-});
-
-export const insertNotificationSchema = createInsertSchema(notifications).omit({
-  id: true,
-  is_read: true,
-  created_at: true,
-});
-
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-export type Notification = typeof notifications.$inferSelect;
 
 // Constants for app
 export const disciplines = ["Jumping", "Dressage", "Eventing"];
