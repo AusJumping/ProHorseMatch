@@ -46,16 +46,32 @@ export const getVapidPublicKey = (req: Request, res: Response) => {
 // Subscribe to push notifications
 export const subscribe = async (req: Request, res: Response) => {
   try {
-    const { subscription } = req.body;
+    console.log("Notification subscription request received:", req.body);
+    const { subscription, userId } = req.body;
     
-    if (!req.session.userId) {
-      return res.status(401).json({ message: 'Not authenticated' });
+    // Check authentication either through session or provided userId
+    const authenticatedUserId = req.session?.userId || userId;
+    
+    if (!authenticatedUserId) {
+      console.log("Subscription failed - not authenticated");
+      return res.status(401).json({ message: 'Not authenticated, please log in again' });
     }
     
-    const userId = req.session.userId;
+    console.log(`Processing subscription for user ${authenticatedUserId}`);
+    
+    // Parse the subscription if it's a string
+    let parsedSubscription;
+    try {
+      parsedSubscription = typeof subscription === 'string' 
+        ? JSON.parse(subscription) 
+        : subscription;
+    } catch (parseError) {
+      console.error("Failed to parse subscription:", parseError);
+      return res.status(400).json({ message: 'Invalid subscription format' });
+    }
     
     // Extract subscription details
-    const { endpoint, keys } = subscription;
+    const { endpoint, keys } = parsedSubscription;
     
     // Check if subscription already exists
     const [existingSubscription] = await db
@@ -63,7 +79,7 @@ export const subscribe = async (req: Request, res: Response) => {
       .from(pushSubscriptions)
       .where(
         and(
-          eq(pushSubscriptions.user_id, userId),
+          eq(pushSubscriptions.user_id, authenticatedUserId),
           eq(pushSubscriptions.endpoint, endpoint)
         )
       );
@@ -72,15 +88,23 @@ export const subscribe = async (req: Request, res: Response) => {
       return res.status(200).json({ message: 'Already subscribed' });
     }
     
-    // Create new subscription
+    // Create new subscription with user preferences
+    const userPreferences = req.body.preferences || {
+      horses: true,
+      messages: true,
+      marketing: false
+    };
+    
+    console.log(`Creating new subscription for user ${authenticatedUserId} with preferences:`, userPreferences);
+    
     const newSubscription: InsertPushSubscription = {
-      user_id: userId,
+      user_id: authenticatedUserId,
       endpoint,
       auth_key: keys.auth,
       p256dh_key: keys.p256dh,
-      subscription_data: subscription,
-      notify_for_matches: true,
-      notify_for_messages: true
+      subscription_data: JSON.stringify(parsedSubscription),
+      notify_for_matches: userPreferences.horses ?? true,
+      notify_for_messages: userPreferences.messages ?? true
     };
     
     await db.insert(pushSubscriptions).values(newSubscription);

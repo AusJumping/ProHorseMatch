@@ -94,6 +94,22 @@ export async function subscribeToPushNotifications(): Promise<boolean> {
     
     // Send the push subscription to the server using direct fetch for more control
     console.log('Sending subscription to server...');
+    
+    // Get the authenticated user ID if we're logged in
+    let userId = null;
+    try {
+      const userResponse = await fetch('/api/auth/me', {
+        credentials: 'include'
+      });
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        userId = userData.id;
+        console.log('Retrieved authenticated userId:', userId);
+      }
+    } catch (authError) {
+      console.error('Error checking authentication:', authError);
+    }
+    
     const subscribeResponse = await fetch('/api/notifications/subscribe', {
       method: 'POST',
       headers: {
@@ -105,7 +121,8 @@ export async function subscribeToPushNotifications(): Promise<boolean> {
           horses: true,
           messages: true,
           marketing: false
-        }
+        },
+        userId: userId  // Include user ID from auth check
       }),
       credentials: 'include'  // Important for session cookies
     });
