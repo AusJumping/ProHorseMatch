@@ -1296,187 +1296,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Emergency bypass endpoint for adding horses in production
-  // This doesn't rely on any authentication but uses a simple password system
-  app.post("/api/horses/emergency-add", async (req, res) => {
-    try {
-      console.log("EMERGENCY horse add endpoint accessed");
-      
-      const { horseData, emergencyKey } = req.body;
-      
-      // Simple emergency access key check
-      const validEmergencyKeys = ["ProHorseMatch2025", "horseAdd123"];
-      if (!emergencyKey || !validEmergencyKeys.includes(emergencyKey)) {
-        console.error("Invalid emergency key provided");
-        return res.status(401).json({ message: "Invalid emergency access key" });
-      }
-      
-      if (!horseData) {
-        return res.status(400).json({ message: "No horse data provided" });
-      }
-      
-      // Determine owner - first try from horseData
-      let owner = null;
-      
-      if (horseData.owner_email) {
-        owner = await storage.getUserByEmail(horseData.owner_email);
-      } else if (horseData.owner_id) {
-        owner = await storage.getUserById(horseData.owner_id);
-      }
-      
-      if (!owner) {
-        // Default to a known owner in emergency cases
-        owner = await storage.getUserByEmail("owner@example.com");
-      }
-      
-      if (!owner) {
-        return res.status(404).json({ message: "Could not determine horse owner" });
-      }
-      
-      // Prepare the horse data with the determined owner
-      const completeHorseData = {
-        ...horseData,
-        owner_id: owner.id
-      };
-      
-      // Add essential default values if missing
-      if (!completeHorseData.currency) completeHorseData.currency = "AUD";
-      if (!completeHorseData.location_country) completeHorseData.location_country = "Australia";
-      if (!completeHorseData.sex) completeHorseData.sex = "Gelding";
-      if (!completeHorseData.disciplines || !completeHorseData.disciplines.length) completeHorseData.disciplines = ["Other"];
-      if (!completeHorseData.levels || !completeHorseData.levels.length) completeHorseData.levels = ["Other"];
-      if (!completeHorseData.breeds || !completeHorseData.breeds.length) completeHorseData.breeds = ["Other"];
-      if (!completeHorseData.photos || !completeHorseData.photos.length) completeHorseData.photos = ["/default-horse.jpg"];
-      
-      console.log("Creating horse in emergency mode:", JSON.stringify(completeHorseData));
-      
-      try {
-        const validatedData = insertHorseSchema.parse(completeHorseData);
-        const horse = await storage.createHorse(validatedData);
-        console.log("Horse successfully created in EMERGENCY mode:", horse.id);
-        return res.status(201).json(horse);
-      } catch (validationError) {
-        console.error("Validation error in emergency mode:", validationError);
-        return res.status(400).json({ message: "Validation error: " + validationError.message });
-      }
-    } catch (error) {
-      console.error("Emergency horse creation error:", error);
-      return res.status(500).json({ message: "Server error in emergency mode" });
-    }
-  });
-  
-  // Ultra-simplified endpoint for adding horses that works in any environment
-  // This is specifically designed to work around authentication issues in deployment
-  app.post("/api/horses/direct-add", async (req, res) => {
-    try {
-      console.log("Direct horse add endpoint accessed with data:", JSON.stringify(req.body));
-      
-      // Extract the email from the request to identify the user
-      const { email, ...horseData } = req.body;
-      
-      if (!email) {
-        console.error("No email provided for direct horse add");
-        return res.status(400).json({ message: "Email is required to identify user" });
-      }
-      
-      console.log("Looking up user by email:", email);
-      
-      // Get the user by email instead of ID
-      const user = await storage.getUserByEmail(email);
-      
-      if (!user) {
-        console.error("No user found with email:", email);
-        return res.status(404).json({ message: "User not found with provided email" });
-      }
-      
-      console.log("Found user:", user.id, "with selling permission:", user.is_selling);
-      
-      if (!user.is_selling) {
-        return res.status(403).json({ message: "User does not have selling permission" });
-      }
-      
-      // Set the owner_id to the user's ID
-      const completeHorseData = {
-        ...horseData,
-        owner_id: user.id
-      };
-      
-      try {
-        // Validate the data
-        const validatedData = insertHorseSchema.parse(completeHorseData);
-        
-        console.log("Data validated successfully, creating horse");
-        const horse = await storage.createHorse(validatedData);
-        
-        console.log("Horse created successfully via direct endpoint:", horse.id);
-        return res.status(201).json(horse);
-      } catch (validationError) {
-        console.error("Validation error:", validationError);
-        
-        // Instead of rejecting with validation error, try to fix common issues
-        console.log("Attempting to fix common validation issues");
-        
-        if (!completeHorseData.currency) {
-          completeHorseData.currency = "AUD"; // Default currency
-        }
-        
-        if (!completeHorseData.location_country) {
-          completeHorseData.location_country = "Australia"; // Default country
-        }
-        
-        if (!completeHorseData.sex) {
-          completeHorseData.sex = "Gelding"; // Default sex
-        }
-        
-        if (!completeHorseData.disciplines || !completeHorseData.disciplines.length) {
-          completeHorseData.disciplines = ["Other"]; // Default discipline
-        }
-        
-        if (!completeHorseData.levels || !completeHorseData.levels.length) {
-          completeHorseData.levels = ["Other"]; // Default level
-        }
-        
-        if (!completeHorseData.breeds || !completeHorseData.breeds.length) {
-          completeHorseData.breeds = ["Other"]; // Default breed
-        }
-        
-        if (!completeHorseData.photos || !completeHorseData.photos.length) {
-          completeHorseData.photos = ["/default-horse.jpg"]; // Default photo
-        }
-        
-        // Try validation again with fixes
-        const validatedDataFixed = insertHorseSchema.parse(completeHorseData);
-        console.log("Data validation succeeded after fixes, creating horse");
-        
-        const horse = await storage.createHorse(validatedDataFixed);
-        console.log("Horse created successfully with fixed data:", horse.id);
-        return res.status(201).json(horse);
-      }
-    } catch (error) {
-      console.error("Direct horse creation error:", error);
-      return res.status(400).json({ message: error.message || "Invalid request" });
-    }
-  });
-  
   app.post("/api/horses", isAuthenticated, async (req, res) => {
     try {
-      // Get the owner ID from various sources with fallbacks for the deployed environment
-      let ownerUserId = req.session.userId;
-      const userIdHeader = req.headers['x-user-id'];
-      
-      // If session auth fails, try to use the header as fallback (for deployed environment)
-      if (!ownerUserId && userIdHeader) {
-        ownerUserId = parseInt(userIdHeader.toString());
-        console.log("Using X-User-ID header for authentication:", ownerUserId);
-      }
-      
-      if (!ownerUserId) {
-        console.error("Unable to determine user ID from any source");
-        return res.status(401).json({ message: "Authentication failed, please log in again" });
-      }
-      
       // Get the user with their roles
-      const user = await storage.getUserById(ownerUserId);
+      const user = await storage.getUserById(req.session.userId);
       
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
@@ -1484,26 +1307,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const validatedData = insertHorseSchema.parse(req.body);
       
-      // Make sure the owner_id from the request matches the authenticated user ID
-      if (validatedData.owner_id !== ownerUserId) {
-        console.log(`Owner ID mismatch: form has ${validatedData.owner_id}, authenticated user is ${ownerUserId}`);
-        // Instead of rejecting, correct the owner_id to match the authenticated user
-        validatedData.owner_id = ownerUserId;
+      // Ensure owner_id matches the logged-in owner
+      if (validatedData.owner_id !== req.session.userId) {
+        return res.status(403).json({ message: "Cannot create horse for another owner" });
       }
       
       const horse = await storage.createHorse(validatedData);
       
       // Force session save to maintain login state
-      if (req.session) {
-        req.session.touch();
-        req.session.save((err) => {
-          if (err) {
-            console.error("Error saving session after horse creation:", err);
-          } else {
-            console.log("Session successfully saved after horse creation");
-          }
-        });
-      }
+      req.session.touch();
+      req.session.save((err) => {
+        if (err) {
+          console.error("Error saving session after horse creation:", err);
+        } else {
+          console.log("Session successfully saved after horse creation");
+        }
+      });
       
       return res.status(201).json(horse);
     } catch (error) {
