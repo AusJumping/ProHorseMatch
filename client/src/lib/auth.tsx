@@ -164,6 +164,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             // Store user in localStorage for quick recovery if session issues occur
             localStorage.setItem('user', JSON.stringify(userData));
             
+            // Also store email separately for direct access in critical functions
+            localStorage.setItem('userEmail', email);
+            sessionStorage.setItem('userEmail', email);
+            
             // Update query cache with user data
             queryClient.setQueryData(['/api/auth/me'], userData);
             

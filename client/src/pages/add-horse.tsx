@@ -149,26 +149,39 @@ export default function AddHorse() {
         submissionData.height_cm = Math.round(submissionData.height_hands * 10.16);
       }
       
-      // Make the API request with the complete data including userId in the request body
-      // This approach uses our enhanced localStorage auth as a fallback when server sessions fail
+      // Use the ultra-simplified endpoint for adding horses in any environment
       const storedUser = localStorage.getItem('user');
       const userData = storedUser ? JSON.parse(storedUser) : null;
       
-      if (!userData || !userData.id) {
-        throw new Error("User information not available. Please log in again.");
+      // Get user email either from local storage or from form data
+      const userEmail = userData?.email || 
+                       localStorage.getItem('userEmail') || 
+                       sessionStorage.getItem('userEmail');
+      
+      if (!userEmail) {
+        throw new Error("User email not available. Please log in again.");
       }
       
-      // Include the user ID in both the submission data and as a custom header
-      submissionData.owner_id = userData.id;
+      console.log("Submitting horse data using ultra-simplified endpoint with email:", userEmail);
       
-      const response = await fetch("/api/horses", {
+      // Include the user email in the request instead of ID
+      const directSubmissionData = {
+        ...submissionData,
+        email: userEmail
+      };
+      
+      // Remove owner_id if it exists to avoid confusion
+      if (directSubmissionData.owner_id === undefined) {
+        // It will be set by the server based on email lookup
+        delete directSubmissionData.owner_id;
+      }
+      
+      const response = await fetch("/api/horses/direct-add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-User-ID": userData.id.toString(), // Add user ID as a header as well
         },
-        credentials: "include", // Important! This ensures cookies are sent with the request
-        body: JSON.stringify(submissionData),
+        body: JSON.stringify(directSubmissionData),
       });
       
       if (!response.ok) {
