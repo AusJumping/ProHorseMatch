@@ -92,9 +92,22 @@ export async function subscribeToPushNotifications(): Promise<boolean> {
       applicationServerKey
     });
     
-    // Send the push subscription to the server
-    const subscribeResponse = await apiRequest('POST', '/api/notifications/subscribe', {
-      subscription
+    // Send the push subscription to the server using direct fetch for more control
+    console.log('Sending subscription to server...');
+    const subscribeResponse = await fetch('/api/notifications/subscribe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subscription: JSON.stringify(subscription),  // Make sure to stringify the subscription object
+        preferences: {
+          horses: true,
+          messages: true,
+          marketing: false
+        }
+      }),
+      credentials: 'include'  // Important for session cookies
     });
     
     if (!subscribeResponse.ok) {
