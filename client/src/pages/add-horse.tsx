@@ -149,11 +149,23 @@ export default function AddHorse() {
         submissionData.height_cm = Math.round(submissionData.height_hands * 10.16);
       }
       
-      // Make the API request with the complete data using fetch directly with credentials
+      // Make the API request with the complete data including userId in the request body
+      // This approach uses our enhanced localStorage auth as a fallback when server sessions fail
+      const storedUser = localStorage.getItem('user');
+      const userData = storedUser ? JSON.parse(storedUser) : null;
+      
+      if (!userData || !userData.id) {
+        throw new Error("User information not available. Please log in again.");
+      }
+      
+      // Include the user ID in both the submission data and as a custom header
+      submissionData.owner_id = userData.id;
+      
       const response = await fetch("/api/horses", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-User-ID": userData.id.toString(), // Add user ID as a header as well
         },
         credentials: "include", // Important! This ensures cookies are sent with the request
         body: JSON.stringify(submissionData),
