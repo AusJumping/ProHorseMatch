@@ -31,34 +31,20 @@ const NotificationSettings: React.FC = () => {
       try {
         setIsLoading(true);
         
-        // We'll implement a simpler approach - for now let's show basic preferences
-        // and work with what we have. This will at least allow users to see the UI.
-        
+        // Let's check authentication status directly
         console.log("Current user state:", { user, isAuthenticated: !!user });
         
-        if (!user) {
-          console.log("No user found, using default preferences");
-          setPreferences({
-            horses: true,
-            messages: true,
-            marketing: false
-          });
-          setSubscribed(false);
-          return;
-        }
+        // Always use the most reliable endpoint to get preferences
+        const apiUrl = '/api/notifications/preferences-public';
+        console.log(`Fetching notification preferences from ${apiUrl}`);
         
-        // Manually create a direct fetch request with credentials included
         try {
-          // Use the public endpoint instead of the authenticated one
-          const apiUrl = '/api/notifications/public-preferences';
-          console.log(`Fetching notification preferences from ${apiUrl}`);
-          
           const response = await fetch(apiUrl, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
             },
-            credentials: 'include' // Still include credentials in case we have them
+            credentials: 'include' // Important for sessions
           });
           
           if (response.ok) {

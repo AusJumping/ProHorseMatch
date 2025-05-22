@@ -2425,6 +2425,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create a special public endpoint for notification preferences
+  app.get('/api/notifications/preferences-public', (req, res) => {
+    try {
+      // Default preferences that work for everyone
+      const defaultPreferences = {
+        notify_for_matches: true,
+        notify_for_messages: true,
+        marketing: false,
+        is_subscribed: false
+      };
+      
+      // Check if user is authenticated
+      const userId = req.session?.userId;
+      const isAuthenticated = !!userId;
+      
+      console.log(`Public preferences endpoint - Auth status: ${isAuthenticated ? 'Authenticated' : 'Not authenticated'}, User ID: ${userId || 'none'}`);
+      
+      // Return preferences with authentication status
+      res.json({
+        ...defaultPreferences,
+        isAuthenticated,
+        userId: userId || null
+      });
+    } catch (error) {
+      console.error('Error getting notification preferences:', error);
+      res.status(200).json({
+        notify_for_matches: true,
+        notify_for_messages: true,
+        marketing: false,
+        is_subscribed: false,
+        error: true
+      });
+    }
+  });
+  
   // Create HTTP server
   const httpServer = createServer(app);
 
