@@ -15,6 +15,7 @@ import EditHorse from "@/pages/edit-horse";
 // Account Settings page removed as requested
 import MigrateHorses from "@/pages/migrate-horses";
 import AdminPanel from "@/pages/admin";
+import AdminMigrateHorses from "@/pages/admin-migrate-horses";
 import Favorites from "@/pages/favorites";
 import Landing from "@/pages/landing";
 import Checkout from "@/pages/checkout";
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/edit-horse/:id" component={EditHorse} />
       <Route path="/migrate-horses" component={MigrateHorses} />
       <Route path="/admin" component={AdminPanel} />
+      <Route path="/admin/migrate-horses" component={AdminMigrateHorses} />
       <Route path="/favorites" component={Favorites} />
       <Route path="/checkout/:horseId" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
