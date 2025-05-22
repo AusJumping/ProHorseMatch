@@ -275,11 +275,13 @@ export async function registerNotificationServiceWorker(): Promise<boolean> {
   }
   
   try {
-    const registration = await navigator.serviceWorker.register('/sw.js');
-    console.log('Service Worker registered with scope:', registration.scope);
+    // Use a dedicated push service worker specifically for push notifications
+    // This is separate from the main service worker to avoid conflicts
+    const registration = await navigator.serviceWorker.register('/push-sw.js');
+    console.log('Push Service Worker registered with scope:', registration.scope);
     return true;
   } catch (error) {
-    console.error('Service Worker registration failed:', error);
+    console.error('Push Service Worker registration failed:', error);
     return false;
   }
 }

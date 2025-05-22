@@ -35,17 +35,30 @@ const NotificationSettings: React.FC = () => {
         console.log("Current user state:", { user, isAuthenticated: !!user });
         
         // Always use the most reliable endpoint to get preferences
-        const apiUrl = '/api/notifications/preferences-public';
+        // First try the authenticated endpoint, then fall back to public one if needed
+        let apiUrl = '/api/notifications/preferences';
         console.log(`Fetching notification preferences from ${apiUrl}`);
         
         try {
-          const response = await fetch(apiUrl, {
+          let response = await fetch(apiUrl, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
             },
             credentials: 'include' // Important for sessions
           });
+          
+          // If we get a 401 unauthorized, try the public endpoint
+          if (response.status === 401) {
+            apiUrl = '/api/notifications/public-preferences';
+            console.log(`Falling back to public endpoint: ${apiUrl}`);
+            response = await fetch(apiUrl, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              }
+            });
+          }
           
           if (response.ok) {
             console.log("Successfully fetched notification preferences");
