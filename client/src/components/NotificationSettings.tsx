@@ -49,7 +49,8 @@ const NotificationSettings: React.FC = () => {
         
         // Manually create a direct fetch request with credentials included
         try {
-          const apiUrl = '/api/notifications/preferences';
+          // Use the public endpoint instead of the authenticated one
+          const apiUrl = '/api/notifications/public-preferences';
           console.log(`Fetching notification preferences from ${apiUrl}`);
           
           const response = await fetch(apiUrl, {
@@ -57,7 +58,7 @@ const NotificationSettings: React.FC = () => {
             headers: {
               'Content-Type': 'application/json',
             },
-            credentials: 'include' // Important for sessions
+            credentials: 'include' // Still include credentials in case we have them
           });
           
           if (response.ok) {
