@@ -1,11 +1,11 @@
-import type { Express, Response, Request } from "express";
+import type { Express, Response, Request, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
-import session from "express-session";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
+import * as NotificationService from "./notifications";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -147,7 +147,25 @@ const upload = multer({
   }
 });
 
+// Authentication middleware used throughout the API
+function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  if (req.session && req.session.userId) {
+    return next();
+  }
+  return res.status(401).json({ message: "Not authenticated" });
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+
+  // Set up notification routes
+  app.get('/api/notifications/vapid-public-key', NotificationService.getVapidPublicKey);
+  app.post('/api/notifications/subscribe', isAuthenticated, NotificationService.subscribe);
+  app.post('/api/notifications/unsubscribe', isAuthenticated, NotificationService.unsubscribe);
+  app.post('/api/notifications/preferences', isAuthenticated, NotificationService.updatePreferences);
+  app.get('/api/notifications/preferences', isAuthenticated, NotificationService.getPreferences);
+  app.get('/api/notifications/unread', isAuthenticated, NotificationService.getUnreadNotifications);
+  app.post('/api/notifications/:notificationId/read', isAuthenticated, NotificationService.markAsRead);
+  app.post('/api/notifications/read-all', isAuthenticated, NotificationService.markAllAsRead);
   // Initialize Stripe
   if (!process.env.STRIPE_SECRET_KEY) {
     console.warn('Missing STRIPE_SECRET_KEY - Payment features will not work');
@@ -380,13 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Middleware to check if a user is authenticated
-  const isAuthenticated = (req: any, res: Response, next: any) => {
-    if (!req.session.userId) {
-      return res.status(401).json({ message: "Authentication required" });
-    }
-    next();
-  };
+  // Use the global isAuthenticated middleware
   
   // Admin routes
   app.delete("/api/admin/delete-all-horses", isAuthenticated, async (req, res) => {
