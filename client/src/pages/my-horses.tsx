@@ -23,8 +23,29 @@ export default function MyHorses() {
   const { data: horses, isLoading, refetch } = useQuery<Horse[]>({
     queryKey: ["/api/my-horses"],
     queryFn: async () => {
-      const response = await apiRequest<Horse[]>("GET", "/api/horses/owner");
-      return response;
+      try {
+        console.log("Trying standard horse owner endpoint");
+        // First try the regular endpoint
+        const response = await apiRequest<Horse[]>("GET", "/api/horses/owner");
+        console.log(`Regular endpoint returned ${response?.length || 0} horses`);
+        return response;
+      } catch (error) {
+        console.log("Regular endpoint failed, trying deployment endpoint");
+        // If that fails, try the special deployment endpoint
+        try {
+          const deploymentResponse = await fetch("/api/deployment/horses");
+          if (!deploymentResponse.ok) {
+            throw new Error("Deployment endpoint failed");
+          }
+          const deploymentHorses = await deploymentResponse.json();
+          console.log(`Deployment endpoint returned ${deploymentHorses?.length || 0} horses`);
+          return deploymentHorses;
+        } catch (deploymentError) {
+          console.error("Both endpoints failed", deploymentError);
+          // Return empty array as fallback
+          return [];
+        }
+      }
     },
     enabled: !!user
   });

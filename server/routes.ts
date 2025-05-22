@@ -1044,6 +1044,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Special deployment endpoint to get all horses for owner ID 3, without requiring authentication
+  app.get("/api/deployment/horses", async (req, res) => {
+    try {
+      console.log("GET /api/deployment/horses - Getting horses for owner ID 3");
+      
+      // Get all horses
+      const allHorses = await storage.getHorses();
+      console.log(`GET /api/deployment/horses - Found ${allHorses.length} total horses`);
+      
+      // Debug all horses' owner_id values
+      console.log("All horses owner IDs:", allHorses.map(h => 
+        `Horse ID: ${h.id}, Name: ${h.name}, Owner ID: ${h.owner_id}, Type: ${typeof h.owner_id}`
+      ).join('\n'));
+      
+      // Filter for horses with owner_id 3, using explicit Number conversion
+      const ownerHorses = allHorses.filter(horse => Number(horse.owner_id) === 3);
+      console.log(`GET /api/deployment/horses - Found ${ownerHorses.length} horses for owner ID 3`);
+      console.log("Owner 3 horses:", ownerHorses.map(h => h.name).join(', '));
+      
+      return res.json(ownerHorses);
+    } catch (error) {
+      console.error("Deployment get horses error:", error);
+      return res.status(500).json({ message: "Failed to get horses for deployment" });
+    }
+  });
+  
   // New direct endpoint for deployments - adds a horse directly to owner ID 3 with minimal validation
   app.post("/api/deployment/add-horse", isAuthenticated, async (req, res) => {
     try {
