@@ -205,6 +205,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
   
+  // Create a completely public endpoint specifically for the new direct subscription approach
+  app.post('/api/notifications/subscribe-public', async (req, res) => {
+    try {
+      console.log('Public subscription endpoint accessed');
+      const { subscription, preferences } = req.body;
+      
+      if (!subscription) {
+        return res.status(400).json({ message: 'Subscription data is required' });
+      }
+      
+      // Parse the subscription if it's a string
+      const parsedSubscription = typeof subscription === 'string' 
+        ? JSON.parse(subscription) 
+        : subscription;
+      
+      // Extract subscription details directly
+      const { endpoint, keys } = parsedSubscription;
+      
+      if (!endpoint || !keys) {
+        return res.status(400).json({ message: 'Invalid subscription format' });
+      }
+      
+      console.log('Valid subscription received from public endpoint');
+      
+      // Store the subscription in the database with a special tag
+      const newSubscription = {
+        endpoint: endpoint,
+        p256dh: keys.p256dh,
+        auth: keys.auth,
+        user_id: req.session?.userId || null, // Store user ID if available, but not required
+        notify_for_matches: true,
+        notify_for_messages: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+        subscription_origin: 'public-endpoint' // Tag for tracking
+      };
+      
+      // Insert directly to avoid authentication requirements
+      await db.insert(pushSubscriptions).values(newSubscription);
+      
+      console.log('Subscription successfully stored via public endpoint');
+      return res.status(200).json({ success: true, message: 'Subscription successful' });
+    } catch (error) {
+      console.error('Error in public subscription endpoint:', error);
+      return res.status(500).json({ message: 'Subscription failed', error: error.message });
+    }
+  });
+  
   // Notification endpoints - critical ones without auth requirement for better reliability
   app.post('/api/notifications/subscribe', NotificationService.subscribe); // No auth required for better mobile support
   app.post('/api/notifications/subscribe-direct', NotificationService.subscribe); // Alternative endpoint
