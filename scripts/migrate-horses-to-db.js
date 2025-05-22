@@ -1,6 +1,10 @@
 // Script to migrate horses to the PostgreSQL database for ProHorseMatch
-import { Pool } from '@neondatabase/serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
 import dotenv from 'dotenv';
+import ws from 'ws';
+
+// Configure Neon to use ws for WebSocket
+neonConfig.webSocketConstructor = ws;
 
 // Load environment variables
 dotenv.config();
