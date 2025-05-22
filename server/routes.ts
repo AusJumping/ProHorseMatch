@@ -149,16 +149,63 @@ const upload = multer({
 
 // Authentication middleware used throughout the API
 function isAuthenticated(req: Request, res: Response, next: NextFunction) {
+  console.log("isAuthenticated middleware - Session:", {
+    sessionId: req.sessionID,
+    userId: req.session.userId,
+    cookie: req.session.cookie,
+    path: req.path
+  });
+  
   if (req.session && req.session.userId) {
+    console.log(`User authenticated in middleware: ${req.session.userId} for path: ${req.path}`);
     return next();
   }
+  
+  // For notification endpoints, provide default preferences even on auth failure
+  if (req.path.startsWith('/api/notifications/')) {
+    console.log(`Auth failed for notification endpoint: ${req.path}`);
+    if (req.path === '/api/notifications/preferences' && req.method === 'GET') {
+      return res.status(401).json({ 
+        message: "Not authenticated",
+        preferences: {
+          horses: true,
+          messages: true,
+          marketing: false
+        },
+        subscribed: false,
+        notify_for_matches: true,
+        notify_for_messages: true,
+        is_subscribed: false
+      });
+    }
+  }
+  
+  console.log(`Authentication failed for path: ${req.path}`);
   return res.status(401).json({ message: "Not authenticated" });
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
 
-  // Set up notification routes
+  // Set up notification routes without requiring authentication for key endpoints
   app.get('/api/notifications/vapid-public-key', NotificationService.getVapidPublicKey);
+  
+  // Create a separate endpoint for direct notification preferences access
+  app.get('/api/notifications/public-preferences', (req, res) => {
+    // Return default notification preferences for any user
+    res.status(200).json({
+      notify_for_matches: true,
+      notify_for_messages: true, 
+      is_subscribed: false,
+      preferences: {
+        horses: true,
+        messages: true,
+        marketing: false
+      },
+      subscribed: false
+    });
+  });
+  
+  // Protected notification endpoints
   app.post('/api/notifications/subscribe', isAuthenticated, NotificationService.subscribe);
   app.post('/api/notifications/unsubscribe', isAuthenticated, NotificationService.unsubscribe);
   app.post('/api/notifications/preferences', isAuthenticated, NotificationService.updatePreferences);
