@@ -1,7 +1,7 @@
 import React from 'react';
 import Layout from '../components/Layout';
 import NotificationSettings from '../components/NotificationSettings';
-import { useAuth } from '../lib/auth';
+import { useAuth } from '../hooks/useAuth';
 import { useLocation } from 'wouter';
 
 const NotificationSettingsPage: React.FC = () => {
