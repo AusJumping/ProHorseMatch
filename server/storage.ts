@@ -1317,8 +1317,8 @@ export class DatabaseStorage implements IStorage {
 }
 
 // Switch to using the database storage
-// Choose which storage implementation to use
-const useDatabase = process.env.NODE_ENV === 'production';
+// Choose which storage implementation to use - ALWAYS use database for persistence
+const useDatabase = true; // Force database usage to prevent data loss on deployment
 console.log(`Using ${useDatabase ? 'DatabaseStorage' : 'MemStorage'} implementation`);
 
 // Use a more persistent storage singleton approach
