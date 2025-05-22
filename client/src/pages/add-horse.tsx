@@ -42,12 +42,14 @@ const horseFormSchema = z.object({
   owner_id: z.number(),
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
   
-  // Optional text/input fields
-  height_cm: z.number().optional(),
+  // Required text/input fields
+  height_cm: z.number().min(1, "Height in cm is required"),
   sire: z.string().min(1, "Sire information is required"),
-  dam: z.string().optional(),
+  dam: z.string().min(1, "Dam information is required"),
   dam_sire: z.string().min(1, "Dam Sire information is required"),
-  characteristics: z.array(z.string()).optional(),
+  characteristics: z.array(z.string()).min(1, "Select at least one characteristic"),
+  
+  // Optional fields (only Video and Description)
   description: z.string().optional(),
   additional_info: z.string().optional(),
   
