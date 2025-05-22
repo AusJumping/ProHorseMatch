@@ -1005,40 +1005,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/test/create-sample-horse", async (req, res) => {
     try {
       console.log("Test create sample horse request received");
-      console.log("Request body:", req.body);
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
       
-      // Always ensure owner_id is set to 3 (the test owner account)
-      const horseData = { 
-        ...req.body,
-        owner_id: 3  // Force owner_id to be 3
+      // Create a complete, valid horse sample
+      const completeHorseData = { 
+        name: req.body.name || "Test Horse",
+        owner_id: 3,  // Force owner_id to be 3 (test owner account)
+        location_country: req.body.location_country || "Australia",
+        disciplines: Array.isArray(req.body.disciplines) && req.body.disciplines.length > 0 
+          ? req.body.disciplines 
+          : ["Jumping"],
+        levels: Array.isArray(req.body.levels) && req.body.levels.length > 0
+          ? req.body.levels
+          : ["Young Rider"],
+        breeds: Array.isArray(req.body.breeds) && req.body.breeds.length > 0
+          ? req.body.breeds
+          : ["Warmblood"],
+        age: req.body.age || 8,
+        height_hands: req.body.height_hands || 16.2,
+        height_cm: req.body.height_cm || 168,
+        sex: req.body.sex || "Gelding",
+        sire: req.body.sire || "Test Sire",
+        dam: req.body.dam || "Test Dam",
+        dam_sire: req.body.dam_sire || "Test Dam Sire",
+        characteristics: Array.isArray(req.body.characteristics) && req.body.characteristics.length > 0
+          ? req.body.characteristics
+          : ["Brave", "Careful"],
+        price_min: req.body.price_min || 25000,
+        price_max: req.body.price_max || 30000,
+        currency: req.body.currency || "AUD",
+        description: req.body.description || "Test horse description",
+        photos: Array.isArray(req.body.photos) && req.body.photos.length > 0
+          ? req.body.photos
+          : ["https://www.australianjumping.com.au/wp-content/uploads/2025/05/images.jpeg"],
+        videos: Array.isArray(req.body.videos) ? req.body.videos : []
       };
       
-      console.log("Creating horse with data:", horseData);
+      console.log("Creating horse with complete data:", JSON.stringify(completeHorseData, null, 2));
       
-      // Create the horse
-      const createdHorse = await storage.createHorse(horseData);
-      console.log("Created sample horse:", createdHorse);
-      
-      // If there is an active session, make sure to preserve it
-      if (req.session && req.session.userId) {
-        req.session.touch();
-        req.session.save((err) => {
-          if (err) {
-            console.error("Error saving session after test horse creation:", err);
-          } else {
-            console.log("Session successfully saved after test horse creation");
-          }
+      // Create the horse with more robust error handling
+      try {
+        const createdHorse = await storage.createHorse(completeHorseData);
+        console.log("Created sample horse successfully:", JSON.stringify(createdHorse, null, 2));
+        
+        // If there is an active session, make sure to preserve it
+        if (req.session && req.session.userId) {
+          req.session.touch();
+          req.session.save((err) => {
+            if (err) {
+              console.error("Error saving session after test horse creation:", err);
+            } else {
+              console.log("Session successfully saved after test horse creation");
+            }
+          });
+        }
+        
+        return res.status(201).json({
+          success: true,
+          message: "Successfully created horse",
+          horse: createdHorse
+        });
+      } catch (createError) {
+        console.error("Horse creation error:", createError);
+        return res.status(400).json({
+          success: false,
+          message: "Failed to create horse - validation error",
+          error: createError.toString(),
+          details: createError.message,
+          data: completeHorseData
         });
       }
-      
-      return res.status(201).json({
-        message: "Successfully created horse",
-        horse: createdHorse
-      });
     } catch (error) {
-      console.error("Create horse error:", error);
+      console.error("Create sample horse error:", error);
       return res.status(500).json({
-        message: "Failed to create horse",
+        success: false,
+        message: "Failed to create horse - server error",
         error: error.toString()
       });
     }
