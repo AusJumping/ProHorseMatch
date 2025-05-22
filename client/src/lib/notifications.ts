@@ -67,36 +67,70 @@ export async function subscribeToPushNotifications(): Promise<boolean> {
   }
   
   try {
-    // Get the service worker registration
+    // First, check if we're already subscribed
+    const isAlreadySubscribed = await isSubscribedToPushNotifications();
+    if (isAlreadySubscribed) {
+      console.log('Already subscribed to push notifications');
+      return true;
+    }
+
+    // Step 1: Make sure service worker is registered
+    console.log('Registering service worker if needed...');
+    await registerNotificationServiceWorker();
+    
+    // Step 2: Get the service worker registration
     const swRegistration = await getRegisteredServiceWorker();
     if (!swRegistration) {
       console.error('Service worker registration failed');
       return false;
     }
     
-    // Get the server's public VAPID key
-    const response = await apiRequest('GET', '/api/notifications/vapid-public-key');
-    const { publicKey } = await response.json();
+    // Step 3: Get the server's public VAPID key with retry logic
+    console.log('Getting VAPID public key...');
+    let publicKey = null;
+    let retries = 3;
+    
+    while (retries > 0 && !publicKey) {
+      try {
+        const response = await fetch('/api/notifications/vapid-public-key');
+        if (response.ok) {
+          const data = await response.json();
+          publicKey = data.publicKey;
+        } else {
+          console.warn(`Failed to get VAPID key, status: ${response.status}, retrying...`);
+        }
+      } catch (error) {
+        console.error('Error fetching VAPID key:', error);
+      }
+      
+      if (!publicKey) {
+        retries--;
+        if (retries > 0) {
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
+    }
     
     if (!publicKey) {
-      console.error('Failed to get VAPID public key from server');
+      console.error('Failed to get VAPID public key from server after multiple attempts');
       return false;
     }
     
-    // Convert the VAPID key to the format required by the browser
+    // Step 4: Convert the VAPID key to the format required by the browser
     const applicationServerKey = urlB64ToUint8Array(publicKey);
     
-    // Subscribe the user to push notifications
+    // Step 5: Subscribe the user to push notifications
+    console.log('Creating push subscription...');
     const subscription = await swRegistration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey
     });
     
-    // Send the push subscription to the server using direct fetch for more control
-    console.log('Sending subscription to server...');
-    
-    // Get the authenticated user ID if we're logged in
+    // Step 6: Get user ID from multiple sources for better reliability
+    console.log('Getting user ID for subscription...');
     let userId = null;
+    
+    // Try session-based auth first
     try {
       const userResponse = await fetch('/api/auth/me', {
         credentials: 'include'
@@ -104,45 +138,86 @@ export async function subscribeToPushNotifications(): Promise<boolean> {
       if (userResponse.ok) {
         const userData = await userResponse.json();
         userId = userData.id;
-        console.log('Retrieved authenticated userId:', userId);
+        console.log('Retrieved authenticated userId from session:', userId);
       }
     } catch (authError) {
-      console.error('Error checking authentication:', authError);
+      console.error('Error checking session authentication:', authError);
     }
     
-    const subscribeResponse = await fetch('/api/notifications/subscribe', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        subscription: JSON.stringify(subscription),  // Make sure to stringify the subscription object
-        preferences: {
-          horses: true,
-          messages: true,
-          marketing: false
-        },
-        userId: userId  // Include user ID from auth check
-      }),
-      credentials: 'include'  // Important for session cookies
-    });
-    
-    if (!subscribeResponse.ok) {
-      const errorData = await subscribeResponse.json();
-      console.error('Failed to register subscription with server:', errorData.message);
-      
-      // If authentication error, we should refresh the auth status
-      if (subscribeResponse.status === 401) {
-        console.log('Authentication required for notifications. Please log in again.');
+    // If session didn't work, try localStorage fallback
+    if (!userId) {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && parsedUser.id) {
+            userId = parsedUser.id;
+            console.log('Retrieved userId from localStorage:', userId);
+          }
+        }
+      } catch (storageError) {
+        console.error('Error checking localStorage for user:', storageError);
       }
-      
-      return false;
     }
     
-    console.log('Successfully subscribed to push notifications');
-    return true;
+    // Step 7: Send subscription to server with multiple fallbacks
+    console.log('Sending subscription to server...');
+    const subscriptionData = {
+      subscription: JSON.stringify(subscription),
+      preferences: {
+        horses: true,
+        messages: true,
+        marketing: false
+      },
+      userId: userId
+    };
+    
+    // First try: Standard endpoint with session cookies
+    let subscribeSuccess = false;
+    
+    try {
+      const subscribeResponse = await fetch('/api/notifications/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(subscriptionData),
+        credentials: 'include'
+      });
+      
+      if (subscribeResponse.ok) {
+        console.log('Successfully subscribed to push notifications using primary endpoint');
+        subscribeSuccess = true;
+      } else {
+        console.warn('Primary subscription endpoint failed, trying alternative...');
+      }
+    } catch (primaryError) {
+      console.error('Error with primary subscription endpoint:', primaryError);
+    }
+    
+    // Second try: Alternative endpoint without cookies if first try failed
+    if (!subscribeSuccess && userId) {
+      try {
+        const alternativeResponse = await fetch('/api/notifications/subscribe-direct', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(subscriptionData)
+        });
+        
+        if (alternativeResponse.ok) {
+          console.log('Successfully subscribed using alternative endpoint');
+          subscribeSuccess = true;
+        }
+      } catch (alternativeError) {
+        console.error('Error with alternative subscription endpoint:', alternativeError);
+      }
+    }
+    
+    return subscribeSuccess;
   } catch (error) {
-    console.error('Error subscribing to push notifications:', error);
+    console.error('Error in subscription process:', error);
     return false;
   }
 }

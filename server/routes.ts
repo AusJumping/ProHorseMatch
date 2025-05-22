@@ -205,9 +205,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
   
+  // Notification endpoints - critical ones without auth requirement for better reliability
+  app.post('/api/notifications/subscribe', NotificationService.subscribe); // No auth required for better mobile support
+  app.post('/api/notifications/subscribe-direct', NotificationService.subscribe); // Alternative endpoint
+  app.post('/api/notifications/unsubscribe', NotificationService.unsubscribe); // No auth for better reliability
+  
   // Protected notification endpoints
-  app.post('/api/notifications/subscribe', isAuthenticated, NotificationService.subscribe);
-  app.post('/api/notifications/unsubscribe', isAuthenticated, NotificationService.unsubscribe);
   app.post('/api/notifications/preferences', isAuthenticated, NotificationService.updatePreferences);
   app.get('/api/notifications/preferences', isAuthenticated, NotificationService.getPreferences);
   app.get('/api/notifications/unread', isAuthenticated, NotificationService.getUnreadNotifications);
