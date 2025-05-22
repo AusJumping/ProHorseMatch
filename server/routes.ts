@@ -1298,36 +1298,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/horses", isAuthenticated, async (req, res) => {
     try {
+      console.log("POST /api/horses - creating new horse");
+      
       // Get the user with their roles
       const user = await storage.getUserById(req.session.userId);
+      console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
       
       if (!user || !user.is_selling) {
+        console.log("User doesn't have seller permissions");
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
       }
       
-      const validatedData = insertHorseSchema.parse(req.body);
+      console.log("Horse data received:", JSON.stringify(req.body, null, 2));
       
-      // Ensure owner_id matches the logged-in owner
-      if (validatedData.owner_id !== req.session.userId) {
-        return res.status(403).json({ message: "Cannot create horse for another owner" });
-      }
+      // Make sure owner_id matches the logged-in user
+      const horseData = {
+        ...req.body,
+        owner_id: req.session.userId  // Always set owner_id to current user
+      };
       
-      const horse = await storage.createHorse(validatedData);
-      
-      // Force session save to maintain login state
-      req.session.touch();
-      req.session.save((err) => {
-        if (err) {
-          console.error("Error saving session after horse creation:", err);
-        } else {
-          console.log("Session successfully saved after horse creation");
+      try {
+        // Validate data with better error handling
+        const validatedData = insertHorseSchema.parse(horseData);
+        console.log("Horse data validated successfully");
+        
+        // Ensure price_min and price_max fields are present and are numbers
+        if (validatedData.price_min === undefined || validatedData.price_max === undefined) {
+          console.error("Missing price fields");
+          return res.status(400).json({ message: "Price range fields are required" });
         }
-      });
-      
-      return res.status(201).json(horse);
+        
+        // Create the horse
+        console.log("Creating horse with data:", JSON.stringify(validatedData, null, 2));
+        const horse = await storage.createHorse(validatedData);
+        console.log("Horse created successfully:", horse.id);
+        
+        // Force session save to maintain login state
+        req.session.touch();
+        req.session.save((err) => {
+          if (err) {
+            console.error("Error saving session after horse creation:", err);
+          } else {
+            console.log("Session successfully saved after horse creation");
+          }
+        });
+        
+        return res.status(201).json(horse);
+      } catch (validationError) {
+        console.error("Validation error:", validationError);
+        return res.status(400).json({ 
+          message: "Invalid horse data", 
+          error: validationError.message || "Validation failed",
+          details: validationError.errors || []
+        });
+      }
     } catch (error) {
       console.error("Create horse error:", error);
-      return res.status(400).json({ message: error.message || "Invalid request" });
+      return res.status(500).json({ 
+        message: "Failed to create horse", 
+        error: error.message || "Server error"
+      });
     }
   });
   
