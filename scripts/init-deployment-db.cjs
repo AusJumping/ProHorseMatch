@@ -6,26 +6,22 @@
  * This script ensures the database schema is correctly set up during deployment.
  * Run this script before starting the application in production to avoid database-related issues.
  * 
- * This script will also call seed-test-data.js to ensure test accounts are available in the deployed environment.
+ * This script will also call seed-test-data.cjs to ensure test accounts are available in the deployed environment.
  */
 
-// Create direct database connection instead of importing
-import { Pool } from 'pg';
-import { sql } from 'drizzle-orm';
+const { Pool } = require('pg');
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const path = require('path');
 
+const execPromise = promisify(exec);
+
+// Get database connection from environment
 if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
+  throw new Error("DATABASE_URL must be set to run the initialization script");
 }
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-import { sql } from 'drizzle-orm';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import path from 'path';
-
-const execPromise = promisify(exec);
 
 async function initializeDatabase() {
   console.log('Starting database initialization...');
@@ -47,45 +43,130 @@ async function initializeDatabase() {
       WHERE table_name = 'users'
     `);
     
-    const userColumns = usersResult.rows.map(row => row.column_name);
-    console.log(`Found ${userColumns.length} columns in users table`);
-    
-    // Check for missing columns in users table, particularly the Stripe-related ones
-    const requiredUserColumns = [
-      'id', 'email', 'password', 'stripe_customer_id', 
-      'stripe_subscription_id', 'subscription_status', 
-      'subscription_plan', 'subscription_end_date'
-    ];
-    
-    const missingUserColumns = requiredUserColumns.filter(
-      col => !userColumns.includes(col)
-    );
-    
-    if (missingUserColumns.length > 0) {
-      console.log(`Missing columns in users table: ${missingUserColumns.join(', ')}`);
-      console.log('Adding missing columns...');
-      
-      // Add missing columns
-      for (const column of missingUserColumns) {
-        try {
-          if (column === 'stripe_customer_id') {
-            await pool.query(`ALTER TABLE users ADD COLUMN stripe_customer_id TEXT`);
-          } else if (column === 'stripe_subscription_id') {
-            await pool.query(`ALTER TABLE users ADD COLUMN stripe_subscription_id TEXT`);
-          } else if (column === 'subscription_status') {
-            await pool.query(`ALTER TABLE users ADD COLUMN subscription_status TEXT`);
-          } else if (column === 'subscription_plan') {
-            await pool.query(`ALTER TABLE users ADD COLUMN subscription_plan TEXT`);
-          } else if (column === 'subscription_end_date') {
-            await pool.query(`ALTER TABLE users ADD COLUMN subscription_end_date TIMESTAMP`);
-          }
-          console.log(`Added column: ${column}`);
-        } catch (err) {
-          console.error(`Error adding column ${column}:`, err.message);
-        }
-      }
+    if (usersResult.rows.length === 0) {
+      console.log('Users table not found, creating it...');
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          email TEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL,
+          name TEXT,
+          business_name TEXT,
+          contact_name TEXT,
+          is_searching BOOLEAN DEFAULT FALSE,
+          is_selling BOOLEAN DEFAULT FALSE,
+          location_country TEXT,
+          location_radius_km INTEGER,
+          preferred_disciplines TEXT[],
+          preferred_levels TEXT[],
+          preferred_breeds TEXT[],
+          age_range_min INTEGER,
+          age_range_max INTEGER,
+          height_range_min REAL,
+          height_range_max REAL,
+          preferred_sexes TEXT[],
+          breeding_preferences TEXT,
+          preferred_characteristics TEXT[],
+          price_range_min INTEGER,
+          price_range_max INTEGER,
+          currency TEXT,
+          stripe_customer_id TEXT,
+          stripe_subscription_id TEXT,
+          subscription_status TEXT,
+          subscription_plan TEXT,
+          subscription_end_date TIMESTAMP,
+          created_at TIMESTAMP DEFAULT NOW()
+        )
+      `);
+      console.log('Users table created successfully');
     } else {
-      console.log('All required columns exist in users table');
+      const userColumns = usersResult.rows.map(row => row.column_name);
+      console.log(`Found ${userColumns.length} columns in users table`);
+    
+      // Check for missing columns in users table, particularly the Stripe-related ones
+      const requiredUserColumns = [
+        'id', 'email', 'password', 'name', 'business_name', 'contact_name',
+        'is_searching', 'is_selling', 'location_country', 'location_radius_km',
+        'preferred_disciplines', 'preferred_levels', 'preferred_breeds',
+        'age_range_min', 'age_range_max', 'height_range_min', 'height_range_max',
+        'preferred_sexes', 'breeding_preferences', 'preferred_characteristics',
+        'price_range_min', 'price_range_max', 'currency',
+        'stripe_customer_id', 'stripe_subscription_id', 'subscription_status', 
+        'subscription_plan', 'subscription_end_date', 'created_at'
+      ];
+      
+      const missingUserColumns = requiredUserColumns.filter(
+        col => !userColumns.includes(col)
+      );
+      
+      if (missingUserColumns.length > 0) {
+        console.log(`Missing columns in users table: ${missingUserColumns.join(', ')}`);
+        console.log('Adding missing columns...');
+        
+        // Add missing columns
+        for (const column of missingUserColumns) {
+          try {
+            if (column === 'name') {
+              await pool.query(`ALTER TABLE users ADD COLUMN name TEXT`);
+            } else if (column === 'business_name') {
+              await pool.query(`ALTER TABLE users ADD COLUMN business_name TEXT`);
+            } else if (column === 'contact_name') {
+              await pool.query(`ALTER TABLE users ADD COLUMN contact_name TEXT`);
+            } else if (column === 'is_searching') {
+              await pool.query(`ALTER TABLE users ADD COLUMN is_searching BOOLEAN DEFAULT FALSE`);
+            } else if (column === 'is_selling') {
+              await pool.query(`ALTER TABLE users ADD COLUMN is_selling BOOLEAN DEFAULT FALSE`);
+            } else if (column === 'location_country') {
+              await pool.query(`ALTER TABLE users ADD COLUMN location_country TEXT`);
+            } else if (column === 'location_radius_km') {
+              await pool.query(`ALTER TABLE users ADD COLUMN location_radius_km INTEGER`);
+            } else if (column === 'preferred_disciplines') {
+              await pool.query(`ALTER TABLE users ADD COLUMN preferred_disciplines TEXT[]`);
+            } else if (column === 'preferred_levels') {
+              await pool.query(`ALTER TABLE users ADD COLUMN preferred_levels TEXT[]`);
+            } else if (column === 'preferred_breeds') {
+              await pool.query(`ALTER TABLE users ADD COLUMN preferred_breeds TEXT[]`);
+            } else if (column === 'age_range_min') {
+              await pool.query(`ALTER TABLE users ADD COLUMN age_range_min INTEGER`);
+            } else if (column === 'age_range_max') {
+              await pool.query(`ALTER TABLE users ADD COLUMN age_range_max INTEGER`);
+            } else if (column === 'height_range_min') {
+              await pool.query(`ALTER TABLE users ADD COLUMN height_range_min REAL`);
+            } else if (column === 'height_range_max') {
+              await pool.query(`ALTER TABLE users ADD COLUMN height_range_max REAL`);
+            } else if (column === 'preferred_sexes') {
+              await pool.query(`ALTER TABLE users ADD COLUMN preferred_sexes TEXT[]`);
+            } else if (column === 'breeding_preferences') {
+              await pool.query(`ALTER TABLE users ADD COLUMN breeding_preferences TEXT`);
+            } else if (column === 'preferred_characteristics') {
+              await pool.query(`ALTER TABLE users ADD COLUMN preferred_characteristics TEXT[]`);
+            } else if (column === 'price_range_min') {
+              await pool.query(`ALTER TABLE users ADD COLUMN price_range_min INTEGER`);
+            } else if (column === 'price_range_max') {
+              await pool.query(`ALTER TABLE users ADD COLUMN price_range_max INTEGER`);
+            } else if (column === 'currency') {
+              await pool.query(`ALTER TABLE users ADD COLUMN currency TEXT`);
+            } else if (column === 'stripe_customer_id') {
+              await pool.query(`ALTER TABLE users ADD COLUMN stripe_customer_id TEXT`);
+            } else if (column === 'stripe_subscription_id') {
+              await pool.query(`ALTER TABLE users ADD COLUMN stripe_subscription_id TEXT`);
+            } else if (column === 'subscription_status') {
+              await pool.query(`ALTER TABLE users ADD COLUMN subscription_status TEXT`);
+            } else if (column === 'subscription_plan') {
+              await pool.query(`ALTER TABLE users ADD COLUMN subscription_plan TEXT`);
+            } else if (column === 'subscription_end_date') {
+              await pool.query(`ALTER TABLE users ADD COLUMN subscription_end_date TIMESTAMP`);
+            } else if (column === 'created_at') {
+              await pool.query(`ALTER TABLE users ADD COLUMN created_at TIMESTAMP DEFAULT NOW()`);
+            }
+            console.log(`Added column: ${column}`);
+          } catch (err) {
+            console.error(`Error adding column ${column}:`, err.message);
+          }
+        }
+      } else {
+        console.log('All required columns exist in users table');
+      }
     }
     
     // Check if sessions table exists for authentication
@@ -240,7 +321,7 @@ async function initializeDatabase() {
       const scriptPath = path.resolve('./scripts/seed-test-data.cjs');
       
       // Make sure DATABASE_URL is available to the seed script
-      const env = { ...process.env };  
+      const env = { ...process.env };
       
       const { stdout, stderr } = await execPromise(`node ${scriptPath}`, { 
         env: env,
