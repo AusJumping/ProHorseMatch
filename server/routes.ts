@@ -1044,6 +1044,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // New direct endpoint for deployments - adds a horse directly to owner ID 3 with minimal validation
+  app.post("/api/deployment/add-horse", isAuthenticated, async (req, res) => {
+    try {
+      console.log("Deployment add horse endpoint called");
+      const userId = req.session.userId;
+      console.log("User ID from session:", userId);
+      
+      // Get the user
+      const user = await storage.getUserById(userId);
+      console.log("User found:", user ? "Yes" : "No");
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      console.log("User has selling permission:", user.is_selling);
+      if (!user.is_selling) {
+        return res.status(403).json({ message: "Only users with selling permission can create horses" });
+      }
+      
+      // Create a modified version of the request body with owner_id explicitly set to 3
+      const horseData = {
+        ...req.body,
+        owner_id: 3 // Force owner_id to 3 regardless of what's in the session
+      };
+      
+      console.log("Creating horse with data:", JSON.stringify(horseData, null, 2));
+      console.log("Data types:", Object.entries(horseData).map(([k, v]) => `${k}: ${typeof v}`).join(', '));
+      
+      // Create the horse with the modified data
+      const createdHorse = await storage.createHorse(horseData);
+      console.log("Horse successfully created:", createdHorse);
+
+      return res.status(201).json({
+        message: "Successfully created horse for deployment",
+        horse: createdHorse
+      });
+    } catch (error) {
+      console.error("Deployment add horse error:", error);
+      return res.status(500).json({
+        message: "Failed to create horse for deployment",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
   // Add sample horses
   app.post("/api/admin/add-sample-horses", isAuthenticated, async (req, res) => {
     try {
