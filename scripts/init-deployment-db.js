@@ -5,11 +5,18 @@
  * 
  * This script ensures the database schema is correctly set up during deployment.
  * Run this script before starting the application in production to avoid database-related issues.
+ * 
+ * This script will also call seed-test-data.js to ensure test accounts are available in the deployed environment.
  */
 
 import { pool, db } from '../server/db.js';
 import * as schema from '../shared/schema.js';
 import { sql } from 'drizzle-orm';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+import path from 'path';
+
+const execPromise = promisify(exec);
 
 async function initializeDatabase() {
   console.log('Starting database initialization...');
@@ -99,6 +106,26 @@ async function initializeDatabase() {
     }
     
     console.log('Database initialization completed successfully!');
+    
+    // Run the seed test data script to ensure test accounts are present
+    try {
+      console.log('Running seed test data script...');
+      const scriptPath = path.resolve('./scripts/seed-test-data.js');
+      const { stdout, stderr } = await execPromise(`node ${scriptPath}`);
+      
+      if (stdout) {
+        console.log('Seed script output:', stdout);
+      }
+      
+      if (stderr) {
+        console.error('Seed script error output:', stderr);
+      }
+      
+      console.log('Seed test data completed!');
+    } catch (seedError) {
+      console.error('Failed to run seed test data script:', seedError);
+      // We don't exit here as the main initialization was successful
+    }
   } catch (error) {
     console.error('Database initialization failed:', error);
     process.exit(1);

@@ -31,6 +31,7 @@ The following environment variables are required in production:
      node scripts/init-deployment-db.js
      ```
    - This will ensure all tables and columns exist in the production database
+   - This script now automatically runs the seed-test-data.js script to populate test accounts, horses, matches, and conversations
 
 2. **Build the Application**
    - Build the frontend and backend for production:
