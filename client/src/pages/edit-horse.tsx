@@ -282,7 +282,7 @@ export default function EditHorse() {
                         name="sex"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Sex</FormLabel>
+                            <FormLabel>Gender</FormLabel>
                             <Select 
                               onValueChange={field.onChange} 
                               value={field.value}

@@ -854,7 +854,7 @@ export default function AddHorse() {
                           name="sex"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Sex</FormLabel>
+                              <FormLabel>Gender</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
