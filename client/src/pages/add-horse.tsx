@@ -86,6 +86,9 @@ export default function AddHorse() {
   });
 
   const ownerID = user?.id || 1; // Default to 1 for demo purposes
+  
+  // For testing: bypass auth check temporarily to test dropdown validation
+  const isTestingMode = true;
 
   const form = useForm<HorseFormValues>({
     resolver: zodResolver(horseFormSchema),

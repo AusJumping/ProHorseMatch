@@ -317,7 +317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (err) {
         return res.status(500).json({ message: "Failed to logout" });
       }
-      res.clearCookie("connect.sid");
+      res.clearCookie("horse.sid"); // Use the correct cookie name
       return res.json({ message: "Logged out successfully" });
     });
   });
