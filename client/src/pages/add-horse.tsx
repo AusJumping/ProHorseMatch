@@ -28,15 +28,15 @@ const horseFormSchema = z.object({
   location_country: z.string().min(1, "Country is required"),
   disciplines: z.array(z.string()).min(1, "Select at least one discipline"),
   levels: z.array(z.string()).min(1, "Select at least one level"),
-  breeds: z.array(z.string()).min(1, "Select at least one breed"),
+  breed: z.string().min(1, "Breed is required"),
   sex: z.string().min(1, "Sex is required"),
   currency: z.string().min(1, "Currency is required"),
   
   // Required numeric fields
-  age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
-  height_hands: z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
-  price_min: z.number().min(1, "Minimum price must be at least 1"),
-  price_max: z.number().min(1, "Maximum price must be at least 1"),
+  age: z.number({ required_error: "Age is required" }).min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
+  height_hands: z.number({ required_error: "Height in hands is required" }).min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+  price_min: z.number({ required_error: "Minimum price is required" }).min(1, "Minimum price must be at least 1"),
+  price_max: z.number({ required_error: "Maximum price is required" }).min(1, "Maximum price must be at least 1"),
   
   // Required for the form to work
   owner_id: z.number(),
@@ -92,21 +92,21 @@ export default function AddHorse() {
     defaultValues: {
       name: "",
       owner_id: ownerID,
-      location_country: "",
-      disciplines: [],
-      levels: [],
-      breeds: ["Warmblood"],
-      age: 0,
-      height_hands: 0,
-      height_cm: 0,
-      sex: "",
+      location_country: "", // This will trigger validation if left empty
+      disciplines: [], // This will trigger validation if left empty
+      levels: [], // This will trigger validation if left empty
+      breed: "", // Changed to empty to require selection
+      age: undefined as any, // This will trigger validation if left empty
+      height_hands: undefined as any, // This will trigger validation if left empty
+      height_cm: undefined as any, // This will trigger validation if left empty
+      sex: "", // This will trigger validation if left empty
       sire: "",
       dam: "",
       dam_sire: "",
-      characteristics: [],
-      price_min: 0,
-      price_max: 0,
-      currency: "EUR",
+      characteristics: [], // This will trigger validation if left empty
+      price_min: undefined as any, // This will trigger validation if left empty
+      price_max: undefined as any, // This will trigger validation if left empty
+      currency: "", // Changed to empty to require selection
       description: "",
       photos: [],
       videos: [],
@@ -854,8 +854,8 @@ export default function AddHorse() {
                           name="sex"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Sex</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormLabel>Sex *</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a sex" />
@@ -863,7 +863,7 @@ export default function AddHorse() {
                                 </FormControl>
                                 <SelectContent>
                                   {constants && constants.sexes ? (
-                                    constants.sexes.map((sex) => (
+                                    constants.sexes.map((sex: string) => (
                                       <SelectItem key={sex} value={sex}>
                                         {sex}
                                       </SelectItem>
@@ -884,14 +884,11 @@ export default function AddHorse() {
                         
                         <FormField
                           control={form.control}
-                          name="breeds"
+                          name="breed"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Breed</FormLabel>
-                              <Select 
-                                onValueChange={(value) => field.onChange([value])} 
-                                defaultValue={field.value?.length ? field.value[0] : undefined}
-                              >
+                              <FormLabel>Breed *</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value || ""}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a breed" />
@@ -899,7 +896,7 @@ export default function AddHorse() {
                                 </FormControl>
                                 <SelectContent>
                                   {constants && constants.breeds ? (
-                                    constants.breeds.map((breed) => (
+                                    constants.breeds.map((breed: string) => (
                                       <SelectItem key={breed} value={breed}>
                                         {breed}
                                       </SelectItem>
