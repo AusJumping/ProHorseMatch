@@ -199,57 +199,9 @@ export default function AddHorse() {
     setVideoUrls(videoUrls.filter(video => video !== url));
   };
 
-  // Check if basic information fields are complete
-  const isBasicInfoComplete = () => {
-    const values = form.getValues();
-    const basicFields = [
-      'name',
-      'location_country', 
-      'disciplines',
-      'breeds',
-      'sex',
-      'currency'
-    ];
-    
-    console.log('Checking basic info completion:', values);
-    
-    for (const field of basicFields) {
-      const value = values[field];
-      console.log(`Field ${field}:`, value, 'Valid:', !((!value || (Array.isArray(value) && value.length === 0) || value === "")));
-      if (!value || (Array.isArray(value) && value.length === 0) || value === "") {
-        console.log(`Missing field: ${field}`);
-        return false;
-      }
-    }
-    return true;
-  };
-
-  // Navigate to the next tab with validation
+  // Navigate to the next tab
   const nextTab = () => {
     if (activeTab === "basic") {
-      const values = form.getValues();
-      console.log('All form values when clicking Next:', values);
-      
-      if (!isBasicInfoComplete()) {
-        // Let's show exactly which fields are missing
-        const missingFields = [];
-        const basicFields = ['name', 'location_country', 'disciplines', 'breeds', 'sex', 'currency'];
-        
-        basicFields.forEach(field => {
-          const value = values[field as keyof typeof values];
-          if (!value || (Array.isArray(value) && value.length === 0) || value === "") {
-            missingFields.push(field);
-          }
-        });
-        
-        console.log('Missing fields:', missingFields);
-        toast({
-          title: "Required Fields Missing",
-          description: `Please complete these fields: ${missingFields.join(', ')}`,
-          variant: "destructive",
-        });
-        return;
-      }
       setActiveTab("details");
     } else if (activeTab === "details") {
       setActiveTab("media");
