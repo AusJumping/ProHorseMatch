@@ -1087,7 +1087,7 @@ export default function AddHorse() {
                           name="levels"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Performance Levels</FormLabel>
+                              <FormLabel>Competition Level</FormLabel>
                               <div className="grid grid-cols-1 gap-2">
                                 <Select 
                                   onValueChange={(value) => {

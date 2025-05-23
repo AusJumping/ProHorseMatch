@@ -692,7 +692,7 @@ export default function EditHorse() {
                         
                         return (
                           <FormItem>
-                            <FormLabel>Performance Level</FormLabel>
+                            <FormLabel>Competition Level</FormLabel>
                             <Select 
                               onValueChange={(value) => field.onChange([value])} 
                               value={selectedLevel}
