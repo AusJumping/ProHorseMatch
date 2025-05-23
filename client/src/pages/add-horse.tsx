@@ -6,6 +6,7 @@ import { useLocation } from "wouter";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -849,81 +850,48 @@ export default function AddHorse() {
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <FormField
-                          control={form.control}
-                          name="sex"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Sex</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a sex" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {constants && constants.sexes ? (
-                                    constants.sexes.map((sex) => (
-                                      <SelectItem key={sex} value={sex}>
-                                        {sex}
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <>
-                                      <SelectItem value="Mare">Mare</SelectItem>
-                                      <SelectItem value="Gelding">Gelding</SelectItem>
-                                      <SelectItem value="Stallion">Stallion</SelectItem>
-                                    </>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
+                        <div>
+                          <Label htmlFor="sex">Sex *</Label>
+                          <select 
+                            id="sex" 
+                            {...form.register("sex")} 
+                            defaultValue=""
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <option value="" disabled>-- Choose a sex --</option>
+                            <option value="Mare">Mare</option>
+                            <option value="Gelding">Gelding</option>
+                            <option value="Stallion">Stallion</option>
+                          </select>
+                          {form.formState.errors.sex && (
+                            <p className="text-red-500 text-sm mt-1">{form.formState.errors.sex.message}</p>
                           )}
-                        />
+                        </div>
                         
-                        <FormField
-                          control={form.control}
-                          name="breeds"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Breed</FormLabel>
-                              <Select 
-                                onValueChange={(value) => field.onChange([value])} 
-                                defaultValue={field.value?.length ? field.value[0] : undefined}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select a breed" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {constants && constants.breeds ? (
-                                    constants.breeds.map((breed) => (
-                                      <SelectItem key={breed} value={breed}>
-                                        {breed}
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <>
-                                      <SelectItem value="Warmblood">Warmblood</SelectItem>
-                                      <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
-                                      <SelectItem value="Arabian">Arabian</SelectItem>
-                                      <SelectItem value="Quarter Horse">Quarter Horse</SelectItem>
-                                      <SelectItem value="Hanoverian">Hanoverian</SelectItem>
-                                      <SelectItem value="Dutch Warmblood">Dutch Warmblood</SelectItem>
-                                      <SelectItem value="Oldenburg">Oldenburg</SelectItem>
-                                      <SelectItem value="Holsteiner">Holsteiner</SelectItem>
-                                      <SelectItem value="Selle Français">Selle Français</SelectItem>
-                                      <SelectItem value="Irish Sport Horse">Irish Sport Horse</SelectItem>
-                                    </>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <FormMessage />
-                            </FormItem>
+                        <div>
+                          <Label htmlFor="breeds">Breed *</Label>
+                          <select 
+                            id="breeds" 
+                            {...form.register("breeds.0")} 
+                            defaultValue=""
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <option value="" disabled>-- Choose a breed --</option>
+                            <option value="Warmblood">Warmblood</option>
+                            <option value="Thoroughbred">Thoroughbred</option>
+                            <option value="Arabian">Arabian</option>
+                            <option value="Quarter Horse">Quarter Horse</option>
+                            <option value="Hanoverian">Hanoverian</option>
+                            <option value="Dutch Warmblood">Dutch Warmblood</option>
+                            <option value="Oldenburg">Oldenburg</option>
+                            <option value="Holsteiner">Holsteiner</option>
+                            <option value="Selle Français">Selle Français</option>
+                            <option value="Irish Sport Horse">Irish Sport Horse</option>
+                          </select>
+                          {form.formState.errors.breeds && (
+                            <p className="text-red-500 text-sm mt-1">{form.formState.errors.breeds.message}</p>
                           )}
-                        />
+                        </div>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
