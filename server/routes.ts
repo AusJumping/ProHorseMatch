@@ -164,20 +164,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(
     session({
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
-        secure: false, // Setting to false for development and easier testing
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        secure: false, // Keep false for development
         httpOnly: true,
-        sameSite: 'lax' // Always use lax to improve session persistence across redirects
+        sameSite: 'lax'
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
-        stale: false, // Don't auto-expire sessions
+        stale: false,
       }),
-      resave: true, // Force session to be saved back to the store
-      saveUninitialized: true, // Save uninitialized sessions
+      resave: false, // Changed to false to prevent session race conditions
+      saveUninitialized: false, // Changed to false to prevent unnecessary sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      // Add rolling: true to update the cookie expiration on every response
-      rolling: true
+      rolling: true,
+      name: 'horse.sid' // Custom session name for better tracking
     })
   );
 
