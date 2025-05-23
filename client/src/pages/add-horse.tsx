@@ -129,21 +129,39 @@ export default function AddHorse() {
     console.log("Current form values:", form.getValues());
     
     if (!isValid) {
-      // Also manually trigger validation for each required field to ensure errors show
-      await form.trigger(['name', 'location_country', 'disciplines', 'levels', 'breed', 'sex', 'currency', 'age', 'height_hands', 'sire', 'dam', 'dam_sire', 'characteristics']);
+      // Before showing errors, let's update calculated fields and photos
+      const currentValues = form.getValues();
       
-      // Show detailed error information
-      const errors = form.formState.errors;
-      const errorFields = Object.keys(errors);
-      console.log("Fields with errors:", errorFields);
-      console.log("Detailed errors:", errors);
+      // Update height_cm from height_hands if needed
+      if (currentValues.height_hands && !currentValues.height_cm) {
+        const heightCm = Math.round(currentValues.height_hands * 10.16);
+        form.setValue("height_cm", heightCm);
+      }
       
-      toast({
-        title: "Please complete all required fields",
-        description: `Missing: ${errorFields.join(', ')}. Check the form for red error messages.`,
-        variant: "destructive",
-      });
-      return;
+      // Update photos from state
+      if (photoUrls.length > 0) {
+        form.setValue("photos", photoUrls);
+      }
+      
+      // Re-trigger validation after updating values
+      const isValidAfterUpdate = await form.trigger();
+      if (isValidAfterUpdate) {
+        // If valid now, proceed with submission
+        console.log("Validation passed after updating calculated fields");
+      } else {
+        // Show detailed error information
+        const errors = form.formState.errors;
+        const errorFields = Object.keys(errors);
+        console.log("Fields with errors:", errorFields);
+        console.log("Detailed errors:", errors);
+        
+        toast({
+          title: "Please complete all required fields",
+          description: `Missing: ${errorFields.join(', ')}. Check the form for red error messages.`,
+          variant: "destructive",
+        });
+        return;
+      }
     }
     
     // Add debug toast to confirm the form submission was triggered
