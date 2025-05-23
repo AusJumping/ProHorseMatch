@@ -858,7 +858,7 @@ export default function AddHorse() {
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select a sex" />
+                                    <SelectValue placeholder="Select Gender" />
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>

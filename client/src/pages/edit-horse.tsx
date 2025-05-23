@@ -290,7 +290,7 @@ export default function EditHorse() {
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select sex" />
+                                  <SelectValue placeholder="Select Gender" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
