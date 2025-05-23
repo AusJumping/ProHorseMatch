@@ -122,6 +122,17 @@ export default function AddHorse() {
   const onSubmit = async (data: HorseFormValues) => {
     console.log("Form submission started", data);
     
+    // Trigger validation for all fields to show individual error messages
+    const isValid = await form.trigger();
+    if (!isValid) {
+      toast({
+        title: "Please complete all required fields",
+        description: "Check the form for missing information marked with red error messages.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Add debug toast to confirm the form submission was triggered
     toast({
       title: "Submitting form...",
@@ -275,6 +286,7 @@ export default function AddHorse() {
                             name="currency"
                             render={({ field }) => (
                               <FormItem>
+                                <FormLabel>Currency *</FormLabel>
                                 <FormControl>
                                   <CurrencySelector 
                                     defaultValue={field.value}
