@@ -124,7 +124,13 @@ export default function AddHorse() {
     
     // Trigger validation for all fields to show individual error messages
     const isValid = await form.trigger();
+    console.log("Validation result:", isValid);
+    console.log("Form errors:", form.formState.errors);
+    
     if (!isValid) {
+      // Also manually trigger validation for each required field to ensure errors show
+      await form.trigger(['name', 'location_country', 'disciplines', 'levels', 'breed', 'sex', 'currency', 'age', 'height_hands', 'sire', 'dam', 'dam_sire', 'characteristics']);
+      
       toast({
         title: "Please complete all required fields",
         description: "Check the form for missing information marked with red error messages.",
