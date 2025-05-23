@@ -30,6 +30,7 @@ const horseFormSchema = z.object({
   levels: z.array(z.string()).min(1, "Select at least one level"),
   breeds: z.array(z.string()).min(1, "Select at least one breed"),
   sex: z.string().min(1, "Sex is required"),
+  colour: z.string().min(1, "Colour is required"),
   currency: z.string().min(1, "Currency is required"),
   
   // Required numeric fields
@@ -98,6 +99,7 @@ export default function AddHorse() {
       height_hands: 0,
       height_cm: 0,
       sex: "",
+      colour: "",
       sire: "",
       dam: "",
       dam_sire: "",
@@ -871,6 +873,45 @@ export default function AddHorse() {
                                       <SelectItem value="Mare">Mare</SelectItem>
                                       <SelectItem value="Gelding">Gelding</SelectItem>
                                       <SelectItem value="Stallion">Stallion</SelectItem>
+                                    </>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="colour"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Colour</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a colour" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {constants && constants.colours ? (
+                                    constants.colours.map((colour) => (
+                                      <SelectItem key={colour} value={colour}>
+                                        {colour}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <SelectItem value="Bay">Bay</SelectItem>
+                                      <SelectItem value="Brown">Brown</SelectItem>
+                                      <SelectItem value="Black">Black</SelectItem>
+                                      <SelectItem value="Grey">Grey</SelectItem>
+                                      <SelectItem value="Chestnut">Chestnut</SelectItem>
+                                      <SelectItem value="Palomino">Palomino</SelectItem>
+                                      <SelectItem value="Tobiano">Tobiano</SelectItem>
+                                      <SelectItem value="Buckskin">Buckskin</SelectItem>
+                                      <SelectItem value="Other">Other</SelectItem>
                                     </>
                                   )}
                                 </SelectContent>

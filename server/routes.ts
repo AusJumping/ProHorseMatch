@@ -15,6 +15,7 @@ import {
   insertMessageSchema,
   disciplines,
   sexes,
+  colours,
   breeds,
   characteristics,
   jumpingLevels,
