@@ -186,14 +186,14 @@ const ChatInterface = ({ conversation, messages, isLoading }: ChatInterfaceProps
                 <div
                   className={`max-w-[75%] rounded-lg px-4 py-2 ${
                     message.sender_type === userType
-                      ? "bg-primary text-white"
+                      ? "bg-[#cdac6e] text-white"
                       : "bg-neutral-100"
                   }`}
                 >
                   <p>{message.content}</p>
                   <p className={`text-xs mt-1 ${
                     message.sender_type === userType
-                      ? "text-primary-foreground/75"
+                      ? "text-white/75"
                       : "text-neutral-500"
                   }`}>
                     {formatMessageTime(message.created_at)}
