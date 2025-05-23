@@ -1351,6 +1351,20 @@ export class DatabaseStorage implements IStorage {
     return newMessage;
   }
 
+  async updateMessage(id: number, update: Partial<Message>): Promise<Message> {
+    const [updatedMessage] = await db
+      .update(messages)
+      .set(update)
+      .where(eq(messages.id, id))
+      .returning();
+    
+    if (!updatedMessage) {
+      throw new Error("Message not found");
+    }
+    
+    return updatedMessage;
+  }
+
   // Conversation methods
   async getConversations(): Promise<Conversation[]> {
     return await db.select().from(conversations);
