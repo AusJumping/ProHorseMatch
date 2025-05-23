@@ -1,0 +1,69 @@
+Immediate Validation on Field Change:
+To enhance user experience, it's beneficial to trigger validation as soon as a field's value changes. This provides immediate feedback and helps users correct errors promptly.
+Implementation:
+<Select
+  onValueChange={(val) => {
+    field.onChange(val);
+    form.trigger("fieldName"); // Replace "fieldName" with the actual field name
+  }}
+  value={field.value || ""}
+>
+  {/* Select options */}
+</Select>
+This approach ensures that validation messages appear as soon as the user makes a selection, rather than waiting until form submission.
+Handling Numeric Inputs:
+When dealing with numeric fields, ensure that the input values are correctly parsed as numbers. HTML input elements return string values, so it's essential to convert them appropriately.
+Implementation:
+<input
+  type="number"
+  value={field.value ?? ""}
+  onChange={(e) => field.onChange(e.target.valueAsNumber)}
+  className="input-style"
+/>
+This ensures that the values are correctly interpreted as numbers, aligning with the expectations of the Zod schema.
+Validation of Multi-Select Fields:
+For fields like disciplines and levels that accept multiple selections, ensure that the form captures an array of selected values and that the Zod schema validates that at least one selection is made.
+Zod Schema:
+disciplines: z.array(z.string()).min(1, "Select at least one discipline"),
+Form Handling:
+Ensure that the form captures the selected values as an array and updates the form state accordingly.
+Consistent Error Message Display:
+Utilize <FormMessage /> components consistently across all form fields to display validation errors. Ensure that these components are correctly linked to their respective form fields.
+🛠️ Sample Implementation for a Required Dropdown Field:
+Here's an example of how to implement a required dropdown field with immediate validation feedback:
+<FormField
+  control={form.control}
+  name="breed"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Breed *</FormLabel>
+      <Select
+        onValueChange={(val) => {
+          field.onChange(val);
+          form.trigger("breed");
+        }}
+        value={field.value || ""}
+      >
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a breed" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          {/* Replace with actual options */}
+          <SelectItem value="option1">Option 1</SelectItem>
+          <SelectItem value="option2">Option 2</SelectItem>
+        </SelectContent>
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+This setup ensures that:
+The field is marked as required in the Zod schema.
+Validation is triggered immediately upon selection.
+Error messages are displayed appropriately.
+📘 Additional Resources:
+For more detailed examples and best practices, consider reviewing the following resources:
+React Hook Form - Advanced Usage
+Zod Documentation
