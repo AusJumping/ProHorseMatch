@@ -1015,7 +1015,7 @@ export default function AddHorse() {
                           name="disciplines"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Disciplines</FormLabel>
+                              <FormLabel>Main Discipline</FormLabel>
                               <div className="grid grid-cols-1 gap-2">
                                 <Select 
                                   onValueChange={(value) => {
