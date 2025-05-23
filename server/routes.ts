@@ -164,20 +164,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(
     session({
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: false, // Keep false for development
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
+        secure: false, // Setting to false for development and easier testing
         httpOnly: true,
-        sameSite: 'lax'
+        sameSite: 'lax' // Always use lax to improve session persistence across redirects
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
-        stale: false,
+        stale: false, // Don't auto-expire sessions
       }),
-      resave: false, // Changed to false to prevent session race conditions
-      saveUninitialized: false, // Changed to false to prevent unnecessary sessions
+      resave: true, // Force session to be saved back to the store
+      saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      rolling: true,
-      name: 'horse.sid' // Custom session name for better tracking
+      // Add rolling: true to update the cookie expiration on every response
+      rolling: true
     })
   );
 
@@ -317,7 +317,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (err) {
         return res.status(500).json({ message: "Failed to logout" });
       }
-      res.clearCookie("horse.sid"); // Use the correct cookie name
+      res.clearCookie("connect.sid");
       return res.json({ message: "Logged out successfully" });
     });
   });
@@ -1150,35 +1150,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
-      }
-      
-      // Server-side validation for required fields (all except videos and description)
-      const requiredFields = [
-        'name', 'location_country', 'disciplines', 'levels', 'breeds', 'age', 
-        'height_hands', 'height_cm', 'sex', 'sire', 'dam', 'dam_sire', 
-        'characteristics', 'price_min', 'price_max', 'currency', 'photos'
-      ];
-      
-      const missingFields = [];
-      
-      for (const field of requiredFields) {
-        const value = req.body[field];
-        
-        if (value === undefined || value === null || value === "") {
-          missingFields.push(field);
-        } else if (Array.isArray(value) && value.length === 0) {
-          missingFields.push(field);
-        } else if (typeof value === 'number' && (isNaN(value) || value <= 0)) {
-          if (field !== 'age') { // Age can be 0
-            missingFields.push(field);
-          }
-        }
-      }
-      
-      if (missingFields.length > 0) {
-        return res.status(400).json({ 
-          message: `The following required fields are missing or invalid: ${missingFields.join(', ')}. Only videos and description are optional.`
-        });
       }
       
       const validatedData = insertHorseSchema.parse(req.body);

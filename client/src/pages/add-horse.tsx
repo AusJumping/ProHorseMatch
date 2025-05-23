@@ -28,28 +28,26 @@ const horseFormSchema = z.object({
   location_country: z.string().min(1, "Country is required"),
   disciplines: z.array(z.string()).min(1, "Select at least one discipline"),
   levels: z.array(z.string()).min(1, "Select at least one level"),
-  breed: z.string().min(1, "Breed is required"),
+  breeds: z.array(z.string()).min(1, "Select at least one breed"),
   sex: z.string().min(1, "Sex is required"),
   currency: z.string().min(1, "Currency is required"),
   
   // Required numeric fields
-  age: z.number({ required_error: "Age is required" }).min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
-  height_hands: z.number({ required_error: "Height in hands is required" }).min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
-  price_min: z.number({ required_error: "Minimum price is required" }).min(1, "Minimum price must be at least 1"),
-  price_max: z.number({ required_error: "Maximum price is required" }).min(1, "Maximum price must be at least 1"),
+  age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
+  height_hands: z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+  price_min: z.number().min(1, "Minimum price must be at least 1"),
+  price_max: z.number().min(1, "Maximum price must be at least 1"),
   
   // Required for the form to work
   owner_id: z.number(),
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
   
-  // Required text/input fields
-  height_cm: z.number().min(1, "Height in cm is required"),
+  // Optional text/input fields
+  height_cm: z.number().optional(),
   sire: z.string().min(1, "Sire information is required"),
-  dam: z.string().min(1, "Dam information is required"),
+  dam: z.string().optional(),
   dam_sire: z.string().min(1, "Dam Sire information is required"),
-  characteristics: z.array(z.string()).min(1, "Select at least one characteristic"),
-  
-  // Optional fields (only Video and Description)
+  characteristics: z.array(z.string()).optional(),
   description: z.string().optional(),
   additional_info: z.string().optional(),
   
@@ -86,30 +84,27 @@ export default function AddHorse() {
   });
 
   const ownerID = user?.id || 1; // Default to 1 for demo purposes
-  
-  // For testing: bypass auth check temporarily to test dropdown validation
-  const isTestingMode = true;
 
   const form = useForm<HorseFormValues>({
     resolver: zodResolver(horseFormSchema),
     defaultValues: {
       name: "",
       owner_id: ownerID,
-      location_country: "", // This will trigger validation if left empty
-      disciplines: [], // This will trigger validation if left empty
-      levels: [], // This will trigger validation if left empty
-      breed: "", // Changed to empty to require selection
-      age: undefined as any, // This will trigger validation if left empty
-      height_hands: undefined as any, // This will trigger validation if left empty
-      height_cm: undefined as any, // This will trigger validation if left empty
-      sex: "", // This will trigger validation if left empty
+      location_country: "",
+      disciplines: [],
+      levels: [],
+      breeds: ["Warmblood"],
+      age: 0,
+      height_hands: 0,
+      height_cm: 0,
+      sex: "",
       sire: "",
       dam: "",
       dam_sire: "",
-      characteristics: [], // This will trigger validation if left empty
-      price_min: undefined as any, // This will trigger validation if left empty
-      price_max: undefined as any, // This will trigger validation if left empty
-      currency: "", // Changed to empty to require selection
+      characteristics: [],
+      price_min: 0,
+      price_max: 0,
+      currency: "EUR",
       description: "",
       photos: [],
       videos: [],
@@ -124,23 +119,6 @@ export default function AddHorse() {
   
   const onSubmit = async (data: HorseFormValues) => {
     console.log("Form submission started", data);
-    
-    // Trigger validation for all fields to show individual error messages
-    const isValid = await form.trigger();
-    console.log("Validation result:", isValid);
-    console.log("Form errors:", form.formState.errors);
-    
-    if (!isValid) {
-      // Also manually trigger validation for each required field to ensure errors show
-      await form.trigger(['name', 'location_country', 'disciplines', 'levels', 'breed', 'sex', 'currency', 'age', 'height_hands', 'sire', 'dam', 'dam_sire', 'characteristics']);
-      
-      toast({
-        title: "Please complete all required fields",
-        description: "Check the form for missing information marked with red error messages.",
-        variant: "destructive",
-      });
-      return;
-    }
     
     // Add debug toast to confirm the form submission was triggered
     toast({
@@ -295,7 +273,6 @@ export default function AddHorse() {
                             name="currency"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Currency *</FormLabel>
                                 <FormControl>
                                   <CurrencySelector 
                                     defaultValue={field.value}
@@ -875,8 +852,8 @@ export default function AddHorse() {
                           name="sex"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Sex *</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <FormLabel>Sex</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a sex" />
@@ -884,7 +861,7 @@ export default function AddHorse() {
                                 </FormControl>
                                 <SelectContent>
                                   {constants && constants.sexes ? (
-                                    constants.sexes.map((sex: string) => (
+                                    constants.sexes.map((sex) => (
                                       <SelectItem key={sex} value={sex}>
                                         {sex}
                                       </SelectItem>
@@ -905,11 +882,14 @@ export default function AddHorse() {
                         
                         <FormField
                           control={form.control}
-                          name="breed"
+                          name="breeds"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Breed *</FormLabel>
-                              <Select onValueChange={field.onChange} value={field.value || ""}>
+                              <FormLabel>Breed</FormLabel>
+                              <Select 
+                                onValueChange={(value) => field.onChange([value])} 
+                                defaultValue={field.value?.length ? field.value[0] : undefined}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a breed" />
@@ -917,7 +897,7 @@ export default function AddHorse() {
                                 </FormControl>
                                 <SelectContent>
                                   {constants && constants.breeds ? (
-                                    constants.breeds.map((breed: string) => (
+                                    constants.breeds.map((breed) => (
                                       <SelectItem key={breed} value={breed}>
                                         {breed}
                                       </SelectItem>
