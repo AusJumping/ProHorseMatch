@@ -19,21 +19,17 @@ export default function WelcomePage() {
           </span>
         </h1>
         
-        <p className="text-xl mb-8 max-w-lg mx-auto">
-          ProHorseMatch uses intelligent technology to connect performance horses with their ideal new owners.
-        </p>
-        
         <div className="space-y-6 text-lg">
           <p className="max-w-lg mx-auto">
-            Whether you're looking for your next top competitor or listing a quality horse for sale, our platform is designed to help you make the right match — quickly and confidently.
+            ProHorseMatch uses smart technology to connect performance horses with the right owners.
           </p>
           
           <p className="max-w-lg mx-auto">
-            Use smart filters to search by discipline, competition level, price, location, and more, making it easier than ever to connect horses and owners that truly align.
+            Whether you're buying or selling, find the perfect match fast using filters for discipline, level, price, location, and more.
           </p>
           
           <p className="max-w-lg mx-auto">
-            We're currently in our Beta phase and welcome your feedback — your insights will help us shape the future of equine matchmaking.
+            We are in Beta phase and value your feedback to help us improve.
           </p>
         </div>
         
