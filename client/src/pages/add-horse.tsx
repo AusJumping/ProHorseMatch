@@ -1107,7 +1107,7 @@ export default function AddHorse() {
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select at least one level" />
+                                      <SelectValue placeholder="Select the level the horse is currently competing at" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
