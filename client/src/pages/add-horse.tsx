@@ -6,7 +6,6 @@ import { useLocation } from "wouter";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,7 +22,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
-// Form schema for adding a horse - ALL FIELDS MANDATORY except videos and description
+// Form schema for adding a horse
 const horseFormSchema = z.object({
   // Required fields - all dropdown selections must be completed
   location_country: z.string().min(1, "Country is required"),
@@ -36,26 +35,27 @@ const horseFormSchema = z.object({
   // Required numeric fields
   age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
   height_hands: z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
-  height_cm: z.number().min(1, "Height in cm is required"),
   price_min: z.number().min(1, "Minimum price must be at least 1"),
   price_max: z.number().min(1, "Maximum price must be at least 1"),
   
-  // Required text fields
+  // Required for the form to work
   owner_id: z.number(),
-  name: z.string().min(2, "Horse name is required (minimum 2 characters)").max(50, "Name must be less than 50 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
+  
+  // Required text/input fields
+  height_cm: z.number().min(1, "Height in cm is required"),
   sire: z.string().min(1, "Sire information is required"),
   dam: z.string().min(1, "Dam information is required"),
   dam_sire: z.string().min(1, "Dam Sire information is required"),
-  
-  // Required characteristics selection
   characteristics: z.array(z.string()).min(1, "Select at least one characteristic"),
   
-  // Required media
-  photos: z.array(z.string()).min(1, "At least one photo is required"),
-  
-  // OPTIONAL FIELDS - Only videos and description are optional
-  videos: z.array(z.string()).optional(),
+  // Optional fields (only Video and Description)
   description: z.string().optional(),
+  additional_info: z.string().optional(),
+  
+  // Media requirements
+  photos: z.array(z.string()).min(1, "At least one photo is required"),
+  videos: z.array(z.string()).optional(),
 }).refine((data) => {
   // Ensure that price_max is greater than or equal to price_min
   return data.price_max >= data.price_min;
@@ -89,14 +89,13 @@ export default function AddHorse() {
 
   const form = useForm<HorseFormValues>({
     resolver: zodResolver(horseFormSchema),
-    mode: "onChange", // Enable validation on change
     defaultValues: {
       name: "",
       owner_id: ownerID,
       location_country: "",
       disciplines: [],
       levels: [],
-      breeds: [],
+      breeds: ["Warmblood"],
       age: 0,
       height_hands: 0,
       height_cm: 0,
@@ -107,7 +106,7 @@ export default function AddHorse() {
       characteristics: [],
       price_min: 0,
       price_max: 0,
-      currency: "AUD",
+      currency: "EUR",
       description: "",
       photos: [],
       videos: [],
@@ -850,48 +849,81 @@ export default function AddHorse() {
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                          <Label htmlFor="sex">Sex *</Label>
-                          <select 
-                            id="sex" 
-                            {...form.register("sex")} 
-                            defaultValue=""
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            <option value="" disabled>-- Choose a sex --</option>
-                            <option value="Mare">Mare</option>
-                            <option value="Gelding">Gelding</option>
-                            <option value="Stallion">Stallion</option>
-                          </select>
-                          {form.formState.errors.sex && (
-                            <p className="text-red-500 text-sm mt-1">{form.formState.errors.sex.message}</p>
+                        <FormField
+                          control={form.control}
+                          name="sex"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Sex</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a sex" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {constants && constants.sexes ? (
+                                    constants.sexes.map((sex) => (
+                                      <SelectItem key={sex} value={sex}>
+                                        {sex}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <SelectItem value="Mare">Mare</SelectItem>
+                                      <SelectItem value="Gelding">Gelding</SelectItem>
+                                      <SelectItem value="Stallion">Stallion</SelectItem>
+                                    </>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
                           )}
-                        </div>
+                        />
                         
-                        <div>
-                          <Label htmlFor="breeds">Breed *</Label>
-                          <select 
-                            id="breeds" 
-                            {...form.register("breeds.0")} 
-                            defaultValue=""
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            <option value="" disabled>-- Choose a breed --</option>
-                            <option value="Warmblood">Warmblood</option>
-                            <option value="Thoroughbred">Thoroughbred</option>
-                            <option value="Arabian">Arabian</option>
-                            <option value="Quarter Horse">Quarter Horse</option>
-                            <option value="Hanoverian">Hanoverian</option>
-                            <option value="Dutch Warmblood">Dutch Warmblood</option>
-                            <option value="Oldenburg">Oldenburg</option>
-                            <option value="Holsteiner">Holsteiner</option>
-                            <option value="Selle Français">Selle Français</option>
-                            <option value="Irish Sport Horse">Irish Sport Horse</option>
-                          </select>
-                          {form.formState.errors.breeds && (
-                            <p className="text-red-500 text-sm mt-1">{form.formState.errors.breeds.message}</p>
+                        <FormField
+                          control={form.control}
+                          name="breeds"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Breed</FormLabel>
+                              <Select 
+                                onValueChange={(value) => field.onChange([value])} 
+                                defaultValue={field.value?.length ? field.value[0] : undefined}
+                              >
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a breed" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {constants && constants.breeds ? (
+                                    constants.breeds.map((breed) => (
+                                      <SelectItem key={breed} value={breed}>
+                                        {breed}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <SelectItem value="Warmblood">Warmblood</SelectItem>
+                                      <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
+                                      <SelectItem value="Arabian">Arabian</SelectItem>
+                                      <SelectItem value="Quarter Horse">Quarter Horse</SelectItem>
+                                      <SelectItem value="Hanoverian">Hanoverian</SelectItem>
+                                      <SelectItem value="Dutch Warmblood">Dutch Warmblood</SelectItem>
+                                      <SelectItem value="Oldenburg">Oldenburg</SelectItem>
+                                      <SelectItem value="Holsteiner">Holsteiner</SelectItem>
+                                      <SelectItem value="Selle Français">Selle Français</SelectItem>
+                                      <SelectItem value="Irish Sport Horse">Irish Sport Horse</SelectItem>
+                                    </>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
                           )}
-                        </div>
+                        />
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1421,8 +1453,24 @@ export default function AddHorse() {
                           Back
                         </Button>
                         <Button 
-                          type="submit" 
+                          type="button" 
                           disabled={isSubmitting}
+                          onClick={() => {
+                            console.log("Submit button clicked", {
+                              photos: photoUrls,
+                              videos: videoUrls
+                            });
+                            
+                            // Create a complete data object with all required fields
+                            const formData = form.getValues();
+                            
+                            // Set the media directly in the form data
+                            formData.photos = photoUrls;
+                            formData.videos = videoUrls;
+                            
+                            // Directly call the submission function with the complete data
+                            onSubmit(formData);
+                          }}
                         >
                           {isSubmitting ? (
                             <>
@@ -1433,13 +1481,6 @@ export default function AddHorse() {
                             "Submit Listing"
                           )}
                         </Button>
-                        
-                        {/* General error message when required fields are missing */}
-                        {Object.keys(form.formState.errors).length > 0 && (
-                          <p className="text-red-500 text-sm mt-2">
-                            Please complete all required fields before submitting.
-                          </p>
-                        )}
                       </div>
                     </TabsContent>
                   </ScrollArea>
