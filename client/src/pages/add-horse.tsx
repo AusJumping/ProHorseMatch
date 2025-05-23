@@ -295,10 +295,13 @@ export default function AddHorse() {
                                 <FormLabel>Currency *</FormLabel>
                                 <FormControl>
                                   <CurrencySelector 
+                                    value={field.value}
                                     defaultValue={field.value}
                                     onChange={(value) => {
                                       field.onChange(value);
                                       form.setValue("currency", value);
+                                      // Trigger validation for this field specifically
+                                      form.trigger("currency");
                                     }}
                                   />
                                 </FormControl>
