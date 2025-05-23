@@ -296,18 +296,7 @@ export default function HorseDetail() {
               </div>
             )}
             
-            {/* Seller Info */}
-            <div className="border-t border-neutral-200 pt-4 mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-500">
-                  <span className="text-lg font-semibold">ES</span>
-                </div>
-                <div>
-                  <h4 className="font-medium">Elite Sporthorses</h4>
-                  <p className="text-sm text-neutral-500">Professional Seller • {horse.location_country}</p>
-                </div>
-              </div>
-            </div>
+
             
             {/* Message form (conditionally displayed) */}
             {isMessageOpen && (
