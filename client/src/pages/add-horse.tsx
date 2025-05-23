@@ -1421,24 +1421,8 @@ export default function AddHorse() {
                           Back
                         </Button>
                         <Button 
-                          type="button" 
+                          type="submit" 
                           disabled={isSubmitting}
-                          onClick={() => {
-                            console.log("Submit button clicked", {
-                              photos: photoUrls,
-                              videos: videoUrls
-                            });
-                            
-                            // Create a complete data object with all required fields
-                            const formData = form.getValues();
-                            
-                            // Set the media directly in the form data
-                            formData.photos = photoUrls;
-                            formData.videos = videoUrls;
-                            
-                            // Directly call the submission function with the complete data
-                            onSubmit(formData);
-                          }}
                         >
                           {isSubmitting ? (
                             <>
@@ -1449,6 +1433,13 @@ export default function AddHorse() {
                             "Submit Listing"
                           )}
                         </Button>
+                        
+                        {/* General error message when required fields are missing */}
+                        {Object.keys(form.formState.errors).length > 0 && (
+                          <p className="text-red-500 text-sm mt-2">
+                            Please complete all required fields before submitting.
+                          </p>
+                        )}
                       </div>
                     </TabsContent>
                   </ScrollArea>
