@@ -233,7 +233,7 @@ export default function AddHorse() {
           <CardHeader>
             <CardTitle>Add Horse Listing</CardTitle>
             <CardDescription>
-              PLEASE COMPLETE ALL FIELDS to connect with the best matched potential buyers
+              Please complete ALL FIELDS to connect with potential buyers best matches with your horse
             </CardDescription>
           </CardHeader>
           <CardContent>
