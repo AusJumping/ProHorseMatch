@@ -90,6 +90,7 @@ export const horses = pgTable("horses", {
   height_hands: real("height_hands"),
   height_cm: integer("height_cm"),
   sex: text("sex").notNull(),
+  colour: text("colour").notNull(),
   sire: text("sire"),
   dam: text("dam"),
   dam_sire: text("dam_sire"),
@@ -173,6 +174,7 @@ export type Conversation = typeof conversations.$inferSelect;
 // Constants for app
 export const disciplines = ["Jumping", "Dressage", "Eventing"];
 export const sexes = ["Mare", "Gelding", "Stallion"];
+export const colours = ["Bay", "Brown", "Black", "Grey", "Chestnut", "Palomino", "Tobiano", "Buckskin", "Other"];
 export const breeds = [
   "Warmblood", 
   "Thoroughbred", 
