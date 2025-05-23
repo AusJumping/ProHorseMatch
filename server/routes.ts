@@ -1907,6 +1907,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({
         disciplines,
         sexes,
+        colours,
         breeds,
         characteristics,
         levels: {
