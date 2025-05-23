@@ -211,9 +211,13 @@ export default function AddHorse() {
       'currency'
     ];
     
+    console.log('Checking basic info completion:', values);
+    
     for (const field of basicFields) {
       const value = values[field];
+      console.log(`Field ${field}:`, value, 'Valid:', !((!value || (Array.isArray(value) && value.length === 0) || value === "")));
       if (!value || (Array.isArray(value) && value.length === 0) || value === "") {
+        console.log(`Missing field: ${field}`);
         return false;
       }
     }
