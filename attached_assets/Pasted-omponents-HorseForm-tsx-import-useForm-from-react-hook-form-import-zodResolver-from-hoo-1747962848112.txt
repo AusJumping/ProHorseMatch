@@ -1,0 +1,93 @@
+omponents/HorseForm.tsx
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+
+// 1. Zod schema
+const formSchema = z.object({
+  breed: z.string().min(1, "Breed is required"),
+  discipline: z.string().min(1, "Discipline is required"),
+  experienceLevel: z.string().min(1, "Experience level is required"),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
+export function HorseForm() {
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+  });
+
+  const onSubmit = (data: FormValues) => {
+    console.log("Form data:", data);
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-md">
+      {/* Breed Dropdown */}
+      <div>
+        <Label>Breed</Label>
+        <Select onValueChange={(val) => setValue("breed", val)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a breed" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="warmblood">Warmblood</SelectItem>
+            <SelectItem value="thoroughbred">Thoroughbred</SelectItem>
+            <SelectItem value="pony">Pony</SelectItem>
+          </SelectContent>
+        </Select>
+        {errors.breed && <p className="text-red-500 text-sm">{errors.breed.message}</p>}
+      </div>
+
+      {/* Discipline Dropdown */}
+      <div>
+        <Label>Discipline</Label>
+        <Select onValueChange={(val) => setValue("discipline", val)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a discipline" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="jumping">Jumping</SelectItem>
+            <SelectItem value="dressage">Dressage</SelectItem>
+            <SelectItem value="eventing">Eventing</SelectItem>
+          </SelectContent>
+        </Select>
+        {errors.discipline && <p className="text-red-500 text-sm">{errors.discipline.message}</p>}
+      </div>
+
+      {/* Experience Level Dropdown */}
+      <div>
+        <Label>Experience Level</Label>
+        <Select onValueChange={(val) => setValue("experienceLevel", val)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select an experience level" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="beginner">Beginner</SelectItem>
+            <SelectItem value="intermediate">Intermediate</SelectItem>
+            <SelectItem value="advanced">Advanced</SelectItem>
+          </SelectContent>
+        </Select>
+        {errors.experienceLevel && (
+          <p className="text-red-500 text-sm">{errors.experienceLevel.message}</p>
+        )}
+      </div>
+
+      {/* Submit Button */}
+      <Button type="submit">Submit</Button>
+    </form>
+  );

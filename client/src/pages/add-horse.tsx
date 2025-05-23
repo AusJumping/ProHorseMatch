@@ -88,13 +88,14 @@ export default function AddHorse() {
 
   const form = useForm<HorseFormValues>({
     resolver: zodResolver(horseFormSchema),
+    mode: "onChange", // Enable validation on change
     defaultValues: {
       name: "",
       owner_id: ownerID,
       location_country: "",
       disciplines: [],
       levels: [],
-      breeds: ["Warmblood"],
+      breeds: [],
       age: 0,
       height_hands: 0,
       height_cm: 0,
@@ -105,7 +106,7 @@ export default function AddHorse() {
       characteristics: [],
       price_min: 0,
       price_max: 0,
-      currency: "EUR",
+      currency: "AUD",
       description: "",
       photos: [],
       videos: [],
