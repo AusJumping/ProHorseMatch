@@ -42,7 +42,7 @@ const horseFormSchema = z.object({
   price_max: z.number().min(1, "Maximum price must be at least 1"),
   currency: z.string().min(1, "Currency is required"),
   description: z.string().optional(),
-  photos: z.array(z.string()).min(1, "At least one photo is required"),
+  photos: z.array(z.string()).optional(),
   videos: z.array(z.string()).optional(),
 });
 
@@ -107,32 +107,30 @@ export default function EditHorse() {
   // Update form values when horse data is loaded
   useEffect(() => {
     if (horse) {
-      console.log("Loading horse data into form:", horse);
       form.reset({
         id: horse.id,
-        name: horse.name || "",
+        name: horse.name,
         owner_id: horse.owner_id,
-        location_country: horse.location_country || "",
-        location_radius_km: Number(horse.location_radius_km) || 0,
-        disciplines: Array.isArray(horse.disciplines) ? horse.disciplines : [],
-        levels: Array.isArray(horse.levels) ? horse.levels : [],
-        breeds: Array.isArray(horse.breeds) ? horse.breeds : [],
-        age: Number(horse.age) || 0,
-        height_hands: Number(horse.height_hands) || 0,
-        height_cm: Number(horse.height_cm) || 0,
-        sex: horse.sex || "",
+        location_country: horse.location_country,
+        location_radius_km: horse.location_radius_km || 0,
+        disciplines: horse.disciplines,
+        levels: horse.levels,
+        breeds: horse.breeds,
+        age: horse.age,
+        height_hands: horse.height_hands || 0,
+        height_cm: horse.height_cm || 0,
+        sex: horse.sex,
         sire: horse.sire || "",
         dam: horse.dam || "",
         dam_sire: horse.dam_sire || "",
-        characteristics: Array.isArray(horse.characteristics) ? horse.characteristics : [],
-        price_min: Number(horse.price_min) || 0,
-        price_max: Number(horse.price_max) || 0,
-        currency: horse.currency || "AUD",
+        characteristics: horse.characteristics || [],
+        price_min: horse.price_min,
+        price_max: horse.price_max,
+        currency: horse.currency,
         description: horse.description || "",
-        photos: Array.isArray(horse.photos) ? horse.photos : [],
-        videos: Array.isArray(horse.videos) ? horse.videos : [],
+        photos: horse.photos || [],
+        videos: horse.videos || [],
       });
-      console.log("Form values after reset:", form.getValues());
     }
   }, [horse, form]);
 
@@ -282,23 +280,21 @@ export default function EditHorse() {
                         name="sex"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Sex *</FormLabel>
-                            <Select
-                              onValueChange={(val) => {
-                                field.onChange(val);
-                                form.trigger("sex"); // Ensures immediate validation
-                              }}
-                              value={field.value || ""}
+                            <FormLabel>Sex</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              value={field.value}
+                              defaultValue={field.value}
                             >
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select a sex" />
+                                  <SelectValue placeholder="Select sex" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="Mare">Mare</SelectItem>
-                                <SelectItem value="Gelding">Gelding</SelectItem>
-                                <SelectItem value="Stallion">Stallion</SelectItem>
+                                {constants?.sexes.map((sex: string) => (
+                                  <SelectItem key={sex} value={sex}>{sex}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -311,17 +307,34 @@ export default function EditHorse() {
                         name="age"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Age *</FormLabel>
+                            <FormLabel>Age (years)</FormLabel>
                             <FormControl>
-                              <input
-                                type="number"
-                                value={field.value ?? ""}
-                                onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                placeholder="Enter age"
-                                min="1"
-                                max="30"
-                              />
+                              <Select 
+                                value={field.value?.toString() || ""} 
+                                onValueChange={(value) => field.onChange(parseInt(value))}
+                              >
+                                <SelectTrigger className="w-full">
+                                  <SelectValue placeholder="Select age" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="1">1 year</SelectItem>
+                                  <SelectItem value="2">2 years</SelectItem>
+                                  <SelectItem value="3">3 years</SelectItem>
+                                  <SelectItem value="4">4 years</SelectItem>
+                                  <SelectItem value="5">5 years</SelectItem>
+                                  <SelectItem value="6">6 years</SelectItem>
+                                  <SelectItem value="7">7 years</SelectItem>
+                                  <SelectItem value="8">8 years</SelectItem>
+                                  <SelectItem value="9">9 years</SelectItem>
+                                  <SelectItem value="10">10 years</SelectItem>
+                                  <SelectItem value="11">11 years</SelectItem>
+                                  <SelectItem value="12">12 years</SelectItem>
+                                  <SelectItem value="13">13 years</SelectItem>
+                                  <SelectItem value="14">14 years</SelectItem>
+                                  <SelectItem value="15">15 years</SelectItem>
+                                  <SelectItem value="16">16 years</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -333,24 +346,49 @@ export default function EditHorse() {
                       <FormField
                         control={form.control}
                         name="height_hands"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Height (hands) *</FormLabel>
-                            <FormControl>
-                              <input
-                                type="number"
-                                value={field.value ?? ""}
-                                onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                placeholder="Enter height in hands"
-                                min="10"
-                                max="20"
-                                step="0.1"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        render={({ field }) => {
+                          // Format the height value to a string with one decimal place for comparison
+                          const formattedValue = field.value ? field.value.toFixed(1) : "";
+                          
+                          return (
+                            <FormItem>
+                              <FormLabel>Height (hands)</FormLabel>
+                              <FormControl>
+                                <Select 
+                                  value={formattedValue.toString()} 
+                                  onValueChange={(value) => field.onChange(parseFloat(value))}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select height" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="12.0">12.0 hh</SelectItem>
+                                    <SelectItem value="12.1">12.1 hh</SelectItem>
+                                    <SelectItem value="12.2">12.2 hh</SelectItem>
+                                    <SelectItem value="12.3">12.3 hh</SelectItem>
+                                    <SelectItem value="13.0">13.0 hh</SelectItem>
+                                    <SelectItem value="13.1">13.1 hh</SelectItem>
+                                    <SelectItem value="13.2">13.2 hh</SelectItem>
+                                    <SelectItem value="13.3">13.3 hh</SelectItem>
+                                    <SelectItem value="14.0">14.0 hh</SelectItem>
+                                    <SelectItem value="14.1">14.1 hh</SelectItem>
+                                    <SelectItem value="14.2">14.2 hh</SelectItem>
+                                    <SelectItem value="14.3">14.3 hh</SelectItem>
+                                    <SelectItem value="15.0">15.0 hh</SelectItem>
+                                    <SelectItem value="15.1">15.1 hh</SelectItem>
+                                    <SelectItem value="15.2">15.2 hh</SelectItem>
+                                    <SelectItem value="15.3">15.3 hh</SelectItem>
+                                    <SelectItem value="16.0">16.0 hh</SelectItem>
+                                    <SelectItem value="16.1">16.1 hh</SelectItem>
+                                    <SelectItem value="16.2">16.2 hh</SelectItem>
+                                    <SelectItem value="16.3">16.3 hh</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
                       
                       <FormField
