@@ -16,12 +16,6 @@ export default function SubscriptionSuccessPage() {
     queryKey: ['/api/subscription'],
     retry: 3,
   });
-
-  // Get user data to check subscription plan
-  const { data: user } = useQuery({
-    queryKey: ['/api/auth/me'],
-    retry: 3,
-  });
   
   useEffect(() => {
     // Show a success message when the page loads
@@ -98,21 +92,10 @@ export default function SubscriptionSuccessPage() {
           </div>
           
           <div className="space-y-3">
-            <Button 
-              className="w-full" 
-              onClick={() => {
-                // Route based on subscription plan
-                if (user?.subscription_plan === 'Beta Seller') {
-                  navigate('/choose-action');
-                } else {
-                  // For Searching subscriptions, go directly to filter page
-                  navigate('/filter');
-                }
-              }}
-            >
+            <Button className="w-full" onClick={() => navigate('/welcome')}>
               Get Started
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => navigate('/profile')}>
+            <Button variant="outline" className="w-full" onClick={() => navigate('/account-settings')}>
               Go to My Account
             </Button>
           </div>
