@@ -20,20 +20,20 @@ export default function WelcomePage() {
         </h1>
         
         <p className="text-xl mb-8 max-w-lg mx-auto">
-          Using smart technology to connect performance horses 
-          with the right owners.
+          Using smart technology to connect performance horses with the right owners.
         </p>
         
         <div className="space-y-6 text-lg">
           <p className="max-w-lg mx-auto">
-            Whether you're searching for your next top-level prospect 
-            or listing a quality horse for sale, ProHorseMatch helps 
-            you find the perfect match — fast.
+            Whether you're searching for your next top-level prospect or listing a quality horse for sale, ProHorseMatch helps you find the perfect match — fast.
           </p>
           
           <p className="max-w-lg mx-auto">
-            Filter by discipline, level, price, location and more
-            to connect with listings tailored to your goals.
+            Filter by discipline, competition level, price, location and more to connect with listings tailored to your goals.
+          </p>
+          
+          <p className="max-w-lg mx-auto">
+            This app is still in Beta versions and we welcome all suggestions and feedback on how we can improve
           </p>
         </div>
         
