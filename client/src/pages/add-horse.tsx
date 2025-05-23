@@ -22,7 +22,7 @@ import { useMobile } from "@/hooks/use-mobile";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
-// Form schema for adding a horse
+// Form schema for adding a horse - ALL FIELDS MANDATORY except videos and description
 const horseFormSchema = z.object({
   // Required fields - all dropdown selections must be completed
   location_country: z.string().min(1, "Country is required"),
@@ -35,25 +35,26 @@ const horseFormSchema = z.object({
   // Required numeric fields
   age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
   height_hands: z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+  height_cm: z.number().min(1, "Height in cm is required"),
   price_min: z.number().min(1, "Minimum price must be at least 1"),
   price_max: z.number().min(1, "Maximum price must be at least 1"),
   
-  // Required for the form to work
+  // Required text fields
   owner_id: z.number(),
-  name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
-  
-  // Optional text/input fields
-  height_cm: z.number().optional(),
+  name: z.string().min(2, "Horse name is required (minimum 2 characters)").max(50, "Name must be less than 50 characters"),
   sire: z.string().min(1, "Sire information is required"),
-  dam: z.string().optional(),
+  dam: z.string().min(1, "Dam information is required"),
   dam_sire: z.string().min(1, "Dam Sire information is required"),
-  characteristics: z.array(z.string()).optional(),
-  description: z.string().optional(),
-  additional_info: z.string().optional(),
   
-  // Media requirements
+  // Required characteristics selection
+  characteristics: z.array(z.string()).min(1, "Select at least one characteristic"),
+  
+  // Required media
   photos: z.array(z.string()).min(1, "At least one photo is required"),
+  
+  // OPTIONAL FIELDS - Only videos and description are optional
   videos: z.array(z.string()).optional(),
+  description: z.string().optional(),
 }).refine((data) => {
   // Ensure that price_max is greater than or equal to price_min
   return data.price_max >= data.price_min;
