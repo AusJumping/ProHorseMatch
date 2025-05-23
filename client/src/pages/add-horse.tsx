@@ -126,14 +126,21 @@ export default function AddHorse() {
     const isValid = await form.trigger();
     console.log("Validation result:", isValid);
     console.log("Form errors:", form.formState.errors);
+    console.log("Current form values:", form.getValues());
     
     if (!isValid) {
       // Also manually trigger validation for each required field to ensure errors show
       await form.trigger(['name', 'location_country', 'disciplines', 'levels', 'breed', 'sex', 'currency', 'age', 'height_hands', 'sire', 'dam', 'dam_sire', 'characteristics']);
       
+      // Show detailed error information
+      const errors = form.formState.errors;
+      const errorFields = Object.keys(errors);
+      console.log("Fields with errors:", errorFields);
+      console.log("Detailed errors:", errors);
+      
       toast({
         title: "Please complete all required fields",
-        description: "Check the form for missing information marked with red error messages.",
+        description: `Missing: ${errorFields.join(', ')}. Check the form for red error messages.`,
         variant: "destructive",
       });
       return;
@@ -295,7 +302,6 @@ export default function AddHorse() {
                                 <FormLabel>Currency *</FormLabel>
                                 <FormControl>
                                   <CurrencySelector 
-                                    value={field.value}
                                     defaultValue={field.value}
                                     onChange={(value) => {
                                       field.onChange(value);
