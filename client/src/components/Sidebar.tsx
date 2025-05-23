@@ -26,10 +26,9 @@ const Sidebar = () => {
     refetchInterval: 10000, // Refetch every 10 seconds
   });
   
-  // Use the unread count from the API or fallback to a calculation
+  // Use the unread count from the API, defaulting to 0 if not available
   const unreadCount: number = unreadData && typeof unreadData === 'object' && 'count' in unreadData ? 
-    (unreadData.count as number) : 
-    (conversations && Array.isArray(conversations) && conversations.length > 0 ? 1 : 0);
+    (unreadData.count as number) : 0;
   
   // Debug log with more details
   console.log("Sidebar - Auth state:", { isAuthenticated, user });
