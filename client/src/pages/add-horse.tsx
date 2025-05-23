@@ -42,8 +42,8 @@ const horseFormSchema = z.object({
   owner_id: z.number(),
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
   
-  // Optional calculated field
-  height_cm: z.number().optional(),
+  // Required text/input fields
+  height_cm: z.number().min(1, "Height in cm is required"),
   sire: z.string().min(1, "Sire information is required"),
   dam: z.string().min(1, "Dam information is required"),
   dam_sire: z.string().min(1, "Dam Sire information is required"),
@@ -126,42 +126,17 @@ export default function AddHorse() {
     const isValid = await form.trigger();
     console.log("Validation result:", isValid);
     console.log("Form errors:", form.formState.errors);
-    console.log("Current form values:", form.getValues());
     
     if (!isValid) {
-      // Before showing errors, let's update calculated fields and photos
-      const currentValues = form.getValues();
+      // Also manually trigger validation for each required field to ensure errors show
+      await form.trigger(['name', 'location_country', 'disciplines', 'levels', 'breed', 'sex', 'currency', 'age', 'height_hands', 'sire', 'dam', 'dam_sire', 'characteristics']);
       
-      // Update height_cm from height_hands if needed
-      if (currentValues.height_hands && !currentValues.height_cm) {
-        const heightCm = Math.round(currentValues.height_hands * 10.16);
-        form.setValue("height_cm", heightCm);
-      }
-      
-      // Update photos from state
-      if (photoUrls.length > 0) {
-        form.setValue("photos", photoUrls);
-      }
-      
-      // Re-trigger validation after updating values
-      const isValidAfterUpdate = await form.trigger();
-      if (isValidAfterUpdate) {
-        // If valid now, proceed with submission
-        console.log("Validation passed after updating calculated fields");
-      } else {
-        // Show detailed error information
-        const errors = form.formState.errors;
-        const errorFields = Object.keys(errors);
-        console.log("Fields with errors:", errorFields);
-        console.log("Detailed errors:", errors);
-        
-        toast({
-          title: "Please complete all required fields",
-          description: `Missing: ${errorFields.join(', ')}. Check the form for red error messages.`,
-          variant: "destructive",
-        });
-        return;
-      }
+      toast({
+        title: "Please complete all required fields",
+        description: "Check the form for missing information marked with red error messages.",
+        variant: "destructive",
+      });
+      return;
     }
     
     // Add debug toast to confirm the form submission was triggered
@@ -324,8 +299,6 @@ export default function AddHorse() {
                                     onChange={(value) => {
                                       field.onChange(value);
                                       form.setValue("currency", value);
-                                      // Trigger validation for this field specifically
-                                      form.trigger("currency");
                                     }}
                                   />
                                 </FormControl>

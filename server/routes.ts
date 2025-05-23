@@ -1154,8 +1154,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Server-side validation for required fields (all except videos and description)
       const requiredFields = [
-        'name', 'location_country', 'disciplines', 'levels', 'breed', 'age', 
-        'height_hands', 'sex', 'sire', 'dam', 'dam_sire', 
+        'name', 'location_country', 'disciplines', 'levels', 'breeds', 'age', 
+        'height_hands', 'height_cm', 'sex', 'sire', 'dam', 'dam_sire', 
         'characteristics', 'price_min', 'price_max', 'currency', 'photos'
       ];
       
