@@ -1035,7 +1035,7 @@ export default function AddHorse() {
                                 >
                                   <FormControl>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="Select at least one discipline" />
+                                      <SelectValue placeholder="Select the primary discipline" />
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
