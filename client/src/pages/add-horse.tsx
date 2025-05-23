@@ -227,10 +227,25 @@ export default function AddHorse() {
   // Navigate to the next tab with validation
   const nextTab = () => {
     if (activeTab === "basic") {
+      const values = form.getValues();
+      console.log('All form values when clicking Next:', values);
+      
       if (!isBasicInfoComplete()) {
+        // Let's show exactly which fields are missing
+        const missingFields = [];
+        const basicFields = ['name', 'location_country', 'disciplines', 'breeds', 'sex', 'currency'];
+        
+        basicFields.forEach(field => {
+          const value = values[field as keyof typeof values];
+          if (!value || (Array.isArray(value) && value.length === 0) || value === "") {
+            missingFields.push(field);
+          }
+        });
+        
+        console.log('Missing fields:', missingFields);
         toast({
           title: "Required Fields Missing",
-          description: "Please complete all Basic Information fields before proceeding to Horse Details.",
+          description: `Please complete these fields: ${missingFields.join(', ')}`,
           variant: "destructive",
         });
         return;
