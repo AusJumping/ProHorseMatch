@@ -183,15 +183,16 @@ export default function AddHorse() {
         owner_id: ownerID,
       };
       
-      console.log("Submitting data with photos:", { 
-        ...submissionData, 
-        photoCount: photoUrls.length 
-      });
+      console.log("Submitting data with photos:", JSON.stringify(submissionData, null, 2));
+      console.log("photoUrls state:", photoUrls);
+      console.log("photoCount:", photoUrls.length);
       
       // Convert height from hands to cm if needed
       if (submissionData.height_hands && !submissionData.height_cm) {
         submissionData.height_cm = Math.round(submissionData.height_hands * 10.16);
       }
+      
+      console.log("Final submission data:", JSON.stringify(submissionData, null, 2));
       
       // Make the API request with the complete data using fetch directly with credentials
       const response = await fetch("/api/horses", {
