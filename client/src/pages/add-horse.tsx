@@ -199,9 +199,38 @@ export default function AddHorse() {
     setVideoUrls(videoUrls.filter(video => video !== url));
   };
 
-  // Navigate to the next tab
+  // Check if basic information fields are complete
+  const isBasicInfoComplete = () => {
+    const values = form.getValues();
+    const basicFields = [
+      'name',
+      'location_country', 
+      'disciplines',
+      'breeds',
+      'sex',
+      'currency'
+    ];
+    
+    for (const field of basicFields) {
+      const value = values[field];
+      if (!value || (Array.isArray(value) && value.length === 0) || value === "") {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Navigate to the next tab with validation
   const nextTab = () => {
     if (activeTab === "basic") {
+      if (!isBasicInfoComplete()) {
+        toast({
+          title: "Required Fields Missing",
+          description: "Please complete all Basic Information fields before proceeding to Horse Details.",
+          variant: "destructive",
+        });
+        return;
+      }
       setActiveTab("details");
     } else if (activeTab === "details") {
       setActiveTab("media");
