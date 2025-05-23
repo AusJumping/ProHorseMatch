@@ -1145,15 +1145,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/horses", isAuthenticated, async (req, res) => {
     try {
-      console.log("Horse creation endpoint hit - Session ID:", req.session.userId);
-      
       // Get the user with their roles
       const user = await storage.getUserById(req.session.userId);
       
-      console.log("User found:", user ? { id: user.id, is_selling: user.is_selling } : "No user found");
-      
       if (!user || !user.is_selling) {
-        console.log("Access denied - User not found or not selling");
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
       }
       
@@ -1166,13 +1161,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const missingFields = [];
       
-      // Debug: Log the full request body
-      console.log("Horse creation request body:", JSON.stringify(req.body, null, 2));
-      
       for (const field of requiredFields) {
         const value = req.body[field];
-        
-        console.log(`Checking field ${field}:`, value, typeof value);
         
         if (value === undefined || value === null || value === "") {
           missingFields.push(field);
@@ -1186,7 +1176,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (missingFields.length > 0) {
-        console.log("Missing fields detected:", missingFields);
         return res.status(400).json({ 
           message: `The following required fields are missing or invalid: ${missingFields.join(', ')}. Only videos and description are optional.`
         });
