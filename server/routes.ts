@@ -12,7 +12,7 @@ import {
   insertSellingUserSchema, 
   insertSearchingUserSchema, 
   insertMatchSchema, 
-  insertMessageSchema,
+
   disciplines,
   sexes,
   colours,

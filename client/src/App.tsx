@@ -7,7 +7,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import Auth from "@/pages/auth";
 import HorseDetail from "@/pages/horse-detail";
-import Messages from "@/pages/messages";
+
 import Profile from "@/pages/profile";
 import AddHorse from "@/pages/add-horse";
 import MyHorses from "@/pages/my-horses";
@@ -35,7 +35,7 @@ function Router() {
       <Route path="/browse" component={Home} />
       <Route path="/auth" component={Auth} />
       <Route path="/horse/:id" component={HorseDetail} />
-      <Route path="/messages" component={Messages} />
+
       <Route path="/profile" component={Profile} />
       {/* Account Settings page removed as requested */}
       <Route path="/add-horse" component={AddHorse} />
