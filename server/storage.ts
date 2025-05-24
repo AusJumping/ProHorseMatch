@@ -969,33 +969,6 @@ export class MemStorage implements IStorage {
     this.conversations.set(id, updatedConversation);
     return updatedConversation;
   }
-
-  async deleteConversation(id: number): Promise<boolean> {
-    const conversation = this.conversations.get(id);
-    if (!conversation) {
-      return false;
-    }
-    
-    // Delete the conversation
-    this.conversations.delete(id);
-    
-    // Also delete all related messages
-    const messagesToDelete = Array.from(this.messages.entries())
-      .filter(([_, message]) => 
-        message.customer_id === conversation.customer_id &&
-        message.owner_id === conversation.owner_id &&
-        message.horse_id === conversation.horse_id
-      );
-    
-    messagesToDelete.forEach(([messageId, _]) => {
-      this.messages.delete(messageId);
-    });
-    
-    // Save to persistent storage
-    saveStorageToDisk();
-    
-    return true;
-  }
 }
 
 // Database-backed storage implementation
@@ -1434,41 +1407,6 @@ export class DatabaseStorage implements IStorage {
     }
     
     return updatedConversation;
-  }
-
-  async deleteConversation(id: number): Promise<boolean> {
-    try {
-      // Get the conversation first to get details for message deletion
-      const [conversation] = await db
-        .select()
-        .from(conversations)
-        .where(eq(conversations.id, id));
-      
-      if (!conversation) {
-        return false;
-      }
-      
-      // Delete all related messages first
-      await db
-        .delete(messages)
-        .where(
-          and(
-            eq(messages.customer_id, conversation.customer_id),
-            eq(messages.owner_id, conversation.owner_id),
-            eq(messages.horse_id, conversation.horse_id)
-          )
-        );
-      
-      // Delete the conversation
-      const deletedRows = await db
-        .delete(conversations)
-        .where(eq(conversations.id, id));
-      
-      return true;
-    } catch (error) {
-      console.error("Delete conversation error:", error);
-      return false;
-    }
   }
 }
 

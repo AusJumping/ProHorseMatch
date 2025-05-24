@@ -60,15 +60,7 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
     try {
       setIsDeleting(true);
       
-      console.log(`Deleting conversation ${conversation.id}...`);
-      
-      const response = await apiRequest("DELETE", `/api/conversations/${conversation.id}`);
-      console.log("Delete response:", response);
-      
-      // Immediately call onDelete callback if provided
-      if (onDelete) {
-        onDelete();
-      }
+      await apiRequest("DELETE", `/api/conversations/${conversation.id}`);
       
       // Refresh conversations list
       await queryClient.invalidateQueries({ 
@@ -89,11 +81,10 @@ const MessageCard = ({ conversation, onClick, isActive = false, onDelete }: Mess
         onDelete();
       }
     } catch (error) {
-      console.error("Failed to delete conversation - Full error:", error);
-      const errorMessage = error instanceof Error ? error.message : 'Please try again.';
+      console.error("Failed to delete conversation:", error);
       toast({
-        title: "Error", 
-        description: `Failed to delete conversation: ${errorMessage}`,
+        title: "Error",
+        description: "Failed to delete conversation. Please try again.",
         variant: "destructive",
       });
     } finally {

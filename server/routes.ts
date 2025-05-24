@@ -1606,48 +1606,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete conversation endpoint
-  app.delete("/api/conversations/:id", isAuthenticated, async (req, res) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      
-      // Get the user with their roles
-      const user = await storage.getUserById(req.session.userId);
-      
-      if (!user) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      // Get the conversation to verify ownership
-      const conversation = await storage.getConversationById(conversationId);
-      
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-      
-      // Check if user is part of this conversation
-      const isUserInConversation = 
-        (user.is_searching && conversation.customer_id === req.session.userId) ||
-        (user.is_selling && conversation.owner_id === req.session.userId);
-      
-      if (!isUserInConversation) {
-        return res.status(403).json({ message: "Not authorized to delete this conversation" });
-      }
-      
-      // Delete the conversation
-      const success = await storage.deleteConversation(conversationId);
-      
-      if (success) {
-        return res.json({ message: "Conversation deleted successfully" });
-      } else {
-        return res.status(500).json({ message: "Failed to delete conversation" });
-      }
-    } catch (error) {
-      console.error("Delete conversation error:", error);
-      return res.status(500).json({ message: "Failed to delete conversation" });
-    }
-  });
-
   // Payment routes - Stripe integration
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
