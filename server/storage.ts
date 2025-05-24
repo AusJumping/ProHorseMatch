@@ -549,16 +549,13 @@ export class MemStorage implements IStorage {
       
       // Filter by height range if specified
       if (filters.height_min !== undefined && filters.height_min !== null) {
-        // Handle null height_hands values - consider a null height as not matching any min filter
-        if (horse.height_hands === null || horse.height_hands < filters.height_min) {
+        if (horse.height_hands < filters.height_min) {
           return false;
         }
       }
       
       if (filters.height_max !== undefined && filters.height_max !== null) {
-        // For maximum height, null heights should be included in results when filtering
-        // This lets users find horses where height isn't specified
-        if (horse.height_hands !== null && horse.height_hands > filters.height_max) {
+        if (horse.height_hands > filters.height_max) {
           return false;
         }
       }
