@@ -75,10 +75,7 @@ export default function Messages() {
       horse_id: number;
       content: string;
     }) => {
-      return apiRequest("/api/messages", {
-        method: "POST",
-        body: JSON.stringify(messageData),
-      });
+      return apiRequest("/api/messages", "POST", messageData);
     },
     onSuccess: () => {
       setNewMessage("");
