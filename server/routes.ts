@@ -1606,6 +1606,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete conversation route
+  app.delete("/api/conversations/:id", isAuthenticated, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ message: "Invalid conversation ID" });
+      }
+
+      // Get the conversation to verify ownership
+      const conversation = await storage.getConversationById(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Get the user to verify they can delete this conversation
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      // Check if user is either the customer or owner in this conversation
+      const canDelete = (user.is_searching && conversation.customer_id === req.session.userId) ||
+                       (user.is_selling && conversation.owner_id === req.session.userId);
+
+      if (!canDelete) {
+        return res.status(403).json({ message: "Not authorized to delete this conversation" });
+      }
+
+      // Delete the conversation
+      const success = await storage.deleteConversation(conversationId);
+      
+      if (success) {
+        return res.status(200).json({ message: "Conversation deleted successfully" });
+      } else {
+        return res.status(500).json({ message: "Failed to delete conversation" });
+      }
+    } catch (error) {
+      console.error("Delete conversation error:", error);
+      return res.status(500).json({ message: "Failed to delete conversation" });
+    }
+  });
+
   // Payment routes - Stripe integration
   app.post("/api/create-payment-intent", async (req, res) => {
     try {

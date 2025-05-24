@@ -969,6 +969,14 @@ export class MemStorage implements IStorage {
     this.conversations.set(id, updatedConversation);
     return updatedConversation;
   }
+
+  async deleteConversation(id: number): Promise<boolean> {
+    const deleted = this.conversations.delete(id);
+    if (deleted) {
+      saveStorageToDisk();
+    }
+    return deleted;
+  }
 }
 
 // Database-backed storage implementation
@@ -1407,6 +1415,15 @@ export class DatabaseStorage implements IStorage {
     }
     
     return updatedConversation;
+  }
+
+  async deleteConversation(id: number): Promise<boolean> {
+    const result = await db
+      .delete(conversations)
+      .where(eq(conversations.id, id))
+      .returning();
+    
+    return result.length > 0;
   }
 }
 
