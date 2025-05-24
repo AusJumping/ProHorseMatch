@@ -53,18 +53,10 @@ export interface IStorage {
   // Message methods
   getMessages(): Promise<Message[]>;
   getMessageById(id: number): Promise<Message | undefined>;
-  getMessagesByConversationId(customerId: number, ownerId: number, horseId: number): Promise<Message[]>;
+  getMessagesByHorseId(horseId: number): Promise<Message[]>;
+  getMessagesByUserId(userId: number): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   updateMessage(id: number, message: Partial<Message>): Promise<Message>;
-  
-  // Conversation methods
-  getConversations(): Promise<Conversation[]>;
-  getConversationById(id: number): Promise<Conversation | undefined>;
-  getConversationsByCustomerId(customerId: number): Promise<Conversation[]>;
-  getConversationsByOwnerId(ownerId: number): Promise<Conversation[]>;
-  createConversation(conversation: InsertConversation): Promise<Conversation>;
-  updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
-  deleteConversation(id: number): Promise<boolean>;
 }
 
 import * as fs from 'fs';
