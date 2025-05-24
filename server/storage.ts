@@ -64,6 +64,7 @@ export interface IStorage {
   getConversationsByOwnerId(ownerId: number): Promise<Conversation[]>;
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
+  deleteConversation(id: number): Promise<boolean>;
 }
 
 import * as fs from 'fs';
