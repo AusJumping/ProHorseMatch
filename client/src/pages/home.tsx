@@ -483,62 +483,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Right sidebar - recently viewed (desktop only) */}
-        {!isMobile && (
-          <div className="w-72 bg-white rounded-xl p-5 shadow-sm h-fit ml-6">
-            <h3 
-              className="font-accent font-bold text-lg mb-4 flex items-center cursor-pointer hover:text-primary transition-colors" 
-              onClick={() => navigate('/horses')}
-            >
-              <span>Recently Viewed</span>
-              <svg className="w-4 h-4 ml-1 text-neutral-400 group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </h3>
-            
-            <div className="space-y-4">
-              {horses?.slice(0, 3).map((horse) => (
-                <div 
-                  key={horse.id} 
-                  className="flex gap-3 hover:bg-neutral-50 p-2 rounded-lg cursor-pointer transition-colors"
-                  onClick={() => navigate(`/horse/${horse.id}`)}
-                >
-                  <img 
-                    src={horse.photos[0]} 
-                    alt={`${horse.name}'s portrait`} 
-                    className="w-16 h-16 object-cover rounded-lg" 
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-accent font-medium">{horse.name}</h4>
-                    <p className="text-xs text-neutral-600">
-                      {horse.sire && horse.dam_sire 
-                        ? `${horse.sire} x ${horse.dam_sire}`
-                        : horse.breeds[0] || "Breeding not specified"}
-                    </p>
-                    <p className="text-xs text-neutral-700 mt-1">
-                      {horse.age}yo • {horse.sex}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              
-              {horses && horses.length > 3 && (
-                <div 
-                  className="text-center pt-2 border-t border-neutral-100"
-                >
-                  <button 
-                    onClick={() => navigate('/horses')} 
-                    className="text-sm text-primary hover:text-primary-dark font-medium"
-                  >
-                    View All Horses
-                  </button>
-                </div>
-              )}
-            </div>
-            
 
-          </div>
-        )}
 
         {/* Mobile filter panel */}
         {isMobile && (
