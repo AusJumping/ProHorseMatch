@@ -12,7 +12,8 @@ import {
   insertUserSchema,
   insertSellingUserSchema, 
   insertSearchingUserSchema, 
-  insertMatchSchema,
+  insertMatchSchema, 
+  insertMessageSchema,
   disciplines,
   sexes,
   colours,
@@ -1372,13 +1373,273 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Messaging system removed
+  // Message routes
+  app.post("/api/messages", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertMessageSchema.parse(req.body);
+      
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Ensure sender_type and ID match the logged-in user's roles
+      const isSenderCustomer = validatedData.sender_type === "customer";
+      const isSenderOwner = validatedData.sender_type === "owner";
+      
+      if (
+        (isSenderCustomer && (!user.is_searching || validatedData.customer_id !== req.session.userId)) ||
+        (isSenderOwner && (!user.is_selling || validatedData.owner_id !== req.session.userId))
+      ) {
+        return res.status(403).json({ message: "Sender type and ID must match your account roles" });
+      }
+      
+      const message = await storage.createMessage(validatedData);
+      return res.status(201).json(message);
+    } catch (error) {
+      console.error("Create message error:", error);
+      return res.status(400).json({ message: error.message || "Invalid request" });
+    }
+  });
+
+  // Endpoint to get unread message count
+  app.get("/api/messages/unread", isAuthenticated, async (req, res) => {
+    try {
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Get all messages for the user
+      const allMessages = await storage.getMessages();
+      
+      // Filter for unread messages intended for this user
+      let unreadCount = 0;
+      
+      if (user.is_searching) {
+        // Customer receiving messages from owners
+        unreadCount += allMessages.filter(msg => 
+          msg.customer_id === req.session.userId && 
+          msg.sender_type === "owner" && 
+          !msg.is_read
+        ).length;
+      }
+      
+      if (user.is_selling) {
+        // Owner receiving messages from customers
+        unreadCount += allMessages.filter(msg => 
+          msg.owner_id === req.session.userId && 
+          msg.sender_type === "customer" && 
+          !msg.is_read
+        ).length;
+      }
+      
+      // Only return the actual unread count
+      // Removed test code that always returned at least 1
+      
+      return res.json({ count: unreadCount });
+    } catch (error) {
+      console.error("Get unread message count error:", error);
+      return res.status(500).json({ message: "Failed to get unread message count" });
+    }
+  });
   
+  app.get("/api/messages/:customerId/:ownerId/:horseId", isAuthenticated, async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.customerId);
+      const ownerId = parseInt(req.params.ownerId);
+      const horseId = parseInt(req.params.horseId);
+      
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Debug logs
+      console.log("Messages request details:", {
+        userId: req.session.userId,
+        userRoles: { 
+          is_searching: user.is_searching, 
+          is_selling: user.is_selling 
+        },
+        requestedData: {
+          customerId,
+          ownerId,
+          horseId
+        }
+      });
+      
+      // Simple authorization - either the user is the customer or the owner in this conversation
+      if ((user.is_searching && req.session.userId === customerId) || 
+          (user.is_selling && req.session.userId === ownerId)) {
+        try {
+          // Get all messages in this conversation
+          let messages = await storage.getMessages();
+          
+          // Filter to only include messages from this specific conversation
+          messages = messages.filter(message => 
+            message.customer_id === customerId && 
+            message.owner_id === ownerId && 
+            message.horse_id === horseId
+          );
+          
+          // Sort by date (handling string dates from the database)
+          messages.sort((a, b) => {
+            const dateA = new Date(a.created_at);
+            const dateB = new Date(b.created_at);
+            return dateA.getTime() - dateB.getTime();
+          });
+          
+          // Mark messages as read if the current user is the recipient
+          const processedMessages = await Promise.all(messages.map(async (msg) => {
+            // If owner is viewing and message is from customer
+            if (req.session.userId === ownerId && msg.sender_type === 'customer' && !msg.is_read) {
+              const updatedMsg = await storage.updateMessage(msg.id, { is_read: true });
+              return updatedMsg;
+            }
+            // If customer is viewing and message is from owner
+            if (req.session.userId === customerId && msg.sender_type === 'owner' && !msg.is_read) {
+              const updatedMsg = await storage.updateMessage(msg.id, { is_read: true });
+              return updatedMsg;
+            }
+            return msg;
+          }));
+          
+          console.log("Returning messages:", processedMessages);
+          return res.json(processedMessages);
+        } catch (innerError) {
+          console.error("Error processing messages:", innerError);
+          return res.status(500).json({ message: "Error processing messages" });
+        }
+      } else {
+        console.log("Access denied - User:", req.session.userId, "trying to access conversation between customer:", customerId, "and owner:", ownerId);
+        return res.status(403).json({ message: "Cannot access messages of other users" });
+      }
+    } catch (error) {
+      console.error("Get messages error:", error);
+      return res.status(500).json({ message: "Failed to get messages" });
+    }
+  });
 
+  // Conversation routes
+  app.get("/api/conversations", isAuthenticated, async (req, res) => {
+    try {
+      // Get the user with their roles
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      let conversations = [];
+      
+      // Users can access conversations based on their active roles
+      if (user.is_searching) {
+        const customerConversations = await storage.getConversationsByCustomerId(req.session.userId);
+        conversations = [...conversations, ...customerConversations];
+      }
+      
+      if (user.is_selling) {
+        const ownerConversations = await storage.getConversationsByOwnerId(req.session.userId);
+        conversations = [...conversations, ...ownerConversations];
+      }
+      
+      if (conversations.length === 0 && !user.is_searching && !user.is_selling) {
+        return res.status(403).json({ message: "No active roles to access conversations" });
+      }
+      
+      // Enrich conversations with horse and user data
+      const enrichedConversations = await Promise.all(conversations.map(async (conv) => {
+        const horse = await storage.getHorseById(conv.horse_id);
+        let otherParty;
+        
+        // Determine other party based on conversation context
+        const isUserCustomer = conv.customer_id === req.session.userId;
+        
+        if (isUserCustomer) {
+          otherParty = await storage.getOwnerById(conv.owner_id);
+        } else {
+          otherParty = await storage.getCustomerById(conv.customer_id);
+        }
+        
+        return {
+          ...conv,
+          horse: horse ? {
+            id: horse.id,
+            name: horse.name,
+            photos: horse.photos,
+            price_min: horse.price_min,
+            price_max: horse.price_max,
+            currency: horse.currency,
+            breeds: horse.breeds,
+            age: horse.age,
+            sex: horse.sex
+          } : null,
+          otherParty: otherParty ? {
+            id: otherParty.id,
+            name: req.session.userType === "customer" ? otherParty.business_name : otherParty.name,
+            type: req.session.userType === "customer" ? "owner" : "customer"
+          } : null
+        };
+      }));
+      
+      return res.json(enrichedConversations);
+    } catch (error) {
+      console.error("Get conversations error:", error);
+      return res.status(500).json({ message: "Failed to get conversations" });
+    }
+  });
 
+  // Delete conversation route
+  app.delete("/api/conversations/:id", isAuthenticated, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      
+      if (isNaN(conversationId)) {
+        return res.status(400).json({ message: "Invalid conversation ID" });
+      }
 
+      // Get the conversation to verify ownership
+      const conversation = await storage.getConversationById(conversationId);
+      
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
 
+      // Get the user to verify they can delete this conversation
+      const user = await storage.getUserById(req.session.userId);
+      
+      if (!user) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
 
+      // Check if user is either the customer or owner in this conversation
+      const canDelete = (user.is_searching && conversation.customer_id === req.session.userId) ||
+                       (user.is_selling && conversation.owner_id === req.session.userId);
+
+      if (!canDelete) {
+        return res.status(403).json({ message: "Not authorized to delete this conversation" });
+      }
+
+      // Delete the conversation
+      const success = await storage.deleteConversation(conversationId);
+      
+      if (success) {
+        return res.status(200).json({ message: "Conversation deleted successfully" });
+      } else {
+        return res.status(500).json({ message: "Failed to delete conversation" });
+      }
+    } catch (error) {
+      console.error("Delete conversation error:", error);
+      return res.status(500).json({ message: "Failed to delete conversation" });
+    }
+  });
 
   // Payment routes - Stripe integration
   app.post("/api/create-payment-intent", async (req, res) => {
@@ -2159,219 +2420,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: "Error deleting image",
         error: error.message 
-      });
-    }
-  });
-
-  // ===== MESSAGING SYSTEM ROUTES =====
-  
-  // Create a new conversation (this is what the "Send Message" button will use)
-  app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const userId = req.session.userId;
-      const { horse_id, message_content } = req.body;
-
-      // Validate required fields
-      if (!horse_id || !message_content) {
-        return res.status(400).json({ message: "Horse ID and message content are required" });
-      }
-
-      // Get the horse to find the owner
-      const horse = await storage.getHorseById(horse_id);
-      if (!horse) {
-        return res.status(404).json({ message: "Horse not found" });
-      }
-
-      // Prevent users from messaging themselves
-      if (horse.owner_id === userId) {
-        return res.status(400).json({ message: "Cannot send message to yourself" });
-      }
-
-      // Check if conversation already exists
-      const existingConversations = await storage.getConversationsByCustomerId(userId);
-      const existingConversation = existingConversations.find(conv => 
-        conv.horse_id === horse_id && conv.owner_id === horse.owner_id
-      );
-
-      let conversation;
-      if (existingConversation) {
-        // Use existing conversation
-        conversation = existingConversation;
-      } else {
-        // Create new conversation
-        conversation = await storage.createConversation({
-          customer_id: userId,
-          owner_id: horse.owner_id,
-          horse_id: horse_id,
-          is_read_by_customer: true,
-          is_read_by_owner: false
-        });
-      }
-
-      // Create the message
-      const message = await storage.createMessage({
-        conversation_id: conversation.id,
-        sender_id: userId,
-        sender_type: "customer",
-        content: message_content,
-        is_read: true
-      });
-
-      // Update conversation last message time
-      await storage.updateConversation(conversation.id, {
-        last_message_time: new Date(),
-        is_read_by_owner: false
-      });
-
-      res.json({ 
-        conversation,
-        message,
-        success: true 
-      });
-
-    } catch (error) {
-      console.error("Error creating conversation:", error);
-      res.status(500).json({ 
-        message: "Failed to send message",
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Get user's conversations
-  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const userId = req.session.userId;
-
-      // Get all conversations for this user (as customer or owner)
-      const customerConversations = await storage.getConversationsByCustomerId(userId);
-      const ownerConversations = await storage.getConversationsByOwnerId(userId);
-      
-      const allConversations = [...customerConversations, ...ownerConversations];
-
-      // Get detailed conversation data with horse and user info
-      const conversationsWithDetails = await Promise.all(
-        allConversations.map(async (conversation) => {
-          const horse = await storage.getHorseById(conversation.horse_id);
-          const customer = await storage.getUserById(conversation.customer_id);
-          const owner = await storage.getUserById(conversation.owner_id);
-
-          return {
-            ...conversation,
-            horse: horse ? {
-              id: horse.id,
-              name: horse.name,
-              photos: horse.photos
-            } : null,
-            customer: customer ? {
-              id: customer.id,
-              name: customer.name || customer.business_name
-            } : null,
-            owner: owner ? {
-              id: owner.id,
-              name: owner.name || owner.business_name
-            } : null
-          };
-        })
-      );
-
-      res.json(conversationsWithDetails);
-    } catch (error) {
-      console.error("Error fetching conversations:", error);
-      res.status(500).json({ 
-        message: "Failed to fetch conversations",
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Get messages for a specific conversation
-  app.get("/api/conversations/:id/messages", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const userId = req.session.userId;
-      const conversationId = parseInt(req.params.id);
-
-      // Verify user has access to this conversation
-      const conversation = await storage.getConversationById(conversationId);
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-
-      if (conversation.customer_id !== userId && conversation.owner_id !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Get messages
-      const messages = await storage.getMessagesByConversationId(conversationId);
-
-      // Mark messages as read for current user
-      const isCustomer = conversation.customer_id === userId;
-      if (isCustomer && !conversation.is_read_by_customer) {
-        await storage.updateConversation(conversationId, { is_read_by_customer: true });
-      } else if (!isCustomer && !conversation.is_read_by_owner) {
-        await storage.updateConversation(conversationId, { is_read_by_owner: true });
-      }
-
-      res.json(messages);
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-      res.status(500).json({ 
-        message: "Failed to fetch messages",
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
-
-  // Send a new message in an existing conversation
-  app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const userId = req.session.userId;
-      const { conversation_id, content } = req.body;
-
-      if (!conversation_id || !content) {
-        return res.status(400).json({ message: "Conversation ID and content are required" });
-      }
-
-      // Verify user has access to this conversation
-      const conversation = await storage.getConversationById(conversation_id);
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-
-      if (conversation.customer_id !== userId && conversation.owner_id !== userId) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Determine sender type
-      const senderType = conversation.customer_id === userId ? "customer" : "owner";
-
-      // Create the message
-      const message = await storage.createMessage({
-        conversation_id,
-        sender_id: userId,
-        sender_type: senderType,
-        content,
-        is_read: true
-      });
-
-      // Update conversation
-      const updateData: any = { last_message_time: new Date() };
-      if (senderType === "customer") {
-        updateData.is_read_by_owner = false;
-        updateData.is_read_by_customer = true;
-      } else {
-        updateData.is_read_by_customer = false;
-        updateData.is_read_by_owner = true;
-      }
-
-      await storage.updateConversation(conversation_id, updateData);
-
-      res.json(message);
-    } catch (error) {
-      console.error("Error sending message:", error);
-      res.status(500).json({ 
-        message: "Failed to send message",
-        error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
