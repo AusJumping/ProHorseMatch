@@ -136,6 +136,16 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Debug all POST requests to /api/messages
+  app.use((req, res, next) => {
+    if (req.method === 'POST' && req.url === '/api/messages') {
+      console.log("=== INTERCEPTED POST /api/messages ===");
+      console.log("Request headers:", req.headers);
+      console.log("Request body:", req.body);
+    }
+    next();
+  });
+
   // Initialize Stripe
   if (!process.env.STRIPE_SECRET_KEY) {
     console.warn('Missing STRIPE_SECRET_KEY - Payment features will not work');
