@@ -57,7 +57,6 @@ export interface IStorage {
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
   findConversation(customerId: number, ownerId: number, horseId: number): Promise<Conversation | undefined>;
-  deleteConversation(id: number): Promise<boolean>;
   
   getMessages(): Promise<Message[]>;
   getMessageById(id: number): Promise<Message | undefined>;
@@ -725,22 +724,6 @@ export class MemStorage implements IStorage {
     }
     saveStorageToDisk();
   }
-
-  async deleteConversation(id: number): Promise<boolean> {
-    const deleted = this.conversations.delete(id);
-    if (deleted) {
-      // Also delete all messages in this conversation
-      const messagesToDelete = Array.from(this.messages.values())
-        .filter(msg => msg.conversation_id === id);
-      
-      for (const message of messagesToDelete) {
-        this.messages.delete(message.id);
-      }
-      
-      saveStorageToDisk();
-    }
-    return deleted;
-  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1002,16 +985,6 @@ export class DatabaseStorage implements IStorage {
       }
       await this.updateConversation(conversationId, updateData);
     }
-  }
-
-  async deleteConversation(id: number): Promise<boolean> {
-    // Delete all messages in the conversation first
-    await db.delete(messages).where(eq(messages.conversation_id, id));
-    
-    // Then delete the conversation
-    const result = await db.delete(conversations).where(eq(conversations.id, id)).returning();
-    
-    return result.length > 0;
   }
 }
 

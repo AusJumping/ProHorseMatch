@@ -11,21 +11,6 @@ const Sidebar = () => {
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated, logout } = useAuth();
-
-  // Fetch conversations to check for unread messages
-  const { data: conversations = [] } = useQuery({
-    queryKey: ["/api/conversations"],
-    enabled: isAuthenticated && !!user,
-    refetchInterval: 5000, // Refresh every 5 seconds to check for new messages
-  });
-
-  // Check if there are any unread messages
-  const hasUnreadMessages = conversations.some((conversation: any) => {
-    if (!user) return false;
-    return conversation.customer_id === user.id 
-      ? !conversation.is_read_by_customer
-      : !conversation.is_read_by_owner;
-  });
   
 
   
@@ -103,7 +88,7 @@ const Sidebar = () => {
           <li>
             <Button
               variant={location === "/messages" ? "default" : "ghost"}
-              className={`w-full justify-start px-5 py-3 relative ${
+              className={`w-full justify-start px-5 py-3 ${
                 location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
               }`}
               onClick={(e) => {
@@ -113,9 +98,6 @@ const Sidebar = () => {
             >
               <MessageCircle className="mr-3 h-5 w-5" />
               <span>Messages</span>
-              {hasUnreadMessages && (
-                <div className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full"></div>
-              )}
             </Button>
           </li>
 

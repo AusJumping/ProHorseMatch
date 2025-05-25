@@ -2245,64 +2245,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mark conversation as read
-  app.post("/api/conversations/:id/mark-read", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      const userId = req.session.userId;
-      
-      // Verify user is part of this conversation
-      const conversation = await storage.getConversationById(conversationId);
-      
-      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      // Mark conversation as read for current user
-      await storage.markMessagesAsRead(conversationId, userId);
-      
-      res.json({ message: "Conversation marked as read" });
-    } catch (error) {
-      console.error("Mark as read error:", error);
-      res.status(500).json({ message: "Failed to mark as read", error: error.message });
-    }
-  });
-
-  // Delete a conversation
-  app.delete("/api/conversations/:id", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      const userId = req.session.userId;
-      
-      console.log(`Delete conversation request: conversationId=${conversationId}, userId=${userId}`);
-      
-      // Verify user is part of this conversation
-      const conversation = await storage.getConversationById(conversationId);
-      console.log("Found conversation:", conversation);
-      
-      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
-        console.log("Access denied for delete operation");
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      // Delete the conversation (this should also delete associated messages)
-      console.log("Attempting to delete conversation...");
-      const deleted = await storage.deleteConversation(conversationId);
-      console.log("Delete result:", deleted);
-      
-      if (!deleted) {
-        console.log("Delete operation returned false");
-        return res.status(500).json({ message: "Failed to delete conversation" });
-      }
-      
-      console.log("Conversation deleted successfully");
-      res.json({ message: "Conversation deleted successfully" });
-    } catch (error) {
-      console.error("Delete conversation error:", error);
-      res.status(500).json({ message: "Failed to delete conversation", error: error.message });
-    }
-  });
-
   // Create HTTP server
   const httpServer = createServer(app);
 

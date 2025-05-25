@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, MessageCircle, ArrowLeft, Trash2 } from "lucide-react";
+import { Send, MessageCircle, ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/Sidebar";
@@ -96,60 +96,6 @@ export default function MessagesPage() {
     },
   });
 
-  // Mark conversation as read mutation
-  const markAsReadMutation = useMutation({
-    mutationFn: async (conversationId: number) => {
-      const response = await fetch(`/api/conversations/${conversationId}/mark-read`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!response.ok) throw new Error("Failed to mark as read");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-    },
-  });
-
-  // Delete conversation mutation
-  const deleteConversationMutation = useMutation({
-    mutationFn: async (conversationId: number) => {
-      const response = await fetch(`/api/conversations/${conversationId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!response.ok) throw new Error("Failed to delete conversation");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      setSelectedConversation(null); // Close conversation view if it was selected
-    },
-  });
-
-  // Mark conversation as read when selected
-  useEffect(() => {
-    if (selectedConversation && currentUser) {
-      const conversation = conversations.find(c => c.id === selectedConversation);
-      if (conversation) {
-        const isUnreadForUser = conversation.customer_id === currentUser.id 
-          ? !conversation.is_read_by_customer
-          : !conversation.is_read_by_owner;
-        
-        if (isUnreadForUser) {
-          markAsReadMutation.mutate(selectedConversation);
-        }
-      }
-    }
-  }, [selectedConversation, conversations, currentUser]);
-
-  const handleDeleteConversation = (conversationId: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent selecting the conversation
-    if (confirm("Are you sure you want to delete this conversation? This action cannot be undone.")) {
-      deleteConversationMutation.mutate(conversationId);
-    }
-  };
-
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConversation) return;
@@ -201,8 +147,8 @@ export default function MessagesPage() {
       <Sidebar />
       <div className="flex-1 container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
-          <MessageCircle className="w-8 h-8" style={{ color: '#cdac6e' }} />
-          <h1 className="text-2xl font-semibold text-neutral-900">Messages</h1>
+          <MessageCircle className="w-8 h-8 text-primary" />
+          <h1 className="text-3xl font-bold text-neutral-900">Messages</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
@@ -253,22 +199,11 @@ export default function MessagesPage() {
                                 <p className={`font-medium ${unread ? "font-bold" : ""}`}>
                                   {horse?.name || "Horse"}
                                 </p>
-                                <div className="flex items-center gap-2">
-                                  {unread && (
-                                    <Badge variant="default" className="bg-primary text-white text-xs">
-                                      New
-                                    </Badge>
-                                  )}
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => handleDeleteConversation(conversation.id, e)}
-                                    className="h-8 w-8 p-0 text-neutral-400 hover:text-red-500 hover:bg-red-50"
-                                    disabled={deleteConversationMutation.isPending}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
+                                {unread && (
+                                  <Badge variant="default" className="bg-primary text-white text-xs">
+                                    New
+                                  </Badge>
+                                )}
                               </div>
                               <p className="text-xs text-neutral-400">
                                 {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
