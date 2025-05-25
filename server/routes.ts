@@ -136,12 +136,6 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
-  // Debug middleware to log all requests to /api/messages
-  app.use('/api/messages', (req, res, next) => {
-    console.log(`${req.method} /api/messages - Body:`, req.body);
-    next();
-  });
   // Initialize Stripe
   if (!process.env.STRIPE_SECRET_KEY) {
     console.warn('Missing STRIPE_SECRET_KEY - Payment features will not work');
@@ -2231,44 +2225,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       console.log("POST /api/messages - Request body:", req.body);
-      const { conversation_id, content } = req.body;
+      const { customer_id, owner_id, horse_id, content } = req.body;
 
       // Validate required fields
-      if (!conversation_id || !content?.trim()) {
-        console.log("Missing fields - conversation_id:", conversation_id, "content:", content);
+      if (!customer_id || !owner_id || !horse_id || !content?.trim()) {
+        console.log("Missing fields - customer_id:", customer_id, "owner_id:", owner_id, "horse_id:", horse_id, "content:", content);
         return res.status(400).json({ 
-          message: "Missing required fields: conversation_id and content are required" 
+          message: "Missing required fields: customer_id, owner_id, horse_id and content are required" 
         });
       }
 
-      // Get conversation details
-      const conversation = await storage.getConversationById(conversation_id);
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-
       // Verify user has permission to send this message
-      if (userId !== conversation.customer_id && userId !== conversation.owner_id) {
+      if (userId !== parseInt(customer_id) && userId !== parseInt(owner_id)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
       // Determine sender type
-      const sender_type = userId === conversation.customer_id ? "customer" : "owner";
+      const sender_type = userId === parseInt(customer_id) ? "customer" : "owner";
 
       const messageData = {
-        customer_id: conversation.customer_id,
-        owner_id: conversation.owner_id,
-        horse_id: conversation.horse_id,
+        customer_id: parseInt(customer_id),
+        owner_id: parseInt(owner_id),
+        horse_id: parseInt(horse_id),
         content: content.trim(),
         sender_type
       };
 
+      console.log("Creating message with data:", messageData);
+
       // Create the message
       const newMessage = await storage.createMessage(messageData);
 
+      // Find or create conversation
+      let conversation = await storage.getConversationsByCustomerId(parseInt(customer_id))
+        .then(conversations => conversations.find(c => 
+          c.owner_id === parseInt(owner_id) && c.horse_id === parseInt(horse_id)
+        ));
+
+      if (!conversation) {
+        console.log("Creating new conversation");
+        conversation = await storage.createConversation({
+          customer_id: parseInt(customer_id),
+          owner_id: parseInt(owner_id),
+          horse_id: parseInt(horse_id)
+        });
+      }
+
       // Update conversation last message time
-      await storage.updateConversation(conversation_id, {
+      await storage.updateConversation(conversation.id, {
         last_message_time: new Date(),
+        last_message_id: newMessage.id
       });
 
       console.log("Message created successfully:", newMessage.id);
