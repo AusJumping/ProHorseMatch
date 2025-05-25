@@ -55,10 +55,18 @@ export default function Messages() {
       horse_id: number;
       content: string;
     }) => {
-      return await apiRequest("POST", "/api/messages", messageData);
+      console.log("Sending message:", messageData);
+      try {
+        const result = await apiRequest("POST", "/api/messages", messageData);
+        console.log("API request completed:", result);
+        return result;
+      } catch (error) {
+        console.error("API request failed:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      console.log("Message sent successfully:", data);
+      console.log("onSuccess called with:", data);
       setMessageText("");
       setIsSending(false);
       // Refresh messages and conversations
@@ -74,8 +82,8 @@ export default function Messages() {
       });
     },
     onError: (error: any) => {
+      console.error("onError called with:", error);
       setIsSending(false);
-      console.error("Error sending message:", error);
       toast({
         title: "Failed to send message",
         description: error?.message || "Please try again in a moment.",
