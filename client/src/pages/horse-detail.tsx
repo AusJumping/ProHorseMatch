@@ -142,11 +142,22 @@ export default function HorseDetail() {
         return;
       }
       
-      await apiRequest("POST", "/api/conversations", {
-        horse_id: horse!.id,
-        message_content: messageContent
+      // Use the backend's single-step conversation + message creation
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          horse_id: horse!.id,
+          message_content: messageContent.trim()
+        }),
+        credentials: "include"
       });
-      
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to send message");
+      }
+
       toast({
         title: "Message sent",
         description: "Your message has been sent to the owner.",
@@ -158,7 +169,7 @@ export default function HorseDetail() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send message. Please try again.",
         variant: "destructive",
       });
     }
