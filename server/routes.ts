@@ -2376,6 +2376,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete a conversation
+  app.delete("/api/conversations/:id", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const conversationId = parseInt(req.params.id);
+
+      // Verify user has access to this conversation
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      if (conversation.customer_id !== userId && conversation.owner_id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Delete the conversation
+      const deleted = await storage.deleteConversation(conversationId);
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete conversation" });
+      }
+
+      res.json({ message: "Conversation deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      res.status(500).json({ 
+        message: "Failed to delete conversation",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
