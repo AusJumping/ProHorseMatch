@@ -149,10 +149,14 @@ export class MemStorage implements IStorage {
   private horses: Map<number, Horse>;
   private users: Map<number, User>;
   private matches: Map<number, Match>;
+  private conversations: Map<number, Conversation>;
+  private messages: Map<number, Message>;
 
   private horseId: number;
   private userId: number;
   private matchId: number;
+  private conversationId: number;
+  private messageId: number;
 
   constructor(skipSeed = false) {
     // Initialize or load from global storage to survive hot reloads
