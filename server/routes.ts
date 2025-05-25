@@ -1,6 +1,7 @@
 import type { Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
+import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import session from "express-session";
 import multer from "multer";
 import path from "path";
@@ -115,26 +116,9 @@ declare module "express-session" {
 
 const SessionStore = MemoryStore(session);
 
-// Configure multer storage
-const storage_config = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Make sure upload directory exists
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const extension = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + extension);
-  }
-});
-
-// Configure upload middleware
+// Configure upload middleware for memory storage (Cloudinary)
 const upload = multer({
-  storage: storage_config,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 25 * 1024 * 1024, // 25MB limit
   },
@@ -1974,19 +1958,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // File upload endpoint
-  app.post("/api/upload", upload.single("file"), (req, res) => {
+  // File upload endpoint - now using Cloudinary
+  app.post("/api/upload", upload.single("file"), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
       
-      // Get file path relative to public directory
-      const relativePath = req.file.path.replace(/^.*[\\\/]public/, '');
-      const fileUrl = relativePath;
+      console.log("Uploading file to Cloudinary:", req.file.originalname);
+      
+      // Upload to Cloudinary
+      const result = await uploadToCloudinary(req.file.buffer, 'horse-photos');
+      
+      console.log("Cloudinary upload successful:", result.secure_url);
       
       res.json({ 
-        url: fileUrl,
+        url: result.secure_url,
+        publicId: result.public_id,
         fileType: req.file.mimetype.startsWith('image/') ? 'image' : 'video'
       });
     } catch (error) {
