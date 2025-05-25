@@ -48,7 +48,11 @@ const FilterPanel = ({
   }, [currentCurrency]);
 
   useEffect(() => {
-    setFilters(activeFilters);
+    // Ensure levels property exists in filters
+    setFilters({
+      ...activeFilters,
+      levels: activeFilters.levels || []
+    });
   }, [activeFilters]);
 
   const handleChange = (key: string, value: any) => {
@@ -263,16 +267,29 @@ const FilterPanel = ({
               <Label className="block font-accent font-semibold mb-2 text-neutral-800">Level</Label>
               <Select 
                 value={filters.levels?.[0] || ""} 
-                onValueChange={(value) => handleChange('levels', [value])}
+                onValueChange={(value) => {
+                  console.log('Level filter value changed:', value);
+                  handleChange('levels', value === "any_level" ? [] : [value]);
+                }}
               >
                 <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                   <SelectValue placeholder="Any Level" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any_level">Any Level</SelectItem>
-                  {constants?.levels && filters.disciplines[0] && constants.levels[filters.disciplines[0]]?.map((level: string) => (
-                    <SelectItem key={level} value={level}>{level}</SelectItem>
-                  ))}
+                  {(() => {
+                    const currentDiscipline = filters.disciplines[0];
+                    const levelsForDiscipline = constants?.levels?.[currentDiscipline];
+                    console.log('Level filter debug:', {
+                      currentDiscipline,
+                      constants: constants?.levels,
+                      levelsForDiscipline,
+                      filtersLevels: filters.levels
+                    });
+                    return levelsForDiscipline?.map((level: string) => (
+                      <SelectItem key={level} value={level}>{level}</SelectItem>
+                    ));
+                  })()}
                 </SelectContent>
               </Select>
             </div>
