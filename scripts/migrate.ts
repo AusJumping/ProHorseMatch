@@ -73,32 +73,7 @@ CREATE TABLE IF NOT EXISTS "matches" (
 );
 `;
 
-// Define the SQL query to create the messages table
-const createMessagesTable = `
-CREATE TABLE IF NOT EXISTS "messages" (
-  "id" serial PRIMARY KEY,
-  "customer_id" integer NOT NULL,
-  "owner_id" integer NOT NULL,
-  "horse_id" integer NOT NULL,
-  "content" text NOT NULL,
-  "sender_type" text NOT NULL,
-  "created_at" timestamp DEFAULT now(),
-  "is_read" boolean DEFAULT false
-);
-`;
-
-// Define the SQL query to create the conversations table
-const createConversationsTable = `
-CREATE TABLE IF NOT EXISTS "conversations" (
-  "id" serial PRIMARY KEY,
-  "customer_id" integer NOT NULL,
-  "owner_id" integer NOT NULL,
-  "horse_id" integer NOT NULL,
-  "last_message_id" integer,
-  "last_message_time" timestamp,
-  "unread_count" integer DEFAULT 0
-);
-`;
+// Messages and conversations tables removed
 
 // Define the SQL query to create the sessions table
 const createSessionsTable = `
@@ -134,11 +109,7 @@ async function main() {
     console.log("Creating matches table...");
     await sql.unsafe(createMatchesTable);
     
-    console.log("Creating messages table...");
-    await sql.unsafe(createMessagesTable);
-    
-    console.log("Creating conversations table...");
-    await sql.unsafe(createConversationsTable);
+    // Messages and conversations tables removed
     
     console.log("Creating sessions table...");
     await sql.unsafe(createSessionsTable);
