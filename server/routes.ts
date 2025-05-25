@@ -2163,6 +2163,219 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ===== MESSAGING SYSTEM ROUTES =====
+  
+  // Create a new conversation (this is what the "Send Message" button will use)
+  app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { horse_id, message_content } = req.body;
+
+      // Validate required fields
+      if (!horse_id || !message_content) {
+        return res.status(400).json({ message: "Horse ID and message content are required" });
+      }
+
+      // Get the horse to find the owner
+      const horse = await storage.getHorseById(horse_id);
+      if (!horse) {
+        return res.status(404).json({ message: "Horse not found" });
+      }
+
+      // Prevent users from messaging themselves
+      if (horse.owner_id === userId) {
+        return res.status(400).json({ message: "Cannot send message to yourself" });
+      }
+
+      // Check if conversation already exists
+      const existingConversations = await storage.getConversationsByCustomerId(userId);
+      const existingConversation = existingConversations.find(conv => 
+        conv.horse_id === horse_id && conv.owner_id === horse.owner_id
+      );
+
+      let conversation;
+      if (existingConversation) {
+        // Use existing conversation
+        conversation = existingConversation;
+      } else {
+        // Create new conversation
+        conversation = await storage.createConversation({
+          customer_id: userId,
+          owner_id: horse.owner_id,
+          horse_id: horse_id,
+          is_read_by_customer: true,
+          is_read_by_owner: false
+        });
+      }
+
+      // Create the message
+      const message = await storage.createMessage({
+        conversation_id: conversation.id,
+        sender_id: userId,
+        sender_type: "customer",
+        content: message_content,
+        is_read: true
+      });
+
+      // Update conversation last message time
+      await storage.updateConversation(conversation.id, {
+        last_message_time: new Date(),
+        is_read_by_owner: false
+      });
+
+      res.json({ 
+        conversation,
+        message,
+        success: true 
+      });
+
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      res.status(500).json({ 
+        message: "Failed to send message",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get user's conversations
+  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+
+      // Get all conversations for this user (as customer or owner)
+      const customerConversations = await storage.getConversationsByCustomerId(userId);
+      const ownerConversations = await storage.getConversationsByOwnerId(userId);
+      
+      const allConversations = [...customerConversations, ...ownerConversations];
+
+      // Get detailed conversation data with horse and user info
+      const conversationsWithDetails = await Promise.all(
+        allConversations.map(async (conversation) => {
+          const horse = await storage.getHorseById(conversation.horse_id);
+          const customer = await storage.getUserById(conversation.customer_id);
+          const owner = await storage.getUserById(conversation.owner_id);
+
+          return {
+            ...conversation,
+            horse: horse ? {
+              id: horse.id,
+              name: horse.name,
+              photos: horse.photos
+            } : null,
+            customer: customer ? {
+              id: customer.id,
+              name: customer.name || customer.business_name
+            } : null,
+            owner: owner ? {
+              id: owner.id,
+              name: owner.name || owner.business_name
+            } : null
+          };
+        })
+      );
+
+      res.json(conversationsWithDetails);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch conversations",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get messages for a specific conversation
+  app.get("/api/conversations/:id/messages", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const conversationId = parseInt(req.params.id);
+
+      // Verify user has access to this conversation
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      if (conversation.customer_id !== userId && conversation.owner_id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get messages
+      const messages = await storage.getMessagesByConversationId(conversationId);
+
+      // Mark messages as read for current user
+      const isCustomer = conversation.customer_id === userId;
+      if (isCustomer && !conversation.is_read_by_customer) {
+        await storage.updateConversation(conversationId, { is_read_by_customer: true });
+      } else if (!isCustomer && !conversation.is_read_by_owner) {
+        await storage.updateConversation(conversationId, { is_read_by_owner: true });
+      }
+
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch messages",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Send a new message in an existing conversation
+  app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { conversation_id, content } = req.body;
+
+      if (!conversation_id || !content) {
+        return res.status(400).json({ message: "Conversation ID and content are required" });
+      }
+
+      // Verify user has access to this conversation
+      const conversation = await storage.getConversationById(conversation_id);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      if (conversation.customer_id !== userId && conversation.owner_id !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Determine sender type
+      const senderType = conversation.customer_id === userId ? "customer" : "owner";
+
+      // Create the message
+      const message = await storage.createMessage({
+        conversation_id,
+        sender_id: userId,
+        sender_type: senderType,
+        content,
+        is_read: true
+      });
+
+      // Update conversation
+      const updateData: any = { last_message_time: new Date() };
+      if (senderType === "customer") {
+        updateData.is_read_by_owner = false;
+        updateData.is_read_by_customer = true;
+      } else {
+        updateData.is_read_by_customer = false;
+        updateData.is_read_by_owner = true;
+      }
+
+      await storage.updateConversation(conversation_id, updateData);
+
+      res.json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ 
+        message: "Failed to send message",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 

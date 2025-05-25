@@ -16,6 +16,7 @@ import EditHorse from "@/pages/edit-horse";
 import MigrateHorses from "@/pages/migrate-horses";
 import AdminPanel from "@/pages/admin";
 import Favorites from "@/pages/favorites";
+import Messages from "@/pages/messages";
 import Landing from "@/pages/landing";
 import Checkout from "@/pages/checkout";
 import PaymentSuccess from "@/pages/payment-success";
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/migrate-horses" component={MigrateHorses} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/favorites" component={Favorites} />
+      <Route path="/messages" component={Messages} />
       <Route path="/checkout/:horseId" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/subscription" component={Subscription} />
