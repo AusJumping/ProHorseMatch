@@ -9,6 +9,7 @@ import { Horse } from "@shared/schema";
 
 interface Filter {
   disciplines: string[];
+  levels: string[];
   breeds: string[];
   sexes: string[];
   location_country: string | null;
@@ -27,6 +28,7 @@ export default function FilterPage() {
   const { currentCurrency } = useCurrency();
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
+    levels: [],       // Empty array for Any Level
     breeds: [],       // Empty array for All Breeds
     sexes: [],        // Empty array for Any Sex
     location_country: null,
@@ -49,6 +51,10 @@ export default function FilterPage() {
       
       if (activeFilters.disciplines && activeFilters.disciplines.length > 0) {
         activeFilters.disciplines.forEach((d: string) => params.append('disciplines', d));
+      }
+      
+      if (activeFilters.levels && activeFilters.levels.length > 0) {
+        activeFilters.levels.forEach((l: string) => params.append('levels', l));
       }
       
       if (activeFilters.breeds && activeFilters.breeds.length > 0) {
@@ -111,6 +117,11 @@ export default function FilterPage() {
       filtersToApply.disciplines = [];
     }
     
+    // Ensure levels is properly formatted
+    if (filtersToApply.levels && filtersToApply.levels[0] === "any_level") {
+      filtersToApply.levels = [];
+    }
+    
     // Ensure breeds is properly formatted
     if (filtersToApply.breeds && filtersToApply.breeds[0] === "all_breeds") {
       filtersToApply.breeds = [];
@@ -126,6 +137,10 @@ export default function FilterPage() {
     
     if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
       filtersToApply.disciplines.forEach(d => params.append('disciplines', d));
+    }
+    
+    if (filtersToApply.levels && filtersToApply.levels.length > 0) {
+      filtersToApply.levels.forEach(l => params.append('levels', l));
     }
     
     if (filtersToApply.breeds && filtersToApply.breeds.length > 0) {
@@ -205,6 +220,11 @@ export default function FilterPage() {
                 filtersToApply.disciplines = [];
               }
               
+              // Ensure levels is properly formatted
+              if (filtersToApply.levels && filtersToApply.levels[0] === "any_level") {
+                filtersToApply.levels = [];
+              }
+              
               // Ensure breeds is properly formatted
               if (filtersToApply.breeds && filtersToApply.breeds[0] === "all_breeds") {
                 filtersToApply.breeds = [];
@@ -220,6 +240,10 @@ export default function FilterPage() {
               
               if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
                 filtersToApply.disciplines.forEach((d: string) => params.append('disciplines', d));
+              }
+              
+              if (filtersToApply.levels && filtersToApply.levels.length > 0) {
+                filtersToApply.levels.forEach((l: string) => params.append('levels', l));
               }
               
               if (filtersToApply.breeds && filtersToApply.breeds.length > 0) {
