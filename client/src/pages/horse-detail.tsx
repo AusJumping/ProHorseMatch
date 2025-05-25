@@ -8,7 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Share2, ChevronLeft, Loader2, MessageCircle } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Heart, Share2, ChevronLeft, Loader2, MessageCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
@@ -22,12 +23,19 @@ export default function HorseDetail() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
+  const [showMessageInput, setShowMessageInput] = useState(false);
+  const [messageText, setMessageText] = useState("");
   const queryClient = useQueryClient();
 
-  // Contact owner mutation
-  const contactOwnerMutation = useMutation({
+  // Send message mutation
+  const sendMessageMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/conversations", {
+      if (!messageText.trim()) {
+        throw new Error("Please enter a message");
+      }
+
+      // First create or find conversation
+      const conversationResponse = await fetch("/api/conversations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -36,24 +44,45 @@ export default function HorseDetail() {
           horse_id: horse!.id,
         }),
       });
-      if (!response.ok) {
-        const errorText = await response.text();
+      
+      if (!conversationResponse.ok) {
+        const errorText = await conversationResponse.text();
         throw new Error(errorText || "Failed to create conversation");
       }
-      return response.json();
+      
+      const conversation = await conversationResponse.json();
+
+      // Then send the message
+      const messageResponse = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conversation_id: conversation.id,
+          sender_id: user!.id,
+          content: messageText.trim(),
+        }),
+      });
+
+      if (!messageResponse.ok) {
+        const errorText = await messageResponse.text();
+        throw new Error(errorText || "Failed to send message");
+      }
+
+      return messageResponse.json();
     },
     onSuccess: () => {
       toast({
-        title: "Conversation started",
-        description: "You can now message the owner about this horse.",
+        title: "Message sent successfully",
+        description: "Your message has been sent to the horse owner.",
       });
+      setMessageText("");
+      setShowMessageInput(false);
       navigate("/messages");
     },
     onError: (error: any) => {
-      console.error("Conversation creation error:", error);
       toast({
-        title: "Error",
-        description: "Failed to start conversation. Please try again.",
+        title: "Failed to send message",
+        description: error.message,
         variant: "destructive",
       });
     },
@@ -307,15 +336,45 @@ export default function HorseDetail() {
                   <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
                   {isSaved ? 'Saved to Favorites' : 'Save to Favorites'}
                 </Button>
-                <Button 
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => contactOwnerMutation.mutate()}
-                  disabled={contactOwnerMutation.isPending}
-                >
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  {contactOwnerMutation.isPending ? 'Starting...' : 'Contact Owner'}
-                </Button>
+                {!showMessageInput ? (
+                  <Button 
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setShowMessageInput(true)}
+                  >
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    Contact Owner
+                  </Button>
+                ) : (
+                  <div className="flex-1 space-y-3">
+                    <Textarea
+                      placeholder="Type your message about this horse..."
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      className="min-h-[80px]"
+                    />
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => sendMessageMutation.mutate()}
+                        disabled={sendMessageMutation.isPending || !messageText.trim()}
+                        className="flex-1"
+                        style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" }}
+                      >
+                        <Send className="mr-2 h-4 w-4" />
+                        {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setShowMessageInput(false);
+                          setMessageText("");
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             
