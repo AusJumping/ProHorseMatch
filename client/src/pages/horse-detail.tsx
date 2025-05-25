@@ -322,8 +322,8 @@ export default function HorseDetail() {
             
             {/* No price or buy now button as requested */}
 
-            {/* Action Buttons - Hidden if user owns this horse */}
-            {!isMessageOpen && user && user.id !== horse.owner_id && (
+            {/* Action Buttons */}
+            {!isMessageOpen && (
               <div className="flex gap-3 mt-auto">
                 <Button 
                   variant={isSaved ? "outline" : "default"}
