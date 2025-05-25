@@ -131,26 +131,7 @@ export type Match = typeof matches.$inferSelect;
 
 // Messaging system removed
 
-// Conversation (for listing unique conversations)
-export const conversations = pgTable("conversations", {
-  id: serial("id").primaryKey(),
-  customer_id: integer("customer_id").notNull(),
-  owner_id: integer("owner_id").notNull(),
-  horse_id: integer("horse_id").notNull(),
-  last_message_id: integer("last_message_id"),
-  last_message_time: timestamp("last_message_time"),
-  unread_count: integer("unread_count").default(0),
-});
 
-export const insertConversationSchema = createInsertSchema(conversations).omit({
-  id: true,
-  last_message_id: true,
-  last_message_time: true,
-  unread_count: true,
-});
-
-export type InsertConversation = z.infer<typeof insertConversationSchema>;
-export type Conversation = typeof conversations.$inferSelect;
 
 // Constants for app
 export const disciplines = ["Jumping", "Dressage", "Eventing"];
