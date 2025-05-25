@@ -197,7 +197,7 @@ export default function MessagesPage() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
                                 <p className={`font-medium ${unread ? "font-bold" : ""}`}>
-                                  {otherUser?.name || "Unknown User"}
+                                  {horse?.name || "Horse"}
                                 </p>
                                 {unread && (
                                   <Badge variant="default" className="bg-primary text-white text-xs">
@@ -205,9 +205,6 @@ export default function MessagesPage() {
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-sm text-neutral-600 truncate">
-                                About: {horse?.name || "Unknown Horse"}
-                              </p>
                               <p className="text-xs text-neutral-400">
                                 {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
                               </p>
