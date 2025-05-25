@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { 
-  Home, Heart, Filter, MessageSquare, User, List, CreditCard, 
+  Home, Heart, Filter, User, List, CreditCard, 
   Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
@@ -61,10 +61,10 @@ const MobileNavbar = () => {
         <SheetClose asChild>
           <Button 
             variant="ghost" 
-            className={`justify-start h-12 ${location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+            className={`justify-start h-12 ${location === "/browse" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
             onClick={() => {
               setTimeout(() => {
-                navigate("/filter");
+                navigate("/browse");
               }, 300);
             }}
           >
@@ -112,18 +112,7 @@ const MobileNavbar = () => {
           </SheetClose>
         )}
         
-        {isAuthenticated && (
-          <SheetClose asChild>
-            <Button 
-              variant="ghost" 
-              className={`justify-start h-12 ${location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-              onClick={() => navigate("/messages")}
-            >
-              <MessageSquare className="mr-3 h-5 w-5" />
-              <span>Messages</span>
-            </Button>
-          </SheetClose>
-        )}
+
         
 
         
