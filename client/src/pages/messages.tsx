@@ -9,6 +9,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Send, MessageCircle, ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
+import Sidebar from "@/components/Sidebar";
+import { useAuth } from "@/lib/auth";
 
 interface Conversation {
   id: number;
@@ -124,13 +126,16 @@ export default function MessagesPage() {
 
   if (conversationsLoading) {
     return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded"></div>
-            ))}
+      <div className="flex min-h-screen bg-neutral-50">
+        <Sidebar />
+        <div className="flex-1 p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-16 bg-gray-200 rounded"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -138,8 +143,9 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6">
+    <div className="flex min-h-screen bg-neutral-50">
+      <Sidebar />
+      <div className="flex-1 container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
           <MessageCircle className="w-8 h-8 text-blue-600" />
           <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
