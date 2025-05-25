@@ -154,3 +154,40 @@ export const characteristics = [
 export const jumpingLevels = ["Children", "Junior", "Amateur", "Young Rider", "Mini Prix", "Grand Prix"];
 export const dressageLevels = ["Preliminary", "Novice", "Elementary", "Medium", "Advanced", "Prix St. Georges", "Intermediate I", "Intermediate II", "Grand Prix"];
 export const eventingLevels = ["EvA60", "EvA80", "EvA95", "1*", "2*", "3*", "4*", "5*"];
+
+// Messaging System Schema
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull().references(() => users.id),
+  owner_id: integer("owner_id").notNull().references(() => users.id),
+  horse_id: integer("horse_id").notNull().references(() => horses.id),
+  last_message_time: timestamp("last_message_time").defaultNow(),
+  is_read_by_customer: boolean("is_read_by_customer").default(false),
+  is_read_by_owner: boolean("is_read_by_owner").default(false),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversation_id: integer("conversation_id").notNull().references(() => conversations.id),
+  sender_id: integer("sender_id").notNull().references(() => users.id),
+  sender_type: text("sender_type").notNull(), // "customer" or "owner"
+  content: text("content").notNull(),
+  is_read: boolean("is_read").default(false),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  created_at: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  created_at: true,
+});
+
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;

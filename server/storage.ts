@@ -2,7 +2,9 @@ import {
   horses, type Horse, type InsertHorse,
   users, type User, type InsertUser, type Owner, type InsertOwner,
   type Customer, type InsertCustomer,
-  matches, type Match, type InsertMatch
+  matches, type Match, type InsertMatch,
+  conversations, type Conversation, type InsertConversation,
+  messages, type Message, type InsertMessage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
@@ -47,6 +49,21 @@ export interface IStorage {
   getMatchesByHorseId(horseId: number): Promise<Match[]>;
   createMatch(match: InsertMatch): Promise<Match>;
   updateMatch(id: number, match: Partial<Match>): Promise<Match>;
+  
+  // Messaging methods
+  getConversations(): Promise<Conversation[]>;
+  getConversationById(id: number): Promise<Conversation | undefined>;
+  getConversationsByUserId(userId: number): Promise<Conversation[]>;
+  createConversation(conversation: InsertConversation): Promise<Conversation>;
+  updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
+  findConversation(customerId: number, ownerId: number, horseId: number): Promise<Conversation | undefined>;
+  
+  getMessages(): Promise<Message[]>;
+  getMessageById(id: number): Promise<Message | undefined>;
+  getMessagesByConversationId(conversationId: number): Promise<Message[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  updateMessage(id: number, message: Partial<Message>): Promise<Message>;
+  markMessagesAsRead(conversationId: number, userId: number): Promise<void>;
 }
 
 import * as fs from 'fs';
@@ -758,6 +775,101 @@ export class DatabaseStorage implements IStorage {
     }
 
     return updatedMatch;
+  }
+
+  // Messaging methods implementation
+  async getConversations(): Promise<Conversation[]> {
+    return await db.select().from(conversations).orderBy(desc(conversations.last_message_time));
+  }
+
+  async getConversationById(id: number): Promise<Conversation | undefined> {
+    const [result] = await db.select().from(conversations).where(eq(conversations.id, id));
+    return result;
+  }
+
+  async getConversationsByUserId(userId: number): Promise<Conversation[]> {
+    return await db.select().from(conversations)
+      .where(
+        sql`${conversations.customer_id} = ${userId} OR ${conversations.owner_id} = ${userId}`
+      )
+      .orderBy(desc(conversations.last_message_time));
+  }
+
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    const [result] = await db.insert(conversations).values(conversation).returning();
+    return result;
+  }
+
+  async updateConversation(id: number, update: Partial<Conversation>): Promise<Conversation> {
+    const [result] = await db.update(conversations).set(update).where(eq(conversations.id, id)).returning();
+    return result;
+  }
+
+  async findConversation(customerId: number, ownerId: number, horseId: number): Promise<Conversation | undefined> {
+    const [result] = await db.select().from(conversations)
+      .where(
+        and(
+          eq(conversations.customer_id, customerId),
+          eq(conversations.owner_id, ownerId),
+          eq(conversations.horse_id, horseId)
+        )
+      );
+    return result;
+  }
+
+  async getMessages(): Promise<Message[]> {
+    return await db.select().from(messages).orderBy(asc(messages.created_at));
+  }
+
+  async getMessageById(id: number): Promise<Message | undefined> {
+    const [result] = await db.select().from(messages).where(eq(messages.id, id));
+    return result;
+  }
+
+  async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(eq(messages.conversation_id, conversationId))
+      .orderBy(asc(messages.created_at));
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [result] = await db.insert(messages).values(message).returning();
+    
+    // Update conversation's last_message_time
+    await db.update(conversations)
+      .set({ last_message_time: new Date() })
+      .where(eq(conversations.id, message.conversation_id));
+    
+    return result;
+  }
+
+  async updateMessage(id: number, update: Partial<Message>): Promise<Message> {
+    const [result] = await db.update(messages).set(update).where(eq(messages.id, id)).returning();
+    return result;
+  }
+
+  async markMessagesAsRead(conversationId: number, userId: number): Promise<void> {
+    // Mark messages as read
+    await db.update(messages)
+      .set({ is_read: true })
+      .where(
+        and(
+          eq(messages.conversation_id, conversationId),
+          sql`${messages.sender_id} != ${userId}`
+        )
+      );
+
+    // Update conversation read status
+    const conversation = await this.getConversationById(conversationId);
+    if (conversation) {
+      const updateData: Partial<Conversation> = {};
+      if (conversation.customer_id === userId) {
+        updateData.is_read_by_customer = true;
+      } else if (conversation.owner_id === userId) {
+        updateData.is_read_by_owner = true;
+      }
+      await this.updateConversation(conversationId, updateData);
+    }
   }
 }
 
