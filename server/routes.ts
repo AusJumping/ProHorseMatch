@@ -2223,10 +2223,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
+      console.log("POST /api/messages - Request body:", req.body);
       const { conversation_id, content } = req.body;
 
       // Validate required fields
       if (!conversation_id || !content?.trim()) {
+        console.log("Missing fields - conversation_id:", conversation_id, "content:", content);
         return res.status(400).json({ 
           message: "Missing required fields: conversation_id and content are required" 
         });
