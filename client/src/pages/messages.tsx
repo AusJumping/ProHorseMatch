@@ -182,9 +182,17 @@ export default function MessagesPage() {
                         >
                           <div className="flex items-start gap-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarFallback className="bg-primary/10 text-primary">
-                                {otherUser?.name?.[0] || "U"}
-                              </AvatarFallback>
+                              {horse?.photos && horse.photos.length > 0 ? (
+                                <img 
+                                  src={horse.photos[0]} 
+                                  alt={horse.name}
+                                  className="w-full h-full object-cover rounded-full"
+                                />
+                              ) : (
+                                <AvatarFallback className="bg-primary/10 text-primary">
+                                  {horse?.name?.[0] || "H"}
+                                </AvatarFallback>
+                              )}
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
