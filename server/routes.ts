@@ -1026,6 +1026,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           : [req.query.disciplines];
       }
       
+      if (req.query.levels && Array.isArray(req.query.levels) ? req.query.levels.length > 0 : req.query.levels) {
+        filters.levels = Array.isArray(req.query.levels) 
+          ? req.query.levels 
+          : [req.query.levels];
+      }
+      
       if (req.query.breeds && Array.isArray(req.query.breeds) ? req.query.breeds.length > 0 : req.query.breeds) {
         filters.breeds = Array.isArray(req.query.breeds) 
           ? req.query.breeds 
