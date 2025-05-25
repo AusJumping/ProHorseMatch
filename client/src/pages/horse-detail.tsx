@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, MessageSquare, Share2, ChevronLeft, Loader2 } from "lucide-react";
+import { Heart, Share2, ChevronLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
@@ -21,8 +21,7 @@ export default function HorseDetail() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
-  const [isMessageOpen, setIsMessageOpen] = useState(false);
-  const [messageContent, setMessageContent] = useState("");
+
 
   // Fetch horse data
   const { data: horse, isLoading, isError } = useQuery<Horse>({
@@ -128,48 +127,9 @@ export default function HorseDetail() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!messageContent.trim()) return;
-    
-    try {
-      if (!isAuthenticated || !user) {
-        toast({
-          title: "Login required",
-          description: "Please log in to send messages.",
-          variant: "destructive",
-        });
-        navigate("/auth");
-        return;
-      }
-      
-      await apiRequest("POST", "/api/messages", {
-        customer_id: user.id,
-        owner_id: horse!.owner_id,
-        horse_id: horse!.id,
-        content: messageContent,
-        sender_type: "customer"
-      });
-      
-      toast({
-        title: "Message sent",
-        description: "Your message has been sent to the owner.",
-      });
-      
-      setMessageContent("");
-      setIsMessageOpen(false);
-      navigate("/messages");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
 
-  const handleContactOwner = () => {
-    setIsMessageOpen(!isMessageOpen);
-  };
+
+
 
   const handleShare = () => {
     if (navigator.share) {
@@ -298,32 +258,8 @@ export default function HorseDetail() {
             
 
             
-            {/* Message form (conditionally displayed) */}
-            {isMessageOpen && (
-              <div className="mb-6">
-                <h3 className="font-accent font-semibold mb-2">Message the Owner</h3>
-                <textarea
-                  className="w-full p-3 border border-neutral-200 rounded-lg mb-3"
-                  rows={3}
-                  placeholder={`Ask a question about ${horse.name}...`}
-                  value={messageContent}
-                  onChange={(e) => setMessageContent(e.target.value)}
-                ></textarea>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setIsMessageOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSendMessage}>
-                    Send Message
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {/* No price or buy now button as requested */}
-
             {/* Action Buttons - Hidden if user owns this horse */}
-            {!isMessageOpen && user && user.id !== horse.owner_id && (
+            {user && user.id !== horse.owner_id && (
               <div className="flex gap-3 mt-auto">
                 <Button 
                   variant={isSaved ? "outline" : "default"}
@@ -334,10 +270,6 @@ export default function HorseDetail() {
                 >
                   <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
                   {isSaved ? 'Saved to Favorites' : 'Save to Favorites'}
-                </Button>
-                <Button className="flex-1" onClick={handleContactOwner}>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Contact Seller
                 </Button>
               </div>
             )}
