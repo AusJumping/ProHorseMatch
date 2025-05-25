@@ -117,6 +117,10 @@ export default function Home() {
         activeFilters.sexes.forEach((s: string) => params.append('sexes', s));
       }
       
+      if (activeFilters.levels && activeFilters.levels.length > 0) {
+        activeFilters.levels.forEach((l: string) => params.append('levels', l));
+      }
+      
       if (activeFilters.location_country) {
         params.append('location_country', activeFilters.location_country);
       }
