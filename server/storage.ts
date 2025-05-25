@@ -476,6 +476,23 @@ export class MemStorage implements IStorage {
       // Location filter
       if (filters.location_country && horse.location_country !== filters.location_country) return false;
 
+      // Pedigree search filter
+      if (filters.pedigree && typeof filters.pedigree === 'string') {
+        const searchTerm = filters.pedigree.toLowerCase();
+        const pedigreeFields = [
+          horse.sire,
+          horse.dam,
+          horse.dam_sire,
+          horse.name // Also search in horse name
+        ].filter(Boolean); // Remove null/undefined values
+        
+        const hasMatch = pedigreeFields.some(field => 
+          field && field.toLowerCase().includes(searchTerm)
+        );
+        
+        if (!hasMatch) return false;
+      }
+
       return true;
     });
   }

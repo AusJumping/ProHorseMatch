@@ -1077,6 +1077,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      if (req.query.pedigree && typeof req.query.pedigree === 'string' && req.query.pedigree.trim()) {
+        filters.pedigree = req.query.pedigree.trim();
+        console.log("Setting pedigree filter to:", filters.pedigree);
+      }
+      
       console.log("GET /api/horses - parsed filters:", filters);
       
       const horses = await storage.getHorsesByFilters(filters);

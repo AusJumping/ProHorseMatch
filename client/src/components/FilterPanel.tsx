@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { X, Menu } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMobile } from "@/hooks/use-mobile";
@@ -674,6 +675,21 @@ const FilterPanel = ({
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          
+          {/* Pedigree Search */}
+          <div className="filter-group">
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Pedigree Search</Label>
+            <Textarea
+              placeholder="Search by bloodlines (e.g., 'Totilas', 'Donnerhall dam sire', 'Heartbreaker bloodline')"
+              value={filters.pedigree || ""}
+              onChange={(e) => handleChange('pedigree', e.target.value)}
+              className="w-full bg-neutral-100 border border-neutral-200 rounded-lg min-h-[80px] resize-none"
+              rows={3}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Enter horse names, bloodlines, or specific ancestors you're looking for
+            </p>
           </div>
           
           {/* Sex */}
