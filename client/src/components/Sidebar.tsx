@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Heart, MessageSquare, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard } from "lucide-react";
+import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
 import { useQuery } from "@tanstack/react-query";
@@ -12,23 +12,7 @@ const Sidebar = () => {
   const { toast } = useToast();
   const { user, isAuthenticated, logout } = useAuth();
   
-  // Query for conversations to check for unread messages
-  const { data: conversations } = useQuery({
-    queryKey: ['/api/conversations'],
-    enabled: isAuthenticated,
-    refetchInterval: 10000, // Refetch every 10 seconds to check for new messages
-  });
-  
-  // Query specifically for unread message count
-  const { data: unreadData } = useQuery({
-    queryKey: ['/api/messages/unread'],
-    enabled: isAuthenticated,
-    refetchInterval: 10000, // Refetch every 10 seconds
-  });
-  
-  // Use the unread count from the API, defaulting to 0 if not available
-  const unreadCount: number = unreadData && typeof unreadData === 'object' && 'count' in unreadData ? 
-    (unreadData.count as number) : 0;
+
   
   // Debug log with more details
   console.log("Sidebar - Auth state:", { isAuthenticated, user });
@@ -101,28 +85,7 @@ const Sidebar = () => {
               <span>My Favorites</span>
             </Button>
           </li>
-          <li>
-            <Button
-              variant={location === "/messages" ? "default" : "ghost"}
-              className={`w-full justify-start px-5 py-3 ${
-                location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
-              }`}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate("/messages");
-              }}
-            >
-              <div className="relative">
-                <MessageSquare className="mr-3 h-5 w-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </div>
-              <span>Messages</span>
-            </Button>
-          </li>
+
 
           {user?.is_selling && (
             <>
