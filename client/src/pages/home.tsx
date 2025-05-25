@@ -8,7 +8,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { X, PlusCircle } from "lucide-react";
+import { X, PlusCircle, Filter } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
