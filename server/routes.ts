@@ -2141,27 +2141,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversationId = parseInt(req.params.id);
       const userId = req.session.userId;
       
-      console.log("Fetching messages for conversation:", conversationId, "user:", userId);
-      
       // Verify user is part of this conversation
       const conversation = await storage.getConversationById(conversationId);
-      console.log("Found conversation:", conversation);
-      
       if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
-        console.log("Access denied for user:", userId);
         return res.status(403).json({ message: "Access denied" });
       }
       
       const messages = await storage.getMessagesByConversationId(conversationId);
-      console.log("Found messages:", messages);
       
       // Mark messages as read for current user
       await storage.markMessagesAsRead(conversationId, userId);
       
       res.json(messages);
     } catch (error) {
-      console.error("Message fetch error:", error);
-      res.status(500).json({ message: "Failed to fetch messages", error: error.message });
+      res.status(500).json({ message: "Failed to fetch messages" });
     }
   });
 
@@ -2202,33 +2195,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
-      const { conversation_id, sender_id, content } = req.body;
-      
-      console.log("Creating message:", { userId, conversation_id, sender_id, content, body: req.body });
-      
-      // Use sender_id from body if provided, otherwise use session userId
-      const actualSenderId = sender_id || userId;
+      const { conversation_id, content } = req.body;
       
       // Verify user is part of this conversation
       const conversation = await storage.getConversationById(conversation_id);
-      console.log("Found conversation:", conversation);
-      
-      if (!conversation || (conversation.customer_id !== actualSenderId && conversation.owner_id !== actualSenderId)) {
-        console.log("Access denied for user:", actualSenderId, "conversation:", conversation);
+      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
         return res.status(403).json({ message: "Access denied" });
       }
       
       // Determine sender type
-      const senderType = conversation.customer_id === actualSenderId ? "customer" : "owner";
+      const senderType = conversation.customer_id === userId ? "customer" : "owner";
       
       const newMessage = {
         conversation_id: conversation_id,
-        sender_id: actualSenderId,
+        sender_id: userId,
         sender_type: senderType,
         content: content
       };
       
-      console.log("Creating new message:", newMessage);
       const message = await storage.createMessage(newMessage);
       
       // Update conversation read status - mark as unread for the other user
@@ -2240,8 +2224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(message);
     } catch (error) {
-      console.error("Message creation error:", error);
-      res.status(500).json({ message: "Failed to send message", error: error.message });
+      res.status(500).json({ message: "Failed to send message" });
     }
   });
 

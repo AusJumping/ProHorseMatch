@@ -9,8 +9,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Send, MessageCircle, ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
-import Sidebar from "@/components/Sidebar";
-import { useAuth } from "@/lib/auth";
 
 interface Conversation {
   id: number;
@@ -64,7 +62,7 @@ export default function MessagesPage() {
 
   // Get messages for selected conversation
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: [`/api/conversations/${selectedConversation}/messages`],
+    queryKey: ["/api/conversations", selectedConversation, "messages"],
     enabled: !!selectedConversation,
   });
 
@@ -91,7 +89,7 @@ export default function MessagesPage() {
     },
     onSuccess: () => {
       setNewMessage("");
-      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversation}/messages`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
     },
   });
@@ -126,16 +124,13 @@ export default function MessagesPage() {
 
   if (conversationsLoading) {
     return (
-      <div className="flex min-h-screen bg-neutral-50">
-        <Sidebar />
-        <div className="flex-1 p-6">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-            <div className="space-y-3">
-              {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-200 rounded"></div>
-              ))}
-            </div>
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+            ))}
           </div>
         </div>
       </div>
@@ -143,12 +138,11 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-neutral-50">
-      <Sidebar />
-      <div className="flex-1 container mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
-          <MessageCircle className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold text-neutral-900">Messages</h1>
+          <MessageCircle className="w-8 h-8 text-blue-600" />
+          <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
@@ -176,36 +170,31 @@ export default function MessagesPage() {
                         <div
                           key={conversation.id}
                           onClick={() => setSelectedConversation(conversation.id)}
-                          className={`p-4 cursor-pointer border-b border-neutral-200 hover:bg-[#cdac6e]/10 transition-colors ${
-                            selectedConversation === conversation.id ? "bg-primary/10 border-l-4 border-l-primary" : ""
+                          className={`p-4 cursor-pointer border-b hover:bg-gray-50 transition-colors ${
+                            selectedConversation === conversation.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
                           }`}
                         >
                           <div className="flex items-start gap-3">
                             <Avatar className="w-10 h-10">
-                              {horse?.photos && horse.photos.length > 0 ? (
-                                <img 
-                                  src={horse.photos[0]} 
-                                  alt={horse.name}
-                                  className="w-full h-full object-cover rounded-full"
-                                />
-                              ) : (
-                                <AvatarFallback className="bg-primary/10 text-primary">
-                                  {horse?.name?.[0] || "H"}
-                                </AvatarFallback>
-                              )}
+                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                                {otherUser?.name?.[0] || "U"}
+                              </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
                                 <p className={`font-medium ${unread ? "font-bold" : ""}`}>
-                                  {horse?.name || "Horse"}
+                                  {otherUser?.name || "Unknown User"}
                                 </p>
                                 {unread && (
-                                  <Badge variant="default" className="bg-primary text-white text-xs">
+                                  <Badge variant="default" className="bg-blue-600 text-xs">
                                     New
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-xs text-neutral-400">
+                              <p className="text-sm text-gray-600 truncate">
+                                About: {horse?.name || "Unknown Horse"}
+                              </p>
+                              <p className="text-xs text-gray-400">
                                 {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
                               </p>
                             </div>
@@ -240,7 +229,8 @@ export default function MessagesPage() {
                         const horse = conversation ? getHorse(conversation.horse_id) : null;
                         return (
                           <div>
-                            <CardTitle className="text-lg">{horse?.name || "Horse"}</CardTitle>
+                            <CardTitle className="text-lg">{otherUser?.name || "Unknown User"}</CardTitle>
+                            <p className="text-sm text-gray-600">Discussing: {horse?.name || "Unknown Horse"}</p>
                           </div>
                         );
                       })()}
@@ -271,14 +261,14 @@ export default function MessagesPage() {
                               <div
                                 className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                                   isCurrentUser
-                                    ? "bg-primary text-white"
-                                    : "bg-[#cdac6e] text-white"
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-200 text-gray-900"
                                 }`}
                               >
                                 <p>{message.content}</p>
                                 <p
                                   className={`text-xs mt-1 ${
-                                    isCurrentUser ? "text-white/80" : "text-white/80"
+                                    isCurrentUser ? "text-blue-100" : "text-gray-500"
                                   }`}
                                 >
                                   {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
@@ -304,7 +294,7 @@ export default function MessagesPage() {
                       <Button
                         type="submit"
                         disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                        className="bg-primary hover:bg-primary/90"
+                        className="bg-blue-600 hover:bg-blue-700"
                       >
                         <Send className="w-4 h-4" />
                       </Button>
