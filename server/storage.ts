@@ -2,9 +2,7 @@ import {
   horses, type Horse, type InsertHorse,
   users, type User, type InsertUser, type Owner, type InsertOwner,
   type Customer, type InsertCustomer,
-  matches, type Match, type InsertMatch,
-  messages, type Message, type InsertMessage,
-  conversations, type Conversation, type InsertConversation
+  matches, type Match, type InsertMatch
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
@@ -50,21 +48,7 @@ export interface IStorage {
   createMatch(match: InsertMatch): Promise<Match>;
   updateMatch(id: number, match: Partial<Match>): Promise<Match>;
   
-  // Message methods
-  getMessages(): Promise<Message[]>;
-  getMessageById(id: number): Promise<Message | undefined>;
-  getMessagesByConversationId(customerId: number, ownerId: number, horseId: number): Promise<Message[]>;
-  createMessage(message: InsertMessage): Promise<Message>;
-  updateMessage(id: number, message: Partial<Message>): Promise<Message>;
-  
-  // Conversation methods
-  getConversations(): Promise<Conversation[]>;
-  getConversationById(id: number): Promise<Conversation | undefined>;
-  getConversationsByCustomerId(customerId: number): Promise<Conversation[]>;
-  getConversationsByOwnerId(ownerId: number): Promise<Conversation[]>;
-  createConversation(conversation: InsertConversation): Promise<Conversation>;
-  updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
-  deleteConversation(id: number): Promise<boolean>;
+
 }
 
 import * as fs from 'fs';
