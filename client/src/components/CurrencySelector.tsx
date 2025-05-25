@@ -42,7 +42,7 @@ export function CurrencySelector({
         defaultValue={defaultValue || currentCurrency} 
         onValueChange={handleCurrencyChange}
       >
-        <SelectTrigger id="currency-selector" className="w-full">
+        <SelectTrigger id="currency-selector" className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
           <SelectValue placeholder="Select Currency" />
         </SelectTrigger>
         <SelectContent>
