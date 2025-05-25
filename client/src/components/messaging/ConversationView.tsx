@@ -54,6 +54,7 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
       
       try {
         // Attempt to send via working POST endpoint
+        console.log('About to send message via fetch...');
         const result = await fetch('/api/messages', {
           method: 'POST',
           headers: {
@@ -66,13 +67,23 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
           }),
         });
         
+        console.log('Fetch response status:', result.status);
+        
         if (!result.ok) {
-          throw new Error('Failed to send message');
+          throw new Error(`Failed to send message: ${result.status}`);
         }
         
-        const data = await result.json();
-        console.log('Message sent successfully:', data);
-        return data;
+        const responseText = await result.text();
+        console.log('Raw response:', responseText);
+        
+        try {
+          const data = JSON.parse(responseText);
+          console.log('Parsed message data:', data);
+          return data;
+        } catch (parseError) {
+          console.error('Failed to parse response as JSON:', responseText);
+          throw new Error('Invalid response format');
+        }
       } catch (error) {
         // Remove temp message on error
         queryClient.setQueryData(
