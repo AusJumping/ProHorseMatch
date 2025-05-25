@@ -2223,27 +2223,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
-      const { customer_id, owner_id, horse_id, content } = req.body;
+      const { conversation_id, content } = req.body;
 
       // Validate required fields
-      if (!customer_id || !owner_id || !horse_id || !content?.trim()) {
+      if (!conversation_id || !content?.trim()) {
         return res.status(400).json({ 
-          message: "Missing required fields: customer_id, owner_id, horse_id, and content are required" 
+          message: "Missing required fields: conversation_id and content are required" 
         });
       }
 
+      // Get conversation details
+      const conversation = await storage.getConversationById(conversation_id);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
       // Verify user has permission to send this message
-      if (userId !== customer_id && userId !== owner_id) {
+      if (userId !== conversation.customer_id && userId !== conversation.owner_id) {
         return res.status(403).json({ message: "Access denied" });
       }
 
       // Determine sender type
-      const sender_type = userId === customer_id ? "customer" : "owner";
+      const sender_type = userId === conversation.customer_id ? "customer" : "owner";
 
       const messageData = {
-        customer_id,
-        owner_id,
-        horse_id,
+        customer_id: conversation.customer_id,
+        owner_id: conversation.owner_id,
+        horse_id: conversation.horse_id,
         content: content.trim(),
         sender_type
       };
