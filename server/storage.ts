@@ -930,10 +930,10 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Switch to using the database storage
+// Switch to using the in-memory storage with complete messaging functionality
 export function createStorage(skipSeed = false) {
-  // Always use database for persistence
-  return new DatabaseStorage();
+  // Use MemStorage which has complete messaging implementation
+  return new MemStorage(skipSeed);
 }
 
 export const storage = createStorage(false);
