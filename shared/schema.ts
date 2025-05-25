@@ -129,7 +129,43 @@ export const insertMatchSchema = createInsertSchema(matches).omit({
 export type InsertMatch = z.infer<typeof insertMatchSchema>;
 export type Match = typeof matches.$inferSelect;
 
-// Messaging system removed
+// Messaging system
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull().references(() => users.id),
+  owner_id: integer("owner_id").notNull().references(() => users.id),
+  horse_id: integer("horse_id").notNull().references(() => horses.id),
+  last_message_time: timestamp("last_message_time").defaultNow(),
+  is_read_by_customer: boolean("is_read_by_customer").default(false),
+  is_read_by_owner: boolean("is_read_by_owner").default(false),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  conversation_id: integer("conversation_id").notNull().references(() => conversations.id),
+  sender_id: integer("sender_id").notNull().references(() => users.id),
+  sender_type: text("sender_type", { enum: ["customer", "owner"] }).notNull(),
+  content: text("content").notNull(),
+  is_read: boolean("is_read").default(false),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  created_at: true,
+  last_message_time: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  created_at: true,
+});
+
+export type Conversation = typeof conversations.$inferSelect;
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
 
 
 
