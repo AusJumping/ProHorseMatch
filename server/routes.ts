@@ -13,6 +13,8 @@ import {
   insertSellingUserSchema, 
   insertSearchingUserSchema, 
   insertMatchSchema,
+  insertConversationSchema,
+  insertMessageSchema,
   disciplines,
   sexes,
   colours,
@@ -20,8 +22,14 @@ import {
   characteristics,
   jumpingLevels,
   dressageLevels,
-  eventingLevels
+  eventingLevels,
+  horses,
+  users,
+  conversations,
+  messages
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, and, desc, asc, sql, or } from "drizzle-orm";
 
 // Ensure we have test users available but NOT test horses
 // We remove the default horses completely from our application
@@ -2160,6 +2168,208 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Error deleting image",
         error: error.message 
       });
+    }
+  });
+
+  // Messaging System Routes
+  
+  // Get conversations for authenticated user
+  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+
+      // Get all conversations for this user (as customer or owner)
+      const userConversations = await db
+        .select({
+          conversation: conversations,
+          horse: {
+            id: horses.id,
+            name: horses.name,
+            photos: horses.photos,
+          },
+          customer: {
+            id: users.id,
+            name: users.name,
+            business_name: users.business_name,
+          },
+          owner: {
+            id: users.id,
+            name: users.name,
+            business_name: users.business_name,
+          }
+        })
+        .from(conversations)
+        .leftJoin(horses, eq(conversations.horse_id, horses.id))
+        .leftJoin(users, eq(conversations.customer_id, users.id))
+        .where(or(eq(conversations.customer_id, userId), eq(conversations.owner_id, userId)));
+ 
+      const formattedConversations = userConversations.map(row => ({
+        ...row.conversation,
+        horse: row.horse,
+        customer: row.customer,
+        owner: row.owner,
+      }));
+ 
+      res.json(formattedConversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get messages for a specific conversation
+  app.get("/api/conversations/:id/messages", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const userId = req.session.userId;
+
+      // Verify user has access to this conversation
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get messages for this conversation
+      const conversationMessages = await storage.getMessagesByConversationId(conversationId);
+
+      // Mark messages as read for this user
+      const isCustomer = conversation.customer_id === userId;
+      await storage.updateConversation(conversationId, {
+        is_read_by_customer: isCustomer ? true : conversation.is_read_by_customer,
+        is_read_by_owner: !isCustomer ? true : conversation.is_read_by_owner,
+      });
+
+      res.json(conversationMessages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Create a new conversation
+  app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { customer_id, owner_id, horse_id } = req.body;
+
+      // Check if conversation already exists
+      const existingConversations = await db
+        .select()
+        .from(conversations)
+        .where(
+          and(
+            eq(conversations.customer_id, customer_id),
+            eq(conversations.owner_id, owner_id),
+            eq(conversations.horse_id, horse_id)
+          )
+        );
+
+      if (existingConversations.length > 0) {
+        return res.json(existingConversations[0]);
+      }
+
+      // Create new conversation
+      const newConversation = await storage.createConversation({
+        customer_id,
+        owner_id,
+        horse_id,
+        is_read_by_customer: false,
+        is_read_by_owner: false,
+      });
+
+      res.json(newConversation);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Send a message
+  app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { conversation_id, content } = req.body;
+
+      // Verify user has access to this conversation
+      const conversation = await storage.getConversationById(conversation_id);
+      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Determine sender type
+      const senderType = conversation.customer_id === userId ? "customer" : "owner";
+
+      // Create message
+      const newMessage = await storage.createMessage({
+        conversation_id,
+        sender_id: userId,
+        sender_type: senderType,
+        content,
+        is_read: false,
+      });
+
+      // Update conversation last message time and read status
+      const isCustomer = conversation.customer_id === userId;
+      await storage.updateConversation(conversation_id, {
+        last_message_time: new Date(),
+        is_read_by_customer: isCustomer,
+        is_read_by_owner: !isCustomer,
+      });
+
+      res.json(newMessage);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Mark conversation as read
+  app.post("/api/conversations/:id/mark-read", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const userId = req.session.userId;
+
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const isCustomer = conversation.customer_id === userId;
+      const updateData = isCustomer
+        ? { is_read_by_customer: true }
+        : { is_read_by_owner: true };
+
+      await storage.updateConversation(conversationId, updateData);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking conversation as read:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Delete conversation
+  app.delete("/api/conversations/:id", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const userId = req.session.userId;
+
+      // Verify user has access to this conversation
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Delete the conversation (this will also delete associated messages)
+      const deleted = await storage.deleteConversation(conversationId);
+
+      if (deleted) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ message: "Conversation not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 
