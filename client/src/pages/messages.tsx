@@ -56,14 +56,9 @@ export default function Messages() {
       content: string;
     }) => {
       console.log("Sending message:", messageData);
-      try {
-        const result = await apiRequest("POST", "/api/messages", messageData);
-        console.log("API request completed:", result);
-        return result;
-      } catch (error) {
-        console.error("API request failed:", error);
-        throw error;
-      }
+      const result = await apiRequest("POST", "/api/messages", messageData);
+      console.log("API request completed:", result);
+      return result;
     },
     onSuccess: (data) => {
       console.log("onSuccess called with:", data);
@@ -89,6 +84,12 @@ export default function Messages() {
         description: error?.message || "Please try again in a moment.",
         variant: "destructive",
       });
+    },
+    onMutate: () => {
+      console.log("onMutate called - mutation starting");
+    },
+    onSettled: (data, error) => {
+      console.log("onSettled called", { data, error });
     }
   });
 
@@ -102,20 +103,41 @@ export default function Messages() {
   const handleSendMessage = async () => {
     if (!messageText.trim() || !selectedConversation || isSending) return;
 
-    console.log("handleSendMessage called", { 
-      messageText: messageText.trim(), 
-      selectedConversation, 
-      isSending 
-    });
-
     setIsSending(true);
     
-    sendMessageMutation.mutate({
-      customer_id: selectedConversation.customer_id,
-      owner_id: selectedConversation.owner_id,
-      horse_id: selectedConversation.horse_id,
-      content: messageText.trim()
-    });
+    try {
+      const messageData = {
+        customer_id: selectedConversation.customer_id,
+        owner_id: selectedConversation.owner_id,
+        horse_id: selectedConversation.horse_id,
+        content: messageText.trim()
+      };
+      
+      await apiRequest("POST", "/api/messages", messageData);
+      
+      // Success!
+      setMessageText("");
+      setIsSending(false);
+      
+      // Refresh messages and conversations
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/conversations', selectedConversation.customer_id, selectedConversation.owner_id, selectedConversation.horse_id, 'messages'] 
+      });
+      
+      toast({
+        title: "Message sent!",
+        description: "Your message has been delivered successfully.",
+      });
+      
+    } catch (error: any) {
+      setIsSending(false);
+      toast({
+        title: "Failed to send message",
+        description: error?.message || "Please try again in a moment.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
