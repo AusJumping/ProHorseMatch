@@ -240,8 +240,7 @@ export default function MessagesPage() {
                         const horse = conversation ? getHorse(conversation.horse_id) : null;
                         return (
                           <div>
-                            <CardTitle className="text-lg">{otherUser?.name || "Unknown User"}</CardTitle>
-                            <p className="text-sm text-gray-600">Discussing: {horse?.name || "Unknown Horse"}</p>
+                            <CardTitle className="text-lg">{horse?.name || "Horse"}</CardTitle>
                           </div>
                         );
                       })()}
