@@ -102,6 +102,12 @@ export default function Messages() {
   const handleSendMessage = async () => {
     if (!messageText.trim() || !selectedConversation || isSending) return;
 
+    console.log("handleSendMessage called", { 
+      messageText: messageText.trim(), 
+      selectedConversation, 
+      isSending 
+    });
+
     setIsSending(true);
     
     sendMessageMutation.mutate({
