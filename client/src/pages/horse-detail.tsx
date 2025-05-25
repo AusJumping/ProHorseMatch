@@ -323,6 +323,39 @@ export default function HorseDetail() {
             
 
             
+            {/* Message Input Section - Shows when Contact Owner is clicked */}
+            {user && user.id !== horse.owner_id && showMessageInput && (
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
+                <h3 className="text-lg font-semibold mb-3">Send a message about {horse.name}</h3>
+                <Textarea
+                  placeholder="Hi! I'm interested in your horse. Could you tell me more about..."
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  className="min-h-[100px] mb-3"
+                />
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => sendMessageMutation.mutate()}
+                    disabled={sendMessageMutation.isPending || !messageText.trim()}
+                    className="flex-1"
+                    style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" }}
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setShowMessageInput(false);
+                      setMessageText("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Action Buttons - Hidden if user owns this horse */}
             {user && user.id !== horse.owner_id && (
               <div className="flex gap-3 mt-auto">
@@ -336,45 +369,14 @@ export default function HorseDetail() {
                   <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
                   {isSaved ? 'Saved to Favorites' : 'Save to Favorites'}
                 </Button>
-                {!showMessageInput ? (
-                  <Button 
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setShowMessageInput(true)}
-                  >
-                    <MessageCircle className="mr-2 h-4 w-4" />
-                    Contact Owner
-                  </Button>
-                ) : (
-                  <div className="flex-1 space-y-3">
-                    <Textarea
-                      placeholder="Type your message about this horse..."
-                      value={messageText}
-                      onChange={(e) => setMessageText(e.target.value)}
-                      className="min-h-[80px]"
-                    />
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={() => sendMessageMutation.mutate()}
-                        disabled={sendMessageMutation.isPending || !messageText.trim()}
-                        className="flex-1"
-                        style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" }}
-                      >
-                        <Send className="mr-2 h-4 w-4" />
-                        {sendMessageMutation.isPending ? 'Sending...' : 'Send Message'}
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        onClick={() => {
-                          setShowMessageInput(false);
-                          setMessageText("");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                <Button 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setShowMessageInput(!showMessageInput)}
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  {showMessageInput ? 'Cancel Message' : 'Contact Owner'}
+                </Button>
               </div>
             )}
             
