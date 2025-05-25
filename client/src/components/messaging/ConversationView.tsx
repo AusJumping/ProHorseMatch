@@ -33,13 +33,17 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest(`/api/messages`, {
+      const response = await fetch(`/api/messages`, {
         method: 'POST',
-        body: {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           conversation_id: conversationId,
           content,
-        },
+        }),
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
