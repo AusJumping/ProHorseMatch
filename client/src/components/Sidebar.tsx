@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard } from "lucide-react";
+import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard, MessageCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
 import { useQuery } from "@tanstack/react-query";
@@ -83,6 +83,21 @@ const Sidebar = () => {
             >
               <Heart className="mr-3 h-5 w-5" />
               <span>My Favorites</span>
+            </Button>
+          </li>
+          <li>
+            <Button
+              variant={location === "/messages" ? "default" : "ghost"}
+              className={`w-full justify-start px-5 py-3 ${
+                location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+              }`}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/messages");
+              }}
+            >
+              <MessageCircle className="mr-3 h-5 w-5" />
+              <span>Messages</span>
             </Button>
           </li>
 
