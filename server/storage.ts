@@ -150,10 +150,14 @@ export class MemStorage implements IStorage {
   private horses: Map<number, Horse>;
   private users: Map<number, User>;
   private matches: Map<number, Match>;
+  private conversations: Map<number, Conversation>;
+  private messages: Map<number, Message>;
   
   private horseId: number;
   private userId: number;
   private matchId: number;
+  private conversationId: number;
+  private messageId: number;
 
   constructor(skipSeed = false) {
     // Load existing data from disk or create new
@@ -164,9 +168,13 @@ export class MemStorage implements IStorage {
       this.horses = existingData.horses;
       this.users = existingData.users;
       this.matches = existingData.matches;
+      this.conversations = new Map();
+      this.messages = new Map();
       this.horseId = existingData.horseId;
       this.userId = existingData.userId;
       this.matchId = existingData.matchId;
+      this.conversationId = 1;
+      this.messageId = 1;
       
       // Store in global for hot reload persistence
       global.__persistent_storage = {
@@ -183,9 +191,13 @@ export class MemStorage implements IStorage {
       this.horses = new Map();
       this.users = new Map();
       this.matches = new Map();
+      this.conversations = new Map();
+      this.messages = new Map();
       this.horseId = 1;
       this.userId = 1;
       this.matchId = 1;
+      this.conversationId = 1;
+      this.messageId = 1;
       
       // Store in global for hot reload persistence
       global.__persistent_storage = {
@@ -543,6 +555,93 @@ export class MemStorage implements IStorage {
     this.matches.set(id, updatedMatch);
     saveStorageToDisk();
     return updatedMatch;
+  }
+
+  // Conversation methods
+  async getConversations(): Promise<Conversation[]> {
+    return Array.from(this.conversations.values());
+  }
+
+  async getConversationById(id: number): Promise<Conversation | undefined> {
+    return this.conversations.get(id);
+  }
+
+  async getConversationsByCustomerId(customerId: number): Promise<Conversation[]> {
+    return Array.from(this.conversations.values()).filter(conv => conv.customer_id === customerId);
+  }
+
+  async getConversationsByOwnerId(ownerId: number): Promise<Conversation[]> {
+    return Array.from(this.conversations.values()).filter(conv => conv.owner_id === ownerId);
+  }
+
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    const id = this.conversationId++;
+    const newConversation: Conversation = { 
+      id, 
+      ...conversation, 
+      created_at: new Date(),
+      last_message_time: new Date()
+    };
+    this.conversations.set(id, newConversation);
+    saveStorageToDisk();
+    return newConversation;
+  }
+
+  async updateConversation(id: number, update: Partial<Conversation>): Promise<Conversation> {
+    const conversation = this.conversations.get(id);
+    if (!conversation) {
+      throw new Error("Conversation not found");
+    }
+    
+    const updatedConversation = { ...conversation, ...update };
+    this.conversations.set(id, updatedConversation);
+    saveStorageToDisk();
+    return updatedConversation;
+  }
+
+  async deleteConversation(id: number): Promise<boolean> {
+    const deleted = this.conversations.delete(id);
+    if (deleted) {
+      saveStorageToDisk();
+    }
+    return deleted;
+  }
+
+  // Message methods
+  async getMessages(): Promise<Message[]> {
+    return Array.from(this.messages.values());
+  }
+
+  async getMessageById(id: number): Promise<Message | undefined> {
+    return this.messages.get(id);
+  }
+
+  async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
+    return Array.from(this.messages.values()).filter(msg => msg.conversation_id === conversationId);
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const id = this.messageId++;
+    const newMessage: Message = { 
+      id, 
+      ...message, 
+      created_at: new Date()
+    };
+    this.messages.set(id, newMessage);
+    saveStorageToDisk();
+    return newMessage;
+  }
+
+  async updateMessage(id: number, update: Partial<Message>): Promise<Message> {
+    const message = this.messages.get(id);
+    if (!message) {
+      throw new Error("Message not found");
+    }
+    
+    const updatedMessage = { ...message, ...update };
+    this.messages.set(id, updatedMessage);
+    saveStorageToDisk();
+    return updatedMessage;
   }
 }
 
