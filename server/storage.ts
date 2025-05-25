@@ -189,9 +189,13 @@ export class MemStorage implements IStorage {
           horses: this.horses,
           users: this.users,
           matches: this.matches,
+          conversations: this.conversations,
+          messages: this.messages,
           horseId: this.horseId,
           userId: this.userId,
           matchId: this.matchId,
+          conversationId: this.conversationId,
+          messageId: this.messageId,
           seeded: diskStorage.seeded
         };
       } else {
@@ -639,7 +643,9 @@ export class MemStorage implements IStorage {
       id, 
       ...conversation, 
       created_at: new Date(),
-      last_message_at: new Date()
+      last_message_time: new Date(),
+      is_read_by_customer: false,
+      is_read_by_owner: false
     };
     this.conversations.set(id, newConversation);
     saveStorageToDisk();
@@ -675,7 +681,11 @@ export class MemStorage implements IStorage {
   async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
     return Array.from(this.messages.values()).filter(
       msg => msg.conversation_id === conversationId
-    ).sort((a, b) => a.created_at.getTime() - b.created_at.getTime());
+    ).sort((a, b) => {
+      const aTime = a.created_at ? a.created_at.getTime() : 0;
+      const bTime = b.created_at ? b.created_at.getTime() : 0;
+      return aTime - bTime;
+    });
   }
 
   async createMessage(message: InsertMessage): Promise<Message> {
