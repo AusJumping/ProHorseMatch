@@ -267,14 +267,14 @@ export default function MessagesPage() {
                               <div
                                 className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                                   isCurrentUser
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-gray-200 text-gray-900"
+                                    ? "bg-primary text-white"
+                                    : "bg-neutral-100 text-neutral-900"
                                 }`}
                               >
                                 <p>{message.content}</p>
                                 <p
                                   className={`text-xs mt-1 ${
-                                    isCurrentUser ? "text-blue-100" : "text-gray-500"
+                                    isCurrentUser ? "text-white/80" : "text-neutral-500"
                                   }`}
                                 >
                                   {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
@@ -300,7 +300,7 @@ export default function MessagesPage() {
                       <Button
                         type="submit"
                         disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-primary hover:bg-primary/90"
                       >
                         <Send className="w-4 h-4" />
                       </Button>
