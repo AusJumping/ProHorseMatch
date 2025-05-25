@@ -201,7 +201,7 @@ export default function MessagesPage() {
       <Sidebar />
       <div className="flex-1 container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
-          <MessageCircle className="w-8 h-8 text-primary" />
+          <MessageCircle className="w-8 h-8" style={{ color: '#cdac6e' }} />
           <h1 className="text-2xl font-semibold text-neutral-900">Messages</h1>
         </div>
 
