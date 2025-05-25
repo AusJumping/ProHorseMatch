@@ -268,13 +268,13 @@ export default function MessagesPage() {
                                 className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                                   isCurrentUser
                                     ? "bg-primary text-white"
-                                    : "bg-neutral-100 text-neutral-900"
+                                    : "bg-[#cdac6e] text-white"
                                 }`}
                               >
                                 <p>{message.content}</p>
                                 <p
                                   className={`text-xs mt-1 ${
-                                    isCurrentUser ? "text-white/80" : "text-neutral-500"
+                                    isCurrentUser ? "text-white/80" : "text-white/80"
                                   }`}
                                 >
                                   {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
