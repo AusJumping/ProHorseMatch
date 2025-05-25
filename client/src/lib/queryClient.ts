@@ -12,8 +12,6 @@ export async function apiRequest<T = any>(
   url: string,
   data?: unknown | undefined,
 ): Promise<T> {
-  console.log('apiRequest called:', { method, url, data });
-  
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -21,18 +19,8 @@ export async function apiRequest<T = any>(
     credentials: "include",
   });
 
-  console.log('Response received:', { 
-    status: res.status, 
-    statusText: res.statusText, 
-    ok: res.ok,
-    headers: Object.fromEntries(res.headers.entries())
-  });
-
   await throwIfResNotOk(res);
-  
-  const result = await res.json();
-  console.log('Response JSON:', result);
-  return result;
+  return res.json();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

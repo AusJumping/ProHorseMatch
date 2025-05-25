@@ -13,8 +13,6 @@ import {
   insertSellingUserSchema, 
   insertSearchingUserSchema, 
   insertMatchSchema,
-  insertConversationSchema,
-  insertMessageSchema,
   disciplines,
   sexes,
   colours,
@@ -22,14 +20,8 @@ import {
   characteristics,
   jumpingLevels,
   dressageLevels,
-  eventingLevels,
-  horses,
-  users,
-  conversations,
-  messages
+  eventingLevels
 } from "@shared/schema";
-import { db } from "./db";
-import { eq, and, desc, asc, sql, or } from "drizzle-orm";
 
 // Ensure we have test users available but NOT test horses
 // We remove the default horses completely from our application
@@ -1380,44 +1372,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CRITICAL FIX: New message sending endpoint to bypass routing conflicts
-  app.post("/api/send-message", isAuthenticated, async (req: any, res: Response) => {
-    console.log("NEW ENDPOINT - POST /api/send-message called with:", req.body);
-    try {
-      const userId = req.session.userId;
-      const { conversation_id, content } = req.body;
-      
-      const conversation = await storage.getConversationById(conversation_id);
-      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
-        console.log("Access denied for user:", userId);
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      const senderType = conversation.customer_id === userId ? "customer" : "owner";
-      const newMessage = await storage.createMessage({
-        conversation_id,
-        sender_id: userId,
-        sender_type: senderType,
-        content,
-        is_read: false,
-      });
-
-      console.log("NEW ENDPOINT - Message created:", newMessage);
-      
-      const isCustomer = conversation.customer_id === userId;
-      await storage.updateConversation(conversation_id, {
-        last_message_time: new Date(),
-        is_read_by_customer: isCustomer,
-        is_read_by_owner: !isCustomer,
-      });
-
-      res.setHeader('Content-Type', 'application/json');
-      res.json(newMessage);
-    } catch (error) {
-      console.error("NEW ENDPOINT - Error:", error);
-      res.status(500).json({ message: "Failed to send message", error: error.message });
-    }
-  });
+  // Messaging system removed
   
 
 
@@ -2207,8 +2162,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-
-  // Messaging routes moved to top of file to fix routing conflicts
 
   // Create HTTP server
   const httpServer = createServer(app);

@@ -3,19 +3,6 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
-
-// CRITICAL: Register messaging route IMMEDIATELY before any middleware
-app.post('/api/direct-message', async (req: any, res: any) => {
-  try {
-    console.log("DIRECT MESSAGE ROUTE - Body:", req.body);
-    res.setHeader('Content-Type', 'application/json');
-    res.json({ success: true, message: "Direct route working" });
-  } catch (error) {
-    console.error("Direct route error:", error);
-    res.status(500).json({ error: "Failed" });
-  }
-});
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -50,50 +37,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // CRITICAL: Register messaging routes BEFORE Vite middleware to prevent HTML interference
-  const { storage } = await import("./storage");
-  
-  const isAuth = (req: any, res: any, next: any) => {
-    if (req.session && req.session.userId) {
-      next();
-    } else {
-      res.status(401).json({ message: "Not authenticated" });
-    }
-  };
-
-  // Alternative messaging endpoint using GET with query parameters to bypass Vite middleware
-  app.get("/api/message-send", isAuth, async (req: any, res: any) => {
-    try {
-      console.log("GET MESSAGE ENDPOINT - Query:", req.query);
-      const userId = req.session.userId;
-      const conversation_id = parseInt(req.query.cid);
-      const content = decodeURIComponent(req.query.msg);
-      
-      const conversation = await storage.getConversationById(conversation_id);
-      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      const senderType = conversation.customer_id === userId ? "customer" : "owner";
-      const newMessage = await storage.createMessage({
-        conversation_id, sender_id: userId, sender_type: senderType, content, is_read: false,
-      });
-
-      console.log("GET MESSAGE - Message created:", newMessage);
-      
-      const isCustomer = conversation.customer_id === userId;
-      await storage.updateConversation(conversation_id, {
-        last_message_time: new Date(), is_read_by_customer: isCustomer, is_read_by_owner: !isCustomer,
-      });
-
-      res.setHeader('Content-Type', 'application/json');
-      return res.json(newMessage);
-    } catch (error) {
-      console.error("GET MESSAGE - Error:", error);
-      return res.status(500).json({ message: "Failed to send message" });
-    }
-  });
-
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
