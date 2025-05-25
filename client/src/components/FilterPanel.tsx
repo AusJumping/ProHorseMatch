@@ -52,7 +52,7 @@ const FilterPanel = ({
   }, [activeFilters]);
 
   const handleChange = (key: string, value: any) => {
-    setFilters(prev => {
+    setFilters((prev: any) => {
       // Validation for min/max pairs to ensure max is not less than min
       if (key === 'price_min' && prev.price_max && value > prev.price_max && prev.price_max !== 999999999) {
         // If new min is greater than current max, set max to null or a higher value
@@ -94,6 +94,15 @@ const FilterPanel = ({
       if (key === 'height_max' && prev.height_min && value < prev.height_min && value !== 999) {
         // If new max is less than current min, don't update
         return prev;
+      }
+      
+      // When discipline changes, clear the levels
+      if (key === 'disciplines') {
+        return {
+          ...prev,
+          [key]: value,
+          levels: []
+        };
       }
       
       // Default case: just update the value
