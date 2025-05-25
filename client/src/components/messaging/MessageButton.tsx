@@ -25,23 +25,11 @@ export function MessageButton({
 
   const startConversationMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/conversations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          customer_id: customerId,
-          owner_id: ownerId,
-          horse_id: horseId,
-        }),
+      return apiRequest('POST', '/api/conversations', {
+        customer_id: customerId,
+        owner_id: ownerId,
+        horse_id: horseId,
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to start conversation');
-      }
-      
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
