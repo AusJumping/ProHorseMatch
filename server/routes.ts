@@ -136,6 +136,12 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // Debug middleware to log all requests to /api/messages
+  app.use('/api/messages', (req, res, next) => {
+    console.log(`${req.method} /api/messages - Body:`, req.body);
+    next();
+  });
   // Initialize Stripe
   if (!process.env.STRIPE_SECRET_KEY) {
     console.warn('Missing STRIPE_SECRET_KEY - Payment features will not work');
