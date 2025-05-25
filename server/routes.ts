@@ -2295,6 +2295,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const { customer_id, owner_id, horse_id } = req.body;
 
+      console.log("Creating conversation with:", { customer_id, owner_id, horse_id, userId });
+
+      // Validate required fields
+      if (!customer_id || !owner_id || !horse_id) {
+        return res.status(400).json({ 
+          message: "Missing required fields: customer_id, owner_id, and horse_id are required" 
+        });
+      }
+
       // Check if conversation already exists
       const existingConversations = await storage.getConversations();
       const existingConversation = existingConversations.find(conv => 
@@ -2304,6 +2313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       if (existingConversation) {
+        console.log("Found existing conversation:", existingConversation.id);
         return res.json(existingConversation);
       }
 
@@ -2314,10 +2324,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         horse_id,
       });
 
+      console.log("Created new conversation:", newConversation.id);
       res.json(newConversation);
     } catch (error) {
       console.error("Error creating conversation:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ 
+        message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
