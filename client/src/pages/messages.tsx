@@ -106,10 +106,18 @@ export default function Messages() {
     setIsSending(true);
     
     try {
-      const messageData = {
+      // First, create or get conversation
+      const conversationData = {
         customer_id: selectedConversation.customer_id,
         owner_id: selectedConversation.owner_id,
-        horse_id: selectedConversation.horse_id,
+        horse_id: selectedConversation.horse_id
+      };
+      
+      const conversation = await apiRequest("POST", "/api/conversations", conversationData);
+      
+      // Then send the message with conversation_id
+      const messageData = {
+        conversation_id: conversation.id,
         content: messageText.trim()
       };
       
@@ -121,9 +129,11 @@ export default function Messages() {
       
       // Refresh messages and conversations
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-      queryClient.invalidateQueries({ 
-        queryKey: ['/api/conversations', selectedConversation.customer_id, selectedConversation.owner_id, selectedConversation.horse_id, 'messages'] 
-      });
+      if (conversation.id) {
+        queryClient.invalidateQueries({ 
+          queryKey: [`/api/conversations/${conversation.id}/messages`] 
+        });
+      }
       
       toast({
         title: "Message sent!",

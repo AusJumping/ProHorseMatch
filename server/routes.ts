@@ -2275,6 +2275,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create or get conversation endpoint
+  app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { customer_id, owner_id, horse_id } = req.body;
+
+      // Check if conversation already exists
+      const existingConversations = await storage.getConversations();
+      const existingConversation = existingConversations.find(conv => 
+        conv.customer_id === customer_id && 
+        conv.owner_id === owner_id && 
+        conv.horse_id === horse_id
+      );
+
+      if (existingConversation) {
+        return res.json(existingConversation);
+      }
+
+      // Create new conversation
+      const newConversation = await storage.createConversation({
+        customer_id,
+        owner_id,
+        horse_id,
+      });
+
+      res.json(newConversation);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Mark messages as read
   app.patch("/api/messages/:messageId/read", isAuthenticated, async (req: any, res: Response) => {
     try {
