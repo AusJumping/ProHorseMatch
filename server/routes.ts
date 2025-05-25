@@ -1377,87 +1377,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   
-  app.get("/api/messages/:customerId/:ownerId/:horseId", isAuthenticated, async (req, res) => {
-    try {
-      const customerId = parseInt(req.params.customerId);
-      const ownerId = parseInt(req.params.ownerId);
-      const horseId = parseInt(req.params.horseId);
-      
-      // Get the user with their roles
-      const user = await storage.getUserById(req.session.userId);
-      
-      if (!user) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      // Debug logs
-      console.log("Messages request details:", {
-        userId: req.session.userId,
-        userRoles: { 
-          is_searching: user.is_searching, 
-          is_selling: user.is_selling 
-        },
-        requestedData: {
-          customerId,
-          ownerId,
-          horseId
-        }
-      });
-      
-      // Simple authorization - either the user is the customer or the owner in this conversation
-      if ((user.is_searching && req.session.userId === customerId) || 
-          (user.is_selling && req.session.userId === ownerId)) {
-        try {
-          // Get all messages in this conversation
-          let messages = await storage.getMessages();
-          
-          // Filter to only include messages from this specific conversation
-          messages = messages.filter(message => 
-            message.customer_id === customerId && 
-            message.owner_id === ownerId && 
-            message.horse_id === horseId
-          );
-          
-          // Sort by date (handling string dates from the database)
-          messages.sort((a, b) => {
-            const dateA = new Date(a.created_at);
-            const dateB = new Date(b.created_at);
-            return dateA.getTime() - dateB.getTime();
-          });
-          
-          // Mark messages as read if the current user is the recipient
-          const processedMessages = await Promise.all(messages.map(async (msg) => {
-            // If owner is viewing and message is from customer
-            if (req.session.userId === ownerId && msg.sender_type === 'customer' && !msg.is_read) {
-              const updatedMsg = await storage.updateMessage(msg.id, { is_read: true });
-              return updatedMsg;
-            }
-            // If customer is viewing and message is from owner
-            if (req.session.userId === customerId && msg.sender_type === 'owner' && !msg.is_read) {
-              const updatedMsg = await storage.updateMessage(msg.id, { is_read: true });
-              return updatedMsg;
-            }
-            return msg;
-          }));
-          
-          console.log("Returning messages:", processedMessages);
-          return res.json(processedMessages);
-        } catch (innerError) {
-          console.error("Error processing messages:", innerError);
-          return res.status(500).json({ message: "Error processing messages" });
-        }
-      } else {
-        console.log("Access denied - User:", req.session.userId, "trying to access conversation between customer:", customerId, "and owner:", ownerId);
-        return res.status(403).json({ message: "Cannot access messages of other users" });
-      }
-    } catch (error) {
-      console.error("Get messages error:", error);
-      return res.status(500).json({ message: "Failed to get messages" });
-    }
-  });
 
-  // Conversation routes
-  app.get("/api/conversations", isAuthenticated, async (req, res) => {
+
+  // Messaging system removed - ready for new implementation
     try {
       // Get the user with their roles
       const user = await storage.getUserById(req.session.userId);

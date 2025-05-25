@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { 
-  Home, Heart, Filter, MessageSquare, User, List, CreditCard, 
+  Home, Heart, Filter, User, List, CreditCard, 
   Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
