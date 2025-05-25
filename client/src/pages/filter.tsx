@@ -128,6 +128,10 @@ export default function FilterPage() {
       filtersToApply.disciplines.forEach(d => params.append('disciplines', d));
     }
     
+    if (filtersToApply.levels && filtersToApply.levels.length > 0) {
+      filtersToApply.levels.forEach(l => params.append('levels', l));
+    }
+    
     if (filtersToApply.breeds && filtersToApply.breeds.length > 0) {
       filtersToApply.breeds.forEach(b => params.append('breeds', b));
     }
