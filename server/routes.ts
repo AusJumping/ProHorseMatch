@@ -2274,20 +2274,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversationId = parseInt(req.params.id);
       const userId = req.session.userId;
       
+      console.log(`Delete conversation request: conversationId=${conversationId}, userId=${userId}`);
+      
       // Verify user is part of this conversation
       const conversation = await storage.getConversationById(conversationId);
+      console.log("Found conversation:", conversation);
       
       if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        console.log("Access denied for delete operation");
         return res.status(403).json({ message: "Access denied" });
       }
       
       // Delete the conversation (this should also delete associated messages)
+      console.log("Attempting to delete conversation...");
       const deleted = await storage.deleteConversation(conversationId);
+      console.log("Delete result:", deleted);
       
       if (!deleted) {
+        console.log("Delete operation returned false");
         return res.status(500).json({ message: "Failed to delete conversation" });
       }
       
+      console.log("Conversation deleted successfully");
       res.json({ message: "Conversation deleted successfully" });
     } catch (error) {
       console.error("Delete conversation error:", error);
