@@ -106,8 +106,6 @@ export default function FilterPage() {
     // Clean up filter values before navigation
     const filtersToApply = {...newFilters};
     
-    console.log("Level filter before cleanup:", filtersToApply.levels);
-    
     // Ensure discipline is properly formatted for the API
     if (filtersToApply.disciplines && filtersToApply.disciplines[0] === "all_disciplines") {
       filtersToApply.disciplines = [];
@@ -123,23 +121,11 @@ export default function FilterPage() {
       filtersToApply.sexes = [];
     }
     
-    // Ensure levels is properly formatted
-    if (filtersToApply.levels && filtersToApply.levels[0] === "any_level") {
-      filtersToApply.levels = [];
-    }
-    
     // After applying filters, navigate to browse page
     const params = new URLSearchParams();
     
     if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
       filtersToApply.disciplines.forEach(d => params.append('disciplines', d));
-    }
-    
-    if (filtersToApply.levels && filtersToApply.levels.length > 0) {
-      console.log("Adding level params to URL:", filtersToApply.levels);
-      filtersToApply.levels.forEach(l => params.append('levels', l));
-    } else {
-      console.log("No level filters to add:", filtersToApply.levels);
     }
     
     if (filtersToApply.breeds && filtersToApply.breeds.length > 0) {
