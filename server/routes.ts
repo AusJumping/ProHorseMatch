@@ -2162,25 +2162,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
-      const { horse_id, owner_id } = req.body;
+      const { horse_id, owner_id, customer_id } = req.body;
+      
+      console.log("Creating conversation:", { userId, horse_id, owner_id, customer_id, body: req.body });
+      
+      // Use customer_id from body if provided, otherwise use session userId
+      const customerId = customer_id || userId;
       
       // Check if conversation already exists
-      let conversation = await storage.findConversation(userId, owner_id, horse_id);
+      let conversation = await storage.findConversation(customerId, owner_id, horse_id);
       
       if (!conversation) {
         // Create new conversation
         const newConversation = {
-          customer_id: userId,
+          customer_id: customerId,
           owner_id: owner_id,
           horse_id: horse_id
         };
         
+        console.log("Creating new conversation:", newConversation);
         conversation = await storage.createConversation(newConversation);
       }
       
       res.json(conversation);
     } catch (error) {
-      res.status(500).json({ message: "Failed to create conversation" });
+      console.error("Conversation creation error:", error);
+      res.status(500).json({ message: "Failed to create conversation", error: error.message });
     }
   });
 
