@@ -36,6 +36,11 @@ export function MessageButton({
           horse_id: horseId,
         }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to start conversation');
+      }
+      
       return response.json();
     },
     onSuccess: () => {

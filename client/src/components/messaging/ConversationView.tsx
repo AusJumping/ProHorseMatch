@@ -42,6 +42,11 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
           content,
         }),
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+      
       return response.json();
     },
     onSuccess: () => {
