@@ -2141,20 +2141,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversationId = parseInt(req.params.id);
       const userId = req.session.userId;
       
+      console.log("Fetching messages for conversation:", conversationId, "user:", userId);
+      
       // Verify user is part of this conversation
       const conversation = await storage.getConversationById(conversationId);
+      console.log("Found conversation:", conversation);
+      
       if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        console.log("Access denied for user:", userId);
         return res.status(403).json({ message: "Access denied" });
       }
       
       const messages = await storage.getMessagesByConversationId(conversationId);
+      console.log("Found messages:", messages);
       
       // Mark messages as read for current user
       await storage.markMessagesAsRead(conversationId, userId);
       
       res.json(messages);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch messages" });
+      console.error("Message fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch messages", error: error.message });
     }
   });
 
