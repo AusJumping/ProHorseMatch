@@ -2,7 +2,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Heart, MessageSquare, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard } from "lucide-react";
+import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
 import { useQuery } from "@tanstack/react-query";
