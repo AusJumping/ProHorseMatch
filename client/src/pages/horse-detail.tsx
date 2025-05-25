@@ -142,12 +142,9 @@ export default function HorseDetail() {
         return;
       }
       
-      await apiRequest("POST", "/api/messages", {
-        customer_id: user.id,
-        owner_id: horse!.owner_id,
+      await apiRequest("POST", "/api/conversations", {
         horse_id: horse!.id,
-        content: messageContent,
-        sender_type: "customer"
+        message_content: messageContent
       });
       
       toast({
