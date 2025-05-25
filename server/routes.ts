@@ -12,9 +12,7 @@ import {
   insertUserSchema,
   insertSellingUserSchema, 
   insertSearchingUserSchema, 
-  insertMatchSchema,
-  insertConversationSchema,
-  insertMessageSchema, 
+  insertMatchSchema, 
 
   disciplines,
   sexes,
@@ -2119,112 +2117,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Update customer preferences error:", error);
       return res.status(400).json({ message: error.message || "Failed to update preferences" });
-    }
-  });
-
-  // ========== MESSAGING ROUTES ==========
-  
-  // Get all conversations for current user
-  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const userId = req.session.userId;
-      const conversations = await storage.getConversationsByUserId(userId);
-      res.json(conversations);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch conversations" });
-    }
-  });
-
-  // Get messages for a specific conversation
-  app.get("/api/conversations/:id/messages", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      const userId = req.session.userId;
-      
-      // Verify user is part of this conversation
-      const conversation = await storage.getConversationById(conversationId);
-      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      const messages = await storage.getMessagesByConversationId(conversationId);
-      
-      // Mark messages as read for current user
-      await storage.markMessagesAsRead(conversationId, userId);
-      
-      res.json(messages);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch messages" });
-    }
-  });
-
-  // Create or get conversation for a horse inquiry
-  app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const userId = req.session.userId;
-      const { horse_id, owner_id, customer_id } = req.body;
-      
-      console.log("Creating conversation:", { userId, horse_id, owner_id, customer_id, body: req.body });
-      
-      // Use customer_id from body if provided, otherwise use session userId
-      const customerId = customer_id || userId;
-      
-      // Check if conversation already exists
-      let conversation = await storage.findConversation(customerId, owner_id, horse_id);
-      
-      if (!conversation) {
-        // Create new conversation
-        const newConversation = {
-          customer_id: customerId,
-          owner_id: owner_id,
-          horse_id: horse_id
-        };
-        
-        console.log("Creating new conversation:", newConversation);
-        conversation = await storage.createConversation(newConversation);
-      }
-      
-      res.json(conversation);
-    } catch (error) {
-      console.error("Conversation creation error:", error);
-      res.status(500).json({ message: "Failed to create conversation", error: error.message });
-    }
-  });
-
-  // Send a message
-  app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
-    try {
-      const userId = req.session.userId;
-      const { conversation_id, content } = req.body;
-      
-      // Verify user is part of this conversation
-      const conversation = await storage.getConversationById(conversation_id);
-      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-      
-      // Determine sender type
-      const senderType = conversation.customer_id === userId ? "customer" : "owner";
-      
-      const newMessage = {
-        conversation_id: conversation_id,
-        sender_id: userId,
-        sender_type: senderType,
-        content: content
-      };
-      
-      const message = await storage.createMessage(newMessage);
-      
-      // Update conversation read status - mark as unread for the other user
-      const updateData = senderType === "customer" 
-        ? { is_read_by_owner: false }
-        : { is_read_by_customer: false };
-      
-      await storage.updateConversation(conversation_id, updateData);
-      
-      res.json(message);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to send message" });
     }
   });
 

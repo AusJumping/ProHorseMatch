@@ -2,9 +2,7 @@ import {
   horses, type Horse, type InsertHorse,
   users, type User, type InsertUser, type Owner, type InsertOwner,
   type Customer, type InsertCustomer,
-  matches, type Match, type InsertMatch,
-  conversations, type Conversation, type InsertConversation,
-  messages, type Message, type InsertMessage
+  matches, type Match, type InsertMatch
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
@@ -49,21 +47,6 @@ export interface IStorage {
   getMatchesByHorseId(horseId: number): Promise<Match[]>;
   createMatch(match: InsertMatch): Promise<Match>;
   updateMatch(id: number, match: Partial<Match>): Promise<Match>;
-  
-  // Messaging methods
-  getConversations(): Promise<Conversation[]>;
-  getConversationById(id: number): Promise<Conversation | undefined>;
-  getConversationsByUserId(userId: number): Promise<Conversation[]>;
-  createConversation(conversation: InsertConversation): Promise<Conversation>;
-  updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
-  findConversation(customerId: number, ownerId: number, horseId: number): Promise<Conversation | undefined>;
-  
-  getMessages(): Promise<Message[]>;
-  getMessageById(id: number): Promise<Message | undefined>;
-  getMessagesByConversationId(conversationId: number): Promise<Message[]>;
-  createMessage(message: InsertMessage): Promise<Message>;
-  updateMessage(id: number, message: Partial<Message>): Promise<Message>;
-  markMessagesAsRead(conversationId: number, userId: number): Promise<void>;
 }
 
 import * as fs from 'fs';
@@ -149,14 +132,10 @@ export class MemStorage implements IStorage {
   private horses: Map<number, Horse>;
   private users: Map<number, User>;
   private matches: Map<number, Match>;
-  private conversations: Map<number, Conversation> = new Map();
-  private messages: Map<number, Message> = new Map();
 
   private horseId: number;
   private userId: number;
   private matchId: number;
-  private conversationId: number = 1;
-  private messageId: number = 1;
 
   constructor(skipSeed = false) {
     // Initialize or load from global storage to survive hot reloads
@@ -179,23 +158,15 @@ export class MemStorage implements IStorage {
         this.horseId = diskStorage.horseId;
         this.userId = diskStorage.userId;
         this.matchId = diskStorage.matchId;
-        this.conversations = diskStorage.conversations || new Map();
-        this.messages = diskStorage.messages || new Map();
-        this.conversationId = diskStorage.conversationId || 1;
-        this.messageId = diskStorage.messageId || 1;
         
         // Save to global for hot reloads
         global.__persistent_storage = {
           horses: this.horses,
           users: this.users,
           matches: this.matches,
-          conversations: this.conversations,
-          messages: this.messages,
           horseId: this.horseId,
           userId: this.userId,
           matchId: this.matchId,
-          conversationId: this.conversationId,
-          messageId: this.messageId,
           seeded: diskStorage.seeded
         };
       } else {
@@ -621,109 +592,6 @@ export class MemStorage implements IStorage {
     saveStorageToDisk();
     return updatedMatch;
   }
-
-  // Messaging methods
-  async getConversations(): Promise<Conversation[]> {
-    return Array.from(this.conversations.values());
-  }
-
-  async getConversationById(id: number): Promise<Conversation | undefined> {
-    return this.conversations.get(id);
-  }
-
-  async getConversationsByUserId(userId: number): Promise<Conversation[]> {
-    return Array.from(this.conversations.values()).filter(
-      conv => conv.customer_id === userId || conv.owner_id === userId
-    );
-  }
-
-  async createConversation(conversation: InsertConversation): Promise<Conversation> {
-    const id = this.conversationId++;
-    const newConversation: Conversation = { 
-      id, 
-      ...conversation, 
-      created_at: new Date(),
-      last_message_time: new Date(),
-      is_read_by_customer: false,
-      is_read_by_owner: false
-    };
-    this.conversations.set(id, newConversation);
-    saveStorageToDisk();
-    return newConversation;
-  }
-
-  async updateConversation(id: number, update: Partial<Conversation>): Promise<Conversation> {
-    const conversation = this.conversations.get(id);
-    if (!conversation) {
-      throw new Error(`Conversation with ID ${id} not found`);
-    }
-    
-    const updatedConversation = { ...conversation, ...update };
-    this.conversations.set(id, updatedConversation);
-    saveStorageToDisk();
-    return updatedConversation;
-  }
-
-  async findConversation(customerId: number, ownerId: number, horseId: number): Promise<Conversation | undefined> {
-    return Array.from(this.conversations.values()).find(
-      conv => conv.customer_id === customerId && conv.owner_id === ownerId && conv.horse_id === horseId
-    );
-  }
-
-  async getMessages(): Promise<Message[]> {
-    return Array.from(this.messages.values());
-  }
-
-  async getMessageById(id: number): Promise<Message | undefined> {
-    return this.messages.get(id);
-  }
-
-  async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
-    return Array.from(this.messages.values()).filter(
-      msg => msg.conversation_id === conversationId
-    ).sort((a, b) => {
-      const aTime = a.created_at ? a.created_at.getTime() : 0;
-      const bTime = b.created_at ? b.created_at.getTime() : 0;
-      return aTime - bTime;
-    });
-  }
-
-  async createMessage(message: InsertMessage): Promise<Message> {
-    const id = this.messageId++;
-    const newMessage: Message = { 
-      id, 
-      ...message, 
-      created_at: new Date(),
-      is_read: false
-    };
-    this.messages.set(id, newMessage);
-    saveStorageToDisk();
-    return newMessage;
-  }
-
-  async updateMessage(id: number, update: Partial<Message>): Promise<Message> {
-    const message = this.messages.get(id);
-    if (!message) {
-      throw new Error(`Message with ID ${id} not found`);
-    }
-    
-    const updatedMessage = { ...message, ...update };
-    this.messages.set(id, updatedMessage);
-    saveStorageToDisk();
-    return updatedMessage;
-  }
-
-  async markMessagesAsRead(conversationId: number, userId: number): Promise<void> {
-    const messages = Array.from(this.messages.values()).filter(
-      msg => msg.conversation_id === conversationId && msg.sender_id !== userId
-    );
-    
-    for (const message of messages) {
-      message.is_read = true;
-      this.messages.set(message.id, message);
-    }
-    saveStorageToDisk();
-  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -890,101 +758,6 @@ export class DatabaseStorage implements IStorage {
     }
 
     return updatedMatch;
-  }
-
-  // Messaging methods implementation
-  async getConversations(): Promise<Conversation[]> {
-    return await db.select().from(conversations).orderBy(desc(conversations.last_message_time));
-  }
-
-  async getConversationById(id: number): Promise<Conversation | undefined> {
-    const [result] = await db.select().from(conversations).where(eq(conversations.id, id));
-    return result;
-  }
-
-  async getConversationsByUserId(userId: number): Promise<Conversation[]> {
-    return await db.select().from(conversations)
-      .where(
-        sql`${conversations.customer_id} = ${userId} OR ${conversations.owner_id} = ${userId}`
-      )
-      .orderBy(desc(conversations.last_message_time));
-  }
-
-  async createConversation(conversation: InsertConversation): Promise<Conversation> {
-    const [result] = await db.insert(conversations).values(conversation).returning();
-    return result;
-  }
-
-  async updateConversation(id: number, update: Partial<Conversation>): Promise<Conversation> {
-    const [result] = await db.update(conversations).set(update).where(eq(conversations.id, id)).returning();
-    return result;
-  }
-
-  async findConversation(customerId: number, ownerId: number, horseId: number): Promise<Conversation | undefined> {
-    const [result] = await db.select().from(conversations)
-      .where(
-        and(
-          eq(conversations.customer_id, customerId),
-          eq(conversations.owner_id, ownerId),
-          eq(conversations.horse_id, horseId)
-        )
-      );
-    return result;
-  }
-
-  async getMessages(): Promise<Message[]> {
-    return await db.select().from(messages).orderBy(asc(messages.created_at));
-  }
-
-  async getMessageById(id: number): Promise<Message | undefined> {
-    const [result] = await db.select().from(messages).where(eq(messages.id, id));
-    return result;
-  }
-
-  async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
-    return await db.select().from(messages)
-      .where(eq(messages.conversation_id, conversationId))
-      .orderBy(asc(messages.created_at));
-  }
-
-  async createMessage(message: InsertMessage): Promise<Message> {
-    const [result] = await db.insert(messages).values(message).returning();
-    
-    // Update conversation's last_message_time
-    await db.update(conversations)
-      .set({ last_message_time: new Date() })
-      .where(eq(conversations.id, message.conversation_id));
-    
-    return result;
-  }
-
-  async updateMessage(id: number, update: Partial<Message>): Promise<Message> {
-    const [result] = await db.update(messages).set(update).where(eq(messages.id, id)).returning();
-    return result;
-  }
-
-  async markMessagesAsRead(conversationId: number, userId: number): Promise<void> {
-    // Mark messages as read
-    await db.update(messages)
-      .set({ is_read: true })
-      .where(
-        and(
-          eq(messages.conversation_id, conversationId),
-          sql`${messages.sender_id} != ${userId}`
-        )
-      );
-
-    // Update conversation read status
-    const conversation = await this.getConversationById(conversationId);
-    if (conversation) {
-      const updateData: Partial<Conversation> = {};
-      if (conversation.customer_id === userId) {
-        updateData.is_read_by_customer = true;
-      } else if (conversation.owner_id === userId) {
-        updateData.is_read_by_owner = true;
-      }
-      await this.updateConversation(conversationId, updateData);
-    }
   }
 }
 
