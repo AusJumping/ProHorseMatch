@@ -452,10 +452,22 @@ export default function Home() {
         )}
 
         {/* Main content area */}
-        <div className="flex-1 flex flex-col items-center">
+        <div className="flex-1 flex flex-col items-center relative">
           {isTouchDevice ? (
             /* Horse swiping area for touch devices */
             <>
+              {/* Mobile filter button */}
+              <div className="absolute top-4 right-4 z-10">
+                <Button
+                  onClick={toggleFilterPanel}
+                  className="bg-primary hover:bg-primary/90 text-white rounded-full shadow-lg"
+                  size="lg"
+                >
+                  <Filter className="h-5 w-5 mr-2" />
+                  Filters
+                </Button>
+              </div>
+
               {/* Add a manually filtered list of horses to handle filtering on mobile */}
               {horses && (
                 <div>
