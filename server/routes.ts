@@ -13,7 +13,7 @@ import {
   insertSellingUserSchema, 
   insertSearchingUserSchema, 
   insertMatchSchema, 
-  insertMessageSchema,
+
   disciplines,
   sexes,
   colours,
@@ -1379,118 +1379,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
 
 
-  // Messaging system removed - ready for new implementation
-    try {
-      // Get the user with their roles
-      const user = await storage.getUserById(req.session.userId);
-      
-      if (!user) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-      
-      let conversations = [];
-      
-      // Users can access conversations based on their active roles
-      if (user.is_searching) {
-        const customerConversations = await storage.getConversationsByCustomerId(req.session.userId);
-        conversations = [...conversations, ...customerConversations];
-      }
-      
-      if (user.is_selling) {
-        const ownerConversations = await storage.getConversationsByOwnerId(req.session.userId);
-        conversations = [...conversations, ...ownerConversations];
-      }
-      
-      if (conversations.length === 0 && !user.is_searching && !user.is_selling) {
-        return res.status(403).json({ message: "No active roles to access conversations" });
-      }
-      
-      // Enrich conversations with horse and user data
-      const enrichedConversations = await Promise.all(conversations.map(async (conv) => {
-        const horse = await storage.getHorseById(conv.horse_id);
-        let otherParty;
-        
-        // Determine other party based on conversation context
-        const isUserCustomer = conv.customer_id === req.session.userId;
-        
-        if (isUserCustomer) {
-          otherParty = await storage.getOwnerById(conv.owner_id);
-        } else {
-          otherParty = await storage.getCustomerById(conv.customer_id);
-        }
-        
-        return {
-          ...conv,
-          horse: horse ? {
-            id: horse.id,
-            name: horse.name,
-            photos: horse.photos,
-            price_min: horse.price_min,
-            price_max: horse.price_max,
-            currency: horse.currency,
-            breeds: horse.breeds,
-            age: horse.age,
-            sex: horse.sex
-          } : null,
-          otherParty: otherParty ? {
-            id: otherParty.id,
-            name: req.session.userType === "customer" ? otherParty.business_name : otherParty.name,
-            type: req.session.userType === "customer" ? "owner" : "customer"
-          } : null
-        };
-      }));
-      
-      return res.json(enrichedConversations);
-    } catch (error) {
-      console.error("Get conversations error:", error);
-      return res.status(500).json({ message: "Failed to get conversations" });
-    }
-  });
-
-  // Delete conversation route
-  app.delete("/api/conversations/:id", isAuthenticated, async (req, res) => {
-    try {
-      const conversationId = parseInt(req.params.id);
-      
-      if (isNaN(conversationId)) {
-        return res.status(400).json({ message: "Invalid conversation ID" });
-      }
-
-      // Get the conversation to verify ownership
-      const conversation = await storage.getConversationById(conversationId);
-      
-      if (!conversation) {
-        return res.status(404).json({ message: "Conversation not found" });
-      }
-
-      // Get the user to verify they can delete this conversation
-      const user = await storage.getUserById(req.session.userId);
-      
-      if (!user) {
-        return res.status(403).json({ message: "Unauthorized" });
-      }
-
-      // Check if user is either the customer or owner in this conversation
-      const canDelete = (user.is_searching && conversation.customer_id === req.session.userId) ||
-                       (user.is_selling && conversation.owner_id === req.session.userId);
-
-      if (!canDelete) {
-        return res.status(403).json({ message: "Not authorized to delete this conversation" });
-      }
-
-      // Delete the conversation
-      const success = await storage.deleteConversation(conversationId);
-      
-      if (success) {
-        return res.status(200).json({ message: "Conversation deleted successfully" });
-      } else {
-        return res.status(500).json({ message: "Failed to delete conversation" });
-      }
-    } catch (error) {
-      console.error("Delete conversation error:", error);
-      return res.status(500).json({ message: "Failed to delete conversation" });
-    }
-  });
+  // Messaging system completely removed
 
   // Payment routes - Stripe integration
   app.post("/api/create-payment-intent", async (req, res) => {

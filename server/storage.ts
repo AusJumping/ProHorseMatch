@@ -64,13 +64,9 @@ declare global {
     horses: Map<number, Horse>;
     users: Map<number, User>;
     matches: Map<number, Match>;
-    messages: Map<number, Message>;
-    conversations: Map<number, Conversation>;
     horseId: number;
     userId: number;
     matchId: number;
-    messageId: number;
-    conversationId: number;
     seeded: boolean;
   } | undefined;
 }
@@ -94,13 +90,9 @@ function saveStorageToDisk() {
       horses: Array.from(global.__persistent_storage.horses.entries()),
       users: Array.from(global.__persistent_storage.users.entries()),
       matches: Array.from(global.__persistent_storage.matches.entries()),
-      messages: Array.from(global.__persistent_storage.messages.entries()),
-      conversations: Array.from(global.__persistent_storage.conversations.entries()),
       horseId: global.__persistent_storage.horseId,
       userId: global.__persistent_storage.userId,
       matchId: global.__persistent_storage.matchId,
-      messageId: global.__persistent_storage.messageId,
-      conversationId: global.__persistent_storage.conversationId,
       seeded: global.__persistent_storage.seeded
     };
     
