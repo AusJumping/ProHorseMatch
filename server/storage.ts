@@ -2,7 +2,9 @@ import {
   horses, type Horse, type InsertHorse,
   users, type User, type InsertUser, type Owner, type InsertOwner,
   type Customer, type InsertCustomer,
-  matches, type Match, type InsertMatch
+  matches, type Match, type InsertMatch,
+  conversations, type Conversation, type InsertConversation,
+  messages, type Message, type InsertMessage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
@@ -47,6 +49,22 @@ export interface IStorage {
   getMatchesByHorseId(horseId: number): Promise<Match[]>;
   createMatch(match: InsertMatch): Promise<Match>;
   updateMatch(id: number, match: Partial<Match>): Promise<Match>;
+
+  // Conversation methods
+  getConversations(): Promise<Conversation[]>;
+  getConversationById(id: number): Promise<Conversation | undefined>;
+  getConversationsByCustomerId(customerId: number): Promise<Conversation[]>;
+  getConversationsByOwnerId(ownerId: number): Promise<Conversation[]>;
+  createConversation(conversation: InsertConversation): Promise<Conversation>;
+  updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
+  deleteConversation(id: number): Promise<boolean>;
+
+  // Message methods
+  getMessages(): Promise<Message[]>;
+  getMessageById(id: number): Promise<Message | undefined>;
+  getMessagesByConversationId(conversationId: number): Promise<Message[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
+  updateMessage(id: number, message: Partial<Message>): Promise<Message>;
 }
 
 import * as fs from 'fs';
@@ -727,6 +745,86 @@ export class DatabaseStorage implements IStorage {
     
     if (!result) {
       throw new Error("Match not found");
+    }
+    
+    return result;
+  }
+
+  // Conversation Methods
+  async getConversations(): Promise<Conversation[]> {
+    return await db.select().from(conversations);
+  }
+
+  async getConversationById(id: number): Promise<Conversation | undefined> {
+    const result = await db.select().from(conversations).where(eq(conversations.id, id));
+    return result[0];
+  }
+
+  async getConversationsByCustomerId(customerId: number): Promise<Conversation[]> {
+    return await db.select().from(conversations).where(eq(conversations.customer_id, customerId));
+  }
+
+  async getConversationsByOwnerId(ownerId: number): Promise<Conversation[]> {
+    return await db.select().from(conversations).where(eq(conversations.owner_id, ownerId));
+  }
+
+  async createConversation(conversation: InsertConversation): Promise<Conversation> {
+    const [result] = await db.insert(conversations).values(conversation).returning();
+    return result;
+  }
+
+  async updateConversation(id: number, update: Partial<Conversation>): Promise<Conversation> {
+    const [result] = await db.update(conversations)
+      .set(update)
+      .where(eq(conversations.id, id))
+      .returning();
+    
+    if (!result) {
+      throw new Error("Conversation not found");
+    }
+    
+    return result;
+  }
+
+  async deleteConversation(id: number): Promise<boolean> {
+    // Delete all messages in the conversation first
+    await db.delete(messages).where(eq(messages.conversation_id, id));
+    
+    // Then delete the conversation
+    const result = await db.delete(conversations).where(eq(conversations.id, id)).returning();
+    
+    return result.length > 0;
+  }
+
+  // Message Methods
+  async getMessages(): Promise<Message[]> {
+    return await db.select().from(messages);
+  }
+
+  async getMessageById(id: number): Promise<Message | undefined> {
+    const result = await db.select().from(messages).where(eq(messages.id, id));
+    return result[0];
+  }
+
+  async getMessagesByConversationId(conversationId: number): Promise<Message[]> {
+    return await db.select().from(messages)
+      .where(eq(messages.conversation_id, conversationId))
+      .orderBy(messages.created_at);
+  }
+
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [result] = await db.insert(messages).values(message).returning();
+    return result;
+  }
+
+  async updateMessage(id: number, update: Partial<Message>): Promise<Message> {
+    const [result] = await db.update(messages)
+      .set(update)
+      .where(eq(messages.id, id))
+      .returning();
+    
+    if (!result) {
+      throw new Error("Message not found");
     }
     
     return result;
