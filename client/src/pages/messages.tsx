@@ -62,7 +62,7 @@ export default function MessagesPage() {
 
   // Get messages for selected conversation
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: ["/api/conversations", selectedConversation, "messages"],
+    queryKey: [`/api/conversations/${selectedConversation}/messages`],
     enabled: !!selectedConversation,
   });
 
@@ -89,7 +89,7 @@ export default function MessagesPage() {
     },
     onSuccess: () => {
       setNewMessage("");
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${selectedConversation}/messages`] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
     },
   });
