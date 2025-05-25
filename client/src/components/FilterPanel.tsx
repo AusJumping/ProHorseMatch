@@ -254,7 +254,7 @@ const FilterPanel = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all_disciplines">All Disciplines</SelectItem>
-                {constants?.disciplines?.map((discipline: string) => (
+                {(constants as any)?.disciplines?.map((discipline: string) => (
                   <SelectItem key={discipline} value={discipline}>{discipline}</SelectItem>
                 ))}
               </SelectContent>
@@ -279,10 +279,10 @@ const FilterPanel = ({
                   <SelectItem value="any_level">Any Level</SelectItem>
                   {(() => {
                     const currentDiscipline = filters.disciplines[0];
-                    const levelsForDiscipline = constants?.levels?.[currentDiscipline];
+                    const levelsForDiscipline = (constants as any)?.levels?.[currentDiscipline];
                     console.log('Level filter debug:', {
                       currentDiscipline,
-                      constants: constants?.levels,
+                      constants: (constants as any)?.levels,
                       levelsForDiscipline,
                       filtersLevels: filters.levels
                     });
