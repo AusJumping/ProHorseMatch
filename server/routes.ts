@@ -1077,8 +1077,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      if (req.query.pedigree && typeof req.query.pedigree === 'string' && req.query.pedigree.trim()) {
-        filters.pedigree = req.query.pedigree.trim();
+      // Pedigree search filter
+      if (req.query.pedigree && req.query.pedigree.toString().trim()) {
+        filters.pedigree = req.query.pedigree.toString().trim();
         console.log("Setting pedigree filter to:", filters.pedigree);
       }
       
