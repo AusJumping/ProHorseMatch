@@ -34,14 +34,52 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       console.log('Sending message with content:', content, 'to conversation:', conversationId);
+      
+      // Create a temporary message object for immediate UI feedback
+      const tempMessage = {
+        id: Date.now(),
+        conversation_id: conversationId,
+        sender_id: 1, // Will be set properly on server
+        sender_type: 'customer' as const,
+        content,
+        is_read: false,
+        created_at: new Date().toISOString()
+      };
+      
+      // Add to UI immediately for better user experience
+      queryClient.setQueryData(
+        ['/api/conversations', conversationId, 'messages'], 
+        (oldMessages: any[] = []) => [...oldMessages, tempMessage]
+      );
+      
       try {
-        const encodedMessage = encodeURIComponent(content);
-        const url = `/api/message-send?cid=${conversationId}&msg=${encodedMessage}`;
-        const result = await apiRequest('GET', url);
-        console.log('Message sent successfully via GET endpoint:', result);
-        return result;
+        // Attempt to send via working POST endpoint
+        const result = await fetch('/api/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            conversation_id: conversationId,
+            content,
+          }),
+        });
+        
+        if (!result.ok) {
+          throw new Error('Failed to send message');
+        }
+        
+        const data = await result.json();
+        console.log('Message sent successfully:', data);
+        return data;
       } catch (error) {
-        console.error('API request failed:', error);
+        // Remove temp message on error
+        queryClient.setQueryData(
+          ['/api/conversations', conversationId, 'messages'], 
+          (oldMessages: any[] = []) => oldMessages.filter((msg: any) => msg.id !== tempMessage.id)
+        );
+        console.error('Message send failed:', error);
         throw error;
       }
     },

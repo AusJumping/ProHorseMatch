@@ -3,6 +3,19 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// CRITICAL: Register messaging route IMMEDIATELY before any middleware
+app.post('/api/direct-message', async (req: any, res: any) => {
+  try {
+    console.log("DIRECT MESSAGE ROUTE - Body:", req.body);
+    res.setHeader('Content-Type', 'application/json');
+    res.json({ success: true, message: "Direct route working" });
+  } catch (error) {
+    console.error("Direct route error:", error);
+    res.status(500).json({ error: "Failed" });
+  }
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
