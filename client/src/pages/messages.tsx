@@ -147,8 +147,8 @@ export default function MessagesPage() {
       <Sidebar />
       <div className="flex-1 container mx-auto px-4 py-6">
         <div className="flex items-center gap-4 mb-6">
-          <MessageCircle className="w-8 h-8 text-blue-600" />
-          <h1 className="text-3xl font-bold text-gray-900">Messages</h1>
+          <MessageCircle className="w-8 h-8 text-primary" />
+          <h1 className="text-3xl font-bold text-neutral-900">Messages</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
@@ -176,13 +176,13 @@ export default function MessagesPage() {
                         <div
                           key={conversation.id}
                           onClick={() => setSelectedConversation(conversation.id)}
-                          className={`p-4 cursor-pointer border-b hover:bg-gray-50 transition-colors ${
-                            selectedConversation === conversation.id ? "bg-blue-50 border-l-4 border-l-blue-500" : ""
+                          className={`p-4 cursor-pointer border-b border-neutral-200 hover:bg-[#cdac6e]/10 transition-colors ${
+                            selectedConversation === conversation.id ? "bg-primary/10 border-l-4 border-l-primary" : ""
                           }`}
                         >
                           <div className="flex items-start gap-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarFallback className="bg-blue-100 text-blue-600">
+                              <AvatarFallback className="bg-primary/10 text-primary">
                                 {otherUser?.name?.[0] || "U"}
                               </AvatarFallback>
                             </Avatar>
@@ -192,15 +192,15 @@ export default function MessagesPage() {
                                   {otherUser?.name || "Unknown User"}
                                 </p>
                                 {unread && (
-                                  <Badge variant="default" className="bg-blue-600 text-xs">
+                                  <Badge variant="default" className="bg-primary text-white text-xs">
                                     New
                                   </Badge>
                                 )}
                               </div>
-                              <p className="text-sm text-gray-600 truncate">
+                              <p className="text-sm text-neutral-600 truncate">
                                 About: {horse?.name || "Unknown Horse"}
                               </p>
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-neutral-400">
                                 {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
                               </p>
                             </div>
