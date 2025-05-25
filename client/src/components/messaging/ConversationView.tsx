@@ -35,11 +35,11 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
     mutationFn: async (content: string) => {
       console.log('Sending message with content:', content, 'to conversation:', conversationId);
       try {
-        const result = await apiRequest('POST', '/api/messages', {
+        const result = await apiRequest('POST', '/api/send-message', {
           conversation_id: conversationId,
           content,
         });
-        console.log('Message sent successfully:', result);
+        console.log('Message sent successfully via new endpoint:', result);
         return result;
       } catch (error) {
         console.error('API request failed:', error);
