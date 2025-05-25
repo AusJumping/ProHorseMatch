@@ -96,6 +96,37 @@ export default function MessagesPage() {
     },
   });
 
+  // Mark conversation as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: async (conversationId: number) => {
+      const response = await fetch(`/api/conversations/${conversationId}/mark-read`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) throw new Error("Failed to mark as read");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+  });
+
+  // Mark conversation as read when selected
+  useEffect(() => {
+    if (selectedConversation && currentUser) {
+      const conversation = conversations.find(c => c.id === selectedConversation);
+      if (conversation) {
+        const isUnreadForUser = conversation.customer_id === currentUser.id 
+          ? !conversation.is_read_by_customer
+          : !conversation.is_read_by_owner;
+        
+        if (isUnreadForUser) {
+          markAsReadMutation.mutate(selectedConversation);
+        }
+      }
+    }
+  }, [selectedConversation, conversations, currentUser]);
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || !selectedConversation) return;
