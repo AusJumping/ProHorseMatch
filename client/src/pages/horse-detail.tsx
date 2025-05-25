@@ -326,7 +326,6 @@ export default function HorseDetail() {
             {/* Message Input Section - Shows when Contact Owner is clicked */}
             {user && user.id !== horse.owner_id && showMessageInput && (
               <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
-                <h3 className="text-lg font-semibold mb-3">Send a message about {horse.name}</h3>
                 <Textarea
                   placeholder="Hi! I'm interested in your horse. Could you tell me more about..."
                   value={messageText}
