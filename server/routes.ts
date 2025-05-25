@@ -2287,12 +2287,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Send a message
   app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
     try {
+      console.log("POST /api/messages - Request body:", req.body);
       const userId = req.session.userId;
       const { conversation_id, content } = req.body;
 
       // Verify user has access to this conversation
       const conversation = await storage.getConversationById(conversation_id);
       if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        console.log("Access denied for user:", userId, "conversation:", conversation);
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2308,6 +2310,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         is_read: false,
       });
 
+      console.log("Message created successfully:", newMessage);
+
       // Update conversation last message time and read status
       const isCustomer = conversation.customer_id === userId;
       await storage.updateConversation(conversation_id, {
@@ -2316,10 +2320,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         is_read_by_owner: !isCustomer,
       });
 
+      console.log("Sending response:", newMessage);
       res.json(newMessage);
     } catch (error) {
       console.error("Error sending message:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ message: "Internal server error", error: error.message });
     }
   });
 

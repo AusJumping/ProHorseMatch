@@ -33,19 +33,28 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      return await apiRequest('POST', '/api/messages', {
-        conversation_id: conversationId,
-        content,
-      });
+      console.log('Sending message with content:', content, 'to conversation:', conversationId);
+      try {
+        const result = await apiRequest('POST', '/api/messages', {
+          conversation_id: conversationId,
+          content,
+        });
+        console.log('Message sent successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mutation onSuccess called with data:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/conversations', conversationId, 'messages'] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       queryClient.invalidateQueries({ queryKey: ['/api/messages/unread'] });
       setNewMessage('');
     },
     onError: (error: any) => {
-      console.error('Send message error:', error);
+      console.error('Mutation onError called with error:', error);
       toast({
         title: "Error",
         description: "Failed to send message. Please try again.",
