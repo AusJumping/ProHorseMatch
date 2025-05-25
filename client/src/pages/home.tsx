@@ -19,7 +19,6 @@ import CurrencyRate from "@/components/ui/CurrencyRate";
 
 interface Filter {
   disciplines: string[];
-  levels: string[];
   breeds: string[];
   sexes: string[];
   location_country: string | null;
@@ -45,7 +44,6 @@ export default function Home() {
   const [showFilter, setShowFilter] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
-    levels: [],       // Empty array for Any Level
     breeds: [],       // Empty array for All Breeds
     sexes: [],        // Empty array for Any Sex
     location_country: null,
@@ -109,10 +107,6 @@ export default function Home() {
       // Only add non-empty array filters or non-null values
       if (activeFilters.disciplines && activeFilters.disciplines.length > 0) {
         activeFilters.disciplines.forEach((d: string) => params.append('disciplines', d));
-      }
-      
-      if (activeFilters.levels && activeFilters.levels.length > 0) {
-        activeFilters.levels.forEach((l: string) => params.append('levels', l));
       }
       
       if (activeFilters.breeds && activeFilters.breeds.length > 0) {
