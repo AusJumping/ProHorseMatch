@@ -8,11 +8,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, Share2, ChevronLeft, Loader2 } from "lucide-react";
+import { Heart, Share2, ChevronLeft, Loader2, MessageCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function HorseDetail() {
   const isMobile = useMobile();
@@ -21,7 +22,38 @@ export default function HorseDetail() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
+  const queryClient = useQueryClient();
 
+  // Contact owner mutation
+  const contactOwnerMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer_id: user!.id,
+          owner_id: horse!.owner_id,
+          horse_id: horse!.id,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to create conversation");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Conversation started",
+        description: "You can now message the owner about this horse.",
+      });
+      navigate("/messages");
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Fetch horse data
   const { data: horse, isLoading, isError } = useQuery<Horse>({
@@ -270,6 +302,15 @@ export default function HorseDetail() {
                 >
                   <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
                   {isSaved ? 'Saved to Favorites' : 'Save to Favorites'}
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => contactOwnerMutation.mutate()}
+                  disabled={contactOwnerMutation.isPending}
+                >
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                  {contactOwnerMutation.isPending ? 'Starting...' : 'Contact Owner'}
                 </Button>
               </div>
             )}
