@@ -49,7 +49,8 @@ export default function HorseDetail() {
       });
       navigate("/messages");
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Conversation creation error:", error);
       toast({
         title: "Error",
         description: "Failed to start conversation. Please try again.",
