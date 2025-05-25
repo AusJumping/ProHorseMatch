@@ -48,15 +48,11 @@ const FilterPanel = ({
   }, [currentCurrency]);
 
   useEffect(() => {
-    // Ensure levels property exists in filters
-    setFilters({
-      ...activeFilters,
-      levels: activeFilters.levels || []
-    });
+    setFilters(activeFilters);
   }, [activeFilters]);
 
   const handleChange = (key: string, value: any) => {
-    setFilters((prev: any) => {
+    setFilters(prev => {
       // Validation for min/max pairs to ensure max is not less than min
       if (key === 'price_min' && prev.price_max && value > prev.price_max && prev.price_max !== 999999999) {
         // If new min is greater than current max, set max to null or a higher value
@@ -98,15 +94,6 @@ const FilterPanel = ({
       if (key === 'height_max' && prev.height_min && value < prev.height_min && value !== 999) {
         // If new max is less than current min, don't update
         return prev;
-      }
-      
-      // When discipline changes, clear the levels
-      if (key === 'disciplines') {
-        return {
-          ...prev,
-          [key]: value,
-          levels: []
-        };
       }
       
       // Default case: just update the value
@@ -254,7 +241,7 @@ const FilterPanel = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all_disciplines">All Disciplines</SelectItem>
-                {(constants as any)?.disciplines?.map((discipline: string) => (
+                {constants?.disciplines?.map((discipline: string) => (
                   <SelectItem key={discipline} value={discipline}>{discipline}</SelectItem>
                 ))}
               </SelectContent>
@@ -267,29 +254,16 @@ const FilterPanel = ({
               <Label className="block font-accent font-semibold mb-2 text-neutral-800">Level</Label>
               <Select 
                 value={filters.levels?.[0] || ""} 
-                onValueChange={(value) => {
-                  console.log('Level filter value changed:', value);
-                  handleChange('levels', value === "any_level" ? [] : [value]);
-                }}
+                onValueChange={(value) => handleChange('levels', [value])}
               >
                 <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                   <SelectValue placeholder="Any Level" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any_level">Any Level</SelectItem>
-                  {(() => {
-                    const currentDiscipline = filters.disciplines[0];
-                    const levelsForDiscipline = (constants as any)?.levels?.[currentDiscipline];
-                    console.log('Level filter debug:', {
-                      currentDiscipline,
-                      constants: (constants as any)?.levels,
-                      levelsForDiscipline,
-                      filtersLevels: filters.levels
-                    });
-                    return levelsForDiscipline?.map((level: string) => (
-                      <SelectItem key={level} value={level}>{level}</SelectItem>
-                    ));
-                  })()}
+                  {constants?.levels && filters.disciplines[0] && constants.levels[filters.disciplines[0]]?.map((level: string) => (
+                    <SelectItem key={level} value={level}>{level}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
