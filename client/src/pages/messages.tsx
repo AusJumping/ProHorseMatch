@@ -253,11 +253,22 @@ export default function MessagesPage() {
                                 <p className={`font-medium ${unread ? "font-bold" : ""}`}>
                                   {horse?.name || "Horse"}
                                 </p>
-                                {unread && (
-                                  <Badge variant="default" className="bg-primary text-white text-xs">
-                                    New
-                                  </Badge>
-                                )}
+                                <div className="flex items-center gap-2">
+                                  {unread && (
+                                    <Badge variant="default" className="bg-primary text-white text-xs">
+                                      New
+                                    </Badge>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={(e) => handleDeleteConversation(conversation.id, e)}
+                                    className="h-8 w-8 p-0 text-neutral-400 hover:text-red-500 hover:bg-red-50"
+                                    disabled={deleteConversationMutation.isPending}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
                               </div>
                               <p className="text-xs text-neutral-400">
                                 {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
