@@ -16,6 +16,7 @@ import EditHorse from "@/pages/edit-horse";
 import MigrateHorses from "@/pages/migrate-horses";
 import AdminPanel from "@/pages/admin";
 import Favorites from "@/pages/favorites";
+import Messages from "@/pages/messages";
 import Landing from "@/pages/landing";
 import Checkout from "@/pages/checkout";
 import PaymentSuccess from "@/pages/payment-success";

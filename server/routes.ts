@@ -14,6 +14,9 @@ import {
   insertSearchingUserSchema, 
   insertMatchSchema, 
   insertMessageSchema,
+  insertConversationSchema,
+  type InsertMessage,
+  type InsertConversation,
   disciplines,
   sexes,
   colours,
@@ -2155,6 +2158,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: "Error deleting image",
         error: error.message 
+      });
+    }
+  });
+
+  // =============================================================================
+  // MESSAGING ROUTES - Added carefully to avoid breaking existing functionality
+  // =============================================================================
+
+  // Get all conversations for the current user
+  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      let conversations;
+      if (user.is_selling) {
+        // Owner sees conversations where they are the owner
+        conversations = await storage.getConversationsByOwnerId(userId);
+      } else {
+        // Customer sees conversations where they are the customer
+        conversations = await storage.getConversationsByCustomerId(userId);
+      }
+
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch conversations",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get messages for a specific conversation
+  app.get("/api/conversations/:customerId/:ownerId/:horseId/messages", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const customerId = parseInt(req.params.customerId);
+      const ownerId = parseInt(req.params.ownerId);
+      const horseId = parseInt(req.params.horseId);
+
+      // Verify user has access to this conversation
+      if (userId !== customerId && userId !== ownerId) {
+        return res.status(403).json({ message: "Access denied to this conversation" });
+      }
+
+      const messages = await storage.getMessagesByConversationId(customerId, ownerId, horseId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch messages",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Send a new message
+  app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const { customer_id, owner_id, horse_id, content } = req.body;
+
+      // Validate required fields
+      if (!customer_id || !owner_id || !horse_id || !content?.trim()) {
+        return res.status(400).json({ 
+          message: "Missing required fields: customer_id, owner_id, horse_id, and content are required" 
+        });
+      }
+
+      // Verify user has permission to send this message
+      if (userId !== customer_id && userId !== owner_id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Determine sender type
+      const sender_type = userId === customer_id ? "customer" : "owner";
+
+      const messageData = {
+        customer_id,
+        owner_id,
+        horse_id,
+        content: content.trim(),
+        sender_type
+      };
+
+      // Create the message
+      const newMessage = await storage.createMessage(messageData);
+
+      // Create or update conversation
+      try {
+        const existingConversation = await storage.getConversationById(1); // This is just a check
+        const conversationData = {
+          customer_id,
+          owner_id,
+          horse_id
+        };
+        await storage.createConversation(conversationData);
+      } catch (convError) {
+        // Conversation might already exist, which is fine
+        console.log("Conversation already exists or error creating:", convError);
+      }
+
+      res.status(201).json(newMessage);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ 
+        message: "Failed to send message. Please try again.",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Mark messages as read
+  app.patch("/api/messages/:messageId/read", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const messageId = parseInt(req.params.messageId);
+
+      const message = await storage.getMessageById(messageId);
+      if (!message) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+
+      // Verify user has access to this message
+      if (userId !== message.customer_id && userId !== message.owner_id) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const updatedMessage = await storage.updateMessage(messageId, { is_read: true });
+      res.json(updatedMessage);
+    } catch (error) {
+      console.error("Error marking message as read:", error);
+      res.status(500).json({ 
+        message: "Failed to mark message as read",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get unread message count
+  app.get("/api/messages/unread", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.session.userId;
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      // Get all messages for this user and count unread ones
+      const allMessages = await storage.getMessages();
+      const userMessages = allMessages.filter(msg => 
+        (msg.customer_id === userId || msg.owner_id === userId) && 
+        !msg.is_read &&
+        msg.sender_type !== (user.is_selling ? "owner" : "customer") // Don't count own messages
+      );
+
+      res.json({ count: userMessages.length });
+    } catch (error) {
+      console.error("Error getting unread count:", error);
+      res.status(500).json({ 
+        message: "Failed to get unread count",
+        error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
