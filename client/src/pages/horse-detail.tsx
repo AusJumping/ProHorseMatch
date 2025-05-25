@@ -36,7 +36,10 @@ export default function HorseDetail() {
           horse_id: horse!.id,
         }),
       });
-      if (!response.ok) throw new Error("Failed to create conversation");
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to create conversation");
+      }
       return response.json();
     },
     onSuccess: () => {
