@@ -2227,6 +2227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Send a new message
   app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
+    console.log("=== MESSAGE ENDPOINT HIT ===");
     try {
       const userId = req.session.userId;
       console.log("POST /api/messages - Request body:", req.body);
