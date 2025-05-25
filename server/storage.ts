@@ -515,13 +515,6 @@ export class MemStorage implements IStorage {
         }
       }
       
-      // Filter by levels if specified
-      if (filters.levels && filters.levels.length > 0) {
-        if (!horse.levels.some(l => filters.levels.includes(l))) {
-          return false;
-        }
-      }
-      
       // Filter by breeds if specified
       if (filters.breeds && filters.breeds.length > 0) {
         if (!horse.breeds.some(b => filters.breeds.includes(b))) {
@@ -1068,13 +1061,6 @@ export class DatabaseStorage implements IStorage {
       // Filter by disciplines if specified
       if (filters.disciplines && filters.disciplines.length > 0) {
         if (!horse.disciplines.some(d => filters.disciplines.includes(d))) {
-          return false;
-        }
-      }
-      
-      // Filter by levels if specified
-      if (filters.levels && filters.levels.length > 0) {
-        if (!horse.levels.some(l => filters.levels.includes(l))) {
           return false;
         }
       }
