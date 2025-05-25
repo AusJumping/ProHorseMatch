@@ -155,6 +155,10 @@ export default function Home() {
         params.append('currency', activeFilters.currency);
       }
       
+      if (activeFilters.pedigree && activeFilters.pedigree.trim()) {
+        params.append('pedigree', activeFilters.pedigree.trim());
+      }
+      
       console.log('Filter params:', params.toString());
       
       // Fetch horses with the filter parameters
