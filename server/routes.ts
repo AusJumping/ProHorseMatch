@@ -6,6 +6,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
+import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -115,26 +116,9 @@ declare module "express-session" {
 
 const SessionStore = MemoryStore(session);
 
-// Configure multer storage
-const storage_config = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Make sure upload directory exists
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const extension = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + extension);
-  }
-});
-
-// Configure upload middleware
+// Configure multer for memory storage (we'll upload to Cloudinary)
 const upload = multer({
-  storage: storage_config,
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 25 * 1024 * 1024, // 25MB limit
   },
@@ -2389,6 +2373,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Update customer preferences error:", error);
       return res.status(400).json({ message: error.message || "Failed to update preferences" });
+    }
+  });
+
+  // Upload image to Cloudinary
+  app.post('/api/upload-image', isAuthenticated, upload.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      // Upload to Cloudinary
+      const result = await uploadToCloudinary(req.file.buffer, 'horses');
+      
+      res.json({
+        url: result.secure_url,
+        public_id: result.public_id
+      });
+    } catch (error) {
+      console.error("Error uploading image to Cloudinary:", error);
+      res.status(500).json({ 
+        message: "Error uploading image",
+        error: error.message 
+      });
+    }
+  });
+
+  // Delete image from Cloudinary
+  app.delete('/api/delete-image/:public_id', isAuthenticated, async (req, res) => {
+    try {
+      const { public_id } = req.params;
+      
+      if (!public_id) {
+        return res.status(400).json({ message: "No public_id provided" });
+      }
+
+      // Delete from Cloudinary
+      const result = await deleteFromCloudinary(public_id);
+      
+      res.json({
+        success: true,
+        result: result
+      });
+    } catch (error) {
+      console.error("Error deleting image from Cloudinary:", error);
+      res.status(500).json({ 
+        message: "Error deleting image",
+        error: error.message 
+      });
     }
   });
 
