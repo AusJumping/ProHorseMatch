@@ -327,7 +327,7 @@ export default function HorseDetail() {
             {user && user.id !== horse.owner_id && showMessageInput && (
               <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
                 <Textarea
-                  placeholder="Hi! I'm interested in your horse. Could you tell me more about..."
+                  placeholder="Type your message here"
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   className="min-h-[100px] mb-3"
