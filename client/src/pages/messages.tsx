@@ -128,7 +128,7 @@ export default function Messages() {
 
   if (!isAuthenticated) {
     return (
-      <Layout>
+      <Layout pageTitle="Messages">
         <div className="flex items-center justify-center h-96">
           <div className="text-center">
             <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
@@ -141,7 +141,7 @@ export default function Messages() {
   }
 
   return (
-    <Layout>
+    <Layout pageTitle="Messages">
       <div className="flex h-[calc(100vh-200px)] bg-white rounded-lg shadow-sm border">
         {/* Conversations Sidebar - Facebook style */}
         <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-gray-200`}>
@@ -162,7 +162,7 @@ export default function Messages() {
                   </div>
                 ))}
               </div>
-            ) : conversations?.length === 0 ? (
+            ) : !conversations || conversations.length === 0 ? (
               <div className="p-8 text-center">
                 <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
@@ -170,7 +170,7 @@ export default function Messages() {
               </div>
             ) : (
               <div className="divide-y divide-gray-100">
-                {conversations?.map((conversation: ConversationWithDetails) => (
+                {conversations && conversations.map((conversation: ConversationWithDetails) => (
                   <div
                     key={`${conversation.customer_id}-${conversation.owner_id}-${conversation.horse_id}`}
                     onClick={() => setSelectedConversation(conversation)}
@@ -257,7 +257,7 @@ export default function Messages() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {messages?.map((message: Message) => {
+                    {messages && messages.map((message: Message) => {
                       const isMyMessage = message.sender_type === (user?.is_selling ? 'owner' : 'customer');
                       return (
                         <div

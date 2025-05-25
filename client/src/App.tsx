@@ -44,6 +44,7 @@ function Router() {
       <Route path="/migrate-horses" component={MigrateHorses} />
       <Route path="/admin" component={AdminPanel} />
       <Route path="/favorites" component={Favorites} />
+      <Route path="/messages" component={Messages} />
       <Route path="/checkout/:horseId" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/subscription" component={Subscription} />
