@@ -2265,21 +2265,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create the message
       const newMessage = await storage.createMessage(messageData);
 
-      // Create or update conversation
-      try {
-        const existingConversation = await storage.getConversationById(1); // This is just a check
-        const conversationData = {
-          customer_id,
-          owner_id,
-          horse_id
-        };
-        await storage.createConversation(conversationData);
-      } catch (convError) {
-        // Conversation might already exist, which is fine
-        console.log("Conversation already exists or error creating:", convError);
-      }
+      // Update conversation last message time
+      await storage.updateConversation(conversation_id, {
+        last_message_time: new Date(),
+      });
 
-      res.status(201).json(newMessage);
+      console.log("Message created successfully:", newMessage.id);
+      res.json(newMessage);
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ 
