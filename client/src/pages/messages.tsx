@@ -55,9 +55,10 @@ export default function Messages() {
       horse_id: number;
       content: string;
     }) => {
-      return apiRequest("POST", "/api/messages", messageData);
+      return await apiRequest("POST", "/api/messages", messageData);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Message sent successfully:", data);
       setMessageText("");
       setIsSending(false);
       // Refresh messages and conversations
@@ -95,16 +96,12 @@ export default function Messages() {
 
     setIsSending(true);
     
-    try {
-      await sendMessageMutation.mutateAsync({
-        customer_id: selectedConversation.customer_id,
-        owner_id: selectedConversation.owner_id,
-        horse_id: selectedConversation.horse_id,
-        content: messageText.trim()
-      });
-    } catch (error) {
-      // Error is handled by the mutation's onError
-    }
+    sendMessageMutation.mutate({
+      customer_id: selectedConversation.customer_id,
+      owner_id: selectedConversation.owner_id,
+      horse_id: selectedConversation.horse_id,
+      content: messageText.trim()
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
