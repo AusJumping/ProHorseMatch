@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, MessageCircle, ArrowLeft } from "lucide-react";
+import { Send, MessageCircle, ArrowLeft, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/Sidebar";
@@ -111,6 +111,22 @@ export default function MessagesPage() {
     },
   });
 
+  // Delete conversation mutation
+  const deleteConversationMutation = useMutation({
+    mutationFn: async (conversationId: number) => {
+      const response = await fetch(`/api/conversations/${conversationId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) throw new Error("Failed to delete conversation");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      setSelectedConversation(null); // Close conversation view if it was selected
+    },
+  });
+
   // Mark conversation as read when selected
   useEffect(() => {
     if (selectedConversation && currentUser) {
@@ -126,6 +142,13 @@ export default function MessagesPage() {
       }
     }
   }, [selectedConversation, conversations, currentUser]);
+
+  const handleDeleteConversation = (conversationId: number, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent selecting the conversation
+    if (confirm("Are you sure you want to delete this conversation? This action cannot be undone.")) {
+      deleteConversationMutation.mutate(conversationId);
+    }
+  };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
