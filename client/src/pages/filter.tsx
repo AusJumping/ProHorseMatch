@@ -96,10 +96,6 @@ export default function FilterPage() {
       // Always send currency
       params.append('currency', activeFilters.currency || currentCurrency);
       
-      if (activeFilters.pedigree && activeFilters.pedigree.trim()) {
-        params.append('pedigree', activeFilters.pedigree.trim());
-      }
-      
       const response = await fetch(`/api/horses?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch horses');
