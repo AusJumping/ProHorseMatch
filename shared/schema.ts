@@ -129,26 +129,7 @@ export const insertMatchSchema = createInsertSchema(matches).omit({
 export type InsertMatch = z.infer<typeof insertMatchSchema>;
 export type Match = typeof matches.$inferSelect;
 
-// Message model
-export const messages = pgTable("messages", {
-  id: serial("id").primaryKey(),
-  customer_id: integer("customer_id").notNull(),
-  owner_id: integer("owner_id").notNull(),
-  horse_id: integer("horse_id").notNull(),
-  content: text("content").notNull(),
-  sender_type: text("sender_type").notNull(), // "customer" or "owner"
-  created_at: timestamp("created_at").defaultNow(),
-  is_read: boolean("is_read").default(false),
-});
-
-export const insertMessageSchema = createInsertSchema(messages).omit({
-  id: true,
-  created_at: true,
-  is_read: true,
-});
-
-export type InsertMessage = z.infer<typeof insertMessageSchema>;
-export type Message = typeof messages.$inferSelect;
+// Messaging system removed
 
 // Conversation (for listing unique conversations)
 export const conversations = pgTable("conversations", {
