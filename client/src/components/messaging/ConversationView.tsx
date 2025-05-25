@@ -1,11 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Send, User } from 'lucide-react';
-import { apiRequest } from '@/lib/queryClient';
+import { ArrowLeft, Send } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: number;
@@ -24,8 +22,9 @@ interface ConversationViewProps {
 
 export function ConversationView({ conversationId, onBack }: ConversationViewProps) {
   const [newMessage, setNewMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   const queryClient = useQueryClient();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ['/api/conversations', conversationId, 'messages'],
@@ -51,12 +50,24 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
       queryClient.invalidateQueries({ queryKey: ['/api/messages/unread'] });
       setNewMessage('');
     },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newMessage.trim()) {
-      sendMessageMutation.mutate(newMessage.trim());
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) return;
+    sendMessageMutation.mutate(newMessage.trim());
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
     }
   };
 
@@ -68,7 +79,7 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
   // Mark conversation as read when viewing
   useEffect(() => {
     if (conversationId) {
-      apiRequest(`/api/conversations/${conversationId}/mark-read`, {
+      fetch(`/api/conversations/${conversationId}/mark-read`, {
         method: 'POST',
       }).catch(console.error);
     }
@@ -83,78 +94,64 @@ export function ConversationView({ conversationId, onBack }: ConversationViewPro
   }
 
   return (
-    <div className="flex flex-col h-[600px]">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <CardHeader className="flex-row items-center gap-4 space-y-0 pb-4">
+      <div className="border-b p-4 flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={onBack}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <CardTitle>Conversation</CardTitle>
-      </CardHeader>
+        <h2 className="font-semibold">Conversation</h2>
+      </div>
 
       {/* Messages */}
-      <CardContent className="flex-1 flex flex-col">
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
-            {messages.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                No messages yet. Start the conversation!
-              </div>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender_type === 'owner' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[70%] rounded-lg p-3 ${
-                      message.sender_type === 'owner'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <User className="h-3 w-3" />
-                      <span className="text-xs font-medium">
-                        {message.sender_type === 'owner' ? 'Horse Owner' : 'Interested Buyer'}
-                      </span>
-                    </div>
-                    <p className="text-sm">{message.content}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        message.sender_type === 'owner'
-                          ? 'text-primary-foreground/70'
-                          : 'text-muted-foreground'
-                      }`}
-                    >
-                      {new Date(message.created_at).toLocaleDateString()} {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-            <div ref={messagesEndRef} />
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center text-muted-foreground py-8">
+            No messages yet. Start the conversation!
           </div>
-        </ScrollArea>
+        ) : (
+          messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.sender_type === 'customer' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                  message.sender_type === 'customer'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted'
+                }`}
+              >
+                <p className="text-sm">{message.content}</p>
+                <p className="text-xs opacity-70 mt-1">
+                  {new Date(message.created_at).toLocaleTimeString()}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+        <div ref={messagesEndRef} />
+      </div>
 
-        {/* Message Input */}
-        <form onSubmit={handleSendMessage} className="flex gap-2 mt-4">
+      {/* Message Input */}
+      <div className="border-t p-4">
+        <div className="flex gap-2">
           <Input
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             disabled={sendMessageMutation.isPending}
-            className="flex-1"
           />
-          <Button
-            type="submit"
+          <Button 
+            onClick={handleSendMessage}
             disabled={!newMessage.trim() || sendMessageMutation.isPending}
             size="sm"
           >
             <Send className="h-4 w-4" />
           </Button>
-        </form>
-      </CardContent>
+        </div>
+      </div>
     </div>
   );
 }

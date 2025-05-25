@@ -25,14 +25,18 @@ export function MessageButton({
 
   const startConversationMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest('/api/conversations', {
+      const response = await fetch('/api/conversations', {
         method: 'POST',
-        body: {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           customer_id: customerId,
           owner_id: ownerId,
           horse_id: horseId,
-        },
+        }),
       });
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
