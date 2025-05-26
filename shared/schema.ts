@@ -39,11 +39,6 @@ export const users = pgTable("users", {
   subscription_plan: text("subscription_plan"),
   subscription_end_date: timestamp("subscription_end_date"),
   
-  // Email verification fields
-  email_verified: boolean("email_verified").default(false),
-  verification_token: text("verification_token"),
-  verification_token_expires: timestamp("verification_token_expires"),
-  
   created_at: timestamp("created_at").defaultNow(),
 });
 
