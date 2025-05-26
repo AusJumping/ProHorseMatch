@@ -318,7 +318,7 @@ export default function Messages() {
                             <p className={`text-xs mt-1 ${
                               isMyMessage ? 'text-blue-100' : 'text-gray-500'
                             }`}>
-                              {formatDistanceToNow(new Date(message.created_at!), { addSuffix: true })}
+                              {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'just now'}
                             </p>
                           </div>
                         </div>
