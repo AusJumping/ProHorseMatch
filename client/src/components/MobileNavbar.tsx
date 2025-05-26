@@ -1,10 +1,11 @@
 import { useLocation } from "wouter";
 import { 
   Home, Heart, Filter, User, List, CreditCard, 
-  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings
+  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings, MessageSquare
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Sheet, 
   SheetContent, 
@@ -27,6 +28,13 @@ const MobileNavbar = () => {
   console.log("MobileNavbar - Auth state:", { isAuthenticated, isSelling: user?.is_selling });
   
   const isOwner = user?.is_selling;
+
+  // Fetch unread message count for authenticated users
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['/api/messages/unread'],
+    enabled: isAuthenticated,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
   const handleLogout = async () => {
     try {
@@ -82,6 +90,26 @@ const MobileNavbar = () => {
             >
               <List className="mr-3 h-5 w-5" />
               <span>My Horses</span>
+            </Button>
+          </SheetClose>
+        )}
+        
+        {isAuthenticated && (
+          <SheetClose asChild>
+            <Button 
+              variant="ghost" 
+              className={`justify-start h-12 ${location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+              onClick={() => navigate("/messages")}
+            >
+              <div className="relative mr-3">
+                <MessageSquare className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </div>
+              <span>Messages</span>
             </Button>
           </SheetClose>
         )}
