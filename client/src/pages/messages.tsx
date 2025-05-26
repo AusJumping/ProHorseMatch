@@ -175,11 +175,11 @@ export default function Messages() {
   };
 
   const getOtherPersonName = (conversation: ConversationWithDetails) => {
-    if (!conversation.otherUser) return "Contact";
+    if (!conversation.otherUser) return "";
     return conversation.otherUser.name || 
            conversation.otherUser.business_name || 
            conversation.otherUser.contact_name || 
-           "Contact";
+           "";
   };
 
   const getInitials = (name: string) => {
@@ -331,7 +331,7 @@ export default function Messages() {
                         {selectedConversation.horse?.name || 'Horse'}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Conversation with {getOtherPersonName(selectedConversation)}
+                        Horse conversation
                       </p>
                     </div>
                   </div>
