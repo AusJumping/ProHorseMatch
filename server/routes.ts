@@ -2297,10 +2297,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Update conversation last message time
+      // Update conversation last message time and increment unread count
+      const currentUnreadCount = conversation.unread_count || 0;
       await storage.updateConversation(conversation.id, {
         last_message_time: new Date(),
-        last_message_id: newMessage.id
+        last_message_id: newMessage.id,
+        unread_count: currentUnreadCount + 1
       });
 
       console.log("Message created successfully:", newMessage.id);
@@ -2355,6 +2357,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error creating conversation:", error);
       res.status(500).json({ 
         message: "Internal server error",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Mark conversation as read (reset unread count)
+  app.patch("/api/conversations/:conversationId/read", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const userId = req.session.userId;
+
+      // Get the conversation to verify ownership
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Verify user has access to this conversation
+      if (userId !== conversation.customer_id && userId !== conversation.owner_id) {
+        return res.status(403).json({ message: "Access denied to this conversation" });
+      }
+
+      // Reset unread count when user views conversation
+      const updatedConversation = await storage.updateConversation(conversationId, { unread_count: 0 });
+      res.json(updatedConversation);
+    } catch (error) {
+      console.error("Error marking conversation as read:", error);
+      res.status(500).json({ 
+        message: "Failed to mark conversation as read",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
