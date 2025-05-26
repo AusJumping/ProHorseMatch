@@ -47,6 +47,11 @@ export default function Messages() {
     refetchInterval: 2000, // Refresh every 2 seconds for real-time feel
   });
 
+  // Debug logging
+  console.log("Selected conversation:", selectedConversation);
+  console.log("Messages data:", messages);
+  console.log("Messages loading:", messagesLoading);
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData: {
