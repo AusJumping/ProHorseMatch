@@ -411,8 +411,8 @@ export default function SubscriptionPage() {
         duration: isMobile ? 2000 : 6000, // 2 seconds on mobile, 6 seconds on desktop
       });
       
-      // Always redirect to filter page regardless of subscription type
-      setTimeout(() => navigate('/filter'), 2000);
+      // Always redirect to browse page regardless of subscription type
+      setTimeout(() => navigate('/browse'), 2000);
     },
     onError: (error: Error) => {
       toast({
