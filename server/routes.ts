@@ -2179,19 +2179,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all conversations for the current user
   app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
     try {
+      // Disable caching to ensure fresh data
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+
       const userId = req.session.userId;
-      console.log(`💫 CONVERSATIONS API: Getting conversations for user ${userId}`);
+      const user = await storage.getUserById(userId);
       
-      // Direct database query to ensure we get the conversations
-      const allConversations = await db
-        .select()
-        .from(conversations)
-        .where(or(
-          eq(conversations.customer_id, userId),
-          eq(conversations.owner_id, userId)
-        ));
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      // Get conversations where user is either customer or owner
+      const customerConversations = await storage.getConversationsByCustomerId(userId);
+      const ownerConversations = await storage.getConversationsByOwnerId(userId);
       
-      console.log(`💫 CONVERSATIONS API: Found ${allConversations.length} conversations:`, allConversations);
+      // Combine and deduplicate conversations
+      const allConversations = [...customerConversations, ...ownerConversations];
+      const uniqueConversations = allConversations.filter((conv, index, self) => 
+        index === self.findIndex((c) => c.id === conv.id)
+      );
+      
+      conversations = uniqueConversations;
 
       // Enhance conversations with horse details
       const conversationsWithHorses = await Promise.all(

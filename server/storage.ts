@@ -1181,6 +1181,45 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
+  // User methods
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+  
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+  
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+  
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values({
+      ...user,
+      // Set defaults for role flags if not provided
+      is_searching: user.is_searching ?? false,
+      is_selling: user.is_selling ?? false
+    }).returning();
+    return newUser;
+  }
+  
+  async updateUser(id: number, update: Partial<User>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set(update)
+      .where(eq(users.id, id))
+      .returning();
+    
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+    
+    return updatedUser;
+  }
+  
   // Legacy methods for backward compatibility
   async getOwners(): Promise<Owner[]> {
     return await db.select().from(users).where(eq(users.is_selling, true));
@@ -1350,28 +1389,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConversationsByCustomerId(customerId: number): Promise<Conversation[]> {
-    console.log(`🚀 DatabaseStorage.getConversationsByCustomerId - searching for customerId: ${customerId}`);
-    try {
-      const result = await db
-        .select()
-        .from(conversations)
-        .where(eq(conversations.customer_id, customerId));
-      console.log(`🚀 DatabaseStorage.getConversationsByCustomerId - FOUND ${result.length} conversations for customer ${customerId}:`, result);
-      return result;
-    } catch (error) {
-      console.error(`🚀 DatabaseStorage.getConversationsByCustomerId - ERROR:`, error);
-      return [];
-    }
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.customer_id, customerId));
   }
 
   async getConversationsByOwnerId(ownerId: number): Promise<Conversation[]> {
-    console.log(`DatabaseStorage.getConversationsByOwnerId - searching for ownerId: ${ownerId}`);
-    const result = await db
+    return await db
       .select()
       .from(conversations)
       .where(eq(conversations.owner_id, ownerId));
-    console.log(`DatabaseStorage.getConversationsByOwnerId - found ${result.length} conversations:`, result);
-    return result;
   }
 
   async createConversation(conversation: InsertConversation): Promise<Conversation> {
