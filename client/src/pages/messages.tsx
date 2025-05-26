@@ -207,7 +207,7 @@ export default function Messages() {
         <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col border-r border-gray-100 bg-gray-50`}>
           <div className="p-6 border-b border-gray-200 bg-white">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <MessageCircle className="h-6 w-6 text-blue-600" />
+              <MessageCircle className="h-6 w-6 text-accent" />
               Messages
             </h2>
           </div>
@@ -227,8 +227,8 @@ export default function Messages() {
               </div>
             ) : !conversations || conversations.length === 0 ? (
               <div className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <MessageCircle className="h-10 w-10 text-blue-600" />
+                <div className="w-20 h-20 bg-gradient-to-br from-accent/10 to-accent/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <MessageCircle className="h-10 w-10 text-accent" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">No conversations yet</h3>
                 <p className="text-gray-600 text-sm max-w-xs mx-auto leading-relaxed">
@@ -313,7 +313,7 @@ export default function Messages() {
                     <ArrowLeft className="h-5 w-5" />
                   </Button>
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12 ring-2 ring-blue-100">
+                    <Avatar className="h-12 w-12 ring-2 ring-accent/20">
                       {selectedConversation.horse?.photos && selectedConversation.horse.photos.length > 0 ? (
                         <img 
                           src={selectedConversation.horse.photos[0]} 
@@ -321,7 +321,7 @@ export default function Messages() {
                           className="w-full h-full object-cover rounded-full"
                         />
                       ) : (
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-lg font-semibold">
+                        <AvatarFallback className="bg-gradient-to-br from-accent to-accent/80 text-white text-lg font-semibold">
                           {selectedConversation.horse?.name ? selectedConversation.horse.name.charAt(0).toUpperCase() : 'H'}
                         </AvatarFallback>
                       )}
@@ -406,9 +406,9 @@ export default function Messages() {
                 {isSending && (
                   <div className="flex items-center justify-center mt-3">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                      <div className="w-2 h-2 bg-accent rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
                     <span className="ml-3 text-sm text-gray-500">Sending...</span>
                   </div>
