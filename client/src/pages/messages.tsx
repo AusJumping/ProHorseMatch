@@ -43,6 +43,11 @@ export default function Messages() {
   // Fetch messages for selected conversation
   const { data: messages, isLoading: messagesLoading } = useQuery({
     queryKey: ['/api/conversations', selectedConversation?.customer_id, selectedConversation?.owner_id, selectedConversation?.horse_id, 'messages'],
+    queryFn: () => {
+      if (!selectedConversation) return Promise.resolve([]);
+      return fetch(`/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`)
+        .then(res => res.json());
+    },
     enabled: !!selectedConversation,
     refetchInterval: 2000, // Refresh every 2 seconds for real-time feel
   });
