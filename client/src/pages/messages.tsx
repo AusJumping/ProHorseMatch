@@ -250,7 +250,7 @@ export default function Messages() {
                       }
                     }}
                     className={`p-4 hover:bg-white cursor-pointer transition-all duration-200 group ${
-                      selectedConversation?.id === conversation.id ? 'bg-blue-50 border-r-4 border-blue-500' : 'hover:shadow-sm'
+                      selectedConversation?.id === conversation.id ? 'bg-accent/10 border-r-4 border-accent' : 'hover:shadow-sm'
                     }`}
                   >
                     <div className="flex items-center space-x-4">
@@ -263,7 +263,7 @@ export default function Messages() {
                               className="w-full h-full object-cover rounded-full"
                             />
                           ) : (
-                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-lg font-semibold">
+                            <AvatarFallback className="bg-gradient-to-br from-accent to-accent/80 text-white text-lg font-semibold">
                               {conversation.horse?.name ? conversation.horse.name.charAt(0).toUpperCase() : 'H'}
                             </AvatarFallback>
                           )}
@@ -276,7 +276,7 @@ export default function Messages() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="text-base font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                          <p className="text-base font-semibold text-gray-900 truncate group-hover:text-accent transition-colors">
                             {conversation.horse?.name || 'Horse'}
                           </p>
                           {conversation.last_message_time && (
@@ -362,13 +362,13 @@ export default function Messages() {
                           <div
                             className={`max-w-sm lg:max-w-md px-5 py-3 rounded-3xl shadow-sm transition-all duration-200 ${
                               isMyMessage
-                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                                ? 'bg-gradient-to-r from-accent to-accent/80 text-white'
                                 : 'bg-white text-gray-900 border border-gray-200 hover:shadow-md'
                             }`}
                           >
                             <p className="text-sm leading-relaxed">{message.content}</p>
                             <p className={`text-xs mt-2 ${
-                              isMyMessage ? 'text-blue-100' : 'text-gray-500'
+                              isMyMessage ? 'text-white/80' : 'text-gray-500'
                             }`}>
                               {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'just now'}
                             </p>
@@ -390,7 +390,7 @@ export default function Messages() {
                       onChange={(e) => setMessageText(e.target.value)}
                       onKeyPress={handleKeyPress}
                       placeholder="Type your message..."
-                      className="w-full py-3 px-4 pr-12 rounded-3xl border-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400 focus:ring-2 bg-gray-50 focus:bg-white transition-all duration-200"
+                      className="w-full py-3 px-4 pr-12 rounded-3xl border-2 border-gray-200 focus:border-accent focus:ring-accent focus:ring-2 bg-gray-50 focus:bg-white transition-all duration-200"
                       disabled={isSending}
                     />
                     <Button
