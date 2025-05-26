@@ -303,11 +303,25 @@ export default function Messages() {
                           <p className="text-base font-semibold text-gray-900 truncate group-hover:text-accent transition-colors">
                             {conversation.horse?.name || 'Horse'}
                           </p>
-                          {conversation.last_message_time && (
-                            <p className="text-xs text-gray-500 font-medium">
-                              {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
-                            </p>
-                          )}
+                          <div className="flex items-center space-x-2">
+                            {conversation.last_message_time && (
+                              <p className="text-xs text-gray-500 font-medium">
+                                {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
+                              </p>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteConversationMutation.mutate(conversation.id);
+                              }}
+                              disabled={deleteConversationMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
                           {getOtherPersonName(conversation)}
