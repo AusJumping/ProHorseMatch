@@ -1350,13 +1350,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConversationsByCustomerId(customerId: number): Promise<Conversation[]> {
-    console.log(`DatabaseStorage.getConversationsByCustomerId - searching for customerId: ${customerId}`);
-    const result = await db
-      .select()
-      .from(conversations)
-      .where(eq(conversations.customer_id, customerId));
-    console.log(`DatabaseStorage.getConversationsByCustomerId - found ${result.length} conversations:`, result);
-    return result;
+    console.log(`🚀 DatabaseStorage.getConversationsByCustomerId - searching for customerId: ${customerId}`);
+    try {
+      const result = await db
+        .select()
+        .from(conversations)
+        .where(eq(conversations.customer_id, customerId));
+      console.log(`🚀 DatabaseStorage.getConversationsByCustomerId - FOUND ${result.length} conversations for customer ${customerId}:`, result);
+      return result;
+    } catch (error) {
+      console.error(`🚀 DatabaseStorage.getConversationsByCustomerId - ERROR:`, error);
+      return [];
+    }
   }
 
   async getConversationsByOwnerId(ownerId: number): Promise<Conversation[]> {
