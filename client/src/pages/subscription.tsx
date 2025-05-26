@@ -470,8 +470,8 @@ export default function SubscriptionPage() {
       duration: 5000,
     });
     
-    // Redirect to filter page after successful payment
-    setTimeout(() => navigate('/filter'), 2000);
+    // Redirect to browse page after successful payment
+    setTimeout(() => navigate('/browse'), 2000);
   };
   
   // Handle donation
