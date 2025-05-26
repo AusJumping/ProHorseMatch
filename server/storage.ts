@@ -22,8 +22,11 @@ export interface IStorage {
   getUsers(): Promise<User[]>;
   getUserById(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<User>): Promise<User>;
+  verifyUserEmail(id: number): Promise<User>;
+  updateVerificationToken(id: number, token: string, expires: Date): Promise<User>;
   updateUserSubscription(id: number, subscriptionData: {
     stripe_customer_id?: string;
     stripe_subscription_id?: string;
@@ -994,6 +997,11 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
   
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [result] = await db.select().from(users).where(eq(users.email_verification_token, token));
+    return result;
+  }
+  
   async createUser(user: InsertUser): Promise<User> {
     const [result] = await db.insert(users).values(user).returning();
     return result;
@@ -1003,6 +1011,31 @@ export class DatabaseStorage implements IStorage {
     const [result] = await db
       .update(users)
       .set(update)
+      .where(eq(users.id, id))
+      .returning();
+    return result;
+  }
+  
+  async verifyUserEmail(id: number): Promise<User> {
+    const [result] = await db
+      .update(users)
+      .set({
+        email_verified: true,
+        email_verification_token: null,
+        email_verification_expires: null
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return result;
+  }
+  
+  async updateVerificationToken(id: number, token: string, expires: Date): Promise<User> {
+    const [result] = await db
+      .update(users)
+      .set({
+        email_verification_token: token,
+        email_verification_expires: expires
+      })
       .where(eq(users.id, id))
       .returning();
     return result;
