@@ -2179,20 +2179,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all conversations for the current user
   app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
     try {
+      console.log(`CONVERSATIONS ROUTE START: Request received for user session`);
+      
       // Disable caching to ensure fresh data
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
 
       const userId = req.session.userId;
+      console.log(`CONVERSATIONS ROUTE: Session userId: ${userId}`);
+      
       const user = await storage.getUserById(userId);
+      console.log(`CONVERSATIONS ROUTE: User lookup result:`, user);
       
       if (!user) {
+        console.log(`CONVERSATIONS ROUTE: User not found for userId ${userId}`);
         return res.status(401).json({ message: "User not found" });
       }
 
       // Get conversations where user is either customer or owner
       console.log(`CONVERSATIONS ROUTE: Fetching conversations for user ${userId}`);
+      
+      // Test database connection first
+      try {
+        const allConversationsTest = await storage.getConversations();
+        console.log(`CONVERSATIONS ROUTE: Total conversations in DB: ${allConversationsTest.length}`);
+      } catch (error) {
+        console.error(`CONVERSATIONS ROUTE: Error getting all conversations:`, error);
+      }
       
       let customerConversations = [];
       let ownerConversations = [];
