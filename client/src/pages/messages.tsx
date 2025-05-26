@@ -206,9 +206,9 @@ export default function Messages() {
         {/* Conversations Sidebar - Enhanced Design */}
         <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col border-r border-gray-100 bg-gray-50`}>
           <div className="p-6 border-b border-gray-200 bg-white">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3 font-sans">
               <MessageCircle className="h-6 w-6 text-accent" />
-              Messages
+              Conversation
             </h2>
           </div>
           
