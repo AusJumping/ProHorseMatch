@@ -206,10 +206,6 @@ export default function Messages() {
         {/* Conversations Sidebar - Enhanced Design */}
         <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col border-r border-gray-100 bg-gray-50`}>
           <div className="p-6 border-b border-gray-200 bg-white">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <MessageCircle className="h-6 w-6 text-accent" />
-              Messages
-            </h2>
           </div>
           
           <ScrollArea className="flex-1">
@@ -419,8 +415,8 @@ export default function Messages() {
             <div className="flex-1 flex items-center justify-center bg-gray-50">
               <div className="text-center">
                 <MessageCircle className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
-                <p className="text-gray-600">Choose a conversation from the sidebar to start messaging.</p>
+                <h3 className="text-sm font-medium text-gray-900 mb-2 font-sans">Select a conversation</h3>
+                <p className="text-xs text-gray-600 font-sans">Choose a conversation from the sidebar to start messaging.</p>
               </div>
             </div>
           )}
