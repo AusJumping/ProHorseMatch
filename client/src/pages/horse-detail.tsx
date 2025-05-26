@@ -29,6 +29,9 @@ export default function HorseDetail() {
     queryKey: [`/api/horses/${params?.id}`],
     enabled: !!params?.id,
   });
+  
+  // Check if the current user owns this horse
+  const isOwner = user && horse && user.id === horse.owner_id;
 
   // Check if this horse is in the user's favorites
   useEffect(() => {
@@ -322,8 +325,8 @@ export default function HorseDetail() {
             
             {/* No price or buy now button as requested */}
 
-            {/* Action Buttons */}
-            {!isMessageOpen && (
+            {/* Action Buttons - Only show if not the owner of this horse */}
+            {!isMessageOpen && !isOwner && (
               <div className="flex gap-3 mt-auto">
                 <Button 
                   variant={isSaved ? "outline" : "default"}
@@ -339,6 +342,16 @@ export default function HorseDetail() {
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Contact Seller
                 </Button>
+              </div>
+            )}
+            
+            {/* Owner message - Show when viewing your own horse */}
+            {isOwner && (
+              <div className="mt-auto">
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 text-center">
+                  <p className="text-accent font-medium">This is your horse listing</p>
+                  <p className="text-sm text-gray-600 mt-1">You can edit or manage this listing from your dashboard</p>
+                </div>
               </div>
             )}
             
