@@ -342,7 +342,7 @@ export default function Messages() {
                     {[1, 2, 3].map(i => (
                       <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-sm p-4 rounded-3xl animate-pulse shadow-sm ${
-                          i % 2 === 0 ? 'bg-blue-100' : 'bg-white border border-gray-200'
+                          i % 2 === 0 ? 'bg-accent/10' : 'bg-white border border-gray-200'
                         }`}>
                           <div className="h-4 bg-gray-300 rounded-lg w-32 mb-2"></div>
                           <div className="h-3 bg-gray-200 rounded-lg w-16"></div>
@@ -397,7 +397,7 @@ export default function Messages() {
                       onClick={handleSendMessage}
                       disabled={!messageText.trim() || isSending}
                       size="sm"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg transition-all duration-200 flex items-center justify-center"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-accent to-accent/80 hover:from-accent/80 hover:to-accent text-white shadow-lg transition-all duration-200 flex items-center justify-center"
                     >
                       <Send className="h-4 w-4" />
                     </Button>
