@@ -2179,6 +2179,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all conversations for the current user
   app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
     try {
+      // Disable caching to ensure fresh data
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
+
       const userId = req.session.userId;
       const user = await storage.getUserById(userId);
       
