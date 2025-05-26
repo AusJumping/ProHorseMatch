@@ -230,9 +230,9 @@ export default function Messages() {
                   >
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-12 w-12">
-                        {conversation.horse?.images && conversation.horse.images.length > 0 ? (
+                        {conversation.horse?.photos && conversation.horse.photos.length > 0 ? (
                           <img 
-                            src={conversation.horse.images[0]} 
+                            src={conversation.horse.photos[0]} 
                             alt={conversation.horse.name}
                             className="w-full h-full object-cover rounded-full"
                           />
