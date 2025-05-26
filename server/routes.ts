@@ -2178,22 +2178,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get all conversations for the current user
   app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    console.log(`🔥🔥🔥 CONVERSATIONS ENDPOINT HIT - DEBUG MODE ACTIVATED 🔥🔥🔥`);
     try {
+      console.log(`🔥 CONVERSATIONS ROUTE START: Request received for user session`);
+      
       // Disable caching to ensure fresh data
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
 
       const userId = req.session.userId;
+      console.log(`CONVERSATIONS ROUTE: Session userId: ${userId}`);
+      
       const user = await storage.getUserById(userId);
+      console.log(`CONVERSATIONS ROUTE: User lookup result:`, user);
       
       if (!user) {
+        console.log(`CONVERSATIONS ROUTE: User not found for userId ${userId}`);
         return res.status(401).json({ message: "User not found" });
       }
 
       // Get conversations where user is either customer or owner
-      const customerConversations = await storage.getConversationsByCustomerId(userId);
-      const ownerConversations = await storage.getConversationsByOwnerId(userId);
+      console.log(`CONVERSATIONS ROUTE: Fetching conversations for user ${userId}`);
+      
+      // Test database connection first
+      try {
+        const allConversationsTest = await storage.getConversations();
+        console.log(`CONVERSATIONS ROUTE: Total conversations in DB: ${allConversationsTest.length}`);
+      } catch (error) {
+        console.error(`CONVERSATIONS ROUTE: Error getting all conversations:`, error);
+      }
+      
+      let customerConversations = [];
+      let ownerConversations = [];
+      
+      try {
+        console.log(`CONVERSATIONS ROUTE: About to call getConversationsByCustomerId(${userId})`);
+        customerConversations = await storage.getConversationsByCustomerId(userId);
+        console.log(`CONVERSATIONS ROUTE: Customer conversations result:`, customerConversations);
+      } catch (error) {
+        console.error(`CONVERSATIONS ROUTE: Error getting customer conversations:`, error);
+      }
+      
+      try {
+        console.log(`CONVERSATIONS ROUTE: About to call getConversationsByOwnerId(${userId})`);
+        ownerConversations = await storage.getConversationsByOwnerId(userId);
+        console.log(`CONVERSATIONS ROUTE: Owner conversations result:`, ownerConversations);
+      } catch (error) {
+        console.error(`CONVERSATIONS ROUTE: Error getting owner conversations:`, error);
+      }
       
       // Combine and deduplicate conversations
       const allConversations = [...customerConversations, ...ownerConversations];
@@ -2201,7 +2234,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         index === self.findIndex((c) => c.id === conv.id)
       );
       
-      conversations = uniqueConversations;
+      console.log(`Final conversations for user ${userId}:`, uniqueConversations);
+      const conversations = uniqueConversations;
 
       // Enhance conversations with horse details
       const conversationsWithHorses = await Promise.all(
