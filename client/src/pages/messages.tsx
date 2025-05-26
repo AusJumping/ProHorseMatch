@@ -330,9 +330,6 @@ export default function Messages() {
                       <p className="font-bold text-gray-900 text-lg">
                         {selectedConversation.horse?.name || 'Horse'}
                       </p>
-                      <p className="text-sm text-gray-600">
-                        Horse conversation
-                      </p>
                     </div>
                   </div>
                 </div>
