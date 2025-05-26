@@ -32,6 +32,14 @@ export interface IStorage {
     subscription_end_date?: Date;
   }): Promise<User>;
   
+  // Email verification methods
+  async updateUserVerification(id: number, verificationData: {
+    is_email_verified?: boolean;
+    email_verification_token?: string;
+    email_verification_expires?: Date;
+  }): Promise<User>;
+  async getUserByVerificationToken(token: string): Promise<User | undefined>;
+  
   // Legacy methods for backward compatibility
   getOwnerById(id: number): Promise<Owner | undefined>;
   getOwnerByEmail(email: string): Promise<Owner | undefined>;
@@ -744,6 +752,25 @@ export class MemStorage implements IStorage {
     this.users.set(id, updatedUser);
     saveStorageToDisk();
     return updatedUser;
+  }
+  
+  // Email verification methods
+  async updateUserVerification(id: number, verificationData: {
+    is_email_verified?: boolean;
+    email_verification_token?: string;
+    email_verification_expires?: Date;
+  }): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) throw new Error("User not found");
+    
+    const updatedUser = { ...user, ...verificationData };
+    this.users.set(id, updatedUser);
+    saveStorageToDisk();
+    return updatedUser;
+  }
+  
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email_verification_token === token);
   }
   
   // Legacy Owner methods
