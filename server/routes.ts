@@ -2192,8 +2192,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get conversations where user is either customer or owner
+      console.log(`Fetching conversations for user ${userId}`);
       const customerConversations = await storage.getConversationsByCustomerId(userId);
       const ownerConversations = await storage.getConversationsByOwnerId(userId);
+      
+      console.log(`Customer conversations for user ${userId}:`, customerConversations);
+      console.log(`Owner conversations for user ${userId}:`, ownerConversations);
       
       // Combine and deduplicate conversations
       const allConversations = [...customerConversations, ...ownerConversations];
@@ -2201,7 +2205,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         index === self.findIndex((c) => c.id === conv.id)
       );
       
-      conversations = uniqueConversations;
+      console.log(`Final conversations for user ${userId}:`, uniqueConversations);
+      const conversations = uniqueConversations;
 
       // Enhance conversations with horse details
       const conversationsWithHorses = await Promise.all(
