@@ -3,6 +3,18 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Debug ALL incoming requests first
+app.use((req, res, next) => {
+  if (req.method === 'POST' && req.url === '/api/messages') {
+    console.log("🔍 RAW REQUEST TO /api/messages DETECTED");
+    console.log("Method:", req.method);
+    console.log("URL:", req.url);
+    console.log("Headers:", req.headers);
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
