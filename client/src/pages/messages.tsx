@@ -36,7 +36,7 @@ export default function Messages() {
   // Mark conversation as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: (conversationId: number) => 
-      apiRequest(`/api/conversations/${conversationId}/read`, 'PATCH'),
+      apiRequest('PATCH', `/api/conversations/${conversationId}/read`),
     onSuccess: () => {
       // Refresh conversations to update unread counts
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
