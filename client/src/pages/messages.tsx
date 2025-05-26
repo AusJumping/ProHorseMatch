@@ -239,10 +239,10 @@ export default function Messages() {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {getOtherUserName(conversation)}
+                          {conversation.horse?.name || 'Horse'}
                         </p>
                         <p className="text-xs text-gray-600 truncate">
-                          About: {conversation.horse?.name || 'Horse'}
+                          with {getOtherUserName(conversation)}
                         </p>
                         {conversation.last_message_time && (
                           <p className="text-xs text-gray-500">
