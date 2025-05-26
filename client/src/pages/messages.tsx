@@ -276,11 +276,11 @@ export default function Messages() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                          <p className="text-base font-semibold text-gray-900 truncate group-hover:text-accent transition-colors">
+                          <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-accent transition-colors font-sans">
                             {conversation.horse?.name || 'Horse'}
                           </p>
                           {conversation.last_message_time && (
-                            <p className="text-xs text-gray-500 font-medium">
+                            <p className="text-xs text-gray-500 font-medium font-sans">
                               {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
                             </p>
                           )}
@@ -327,7 +327,7 @@ export default function Messages() {
                       )}
                     </Avatar>
                     <div>
-                      <p className="font-bold text-gray-900 text-lg">
+                      <p className="font-semibold text-gray-900 text-sm font-sans">
                         {selectedConversation.horse?.name || 'Horse'}
                       </p>
                     </div>
@@ -366,8 +366,8 @@ export default function Messages() {
                                 : 'bg-white text-gray-900 border border-gray-200 hover:shadow-md'
                             }`}
                           >
-                            <p className="text-sm leading-relaxed">{message.content}</p>
-                            <p className={`text-xs mt-2 ${
+                            <p className="text-xs leading-relaxed font-sans">{message.content}</p>
+                            <p className={`text-xs mt-2 font-sans ${
                               isMyMessage ? 'text-white/80' : 'text-gray-500'
                             }`}>
                               {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'just now'}
