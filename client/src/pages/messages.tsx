@@ -174,12 +174,12 @@ export default function Messages() {
     }
   };
 
-  const getOtherUserName = (conversation: ConversationWithDetails) => {
-    if (!conversation.otherUser) return "Unknown User";
+  const getOtherPersonName = (conversation: ConversationWithDetails) => {
+    if (!conversation.otherUser) return "Contact";
     return conversation.otherUser.name || 
            conversation.otherUser.business_name || 
            conversation.otherUser.contact_name || 
-           "User";
+           "Contact";
   };
 
   const getInitials = (name: string) => {
@@ -284,7 +284,7 @@ export default function Messages() {
                           )}
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          {getOtherUserName(conversation)}
+                          {getOtherPersonName(conversation)}
                         </p>
                       </div>
                     </div>
@@ -329,7 +329,7 @@ export default function Messages() {
                         {selectedConversation.horse?.name || 'Horse'}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Conversation with {getOtherUserName(selectedConversation)}
+                        Conversation with {getOtherPersonName(selectedConversation)}
                       </p>
                     </div>
                   </div>
