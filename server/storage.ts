@@ -32,14 +32,6 @@ export interface IStorage {
     subscription_end_date?: Date;
   }): Promise<User>;
   
-  // Email verification methods
-  updateUserVerification(id: number, verificationData: {
-    is_email_verified?: boolean;
-    email_verification_token?: string;
-    email_verification_expires?: Date;
-  }): Promise<User>;
-  getUserByVerificationToken(token: string): Promise<User | undefined>;
-  
   // Legacy methods for backward compatibility
   getOwnerById(id: number): Promise<Owner | undefined>;
   getOwnerByEmail(email: string): Promise<Owner | undefined>;
@@ -754,25 +746,6 @@ export class MemStorage implements IStorage {
     return updatedUser;
   }
   
-  // Email verification methods
-  async updateUserVerification(id: number, verificationData: {
-    is_email_verified?: boolean;
-    email_verification_token?: string;
-    email_verification_expires?: Date;
-  }): Promise<User> {
-    const user = this.users.get(id);
-    if (!user) throw new Error("User not found");
-    
-    const updatedUser = { ...user, ...verificationData };
-    this.users.set(id, updatedUser);
-    saveStorageToDisk();
-    return updatedUser;
-  }
-  
-  async getUserByVerificationToken(token: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.email_verification_token === token);
-  }
-  
   // Legacy Owner methods
   async getOwners(): Promise<Owner[]> {
     return Array.from(this.users.values()).filter(user => user.is_selling);
@@ -1032,28 +1005,6 @@ export class DatabaseStorage implements IStorage {
       .set(update)
       .where(eq(users.id, id))
       .returning();
-    return result;
-  }
-
-  // Email verification methods
-  async updateUserVerification(id: number, verificationData: {
-    is_email_verified?: boolean;
-    email_verification_token?: string;
-    email_verification_expires?: Date;
-  }): Promise<User> {
-    const [result] = await db
-      .update(users)
-      .set(verificationData)
-      .where(eq(users.id, id))
-      .returning();
-    return result;
-  }
-  
-  async getUserByVerificationToken(token: string): Promise<User | undefined> {
-    const [result] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email_verification_token, token));
     return result;
   }
 
