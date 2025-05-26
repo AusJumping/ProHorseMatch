@@ -2191,14 +2191,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "User not found" });
       }
 
-      let conversations;
-      if (user.is_selling) {
-        // Owner sees conversations where they are the owner
-        conversations = await storage.getConversationsByOwnerId(userId);
-      } else {
-        // Customer sees conversations where they are the customer
-        conversations = await storage.getConversationsByCustomerId(userId);
-      }
+      // Get conversations where user is either customer or owner
+      const customerConversations = await storage.getConversationsByCustomerId(userId);
+      const ownerConversations = await storage.getConversationsByOwnerId(userId);
+      
+      // Combine and deduplicate conversations
+      const allConversations = [...customerConversations, ...ownerConversations];
+      const uniqueConversations = allConversations.filter((conv, index, self) => 
+        index === self.findIndex((c) => c.id === conv.id)
+      );
+      
+      conversations = uniqueConversations;
 
       // Enhance conversations with horse details
       const conversationsWithHorses = await Promise.all(
