@@ -237,7 +237,9 @@ export default function Messages() {
               </div>
             ) : (
               <div className="divide-y divide-gray-50">
-                {conversations && conversations.map((conversation: ConversationWithDetails) => (
+                {conversations && conversations
+                  .sort((a, b) => new Date(b.last_message_time || 0).getTime() - new Date(a.last_message_time || 0).getTime())
+                  .map((conversation: ConversationWithDetails) => (
                   <div
                     key={`${conversation.customer_id}-${conversation.owner_id}-${conversation.horse_id}`}
                     onClick={() => {
