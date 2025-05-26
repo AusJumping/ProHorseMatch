@@ -2174,26 +2174,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Delete Conversation Endpoint
   app.delete("/api/conversations/:id", isAuthenticated, async (req: any, res: Response) => {
+    console.log("🗑️ DELETE CONVERSATION ENDPOINT HIT - conversationId:", req.params.id);
     try {
       const conversationId = parseInt(req.params.id);
       const userId = req.session.userId;
+      
+      console.log("DELETE CONVERSATION: userId:", userId, "conversationId:", conversationId);
 
       // Verify user has access to this conversation
       const conversation = await storage.getConversationById(conversationId);
+      console.log("DELETE CONVERSATION: Found conversation:", conversation);
+      
       if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        console.log("DELETE CONVERSATION: Access denied");
         return res.status(403).json({ message: "Access denied" });
       }
 
       // Delete the conversation (this will also delete associated messages)
       const deleted = await storage.deleteConversation(conversationId);
+      console.log("DELETE CONVERSATION: Deletion result:", deleted);
 
       if (deleted) {
+        console.log("DELETE CONVERSATION: Success!");
         res.json({ success: true });
       } else {
+        console.log("DELETE CONVERSATION: Not found");
         res.status(404).json({ message: "Conversation not found" });
       }
     } catch (error) {
-      console.error("Error deleting conversation:", error);
+      console.error("DELETE CONVERSATION ERROR:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
