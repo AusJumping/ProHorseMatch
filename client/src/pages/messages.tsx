@@ -45,11 +45,8 @@ export default function Messages() {
 
   // Delete conversation mutation
   const deleteConversationMutation = useMutation({
-    mutationFn: async (conversationId: number) => {
-      return apiRequest(`/api/conversations/${conversationId}`, {
-        method: "DELETE",
-      });
-    },
+    mutationFn: (conversationId: number) => 
+      apiRequest('DELETE', `/api/conversations/${conversationId}`),
     onSuccess: (_, conversationId) => {
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       // If we deleted the selected conversation, clear selection
