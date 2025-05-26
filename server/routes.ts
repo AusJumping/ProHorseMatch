@@ -8,6 +8,12 @@ import fs from "fs";
 import Stripe from "stripe";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { 
+  sendVerificationEmail, 
+  sendWelcomeEmail, 
+  generateVerificationToken, 
+  getVerificationExpiry 
+} from "./emailService";
+import { 
   insertHorseSchema, 
   insertUserSchema,
   insertSellingUserSchema, 
@@ -2515,6 +2521,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to get unread count",
         error: error instanceof Error ? error.message : "Unknown error"
       });
+    }
+  });
+
+  // Email verification routes
+  app.post("/api/auth/send-verification", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.email_verified) {
+        return res.status(400).json({ message: "Email already verified" });
+      }
+
+      // Generate verification token
+      const verificationToken = generateVerificationToken();
+      const tokenExpiry = getVerificationExpiry();
+
+      // Update user with verification token
+      await storage.updateUserVerification(user.id, {
+        verification_token: verificationToken,
+        verification_token_expires: tokenExpiry
+      });
+
+      // Send verification email
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const emailSent = await sendVerificationEmail({
+        to: user.email,
+        name: user.name || user.business_name || "User",
+        verificationToken,
+        baseUrl
+      });
+
+      if (!emailSent) {
+        return res.status(500).json({ message: "Failed to send verification email" });
+      }
+
+      res.json({ 
+        message: "Verification email sent successfully",
+        email: user.email 
+      });
+    } catch (error) {
+      console.error("Error sending verification email:", error);
+      res.status(500).json({ message: "Failed to send verification email" });
+    }
+  });
+
+  app.get("/api/auth/verify-email", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: "Invalid verification token" });
+      }
+
+      // Find user by verification token
+      const user = await storage.getUserByVerificationToken(token);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid or expired verification token" });
+      }
+
+      // Check if token is expired
+      if (user.verification_token_expires && new Date() > user.verification_token_expires) {
+        return res.status(400).json({ message: "Verification token has expired" });
+      }
+
+      // Verify the user's email
+      await storage.updateUserVerification(user.id, {
+        email_verified: true,
+        verification_token: null,
+        verification_token_expires: null
+      });
+
+      // Send welcome email
+      await sendWelcomeEmail({
+        to: user.email,
+        name: user.name || user.business_name || "User"
+      });
+
+      res.json({ 
+        message: "Email verified successfully! Welcome to ProHorseMatch.",
+        verified: true 
+      });
+    } catch (error) {
+      console.error("Error verifying email:", error);
+      res.status(500).json({ message: "Failed to verify email" });
     }
   });
 

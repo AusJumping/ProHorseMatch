@@ -753,6 +753,25 @@ export class MemStorage implements IStorage {
     saveStorageToDisk();
     return updatedUser;
   }
+
+  // Email verification methods
+  async updateUserVerification(id: number, verificationData: {
+    email_verified?: boolean;
+    verification_token?: string | null;
+    verification_token_expires?: Date | null;
+  }): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) throw new Error("User not found");
+    
+    const updatedUser = { ...user, ...verificationData };
+    this.users.set(id, updatedUser);
+    saveStorageToDisk();
+    return updatedUser;
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.verification_token === token);
+  }
   
   // Legacy Owner methods
   async getOwners(): Promise<Owner[]> {
