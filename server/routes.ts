@@ -2178,8 +2178,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get all conversations for the current user
   app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    console.log(`🔥🔥🔥 CONVERSATIONS ENDPOINT HIT - DEBUG MODE ACTIVATED 🔥🔥🔥`);
     try {
-      console.log(`CONVERSATIONS ROUTE START: Request received for user session`);
+      console.log(`🔥 CONVERSATIONS ROUTE START: Request received for user session`);
       
       // Disable caching to ensure fresh data
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
