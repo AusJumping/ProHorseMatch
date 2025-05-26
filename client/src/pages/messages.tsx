@@ -233,16 +233,21 @@ export default function Messages() {
                   >
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-primary text-white text-sm">
-                          {getInitials(getOtherUserName(conversation))}
-                        </AvatarFallback>
+                        {conversation.horse?.images && conversation.horse.images.length > 0 ? (
+                          <img 
+                            src={conversation.horse.images[0]} 
+                            alt={conversation.horse.name}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <AvatarFallback className="bg-primary text-white text-sm">
+                            {conversation.horse?.name ? conversation.horse.name.charAt(0).toUpperCase() : 'H'}
+                          </AvatarFallback>
+                        )}
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {conversation.horse?.name || 'Horse'}
-                        </p>
-                        <p className="text-xs text-gray-600 truncate">
-                          with {getOtherUserName(conversation)}
                         </p>
                         {conversation.last_message_time && (
                           <p className="text-xs text-gray-500">

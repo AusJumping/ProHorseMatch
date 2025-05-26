@@ -2195,7 +2195,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conversations = await storage.getConversationsByCustomerId(userId);
       }
 
-      res.json(conversations);
+      // Enhance conversations with horse details
+      const conversationsWithHorses = await Promise.all(
+        conversations.map(async (conversation) => {
+          const horse = await storage.getHorseById(conversation.horse_id);
+          return {
+            ...conversation,
+            horse
+          };
+        })
+      );
+
+      res.json(conversationsWithHorses);
     } catch (error) {
       console.error("Error fetching conversations:", error);
       res.status(500).json({ 
