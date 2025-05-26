@@ -1,5 +1,6 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard, MessageCircle } from "lucide-react";
@@ -12,8 +13,18 @@ const Sidebar = () => {
   const { toast } = useToast();
   const { user, isAuthenticated, logout } = useAuth();
   
+  // Fetch conversations to calculate total unread messages for navigation badge
+  const { data: conversations = [] } = useQuery({
+    queryKey: ["/api/conversations"],
+    enabled: isAuthenticated && !!user,
+    refetchInterval: 5000, // Refresh every 5 seconds to check for new messages
+  });
 
-  
+  // Calculate total unread messages across all conversations
+  const totalUnreadMessages = conversations.reduce((total: number, conversation: any) => {
+    return total + (conversation.unread_count || 0);
+  }, 0);
+
   // Debug log with more details
   console.log("Sidebar - Auth state:", { isAuthenticated, user });
 
@@ -88,7 +99,7 @@ const Sidebar = () => {
           <li>
             <Button
               variant={location === "/messages" ? "default" : "ghost"}
-              className={`w-full justify-start px-5 py-3 ${
+              className={`w-full justify-start px-5 py-3 relative ${
                 location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
               }`}
               onClick={(e) => {
@@ -98,6 +109,14 @@ const Sidebar = () => {
             >
               <MessageCircle className="mr-3 h-5 w-5" />
               <span>Messages</span>
+              {totalUnreadMessages > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="ml-auto min-w-[20px] h-5 text-xs px-1.5 bg-red-500 hover:bg-red-500"
+                >
+                  {totalUnreadMessages}
+                </Badge>
+              )}
             </Button>
           </li>
 
