@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, User, MessageCircle } from "lucide-react";
+import { Send, ArrowLeft, User, MessageCircle, Trash2 } from "lucide-react";
 import { Message, Conversation, Horse } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 
@@ -41,6 +41,30 @@ export default function Messages() {
       // Refresh conversations to update unread counts
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
     },
+  });
+
+  // Delete conversation mutation
+  const deleteConversationMutation = useMutation({
+    mutationFn: (conversationId: number) => 
+      apiRequest('DELETE', `/api/conversations/${conversationId}`),
+    onSuccess: (_, conversationId) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      // If we deleted the selected conversation, clear selection
+      if (selectedConversation && selectedConversation.id === conversationId) {
+        setSelectedConversation(null);
+      }
+      toast({
+        title: "Conversation deleted",
+        description: "The conversation has been successfully deleted.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
   // Fetch conversations

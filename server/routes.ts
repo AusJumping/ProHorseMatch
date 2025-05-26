@@ -2172,6 +2172,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete Conversation Endpoint
+  app.delete("/api/conversations/:id", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const userId = req.session.userId;
+
+      // Verify user has access to this conversation
+      const conversation = await storage.getConversationById(conversationId);
+      if (!conversation || (conversation.customer_id !== userId && conversation.owner_id !== userId)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Delete the conversation (this will also delete associated messages)
+      const deleted = await storage.deleteConversation(conversationId);
+
+      if (deleted) {
+        res.json({ success: true });
+      } else {
+        res.status(404).json({ message: "Conversation not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting conversation:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // =============================================================================
   // MESSAGING ROUTES - Added carefully to avoid breaking existing functionality
   // =============================================================================
