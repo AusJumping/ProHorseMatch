@@ -202,34 +202,41 @@ export default function Messages() {
 
   return (
     <Layout pageTitle="Messages">
-      <div className="flex h-[calc(100vh-200px)] bg-white rounded-lg shadow-sm border">
-        {/* Conversations Sidebar - Facebook style */}
-        <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-gray-200`}>
-          <div className="p-4 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">Messages</h2>
+      <div className="flex h-[calc(100vh-180px)] bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+        {/* Conversations Sidebar - Enhanced Design */}
+        <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col border-r border-gray-100 bg-gray-50`}>
+          <div className="p-6 border-b border-gray-200 bg-white">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <MessageCircle className="h-6 w-6 text-blue-600" />
+              Messages
+            </h2>
           </div>
           
           <ScrollArea className="flex-1">
             {conversationsLoading ? (
-              <div className="p-4 space-y-4">
+              <div className="p-4 space-y-3">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="flex items-center space-x-3 animate-pulse">
-                    <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+                  <div key={i} className="flex items-center space-x-4 p-3 animate-pulse">
+                    <div className="w-14 h-14 bg-gray-200 rounded-full"></div>
                     <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-4 bg-gray-200 rounded-lg w-3/4"></div>
+                      <div className="h-3 bg-gray-200 rounded-lg w-1/2"></div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : !conversations || conversations.length === 0 ? (
               <div className="p-8 text-center">
-                <MessageCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
-                <p className="text-gray-600 text-sm">Start browsing horses to begin conversations with sellers.</p>
+                <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <MessageCircle className="h-10 w-10 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">No conversations yet</h3>
+                <p className="text-gray-600 text-sm max-w-xs mx-auto leading-relaxed">
+                  Start browsing horses to begin conversations with sellers and find your perfect match.
+                </p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-50">
                 {conversations && conversations.map((conversation: ConversationWithDetails) => (
                   <div
                     key={`${conversation.customer_id}-${conversation.owner_id}-${conversation.horse_id}`}
@@ -240,39 +247,46 @@ export default function Messages() {
                         markAsReadMutation.mutate(conversation.id);
                       }
                     }}
-                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                      selectedConversation?.id === conversation.id ? 'bg-blue-50' : ''
+                    className={`p-4 hover:bg-white cursor-pointer transition-all duration-200 group ${
+                      selectedConversation?.id === conversation.id ? 'bg-blue-50 border-r-4 border-blue-500' : 'hover:shadow-sm'
                     }`}
                   >
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
-                        {conversation.horse?.photos && conversation.horse.photos.length > 0 ? (
-                          <img 
-                            src={conversation.horse.photos[0]} 
-                            alt={conversation.horse.name}
-                            className="w-full h-full object-cover rounded-full"
-                          />
-                        ) : (
-                          <AvatarFallback className="bg-primary text-white text-sm">
-                            {conversation.horse?.name ? conversation.horse.name.charAt(0).toUpperCase() : 'H'}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
-                          {conversation.horse?.name || 'Horse'}
-                        </p>
-                        {conversation.last_message_time && (
-                          <p className="text-xs text-gray-500">
-                            {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
-                          </p>
+                    <div className="flex items-center space-x-4">
+                      <div className="relative">
+                        <Avatar className="h-14 w-14 ring-2 ring-white shadow-md">
+                          {conversation.horse?.photos && conversation.horse.photos.length > 0 ? (
+                            <img 
+                              src={conversation.horse.photos[0]} 
+                              alt={conversation.horse.name}
+                              className="w-full h-full object-cover rounded-full"
+                            />
+                          ) : (
+                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-lg font-semibold">
+                              {conversation.horse?.name ? conversation.horse.name.charAt(0).toUpperCase() : 'H'}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        {conversation.unread_count && conversation.unread_count > 0 && (
+                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                            {conversation.unread_count}
+                          </div>
                         )}
                       </div>
-                      {conversation.unread_count && conversation.unread_count > 0 && (
-                        <Badge variant="destructive" className="h-5 w-5 p-0 flex items-center justify-center text-xs">
-                          {conversation.unread_count}
-                        </Badge>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-base font-semibold text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                            {conversation.horse?.name || 'Horse'}
+                          </p>
+                          {conversation.last_message_time && (
+                            <p className="text-xs text-gray-500 font-medium">
+                              {formatDistanceToNow(new Date(conversation.last_message_time), { addSuffix: true })}
+                            </p>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {getOtherUserName(conversation)}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -281,47 +295,58 @@ export default function Messages() {
           </ScrollArea>
         </div>
 
-        {/* Chat Area - Facebook Messenger style */}
-        <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}>
+        {/* Chat Area - Enhanced Design */}
+        <div className={`${selectedConversation ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-gradient-to-b from-gray-50 to-white`}>
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-200 bg-white">
-                <div className="flex items-center space-x-3">
+              <div className="p-6 border-b border-gray-200 bg-white shadow-sm">
+                <div className="flex items-center space-x-4">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="md:hidden p-1"
+                    className="md:hidden p-2 hover:bg-gray-100 rounded-full"
                     onClick={() => setSelectedConversation(null)}
                   >
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="h-5 w-5" />
                   </Button>
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary text-white text-xs">
-                      {getInitials(getOtherUserName(selectedConversation))}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {getOtherUserName(selectedConversation)}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      Discussing: {selectedConversation.horse?.name || 'Horse'}
-                    </p>
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-12 w-12 ring-2 ring-blue-100">
+                      {selectedConversation.horse?.photos && selectedConversation.horse.photos.length > 0 ? (
+                        <img 
+                          src={selectedConversation.horse.photos[0]} 
+                          alt={selectedConversation.horse.name}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white text-lg font-semibold">
+                          {selectedConversation.horse?.name ? selectedConversation.horse.name.charAt(0).toUpperCase() : 'H'}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div>
+                      <p className="font-bold text-gray-900 text-lg">
+                        {selectedConversation.horse?.name || 'Horse'}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Conversation with {getOtherUserName(selectedConversation)}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Messages Area */}
-              <ScrollArea className="flex-1 p-4">
+              <ScrollArea className="flex-1 p-6">
                 {messagesLoading ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {[1, 2, 3].map(i => (
                       <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs p-3 rounded-lg animate-pulse ${
-                          i % 2 === 0 ? 'bg-gray-200' : 'bg-gray-100'
+                        <div className={`max-w-sm p-4 rounded-3xl animate-pulse shadow-sm ${
+                          i % 2 === 0 ? 'bg-blue-100' : 'bg-white border border-gray-200'
                         }`}>
-                          <div className="h-4 bg-gray-300 rounded w-24"></div>
+                          <div className="h-4 bg-gray-300 rounded-lg w-32 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded-lg w-16"></div>
                         </div>
                       </div>
                     ))}
@@ -333,17 +358,17 @@ export default function Messages() {
                       return (
                         <div
                           key={message.id}
-                          className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'}`}
+                          className={`flex ${isMyMessage ? 'justify-end' : 'justify-start'} group`}
                         >
                           <div
-                            className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                            className={`max-w-sm lg:max-w-md px-5 py-3 rounded-3xl shadow-sm transition-all duration-200 ${
                               isMyMessage
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-100 text-gray-900'
+                                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                                : 'bg-white text-gray-900 border border-gray-200 hover:shadow-md'
                             }`}
                           >
-                            <p className="text-sm">{message.content}</p>
-                            <p className={`text-xs mt-1 ${
+                            <p className="text-sm leading-relaxed">{message.content}</p>
+                            <p className={`text-xs mt-2 ${
                               isMyMessage ? 'text-blue-100' : 'text-gray-500'
                             }`}>
                               {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'just now'}
@@ -358,25 +383,37 @@ export default function Messages() {
               </ScrollArea>
 
               {/* Message Input */}
-              <div className="p-4 border-t border-gray-200 bg-white">
-                <div className="flex space-x-2">
-                  <Input
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Type a message..."
-                    className="flex-1 rounded-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    disabled={isSending}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!messageText.trim() || isSending}
-                    size="sm"
-                    className="rounded-full bg-blue-500 hover:bg-blue-600 text-white px-4"
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+              <div className="p-6 border-t border-gray-200 bg-white">
+                <div className="flex items-end space-x-4">
+                  <div className="flex-1 relative">
+                    <Input
+                      value={messageText}
+                      onChange={(e) => setMessageText(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Type your message..."
+                      className="w-full py-3 px-4 pr-12 rounded-3xl border-2 border-gray-200 focus:border-blue-400 focus:ring-blue-400 focus:ring-2 bg-gray-50 focus:bg-white transition-all duration-200"
+                      disabled={isSending}
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!messageText.trim() || isSending}
+                      size="sm"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg transition-all duration-200 flex items-center justify-center"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
+                {isSending && (
+                  <div className="flex items-center justify-center mt-3">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                    <span className="ml-3 text-sm text-gray-500">Sending...</span>
+                  </div>
+                )}
               </div>
             </>
           ) : (
