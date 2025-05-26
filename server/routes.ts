@@ -2192,12 +2192,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get conversations where user is either customer or owner
-      console.log(`Fetching conversations for user ${userId}`);
-      const customerConversations = await storage.getConversationsByCustomerId(userId);
-      const ownerConversations = await storage.getConversationsByOwnerId(userId);
+      console.log(`CONVERSATIONS ROUTE: Fetching conversations for user ${userId}`);
       
-      console.log(`Customer conversations for user ${userId}:`, customerConversations);
-      console.log(`Owner conversations for user ${userId}:`, ownerConversations);
+      let customerConversations = [];
+      let ownerConversations = [];
+      
+      try {
+        console.log(`CONVERSATIONS ROUTE: About to call getConversationsByCustomerId(${userId})`);
+        customerConversations = await storage.getConversationsByCustomerId(userId);
+        console.log(`CONVERSATIONS ROUTE: Customer conversations result:`, customerConversations);
+      } catch (error) {
+        console.error(`CONVERSATIONS ROUTE: Error getting customer conversations:`, error);
+      }
+      
+      try {
+        console.log(`CONVERSATIONS ROUTE: About to call getConversationsByOwnerId(${userId})`);
+        ownerConversations = await storage.getConversationsByOwnerId(userId);
+        console.log(`CONVERSATIONS ROUTE: Owner conversations result:`, ownerConversations);
+      } catch (error) {
+        console.error(`CONVERSATIONS ROUTE: Error getting owner conversations:`, error);
+      }
       
       // Combine and deduplicate conversations
       const allConversations = [...customerConversations, ...ownerConversations];
