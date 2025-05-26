@@ -33,12 +33,12 @@ export interface IStorage {
   }): Promise<User>;
   
   // Email verification methods
-  async updateUserVerification(id: number, verificationData: {
+  updateUserVerification(id: number, verificationData: {
     is_email_verified?: boolean;
     email_verification_token?: string;
     email_verification_expires?: Date;
   }): Promise<User>;
-  async getUserByVerificationToken(token: string): Promise<User | undefined>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
   
   // Legacy methods for backward compatibility
   getOwnerById(id: number): Promise<Owner | undefined>;
@@ -1032,6 +1032,28 @@ export class DatabaseStorage implements IStorage {
       .set(update)
       .where(eq(users.id, id))
       .returning();
+    return result;
+  }
+
+  // Email verification methods
+  async updateUserVerification(id: number, verificationData: {
+    is_email_verified?: boolean;
+    email_verification_token?: string;
+    email_verification_expires?: Date;
+  }): Promise<User> {
+    const [result] = await db
+      .update(users)
+      .set(verificationData)
+      .where(eq(users.id, id))
+      .returning();
+    return result;
+  }
+  
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [result] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email_verification_token, token));
     return result;
   }
 
