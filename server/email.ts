@@ -40,7 +40,7 @@ export async function sendVerificationEmail(
   
   const emailParams: EmailParams = {
     to: email,
-    from: 'noreply@prohorsematch.com', // You'll need to verify this domain with SendGrid
+    from: 'info@australianjumping.com.au', // Verified SendGrid sender address
     subject: 'Welcome to ProHorseMatch - Please verify your email',
     text: `Hi ${userName},
 
