@@ -411,8 +411,8 @@ export default function SubscriptionPage() {
         duration: isMobile ? 2000 : 6000, // 2 seconds on mobile, 6 seconds on desktop
       });
       
-      // Always redirect to filter page regardless of subscription type
-      setTimeout(() => navigate('/filter'), 2000);
+      // Always redirect to browse page regardless of subscription type
+      setTimeout(() => navigate('/browse'), 2000);
     },
     onError: (error: Error) => {
       toast({
@@ -470,8 +470,8 @@ export default function SubscriptionPage() {
       duration: 5000,
     });
     
-    // Redirect to filter page after successful payment
-    setTimeout(() => navigate('/filter'), 2000);
+    // Redirect to browse page after successful payment
+    setTimeout(() => navigate('/browse'), 2000);
   };
   
   // Handle donation
