@@ -268,7 +268,7 @@ export default function Messages() {
                             </AvatarFallback>
                           )}
                         </Avatar>
-                        {conversation.unread_count && conversation.unread_count > 0 && (
+                        {conversation.unread_count > 0 && (
                           <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
                             {conversation.unread_count}
                           </div>
