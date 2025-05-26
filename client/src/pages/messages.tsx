@@ -33,6 +33,16 @@ export default function Messages() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
+  // Mark conversation as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: (conversationId: number) => 
+      apiRequest(`/api/conversations/${conversationId}/read`, 'PATCH'),
+    onSuccess: () => {
+      // Refresh conversations to update unread counts
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+    },
+  });
+
   // Fetch conversations
   const { data: conversations, isLoading: conversationsLoading } = useQuery({
     queryKey: ['/api/conversations'],
@@ -223,7 +233,13 @@ export default function Messages() {
                 {conversations && conversations.map((conversation: ConversationWithDetails) => (
                   <div
                     key={`${conversation.customer_id}-${conversation.owner_id}-${conversation.horse_id}`}
-                    onClick={() => setSelectedConversation(conversation)}
+                    onClick={() => {
+                      setSelectedConversation(conversation);
+                      // Mark conversation as read when opened if it has unread messages
+                      if (conversation.unread_count && conversation.unread_count > 0) {
+                        markAsReadMutation.mutate(conversation.id);
+                      }
+                    }}
                     className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
                       selectedConversation?.id === conversation.id ? 'bg-blue-50' : ''
                     }`}
