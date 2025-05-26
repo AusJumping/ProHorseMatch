@@ -32,6 +32,11 @@ export const users = pgTable("users", {
   price_range_max: integer("price_range_max"),
   currency: text("currency"),
   
+  // Email verification fields
+  email_verified: boolean("email_verified").default(false),
+  email_verification_token: text("email_verification_token"),
+  email_verification_expires: timestamp("email_verification_expires"),
+  
   // Subscription fields
   stripe_customer_id: text("stripe_customer_id"),
   stripe_subscription_id: text("stripe_subscription_id"),

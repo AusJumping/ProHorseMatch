@@ -7,6 +7,8 @@ import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
+import { sendVerificationEmail } from "./email";
+import { generateVerificationToken, isTokenExpired, getTokenExpirationDate } from "./auth-utils";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -190,21 +192,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email already in use" });
       }
       
+      // Generate verification token
+      const verificationToken = generateVerificationToken();
+      const verificationExpires = getTokenExpirationDate();
+      
       // In a real app, we would hash the password here
       const user = await storage.createUser({
         ...validatedData,
-        is_searching: true
+        is_searching: true,
+        email_verified: false,
+        email_verification_token: verificationToken,
+        email_verification_expires: verificationExpires
       });
       
-      // Set user session
-      req.session.userId = user.id;
+      // Send verification email
+      try {
+        const emailSent = await sendVerificationEmail(
+          user.email, 
+          verificationToken, 
+          user.name || 'Horse Enthusiast'
+        );
+        
+        if (!emailSent) {
+          console.error("Failed to send verification email to:", user.email);
+        }
+      } catch (emailError) {
+        console.error("Email sending error:", emailError);
+      }
       
       return res.status(201).json({ 
         id: user.id,
         name: user.name,
         email: user.email,
         is_searching: true,
-        is_selling: false
+        is_selling: false,
+        email_verified: false,
+        message: "Registration successful! Please check your email for verification instructions."
       });
     } catch (error) {
       console.error("Register searching user error:", error);
@@ -222,14 +245,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email already in use" });
       }
       
+      // Generate verification token
+      const verificationToken = generateVerificationToken();
+      const verificationExpires = getTokenExpirationDate();
+      
       // In a real app, we would hash the password here
       const user = await storage.createUser({
         ...validatedData,
-        is_selling: true
+        is_selling: true,
+        email_verified: false,
+        email_verification_token: verificationToken,
+        email_verification_expires: verificationExpires
       });
       
-      // Set user session
-      req.session.userId = user.id;
+      // Send verification email
+      try {
+        const emailSent = await sendVerificationEmail(
+          user.email, 
+          verificationToken, 
+          user.contact_name || user.business_name || 'Horse Professional'
+        );
+        
+        if (!emailSent) {
+          console.error("Failed to send verification email to:", user.email);
+        }
+      } catch (emailError) {
+        console.error("Email sending error:", emailError);
+      }
       
       return res.status(201).json({ 
         id: user.id,
@@ -237,7 +279,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         contact_name: user.contact_name,
         email: user.email,
         is_searching: false,
-        is_selling: true
+        is_selling: true,
+        email_verified: false,
+        message: "Registration successful! Please check your email for verification instructions."
       });
     } catch (error) {
       console.error("Register selling user error:", error);
