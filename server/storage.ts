@@ -32,6 +32,14 @@ export interface IStorage {
     subscription_end_date?: Date;
   }): Promise<User>;
   
+  // Email verification methods
+  updateUserVerification(id: number, verificationData: {
+    email_verified?: boolean;
+    verification_token?: string | null;
+    verification_token_expires?: Date | null;
+  }): Promise<User>;
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  
   // Legacy methods for backward compatibility
   getOwnerById(id: number): Promise<Owner | undefined>;
   getOwnerByEmail(email: string): Promise<Owner | undefined>;
@@ -1025,6 +1033,33 @@ export class DatabaseStorage implements IStorage {
       throw new Error(`User with ID ${id} not found`);
     }
     
+    return result;
+  }
+
+  // Email verification methods
+  async updateUserVerification(id: number, verificationData: {
+    email_verified?: boolean;
+    verification_token?: string | null;
+    verification_token_expires?: Date | null;
+  }): Promise<User> {
+    const [result] = await db
+      .update(users)
+      .set(verificationData)
+      .where(eq(users.id, id))
+      .returning();
+    
+    if (!result) {
+      throw new Error(`User with ID ${id} not found`);
+    }
+    
+    return result;
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [result] = await db
+      .select()
+      .from(users)
+      .where(eq(users.verification_token, token));
     return result;
   }
   // Horse methods
