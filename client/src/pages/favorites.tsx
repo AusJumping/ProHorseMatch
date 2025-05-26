@@ -168,7 +168,7 @@ export default function Favorites() {
               onClick={(e) => {
                 e.preventDefault(); // Prevent any default behavior
                 // Use the most direct navigation approach to avoid any issues with auth state
-                window.location.href = "/browse";
+                window.location.href = "/filter";
               }}
             >
               Discover Horses

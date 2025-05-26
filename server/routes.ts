@@ -7,8 +7,6 @@ import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
-import { sendVerificationEmail } from "./email";
-import { generateVerificationToken, isTokenExpired, getTokenExpirationDate } from "./auth-utils";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -192,42 +190,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email already in use" });
       }
       
-      // Generate verification token
-      const verificationToken = generateVerificationToken();
-      const verificationExpires = getTokenExpirationDate();
-      
       // In a real app, we would hash the password here
       const user = await storage.createUser({
         ...validatedData,
-        is_searching: true,
-        email_verified: false,
-        email_verification_token: verificationToken,
-        email_verification_expires: verificationExpires
+        is_searching: true
       });
       
-      // Send verification email
-      try {
-        const emailSent = await sendVerificationEmail(
-          user.email, 
-          verificationToken, 
-          user.name || 'Horse Enthusiast'
-        );
-        
-        if (!emailSent) {
-          console.error("Failed to send verification email to:", user.email);
-        }
-      } catch (emailError) {
-        console.error("Email sending error:", emailError);
-      }
+      // Set user session
+      req.session.userId = user.id;
       
       return res.status(201).json({ 
         id: user.id,
         name: user.name,
         email: user.email,
         is_searching: true,
-        is_selling: false,
-        email_verified: false,
-        message: "Registration successful! Please check your email for verification instructions."
+        is_selling: false
       });
     } catch (error) {
       console.error("Register searching user error:", error);
@@ -245,33 +222,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email already in use" });
       }
       
-      // Generate verification token
-      const verificationToken = generateVerificationToken();
-      const verificationExpires = getTokenExpirationDate();
-      
       // In a real app, we would hash the password here
       const user = await storage.createUser({
         ...validatedData,
-        is_selling: true,
-        email_verified: false,
-        email_verification_token: verificationToken,
-        email_verification_expires: verificationExpires
+        is_selling: true
       });
       
-      // Send verification email
-      try {
-        const emailSent = await sendVerificationEmail(
-          user.email, 
-          verificationToken, 
-          user.contact_name || user.business_name || 'Horse Professional'
-        );
-        
-        if (!emailSent) {
-          console.error("Failed to send verification email to:", user.email);
-        }
-      } catch (emailError) {
-        console.error("Email sending error:", emailError);
-      }
+      // Set user session
+      req.session.userId = user.id;
       
       return res.status(201).json({ 
         id: user.id,
@@ -279,87 +237,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         contact_name: user.contact_name,
         email: user.email,
         is_searching: false,
-        is_selling: true,
-        email_verified: false,
-        message: "Registration successful! Please check your email for verification instructions."
+        is_selling: true
       });
     } catch (error) {
       console.error("Register selling user error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
-    }
-  });
-
-  // Email verification endpoints
-  app.get("/api/auth/verify-email", async (req, res) => {
-    try {
-      const { token } = req.query;
-      
-      if (!token || typeof token !== 'string') {
-        return res.status(400).json({ message: "Verification token is required" });
-      }
-      
-      const user = await storage.getUserByVerificationToken(token);
-      
-      if (!user) {
-        return res.status(400).json({ message: "Invalid verification token" });
-      }
-      
-      if (!user.email_verification_expires || isTokenExpired(user.email_verification_expires)) {
-        return res.status(400).json({ message: "Verification token has expired" });
-      }
-      
-      // Update user as verified
-      await storage.verifyUserEmail(user.id);
-      
-      return res.json({ 
-        message: "Email verified successfully! You can now log in.",
-        verified: true
-      });
-    } catch (error) {
-      console.error("Email verification error:", error);
-      return res.status(500).json({ message: "Failed to verify email" });
-    }
-  });
-
-  app.post("/api/auth/resend-verification", async (req, res) => {
-    try {
-      const { email } = req.body;
-      
-      if (!email) {
-        return res.status(400).json({ message: "Email is required" });
-      }
-      
-      const user = await storage.getUserByEmail(email);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      if (user.email_verified) {
-        return res.status(400).json({ message: "Email is already verified" });
-      }
-      
-      // Generate new verification token
-      const verificationToken = generateVerificationToken();
-      const verificationExpires = getTokenExpirationDate();
-      
-      await storage.updateVerificationToken(user.id, verificationToken, verificationExpires);
-      
-      // Send verification email
-      const emailSent = await sendVerificationEmail(
-        user.email, 
-        verificationToken, 
-        user.name || user.contact_name || user.business_name || 'User'
-      );
-      
-      if (!emailSent) {
-        return res.status(500).json({ message: "Failed to send verification email" });
-      }
-      
-      return res.json({ message: "Verification email sent successfully" });
-    } catch (error) {
-      console.error("Resend verification error:", error);
-      return res.status(500).json({ message: "Failed to resend verification email" });
     }
   });
 
