@@ -315,66 +315,21 @@ const FilterPanel = ({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="0">No Min</SelectItem>
-                        <SelectItem value="5000">
-                          {filters.currency === "USD" ? "$5,000" : 
-                           filters.currency === "AUD" ? "A$5,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="10000">
-                          {filters.currency === "USD" ? "$10,000" : 
-                           filters.currency === "AUD" ? "A$10,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="15000">
-                          {filters.currency === "USD" ? "$15,000" : 
-                           filters.currency === "AUD" ? "A$15,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="20000">
-                          {filters.currency === "USD" ? "$20,000" : 
-                           filters.currency === "AUD" ? "A$20,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="25000">
-                          {filters.currency === "USD" ? "$25,000" : 
-                           filters.currency === "AUD" ? "A$25,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="30000">
-                          {filters.currency === "USD" ? "$30,000" : 
-                           filters.currency === "AUD" ? "A$30,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="35000">
-                          {filters.currency === "USD" ? "$35,000" : 
-                           filters.currency === "AUD" ? "A$35,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="40000">
-                          {filters.currency === "USD" ? "$40,000" : 
-                           filters.currency === "AUD" ? "A$40,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="45000">
-                          {filters.currency === "USD" ? "$45,000" : 
-                           filters.currency === "AUD" ? "A$45,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="50000">
-                          {filters.currency === "USD" ? "$50,000" : 
-                           filters.currency === "AUD" ? "A$50,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="55000">
-                          {filters.currency === "USD" ? "$55,000" : 
-                           filters.currency === "AUD" ? "A$55,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="60000">
-                          {filters.currency === "USD" ? "$60,000" : 
-                           filters.currency === "AUD" ? "A$60,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="65000">
-                          {filters.currency === "USD" ? "$65,000" : 
-                           filters.currency === "AUD" ? "A$65,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="70000">
-                          {filters.currency === "USD" ? "$70,000" : 
-                           filters.currency === "AUD" ? "A$70,000" : ""}
-                        </SelectItem>
-                        <SelectItem value="75000">
-                          {filters.currency === "USD" ? "$75,000" : 
-                           filters.currency === "AUD" ? "A$75,000" : ""}
-                        </SelectItem>
+                        <SelectItem value="5000">{formatPriceDisplay(5000, filters.currency)}</SelectItem>
+                        <SelectItem value="10000">{formatPriceDisplay(10000, filters.currency)}</SelectItem>
+                        <SelectItem value="15000">{formatPriceDisplay(15000, filters.currency)}</SelectItem>
+                        <SelectItem value="20000">{formatPriceDisplay(20000, filters.currency)}</SelectItem>
+                        <SelectItem value="25000">{formatPriceDisplay(25000, filters.currency)}</SelectItem>
+                        <SelectItem value="30000">{formatPriceDisplay(30000, filters.currency)}</SelectItem>
+                        <SelectItem value="35000">{formatPriceDisplay(35000, filters.currency)}</SelectItem>
+                        <SelectItem value="40000">{formatPriceDisplay(40000, filters.currency)}</SelectItem>
+                        <SelectItem value="45000">{formatPriceDisplay(45000, filters.currency)}</SelectItem>
+                        <SelectItem value="50000">{formatPriceDisplay(50000, filters.currency)}</SelectItem>
+                        <SelectItem value="55000">{formatPriceDisplay(55000, filters.currency)}</SelectItem>
+                        <SelectItem value="60000">{formatPriceDisplay(60000, filters.currency)}</SelectItem>
+                        <SelectItem value="65000">{formatPriceDisplay(65000, filters.currency)}</SelectItem>
+                        <SelectItem value="70000">{formatPriceDisplay(70000, filters.currency)}</SelectItem>
+                        <SelectItem value="75000">{formatPriceDisplay(75000, filters.currency)}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
