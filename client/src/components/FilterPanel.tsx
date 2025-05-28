@@ -330,6 +330,19 @@ const FilterPanel = ({
                         <SelectItem value="65000">{formatPriceDisplay(65000, filters.currency)}</SelectItem>
                         <SelectItem value="70000">{formatPriceDisplay(70000, filters.currency)}</SelectItem>
                         <SelectItem value="75000">{formatPriceDisplay(75000, filters.currency)}</SelectItem>
+                        <SelectItem value="80000">{formatPriceDisplay(80000, filters.currency)}</SelectItem>
+                        <SelectItem value="85000">{formatPriceDisplay(85000, filters.currency)}</SelectItem>
+                        <SelectItem value="90000">{formatPriceDisplay(90000, filters.currency)}</SelectItem>
+                        <SelectItem value="95000">{formatPriceDisplay(95000, filters.currency)}</SelectItem>
+                        <SelectItem value="100000">{formatPriceDisplay(100000, filters.currency)}</SelectItem>
+                        <SelectItem value="150000">{formatPriceDisplay(150000, filters.currency)}</SelectItem>
+                        <SelectItem value="200000">{formatPriceDisplay(200000, filters.currency)}</SelectItem>
+                        <SelectItem value="250000">{formatPriceDisplay(250000, filters.currency)}</SelectItem>
+                        <SelectItem value="300000">{formatPriceDisplay(300000, filters.currency)}</SelectItem>
+                        <SelectItem value="350000">{formatPriceDisplay(350000, filters.currency)}</SelectItem>
+                        <SelectItem value="400000">{formatPriceDisplay(400000, filters.currency)}</SelectItem>
+                        <SelectItem value="450000">{formatPriceDisplay(450000, filters.currency)}</SelectItem>
+                        <SelectItem value="500000">{formatPriceDisplay(500000, filters.currency)}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
