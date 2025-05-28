@@ -735,6 +735,15 @@ export default function AddHorse() {
                                   </FormControl>
                                   <SelectContent>
                                     <SelectItem value="Australia">Australia</SelectItem>
+                                    <SelectItem value="Belgium">Belgium</SelectItem>
+                                    <SelectItem value="France">France</SelectItem>
+                                    <SelectItem value="Germany">Germany</SelectItem>
+                                    <SelectItem value="Great Britain">Great Britain</SelectItem>
+                                    <SelectItem value="Ireland">Ireland</SelectItem>
+                                    <SelectItem value="Italy">Italy</SelectItem>
+                                    <SelectItem value="The Netherlands">The Netherlands</SelectItem>
+                                    <SelectItem value="Poland">Poland</SelectItem>
+                                    <SelectItem value="Spain">Spain</SelectItem>
                                     <SelectItem value="United States">United States</SelectItem>
                                   </SelectContent>
                                 </Select>
