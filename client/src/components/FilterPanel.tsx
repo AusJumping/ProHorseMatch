@@ -20,7 +20,18 @@ interface FilterPanelProps {
 
 // Available filter options (would come from API in a real app)
 const countries = [
-  "Any Location", "Australia", "United States"
+  "Any Location", 
+  "Australia", 
+  "Belgium",
+  "France", 
+  "Germany", 
+  "Great Britain",
+  "Ireland",
+  "Italy", 
+  "The Netherlands",
+  "Poland", 
+  "Spain",
+  "United States"
 ];
 const radiusOptions = ["Any", "50km", "100km", "150km", "200km", "300km", "500km"];
 
