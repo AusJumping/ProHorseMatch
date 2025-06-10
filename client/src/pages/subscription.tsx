@@ -278,7 +278,7 @@ export default function SubscriptionPage() {
   const [showCustomAmount, setShowCustomAmount] = useState(false);
   const [customAmount, setCustomAmount] = useState(20);
   const [isDonating, setIsDonating] = useState(false);
-  const [convertedFuturePlans, setConvertedFuturePlans] = useState(futurePlans);
+
   const [tosAgreed, setTosAgreed] = useState(false);
   const [isPendingSubscribe, setIsPendingSubscribe] = useState(false);
   const { toast } = useToast();
@@ -325,10 +325,7 @@ export default function SubscriptionPage() {
     }
   }, [currentCurrency]);
   
-  // Update state when converted plans change
-  useEffect(() => {
-    setConvertedFuturePlans(convertedPlans);
-  }, [convertedPlans]);
+
   
   // Get current subscription status - handle failures gracefully
   const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({
@@ -814,7 +811,7 @@ export default function SubscriptionPage() {
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    {convertedFuturePlans.map((futurePlan) => (
+                    {convertedPlans.map((futurePlan) => (
                       <Card key={futurePlan.id} className={`border ${futurePlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
                         <CardHeader className="pb-2">
                           {futurePlan.isPopular && (
