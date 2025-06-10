@@ -1,0 +1,424 @@
+PROHORSEMATCH DISCOUNT CODE SYSTEM - COMPLETE IMPLEMENTATION GUIDE
+=======================================================================
+
+TABLE OF CONTENTS
+1. Executive Summary
+2. Development Database Access
+3. Database Schema
+4. Pre-Created Discount Code
+5. API Endpoints
+6. Validation Logic
+7. Discount Types
+8. Frontend Integration
+9. Testing Procedures
+10. Security Features
+11. Implementation Checklist
+12. Error Handling
+13. United Kingdom Location Addition
+
+=======================================================================
+1. EXECUTIVE SUMMARY
+=======================================================================
+
+This document provides complete implementation details for the custom discount code system in ProHorseMatch. The system supports:
+- Percentage discounts (e.g., 25% off)
+- Fixed amount discounts (e.g., $50 off)
+- Months of free subscription (e.g., 6 months free)
+
+The backend is fully implemented and ready for frontend integration.
+
+=======================================================================
+2. DEVELOPMENT DATABASE ACCESS
+=======================================================================
+
+CONNECTION STRING:
+postgresql://neondb_owner:npg_0LMDBcTw9PgH@ep-shiny-sound-a4to0rtz.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+INDIVIDUAL PARAMETERS:
+Host: ep-shiny-sound-a4to0rtz.us-east-1.aws.neon.tech
+Port: 5432
+Database: neondb
+Username: neondb_owner
+Password: npg_0LMDBcTw9PgH
+SSL Mode: require
+
+=======================================================================
+3. DATABASE SCHEMA
+=======================================================================
+
+DISCOUNT_CODES TABLE:
+CREATE TABLE discount_codes (
+  id SERIAL PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  description TEXT,
+  discount_type TEXT NOT NULL,
+  discount_value INTEGER NOT NULL,
+  max_uses INTEGER,
+  used_count INTEGER DEFAULT 0,
+  active BOOLEAN DEFAULT true,
+  valid_from TIMESTAMP DEFAULT NOW(),
+  valid_until TIMESTAMP,
+  applicable_plans TEXT[],
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+DISCOUNT_CODE_USAGE TABLE:
+CREATE TABLE discount_code_usage (
+  id SERIAL PRIMARY KEY,
+  discount_code_id INTEGER REFERENCES discount_codes(id),
+  user_id INTEGER REFERENCES users(id),
+  used_at TIMESTAMP DEFAULT NOW(),
+  subscription_id TEXT
+);
+
+FIELD DESCRIPTIONS:
+- discount_type: 'percentage', 'months_free', 'fixed_amount'
+- discount_value: 0-100 for percentage, 1-12 for months, cents for fixed amount
+- max_uses: NULL for unlimited uses
+- applicable_plans: Array of plan types this code applies to
+
+=======================================================================
+4. PRE-CREATED DISCOUNT CODE
+=======================================================================
+
+CODE: PROMO6MONTHSFREE
+DESCRIPTION: 6 months free subscription promotion
+TYPE: months_free
+VALUE: 6 months
+USAGE LIMIT: Unlimited
+APPLICABLE PLANS: beta-seller, beta-searching
+STATUS: Active and ready to use
+
+=======================================================================
+5. API ENDPOINTS
+=======================================================================
+
+5.1 VALIDATE DISCOUNT CODE
+Endpoint: POST /api/discount-codes/validate
+Authentication: Required
+
+Request Body:
+{
+  "code": "PROMO6MONTHSFREE",
+  "planType": "beta-seller"
+}
+
+Success Response (200):
+{
+  "valid": true,
+  "discountCode": {
+    "id": 1,
+    "code": "PROMO6MONTHSFREE",
+    "description": "6 months free subscription promotion",
+    "discount_type": "months_free",
+    "discount_value": 6,
+    "max_uses": null,
+    "used_count": 0,
+    "active": true,
+    "applicable_plans": ["beta-seller", "beta-searching"]
+  },
+  "message": "Discount code is valid"
+}
+
+Error Response (400):
+{
+  "valid": false,
+  "error": "Discount code has expired"
+}
+
+5.2 APPLY DISCOUNT CODE
+Endpoint: POST /api/discount-codes/apply
+Authentication: Required
+
+Request Body:
+{
+  "discountCodeId": 1,
+  "subscriptionId": "sub_1234567890"
+}
+
+Success Response (200):
+{
+  "success": true,
+  "message": "Discount code applied successfully",
+  "usage": {
+    "id": 1,
+    "discount_code_id": 1,
+    "user_id": 123,
+    "used_at": "2025-06-10T21:00:00.000Z",
+    "subscription_id": "sub_1234567890"
+  }
+}
+
+5.3 GET ALL DISCOUNT CODES (ADMIN)
+Endpoint: GET /api/discount-codes
+Authentication: Required
+
+Response (200):
+[
+  {
+    "id": 1,
+    "code": "PROMO6MONTHSFREE",
+    "description": "6 months free subscription promotion",
+    "discount_type": "months_free",
+    "discount_value": 6,
+    "max_uses": null,
+    "used_count": 5,
+    "active": true,
+    "valid_from": "2025-06-10T00:00:00.000Z",
+    "valid_until": null,
+    "applicable_plans": ["beta-seller", "beta-searching"],
+    "created_at": "2025-06-10T00:00:00.000Z"
+  }
+]
+
+5.4 CREATE NEW DISCOUNT CODE (ADMIN)
+Endpoint: POST /api/discount-codes
+Authentication: Required
+
+Request Body:
+{
+  "code": "SUMMER25",
+  "description": "25% off summer promotion",
+  "discount_type": "percentage",
+  "discount_value": 25,
+  "max_uses": 100,
+  "valid_until": "2025-08-31T23:59:59.000Z",
+  "applicable_plans": ["beta-seller"]
+}
+
+=======================================================================
+6. VALIDATION LOGIC
+=======================================================================
+
+The system validates discount codes based on these criteria:
+
+1. CODE EXISTENCE
+   - Code must exist in the database
+   - Case-insensitive search (codes stored in uppercase)
+
+2. ACTIVE STATUS
+   - Code must have active = true
+
+3. DATE VALIDITY
+   - Current date must be >= valid_from (if set)
+   - Current date must be <= valid_until (if set)
+
+4. USAGE LIMITS
+   - If max_uses is set, used_count must be < max_uses
+   - If max_uses is NULL, unlimited usage allowed
+
+5. USER USAGE
+   - User cannot use the same code twice
+   - Checked via discount_code_usage table
+
+6. PLAN APPLICABILITY
+   - Code must be applicable to the selected subscription plan
+   - Checked against applicable_plans array
+
+=======================================================================
+7. DISCOUNT TYPES
+=======================================================================
+
+7.1 PERCENTAGE DISCOUNT
+discount_type: "percentage"
+discount_value: 0-100 (representing percentage)
+Example: 25% off subscription (value: 25)
+
+7.2 MONTHS FREE
+discount_type: "months_free"
+discount_value: 1-12 (number of months)
+Example: 6 months free subscription (value: 6)
+
+7.3 FIXED AMOUNT
+discount_type: "fixed_amount"
+discount_value: Amount in cents
+Example: $50 off subscription (value: 5000)
+
+=======================================================================
+8. FRONTEND INTEGRATION
+=======================================================================
+
+8.1 VALIDATE DISCOUNT CODE FUNCTION
+const validateCode = async (code, planType) => {
+  const response = await fetch('/api/discount-codes/validate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, planType })
+  });
+  return response.json();
+};
+
+8.2 APPLY DISCOUNT CODE FUNCTION
+const applyCode = async (discountCodeId, subscriptionId) => {
+  const response = await fetch('/api/discount-codes/apply', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ discountCodeId, subscriptionId })
+  });
+  return response.json();
+};
+
+8.3 INTEGRATION WORKFLOW
+1. User enters discount code in subscription form
+2. Frontend validates code using validateCode()
+3. If valid, show discount information to user
+4. When user completes subscription, apply code using applyCode()
+5. Handle success/error responses appropriately
+
+=======================================================================
+9. TESTING PROCEDURES
+=======================================================================
+
+9.1 TEST SCENARIOS
+1. VALID CODE TEST
+   - Use "PROMO6MONTHSFREE" with plan "beta-seller"
+   - Expected: Code validates successfully
+
+2. INVALID CODE TEST
+   - Use non-existent code like "INVALIDCODE"
+   - Expected: "Discount code not found" error
+
+3. EXPIRED CODE TEST
+   - Create code with past valid_until date
+   - Expected: "Discount code has expired" error
+
+4. USAGE LIMIT TEST
+   - Create code with max_uses=1, attempt to use twice
+   - Expected: "Discount code has reached its usage limit" error
+
+5. WRONG PLAN TEST
+   - Use code with plan not in applicable_plans
+   - Expected: "Discount code is not applicable to this subscription plan" error
+
+9.2 CREATE TEST DATA
+INSERT INTO discount_codes (code, description, discount_type, discount_value, max_uses, applicable_plans)
+VALUES ('TEST25', '25% off test discount', 'percentage', 25, 10, ARRAY['beta-seller']);
+
+INSERT INTO discount_codes (code, description, discount_type, discount_value, max_uses, applicable_plans)
+VALUES ('SAVE50', '$50 off subscription', 'fixed_amount', 5000, 50, ARRAY['beta-seller', 'beta-searching']);
+
+=======================================================================
+10. SECURITY FEATURES
+=======================================================================
+
+1. CODE UNIQUENESS
+   - All codes stored in uppercase
+   - Database enforces unique constraint
+
+2. ONE-TIME USE PER USER
+   - Users cannot reuse the same discount code
+   - Tracked via discount_code_usage table
+
+3. USAGE TRACKING
+   - All usage logged with timestamps and user IDs
+   - Includes subscription ID for audit trail
+
+4. PLAN VALIDATION
+   - Codes only applicable to specific subscription plans
+   - Prevents misuse across different plan types
+
+5. AUTHENTICATION REQUIRED
+   - All endpoints require user authentication
+   - Prevents unauthorized access
+
+=======================================================================
+11. IMPLEMENTATION CHECKLIST
+=======================================================================
+
+PHASE 1: BACKEND (COMPLETED)
+✅ Database tables created
+✅ API endpoints implemented
+✅ Validation logic completed
+✅ Test discount code created
+✅ Development database setup
+
+PHASE 2: FRONTEND INTEGRATION (TO DO)
+□ Add discount code input field to subscription flow
+□ Implement code validation on frontend
+□ Show discount information to user
+□ Handle error messages appropriately
+□ Test complete user flow
+
+PHASE 3: ADDITIONAL FEATURES (FUTURE)
+□ Admin panel for managing discount codes
+□ Email notifications for successful code usage
+□ Analytics dashboard for discount code performance
+□ Bulk discount code creation
+
+=======================================================================
+12. ERROR HANDLING
+=======================================================================
+
+COMMON ERROR MESSAGES:
+- "Discount code not found"
+- "Discount code has expired"
+- "Discount code is no longer active"
+- "Discount code has reached its usage limit"
+- "You have already used this discount code"
+- "Discount code is not applicable to this subscription plan"
+- "Code and plan type are required"
+- "User not authenticated"
+
+ERROR RESPONSE FORMAT:
+{
+  "valid": false,
+  "error": "Error message here"
+}
+
+=======================================================================
+13. UNITED KINGDOM LOCATION ADDITION
+=======================================================================
+
+REQUIREMENT: Add "United Kingdom" to location dropdowns
+
+LOCATIONS TO UPDATE:
+- Add Horse form (client/src/pages/add-horse.tsx)
+- Edit Horse form (client/src/pages/edit-horse.tsx)
+- User registration forms
+- Filter panels (client/src/components/FilterPanel.tsx)
+
+IMPLEMENTATION:
+Add "United Kingdom" to the countries array in the appropriate form components.
+
+=======================================================================
+DEPLOYMENT CHECKLIST
+=======================================================================
+
+1. DATABASE MIGRATION
+   ✅ Tables already created in development database
+   □ Deploy to production database
+
+2. CODE DEPLOYMENT
+   ✅ Backend changes complete
+   □ Deploy to production server
+
+3. FRONTEND UPDATES
+   □ Add discount code UI components
+   □ Add United Kingdom to location dropdowns
+
+4. TESTING
+   □ Verify all functionality works correctly
+   □ Test discount code flow end-to-end
+
+5. GO LIVE
+   □ Announce discount code feature to users
+   □ Monitor usage and performance
+
+=======================================================================
+SUPPORT INFORMATION
+=======================================================================
+
+DEVELOPMENT DATABASE: Ready for testing
+API ENDPOINTS: Fully implemented and authenticated
+DISCOUNT CODE: "PROMO6MONTHSFREE" active and ready
+DOCUMENTATION: Complete implementation guide provided
+
+For technical questions, reference this document and test using the provided development database connection details.
+
+=======================================================================
+END OF DOCUMENT
+=======================================================================
+
+Document Version: 1.0
+Date: June 10, 2025
+Implementation Status: Backend Complete, Frontend Integration Pending
