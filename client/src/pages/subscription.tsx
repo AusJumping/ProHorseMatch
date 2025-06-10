@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -292,32 +292,43 @@ export default function SubscriptionPage() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   
-  // Convert subscription prices to user's preferred currency
-  useEffect(() => {
-    const convertPrices = async () => {
-      try {
-        // Only convert if we have a different currency than AUD (base currency for plans)
-        if (currentCurrency !== 'AUD') {
-          const newPlans = await Promise.all(futurePlans.map(async (plan) => {
-            const convertedPrice = await convertPrice(plan.price, 'AUD');
-            return {
-              ...plan,
-              price: parseFloat(convertedPrice.toFixed(2))
-            };
-          }));
-          setConvertedFuturePlans(newPlans);
-        } else {
-          setConvertedFuturePlans(futurePlans);
-        }
-      } catch (error) {
-        console.error('Error converting prices:', error);
-        // Fallback to original prices if conversion fails
-        setConvertedFuturePlans(futurePlans);
-      }
-    };
+  // Convert subscription prices to user's preferred currency - memoized to prevent infinite loops
+  const convertedPlans = useMemo(() => {
+    if (currentCurrency === 'AUD') {
+      return futurePlans;
+    }
     
-    convertPrices();
-  }, [currentCurrency]); // Removed convertPrice from dependencies
+    // For non-AUD currencies, convert prices synchronously
+    try {
+      return futurePlans.map(plan => {
+        // Use a simple conversion for now to avoid async issues
+        const conversionRates: { [key: string]: number } = {
+          'USD': 0.66,
+          'EUR': 0.61,
+          'GBP': 0.53,
+          'CAD': 0.89,
+          'NZD': 1.07,
+          'AUD': 1.0
+        };
+        
+        const rate = conversionRates[currentCurrency] || 1;
+        const convertedPrice = plan.price * rate;
+        
+        return {
+          ...plan,
+          price: parseFloat(convertedPrice.toFixed(2))
+        };
+      });
+    } catch (error) {
+      console.error('Error converting prices:', error);
+      return futurePlans;
+    }
+  }, [currentCurrency]);
+  
+  // Update state when converted plans change
+  useEffect(() => {
+    setConvertedFuturePlans(convertedPlans);
+  }, [convertedPlans]);
   
   // Get current subscription status - handle failures gracefully
   const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({
