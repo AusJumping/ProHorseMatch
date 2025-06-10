@@ -292,38 +292,29 @@ export default function SubscriptionPage() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   
-  // Convert subscription prices to user's preferred currency - memoized to prevent infinite loops
-  const convertedPlans = useMemo(() => {
+  // Convert subscription prices to user's preferred currency - simplified approach
+  const getDisplayPlans = () => {
     if (currentCurrency === 'AUD') {
       return futurePlans;
     }
     
-    // For non-AUD currencies, convert prices synchronously
-    try {
-      return futurePlans.map(plan => {
-        // Use a simple conversion for now to avoid async issues
-        const conversionRates: { [key: string]: number } = {
-          'USD': 0.66,
-          'EUR': 0.61,
-          'GBP': 0.53,
-          'CAD': 0.89,
-          'NZD': 1.07,
-          'AUD': 1.0
-        };
-        
-        const rate = conversionRates[currentCurrency] || 1;
-        const convertedPrice = plan.price * rate;
-        
-        return {
-          ...plan,
-          price: parseFloat(convertedPrice.toFixed(2))
-        };
-      });
-    } catch (error) {
-      console.error('Error converting prices:', error);
-      return futurePlans;
-    }
-  }, [currentCurrency]);
+    // Simple conversion rates to avoid dependency issues
+    const conversionRates: { [key: string]: number } = {
+      'USD': 0.66,
+      'EUR': 0.61,
+      'GBP': 0.53,
+      'CAD': 0.89,
+      'NZD': 1.07,
+      'AUD': 1.0
+    };
+    
+    const rate = conversionRates[currentCurrency] || 1;
+    
+    return futurePlans.map(plan => ({
+      ...plan,
+      price: parseFloat((plan.price * rate).toFixed(2))
+    }));
+  };
   
 
   
@@ -811,7 +802,7 @@ export default function SubscriptionPage() {
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    {convertedPlans.map((futurePlan) => (
+                    {getDisplayPlans().map((futurePlan) => (
                       <Card key={futurePlan.id} className={`border ${futurePlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
                         <CardHeader className="pb-2">
                           {futurePlan.isPopular && (

@@ -20,7 +20,7 @@ import Messages from "@/pages/messages";
 import Landing from "@/pages/landing";
 import Checkout from "@/pages/checkout";
 import PaymentSuccess from "@/pages/payment-success";
-import Subscription from "@/pages/subscription";
+import Subscription from "@/pages/subscription-simple";
 import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
