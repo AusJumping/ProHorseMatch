@@ -15,8 +15,12 @@ import {
   insertMatchSchema, 
   insertMessageSchema,
   insertConversationSchema,
+  insertDiscountCodeSchema,
+  insertDiscountCodeUsageSchema,
   type InsertMessage,
   type InsertConversation,
+  type InsertDiscountCode,
+  type InsertDiscountCodeUsage,
   disciplines,
   sexes,
   colours,
@@ -1681,6 +1685,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Error canceling subscription",
         error: error.message 
       });
+    }
+  });
+
+  // Discount Code API Routes
+  
+  // Validate a discount code
+  app.post("/api/discount-codes/validate", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const { code, planType } = req.body;
+      const userId = req.session.userId;
+      
+      if (!code || !planType) {
+        return res.status(400).json({ message: "Code and plan type are required" });
+      }
+      
+      const validation = await storage.validateDiscountCode(code, userId, planType);
+      
+      if (validation.valid) {
+        res.json({ 
+          valid: true, 
+          discountCode: validation.discountCode,
+          message: "Discount code is valid"
+        });
+      } else {
+        res.status(400).json({ 
+          valid: false, 
+          error: validation.error 
+        });
+      }
+    } catch (error: any) {
+      console.error("Error validating discount code:", error);
+      res.status(500).json({ message: "Failed to validate discount code" });
+    }
+  });
+  
+  // Apply a discount code during subscription creation
+  app.post("/api/discount-codes/apply", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const { discountCodeId, subscriptionId } = req.body;
+      const userId = req.session.userId;
+      
+      if (!discountCodeId) {
+        return res.status(400).json({ message: "Discount code ID is required" });
+      }
+      
+      // Create usage record
+      const usage = await storage.createDiscountCodeUsage({
+        discount_code_id: discountCodeId,
+        user_id: userId,
+        subscription_id: subscriptionId || null
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Discount code applied successfully",
+        usage 
+      });
+    } catch (error: any) {
+      console.error("Error applying discount code:", error);
+      res.status(500).json({ message: "Failed to apply discount code" });
+    }
+  });
+  
+  // Get all discount codes (admin only - for future admin panel)
+  app.get("/api/discount-codes", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const codes = await storage.getDiscountCodes();
+      res.json(codes);
+    } catch (error: any) {
+      console.error("Error fetching discount codes:", error);
+      res.status(500).json({ message: "Failed to fetch discount codes" });
+    }
+  });
+  
+  // Create a new discount code (admin only - for future admin panel)
+  app.post("/api/discount-codes", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const discountCodeData = insertDiscountCodeSchema.parse(req.body);
+      const newCode = await storage.createDiscountCode(discountCodeData);
+      res.status(201).json(newCode);
+    } catch (error: any) {
+      console.error("Error creating discount code:", error);
+      res.status(500).json({ message: "Failed to create discount code" });
     }
   });
 

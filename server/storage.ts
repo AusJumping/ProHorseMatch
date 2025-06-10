@@ -1523,7 +1523,7 @@ export class DatabaseStorage implements IStorage {
     // Increment the used_count for the discount code
     await db
       .update(discount_codes)
-      .set({ used_count: sql`${discount_codes.used_count} + 1` })
+      .set({ used_count: sql`used_count + 1` })
       .where(eq(discount_codes.id, usage.discount_code_id));
 
     return newUsage;
