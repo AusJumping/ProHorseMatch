@@ -94,32 +94,21 @@ export default function Auth() {
     try {
       console.log("Submitting login form with data:", data);
       
-      // Perform direct fetch to get complete user data
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-        credentials: 'include',
-      });
+      // Use the auth context login function
+      const userData = await login(data.email, data.password);
+      console.log("Login successful, user data:", userData);
       
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
-      }
+      // Wait a moment for the auth context to update
+      setTimeout(() => {
+        if (userData && userData.subscription_status === 'active') {
+          console.log("User has active subscription, redirecting to welcome page");
+          navigate("/welcome");
+        } else {
+          console.log("User has no active subscription, redirecting to subscription page");
+          navigate("/subscription");
+        }
+      }, 100);
       
-      const userData = await response.json();
-      console.log("Login successful, complete user data:", userData);
-      
-      // No need to call login again, we're already logged in
-      
-      // Direct check for subscription status
-      if (userData && userData.subscription_status === 'active') {
-        console.log("User has active subscription, redirecting to welcome page");
-        window.location.href = "/welcome";
-      } else {
-        console.log("User has no active subscription, redirecting to subscription page");
-        window.location.href = "/subscription";
-      }
     } catch (error: any) {
       toast({
         title: "Login failed",

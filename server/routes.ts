@@ -166,20 +166,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(
     session({
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
-        secure: false, // Setting to false for development and easier testing
-        httpOnly: false, // Allow JavaScript access to session cookie for debugging
-        sameSite: 'lax' // Always use lax to improve session persistence across redirects
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        secure: false, // Must be false for HTTP in development
+        httpOnly: true, // Secure cookie - prevent XSS access
+        sameSite: 'lax', // Enable cross-site cookies
+        path: '/' // Ensure cookie applies to all paths
       }, 
       store: new SessionStore({
-        checkPeriod: 86400000, // prune expired entries every 24h
-        stale: false, // Don't auto-expire sessions
+        checkPeriod: 86400000,
+        stale: false,
       }),
-      resave: true, // Force session save to ensure persistence
-      saveUninitialized: true, // Save uninitialized sessions for better tracking
-      secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      // Use default session name 'connect.sid' for better compatibility
-      rolling: false // Don't update cookie expiration on every response
+      resave: true, // Force session save to ensure consistency
+      saveUninitialized: false, // Don't save empty sessions
+      secret: process.env.SESSION_SECRET || "proHorseMatchSecret123456789",
+      name: 'connect.sid', // Use explicit default name
+      rolling: false
     })
   );
 
@@ -279,17 +280,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: req.sessionID
       });
       
-      req.session.userId = user.id;
-      
-      // Save session explicitly
-      await new Promise<void>((resolve) => {
-        req.session.save((err) => {
+      // Regenerate session to fix session ID persistence issues
+      await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((err) => {
           if (err) {
-            console.error("Session save error:", err);
+            console.error("Session regeneration error:", err);
+            reject(err);
           } else {
-            console.log("Session saved successfully");
+            req.session.userId = user.id;
+            console.log("Session regenerated with new ID:", req.sessionID);
+            
+            req.session.save((saveErr) => {
+              if (saveErr) {
+                console.error("Session save error:", saveErr);
+                reject(saveErr);
+              } else {
+                console.log("Session saved successfully");
+                resolve();
+              }
+            });
           }
-          resolve();
         });
       });
       
