@@ -317,7 +317,7 @@ export default function SubscriptionPage() {
     };
     
     convertPrices();
-  }, [currentCurrency, convertPrice]);
+  }, [currentCurrency]); // Removed convertPrice from dependencies
   
   // Get current subscription status - handle failures gracefully
   const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({
