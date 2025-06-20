@@ -4,9 +4,7 @@ import {
   type Customer, type InsertCustomer,
   matches, type Match, type InsertMatch,
   messages, type Message, type InsertMessage,
-  conversations, type Conversation, type InsertConversation,
-  discount_codes, type DiscountCode, type InsertDiscountCode,
-  discount_code_usage, type DiscountCodeUsage, type InsertDiscountCodeUsage
+  conversations, type Conversation, type InsertConversation
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
@@ -67,20 +65,6 @@ export interface IStorage {
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
   deleteConversation(id: number): Promise<boolean>;
-  
-  // Discount Code methods
-  getDiscountCodes(): Promise<DiscountCode[]>;
-  getDiscountCodeById(id: number): Promise<DiscountCode | undefined>;
-  getDiscountCodeByCode(code: string): Promise<DiscountCode | undefined>;
-  createDiscountCode(discountCode: InsertDiscountCode): Promise<DiscountCode>;
-  updateDiscountCode(id: number, discountCode: Partial<DiscountCode>): Promise<DiscountCode>;
-  deleteDiscountCode(id: number): Promise<boolean>;
-  validateDiscountCode(code: string, userId: number, planType: string): Promise<{ valid: boolean; discountCode?: DiscountCode; error?: string }>;
-  
-  // Discount Code Usage methods
-  createDiscountCodeUsage(usage: InsertDiscountCodeUsage): Promise<DiscountCodeUsage>;
-  getDiscountCodeUsagesByUserId(userId: number): Promise<DiscountCodeUsage[]>;
-  getDiscountCodeUsagesByCodeId(codeId: number): Promise<DiscountCodeUsage[]>;
 }
 
 import * as fs from 'fs';
@@ -1411,138 +1395,6 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return result.length > 0;
-  }
-
-  // Discount Code methods
-  async getDiscountCodes(): Promise<DiscountCode[]> {
-    return await db.select().from(discount_codes).orderBy(desc(discount_codes.created_at));
-  }
-
-  async getDiscountCodeById(id: number): Promise<DiscountCode | undefined> {
-    const [discountCode] = await db.select().from(discount_codes).where(eq(discount_codes.id, id));
-    return discountCode;
-  }
-
-  async getDiscountCodeByCode(code: string): Promise<DiscountCode | undefined> {
-    const [discountCode] = await db.select().from(discount_codes).where(eq(discount_codes.code, code.toUpperCase()));
-    return discountCode;
-  }
-
-  async createDiscountCode(discountCode: InsertDiscountCode): Promise<DiscountCode> {
-    const [newDiscountCode] = await db
-      .insert(discount_codes)
-      .values({
-        ...discountCode,
-        code: discountCode.code.toUpperCase(), // Always store codes in uppercase
-        used_count: 0
-      })
-      .returning();
-    return newDiscountCode;
-  }
-
-  async updateDiscountCode(id: number, update: Partial<DiscountCode>): Promise<DiscountCode> {
-    const [updatedDiscountCode] = await db
-      .update(discount_codes)
-      .set(update)
-      .where(eq(discount_codes.id, id))
-      .returning();
-    
-    if (!updatedDiscountCode) {
-      throw new Error("Discount code not found");
-    }
-    
-    return updatedDiscountCode;
-  }
-
-  async deleteDiscountCode(id: number): Promise<boolean> {
-    const result = await db
-      .delete(discount_codes)
-      .where(eq(discount_codes.id, id))
-      .returning();
-    
-    return result.length > 0;
-  }
-
-  async validateDiscountCode(code: string, userId: number, planType: string): Promise<{ valid: boolean; discountCode?: DiscountCode; error?: string }> {
-    const discountCode = await this.getDiscountCodeByCode(code);
-    
-    if (!discountCode) {
-      return { valid: false, error: "Discount code not found" };
-    }
-
-    // Check if code is active
-    if (!discountCode.active) {
-      return { valid: false, error: "Discount code is no longer active" };
-    }
-
-    // Check date validity
-    const now = new Date();
-    if (discountCode.valid_from && new Date(discountCode.valid_from) > now) {
-      return { valid: false, error: "Discount code is not yet valid" };
-    }
-    
-    if (discountCode.valid_until && new Date(discountCode.valid_until) < now) {
-      return { valid: false, error: "Discount code has expired" };
-    }
-
-    // Check usage limits
-    if (discountCode.max_uses && discountCode.used_count >= discountCode.max_uses) {
-      return { valid: false, error: "Discount code has reached its usage limit" };
-    }
-
-    // Check if user has already used this code
-    const existingUsage = await db
-      .select()
-      .from(discount_code_usage)
-      .where(and(
-        eq(discount_code_usage.discount_code_id, discountCode.id),
-        eq(discount_code_usage.user_id, userId)
-      ));
-    
-    if (existingUsage.length > 0) {
-      return { valid: false, error: "You have already used this discount code" };
-    }
-
-    // Check if applicable to the selected plan
-    if (discountCode.applicable_plans && discountCode.applicable_plans.length > 0) {
-      if (!discountCode.applicable_plans.includes(planType)) {
-        return { valid: false, error: "Discount code is not applicable to this subscription plan" };
-      }
-    }
-
-    return { valid: true, discountCode };
-  }
-
-  // Discount Code Usage methods
-  async createDiscountCodeUsage(usage: InsertDiscountCodeUsage): Promise<DiscountCodeUsage> {
-    const [newUsage] = await db
-      .insert(discount_code_usage)
-      .values(usage)
-      .returning();
-
-    // Increment the used_count for the discount code
-    await db
-      .update(discount_codes)
-      .set({ used_count: sql`${discount_codes.used_count} + 1` })
-      .where(eq(discount_codes.id, usage.discount_code_id));
-
-    return newUsage;
-  }
-
-  async getDiscountCodeUsagesByUserId(userId: number): Promise<DiscountCodeUsage[]> {
-    return await db
-      .select()
-      .from(discount_code_usage)
-      .where(eq(discount_code_usage.user_id, userId))
-      .orderBy(desc(discount_code_usage.used_at));
-  }
-
-  async getDiscountCodeUsagesByCodeId(codeId: number): Promise<DiscountCodeUsage[]> {
-    return await db
-      .select()
-      .from(discount_code_usage)
-      .where(eq(discount_code_usage.discount_code_id, codeId))
-      .orderBy(desc(discount_code_usage.used_at));
   }
 }
 

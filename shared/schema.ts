@@ -42,31 +42,6 @@ export const users = pgTable("users", {
   created_at: timestamp("created_at").defaultNow(),
 });
 
-// Discount Codes Table
-export const discount_codes = pgTable("discount_codes", {
-  id: serial("id").primaryKey(),
-  code: text("code").notNull().unique(),
-  description: text("description"),
-  discount_type: text("discount_type").notNull(), // 'percentage', 'months_free', 'fixed_amount'
-  discount_value: integer("discount_value").notNull(), // percentage (0-100), months (1-12), or amount in cents
-  max_uses: integer("max_uses"), // null = unlimited
-  used_count: integer("used_count").default(0),
-  active: boolean("active").default(true),
-  valid_from: timestamp("valid_from").defaultNow(),
-  valid_until: timestamp("valid_until"),
-  applicable_plans: text("applicable_plans").array(), // which subscription plans this applies to
-  created_at: timestamp("created_at").defaultNow(),
-});
-
-// Discount Code Usage Tracking
-export const discount_code_usage = pgTable("discount_code_usage", {
-  id: serial("id").primaryKey(),
-  discount_code_id: integer("discount_code_id").references(() => discount_codes.id),
-  user_id: integer("user_id").references(() => users.id),
-  used_at: timestamp("used_at").defaultNow(),
-  subscription_id: text("subscription_id"), // Stripe subscription ID
-});
-
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   created_at: true,
@@ -219,20 +194,3 @@ export const characteristics = [
 export const jumpingLevels = ["Children", "Junior", "Amateur", "Young Rider", "Mini Prix", "Grand Prix"];
 export const dressageLevels = ["Preliminary", "Novice", "Elementary", "Medium", "Advanced", "Prix St. Georges", "Intermediate I", "Intermediate II", "Grand Prix"];
 export const eventingLevels = ["EvA60", "EvA80", "EvA95", "1*", "2*", "3*", "4*", "5*"];
-
-// Discount Code Schemas
-export const insertDiscountCodeSchema = createInsertSchema(discount_codes).omit({
-  id: true,
-  used_count: true,
-  created_at: true,
-});
-
-export const insertDiscountCodeUsageSchema = createInsertSchema(discount_code_usage).omit({
-  id: true,
-  used_at: true,
-});
-
-export type InsertDiscountCode = z.infer<typeof insertDiscountCodeSchema>;
-export type DiscountCode = typeof discount_codes.$inferSelect;
-export type InsertDiscountCodeUsage = z.infer<typeof insertDiscountCodeUsageSchema>;
-export type DiscountCodeUsage = typeof discount_code_usage.$inferSelect;
