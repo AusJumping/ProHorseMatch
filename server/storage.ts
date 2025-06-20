@@ -18,9 +18,7 @@ export interface IStorage {
   updateHorse(id: number, horse: Partial<Horse>): Promise<Horse | undefined>;
   deleteHorse(id: number): Promise<boolean>;
   
-  // User methods for Replit Auth
-  getUser(id: string): Promise<User | undefined>;
-  upsertUser(user: UpsertUser): Promise<User>;
+
   
   // Legacy user methods
   getUsers(): Promise<User[]>;
