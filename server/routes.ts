@@ -1,8 +1,6 @@
 import express, { type Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
-import session from "express-session";
-import MemoryStore from "memorystore";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -116,7 +114,7 @@ declare module "express-session" {
   }
 }
 
-const SessionStore = MemoryStore(session);
+
 
 // Configure multer for memory storage (we'll upload to Cloudinary)
 const upload = multer({
@@ -286,29 +284,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      console.log("Login successful - Setting user session:", {
-        id: user.id,
-        is_searching: user.is_searching,
-        is_selling: user.is_selling,
-        sessionId: req.sessionID,
-        cookies: req.headers.cookie
-      });
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        JWT_SECRET,
+        { expiresIn: '30d' }
+      );
       
-      req.session.userId = user.id;
+      console.log("Login successful - Generated JWT token for user:", user.id);
       
-      // Save session explicitly - let express-session handle cookies
-      await new Promise<void>((resolve) => {
-        req.session.save((err) => {
-          if (err) {
-            console.error("Session save error:", err);
-          } else {
-            console.log("Session saved successfully");
-          }
-          resolve();
-        });
-      });
-      
-      // Return full user data including subscription info
+      // Return full user data including subscription info and token
       return res.json({
         id: user.id,
         name: user.name,
@@ -321,7 +306,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripe_subscription_id: user.stripe_subscription_id,
         subscription_status: user.subscription_status,
         subscription_plan: user.subscription_plan,
-        subscription_end_date: user.subscription_end_date
+        subscription_end_date: user.subscription_end_date,
+        token: token
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -339,21 +325,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Session:", {
-      sessionId: req.sessionID,
-      userId: req.session.userId,
-      sessionContent: req.session
-    });
-    
-    if (!req.session.userId) {
-      console.log("Auth check failed - Not authenticated");
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-    
+  app.get("/api/auth/me", authenticateToken, async (req: any, res) => {
     try {
-      console.log(`Auth check - Looking up user with ID ${req.session.userId}`);
-      const user = await storage.getUserById(req.session.userId);
+      const user = req.user; // Set by authenticateToken middleware
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
