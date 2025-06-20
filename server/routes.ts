@@ -161,20 +161,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use(
     session({
-      name: 'connect.sid', // Use default name for better compatibility
+      name: 'connect.sid',
       cookie: { 
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: false,
-        httpOnly: false, // Allow client access for debugging
-        sameSite: 'lax',
+        secure: false, // Must be false for non-HTTPS development
+        httpOnly: false, // Allow client access for token fallback
+        sameSite: 'none', // Allow cross-origin cookies
         path: '/'
       }, 
       store: new SessionStore({
         checkPeriod: 86400000,
         stale: false,
       }),
-      resave: true, // Force save to ensure persistence
-      saveUninitialized: true, // Create session immediately
+      resave: true,
+      saveUninitialized: true,
       secret: process.env.SESSION_SECRET || "proHorseMatchSessionSecret2024",
       rolling: true
     })
@@ -298,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         httpOnly: false, // Allow frontend access
         secure: false,
-        sameSite: 'lax'
+        sameSite: 'none' // Allow cross-origin cookies
       });
       
       // Store token mapping in memory for validation
