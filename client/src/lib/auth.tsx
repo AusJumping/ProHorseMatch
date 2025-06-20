@@ -16,7 +16,6 @@ interface User {
   subscription_status?: string;
   subscription_plan?: string;
   subscription_end_date?: string;
-  auth_token?: string;
 }
 
 interface AuthContextType {
@@ -43,88 +42,59 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Initialize user state from localStorage first
-  const [userState, setUserState] = useState<User | null>(() => {
-    try {
-      const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
-
-  // Fetch the current user with improved persistence
+  // Fetch the current user with improved caching
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
+          cache: 'no-cache' // Ensure we don't get cached responses
         });
-        
-        if (res.status === 401) {
-          // Don't immediately clear localStorage - check if we have valid stored data
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) {
-            try {
-              const parsed = JSON.parse(storedUser);
-              console.log("Auth check failed but localStorage has user, using fallback:", parsed);
-              setUserState(parsed);
-              return parsed;
-            } catch (e) {
-              console.log("localStorage user data corrupted, clearing");
-              localStorage.removeItem('user');
-              setUserState(null);
-              return null;
-            }
-          }
-          setUserState(null);
-          return null;
-        }
-        
+        if (res.status === 401) return null;
         const userData = await res.json();
-        console.log("Auth user data:", userData);
+        console.log("Auth user data:", userData); // Debug log
         
         // Store user data in localStorage for persistence
         if (userData && userData.id) {
           localStorage.setItem('user', JSON.stringify(userData));
-          setUserState(userData);
         }
         
         return userData;
       } catch (error) {
         console.error("Auth fetch error:", error);
         
-        // Return stored user if network fails but don't rely on it exclusively
-        return userState;
+        // Try to restore from localStorage if fetch fails
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            return JSON.parse(storedUser);
+          } catch (e) {
+            return null;
+          }
+        }
+        
+        return null;
       }
     },
-    staleTime: 30 * 1000, // Cache auth data for 30 seconds
-    refetchOnWindowFocus: false, // Don't refetch on focus to avoid disruption
-    refetchInterval: false, // Don't auto-refetch
-    retry: 1 // Only retry once on failure
+    staleTime: 60 * 1000, // Cache auth data for 1 minute
+    refetchOnWindowFocus: true,
+    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
   });
   
-  // Use server data if available, otherwise fall back to localStorage
-  const user = data !== undefined ? data : userState;
+  // Ensure user is either User object or null, never undefined
+  const user = data === undefined ? null : data;
   
   // Debug log for auth state
   console.log("Auth state:", { isAuthenticated: !!user });
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      console.log("Submitting login form with data:", { email, password });
+      console.log("Attempting login for:", { email });
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
         credentials: 'include',
       });
@@ -135,33 +105,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const userData = await response.json() as User;
-      console.log("Login successful, complete user data:", userData);
+      console.log("Login successful, user data:", userData);
       
-      // IMMEDIATE synchronous storage - no async operations allowed to interfere
-      if (userData.auth_token) {
-        localStorage.setItem('auth_token', userData.auth_token);
-        localStorage.setItem('user', JSON.stringify(userData));
-        console.log('Auth - STORED token immediately:', userData.auth_token);
-        
-        // Immediate verification
-        const check = localStorage.getItem('auth_token');
-        console.log('Auth - VERIFIED storage:', check);
-      }
+      // Store user in localStorage for quick recovery if session issues occur
+      localStorage.setItem('user', JSON.stringify(userData));
       
-      // Update state
-      setUserState(userData);
+      // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Subscription check
-      const hasSubscription = userData.stripe_subscription_id && 
-        userData.subscription_status === 'active' && 
-        userData.subscription_end_date && 
-        new Date(userData.subscription_end_date) > new Date();
-      
-      if (hasSubscription) {
-        console.log("User has active subscription, redirecting to welcome page");
-      }
-      
+      // Return the user data so the calling function can check subscription status
       return userData;
     } catch (error) {
       console.error('Login error:', error);

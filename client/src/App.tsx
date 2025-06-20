@@ -21,12 +21,11 @@ import Landing from "@/pages/landing";
 import Checkout from "@/pages/checkout";
 import PaymentSuccess from "@/pages/payment-success";
 import Subscription from "@/pages/subscription";
-import SubscriptionSimple from "@/pages/subscription-simple";
 import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import WelcomePage from "@/pages/welcome";
-import { AuthProvider } from "@/lib/auth-session";
+import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 function Router() {
@@ -49,7 +48,6 @@ function Router() {
       <Route path="/checkout/:horseId" component={Checkout} />
       <Route path="/payment-success" component={PaymentSuccess} />
       <Route path="/subscription" component={Subscription} />
-      <Route path="/subscription-simple" component={SubscriptionSimple} />
       <Route path="/subscription/success" component={SubscriptionSuccess} />
       <Route path="/donation-checkout" component={DonationCheckout} />
       <Route path="/donation-success" component={DonationSuccess} />

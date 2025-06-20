@@ -2,7 +2,6 @@ import type { Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
-import cookieParser from "cookie-parser";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -118,24 +117,6 @@ declare module "express-session" {
   }
 }
 
-// Simple in-memory auth token store that bypasses session issues
-const authTokens = new Map<string, { userId: number; expires: number }>();
-
-// Generate secure random token
-function generateAuthToken(): string {
-  return Math.random().toString(36).substring(2) + Date.now().toString(36);
-}
-
-// Clean expired tokens
-setInterval(() => {
-  const now = Date.now();
-  for (const [token, data] of authTokens.entries()) {
-    if (data.expires < now) {
-      authTokens.delete(token);
-    }
-  }
-}, 60000); // Clean every minute
-
 const SessionStore = MemoryStore(session);
 
 // Configure multer for memory storage (we'll upload to Cloudinary)
@@ -178,30 +159,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   
-  // Add cookie parser middleware to handle auth tokens
-  app.use(cookieParser());
-  
   app.use(
     session({
-      name: 'connect.sid',
+      name: 'prohorsematch.sid', // Custom session name
       cookie: { 
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         secure: false, // False for development
-        httpOnly: false, // Allow client-side access for debugging
-        sameSite: 'lax',
-        path: '/',
-        domain: undefined // Let browser determine domain
+        httpOnly: true,
+        sameSite: 'lax'
       }, 
       store: new SessionStore({
-        checkPeriod: 86400000,
+        checkPeriod: 86400000, // prune expired entries every 24h
         stale: false,
-        max: 1000
       }),
       resave: false, // Don't save session if unmodified
       saveUninitialized: false, // Don't create session until something stored
       secret: process.env.SESSION_SECRET || "proHorseMatchSessionSecret2024",
-      rolling: false,
-      unset: 'keep' // Keep session data when unsetting properties
+      rolling: true // Extend session on activity
     })
   );
 
@@ -301,29 +275,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: req.sessionID
       });
       
-      // Generate auth token that bypasses session issues
-      const authToken = generateAuthToken();
-      const expires = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
-      authTokens.set(authToken, { userId: user.id, expires });
-      
-      console.log("Generated auth token for user:", user.id, "token:", authToken.substring(0, 8) + "...");
-      
-      // Set auth token as cookie
-      res.cookie('auth_token', authToken, {
-        httpOnly: false, // Allow client access for debugging
-        secure: false, // False for development
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/',
-        domain: undefined // Let browser determine domain
-      });
-      
-      console.log("Cookie set with headers:", res.getHeaders()['set-cookie']);
-      
-      // Also store user ID in session as backup
       req.session.userId = user.id;
       
-      // Return full user data including auth token for client-side storage
+      // Save session explicitly
+      await new Promise<void>((resolve) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+          } else {
+            console.log("Session saved successfully");
+          }
+          resolve();
+        });
+      });
+      
+      // Return full user data including subscription info
       return res.json({
         id: user.id,
         name: user.name,
@@ -336,8 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripe_subscription_id: user.stripe_subscription_id,
         subscription_status: user.subscription_status,
         subscription_plan: user.subscription_plan,
-        subscription_end_date: user.subscription_end_date,
-        auth_token: authToken // Include token in response for client storage
+        subscription_end_date: user.subscription_end_date
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -364,36 +329,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sessionContent: req.session
     });
     
-    let userId = req.session.userId;
-    
-    // If session doesn't have userId, check auth token from cookies or headers
-    if (!userId) {
-      console.log("Auth check - Checking cookies:", req.cookies);
-      console.log("Auth check - Request headers:", {
-        authorization: req.headers['authorization'],
-        'x-auth-token': req.headers['x-auth-token'],
-        cookie: req.headers['cookie']
-      });
-      let authToken = req.cookies?.auth_token || req.headers['authorization']?.replace('Bearer ', '');
-      console.log("Auth check - Auth token from cookies/headers:", authToken);
-      console.log("Auth check - Available tokens in store:", Array.from(authTokens.keys()).map(k => k.substring(0, 8) + "..."));
-      
-      if (authToken) {
-        const tokenData = authTokens.get(authToken);
-        if (tokenData && tokenData.expires > Date.now()) {
-          userId = tokenData.userId;
-          console.log("Auth check - Found valid auth token for user:", userId);
-        } else {
-          console.log("Auth check - Auth token expired or invalid", tokenData);
-          if (authToken) authTokens.delete(authToken);
-        }
-      } else {
-        console.log("Auth check - No auth token found in cookies or headers");
-      }
-    }
-    
-    if (!userId) {
-      console.log("Auth check failed - userId not found in session or auth token");
+    if (!req.session.userId) {
+      console.log("Auth check failed - userId not found in session");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
