@@ -90,11 +90,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      console.log("Attempting login for:", { email });
+      console.log("Submitting login form with data:", { email, password });
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({ email, password }),
         credentials: 'include',
       });
@@ -105,15 +108,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const userData = await response.json() as User;
-      console.log("Login successful, user data:", userData);
+      console.log("Login successful, complete user data:", userData);
       
-      // Store user in localStorage for quick recovery if session issues occur
+      // Check if user has active subscription and redirect accordingly
+      const hasSubscription = userData.stripe_subscription_id && 
+        userData.subscription_status === 'active' && 
+        userData.subscription_end_date && 
+        new Date(userData.subscription_end_date) > new Date();
+      
+      if (hasSubscription) {
+        console.log("User has active subscription, redirecting to welcome page");
+      }
+      
+      // Store user in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Update query cache with user data
+      // Update query cache immediately with fresh data
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Return the user data so the calling function can check subscription status
+      // Refetch to ensure session is established
+      await refetch();
+      
       return userData;
     } catch (error) {
       console.error('Login error:', error);
