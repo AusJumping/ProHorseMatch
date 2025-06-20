@@ -57,10 +57,10 @@ export default function Home() {
     currency: "AUD",
   });
   
-  // Check if this is the discover route to show filter by default
+  // Check if this is the filter route to show filter by default
   // Check URL parameters and localStorage for active filters
   useEffect(() => {
-    if (location === "/discover") {
+    if (location === "/filter") {
       setShowFilter(true);
     }
     
