@@ -159,21 +159,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use(
     session({
-      name: 'prohorsematch.sid', // Custom session name
+      name: 'connect.sid', // Use default session name for better compatibility
       cookie: { 
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         secure: false, // Must be false for development
-        httpOnly: true,
-        sameSite: 'lax'
+        httpOnly: false, // Allow client-side access for debugging
+        sameSite: 'lax',
+        domain: undefined // Let browser set domain automatically
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
         stale: false,
       }),
-      resave: false, // Don't save session if unmodified
-      saveUninitialized: false, // Don't create session until something stored
+      resave: true, // Save session back to store even if unmodified
+      saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret2025",
-      rolling: false // Don't reset expiration on each request
+      rolling: false, // Don't reset expiration on each request
+      proxy: false // Not behind a proxy
     })
   );
 
@@ -313,7 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (err) {
         return res.status(500).json({ message: "Failed to logout" });
       }
-      res.clearCookie("prohorsematch.sid");
+      res.clearCookie("connect.sid");
       return res.json({ message: "Logged out successfully" });
     });
   });
