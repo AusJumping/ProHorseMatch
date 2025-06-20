@@ -135,6 +135,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Store user in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(userData));
+      console.log('Auth - Stored user data in localStorage:', userData);
       
       // Update both local state and query cache
       setUserState(userData);
