@@ -1,7 +1,8 @@
-import type { Express, Response, Request } from "express";
+import express, { type Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
+import MemoryStore from "memorystore";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -105,9 +106,6 @@ import {
     console.error("Error setting up test users:", error);
   }
 })();
-import express from "express";
-import session from "express-session";
-import MemoryStore from "memorystore";
 
 // Extend Express Session
 declare module "express-session" {
@@ -161,21 +159,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use(
     session({
+      name: 'prohorsematch.sid', // Custom session name
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
-        secure: false, // Setting to false for development and easier testing
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        secure: false, // Must be false for development
         httpOnly: true,
-        sameSite: 'lax' // Always use lax to improve session persistence across redirects
+        sameSite: 'lax'
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
-        stale: false, // Don't auto-expire sessions
+        stale: false,
       }),
-      resave: true, // Force session to be saved back to the store
-      saveUninitialized: true, // Save uninitialized sessions
-      secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      // Add rolling: true to update the cookie expiration on every response
-      rolling: true
+      resave: false, // Don't save session if unmodified
+      saveUninitialized: false, // Don't create session until something stored
+      secret: process.env.SESSION_SECRET || "proHorseMatchSecret2025",
+      rolling: false // Don't reset expiration on each request
     })
   );
 
@@ -315,7 +313,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (err) {
         return res.status(500).json({ message: "Failed to logout" });
       }
-      res.clearCookie("connect.sid");
+      res.clearCookie("prohorsematch.sid");
       return res.json({ message: "Logged out successfully" });
     });
   });

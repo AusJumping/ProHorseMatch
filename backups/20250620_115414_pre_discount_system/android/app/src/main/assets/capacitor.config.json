@@ -1,0 +1,8 @@
+{
+	"appId": "com.prohorsematch.app",
+	"appName": "ProHorseMatch",
+	"webDir": "dist",
+	"server": {
+		"androidScheme": "https"
+	}
+}
