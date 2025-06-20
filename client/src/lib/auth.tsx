@@ -100,7 +100,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      console.log("Attempting login for:", { email });
+      console.log("Submitting login form with data:", { email, password });
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -115,15 +115,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const userData = await response.json() as User;
-      console.log("Login successful, user data:", userData);
+      console.log("Login successful, complete user data:", userData);
       
-      // Store user in localStorage for quick recovery if session issues occur
+      // Store user in localStorage
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Update query cache with user data
+      // Update query cache with user data and force immediate update
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Return the user data so the calling function can check subscription status
+      // Force immediate refetch to ensure session is properly established
+      setTimeout(() => {
+        refetch();
+      }, 100);
+      
       return userData;
     } catch (error) {
       console.error('Login error:', error);
