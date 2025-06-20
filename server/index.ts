@@ -17,8 +17,31 @@ app.use((req, res, next) => {
 
 // CORS and cookie handling
 app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  
+  // Debug CORS requests
+  if (req.url.includes('/api/auth')) {
+    console.log("🔍 CORS Debug:", {
+      method: req.method,
+      url: req.url,
+      origin: origin,
+      userAgent: req.headers['user-agent'],
+      cookies: req.headers.cookie,
+      hasAuthCookie: req.headers.cookie?.includes('auth_token'),
+      hasSessionCookie: req.headers.cookie?.includes('connect.sid')
+    });
+  }
+  
+  // Allow credentials and set specific origin for cookie support
   res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  
+  // Be more specific with origins when credentials are involved
+  if (origin && (origin.includes('localhost') || origin.includes('127.0.0.1') || origin.includes('.replit.dev'))) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:5173'); // Default Vite dev server
+  }
+  
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
   
