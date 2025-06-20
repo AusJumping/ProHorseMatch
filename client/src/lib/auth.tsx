@@ -29,20 +29,12 @@ interface AuthContextType {
   register: (userData: any, userType: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  isLoading: true,
-  isError: false,
-  isAuthenticated: false,
-  login: async () => null,
-  logout: async () => {},
-  register: async () => {},
-});
+const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [, navigate] = useLocation();
   const queryClient = useQueryClient();
-
+  const [, navigate] = useLocation();
+  
   // Fetch the current user with improved caching
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
@@ -66,37 +58,38 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           }
           throw error;
         }
-      } catch (error) {
-        console.error("Auth fetch error:", error);
-        
-        // For network errors or other fetch failures, try localStorage as fallback
-        // but don't rely on it permanently - we need to fix the underlying issue
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            console.log("Temporarily using localStorage user due to fetch error:", parsedUser);
+      } catch (authError) {
+        // Network error or other issues - check localStorage for cached user
+        try {
+          const cachedUser = localStorage.getItem('user');
+          if (cachedUser) {
+            const parsedUser = JSON.parse(cachedUser);
             
-            // Try to verify this user is still valid on next opportunity
-            setTimeout(() => {
-              queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-            }, 1000);
-            
-            return parsedUser;
-          } catch (e) {
-            localStorage.removeItem('user');
-            return null;
+            // Only use cached data if it looks valid and recent
+            if (parsedUser && parsedUser.id && parsedUser.email) {
+              console.log("Using cached user data due to auth error");
+              
+              // Try to verify this user is still valid on next opportunity
+              setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+              }, 1000);
+              
+              return parsedUser;
+            }
           }
+        } catch (e) {
+          localStorage.removeItem('user');
+          return null;
         }
         
         return null;
       }
     },
-    staleTime: 0, // Always fetch fresh data
+    staleTime: 0,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchInterval: false, // Don't auto-refetch
-    retry: 1, // Retry once on failure
+    refetchInterval: false,
+    retry: 1,
   });
   
   // Ensure user is either User object or null, never undefined
@@ -109,19 +102,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Attempting login for:", { email });
       
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
-      }
-
-      const userData = await response.json() as User;
+      const userData = await apiRequest('POST', '/api/auth/login', { email, password });
       console.log("Login successful, user data:", userData);
       
       // Store user in localStorage for quick recovery if session issues occur
@@ -141,10 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await apiRequest('POST', '/api/auth/logout');
 
       // Clear localStorage
       localStorage.removeItem('user');
@@ -161,22 +139,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (userData: any, userType: string) => {
+  const register = async (userData: any, userType: string): Promise<void> => {
     try {
-      const response = await fetch(`/api/auth/register/${userType}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
-      }
-
-      // Force a full page reload to ensure auth state is properly updated
-      window.location.href = userType === 'owner' ? '/add-horse' : '/';
+      const registrationData = { ...userData, userType };
+      const newUser = await apiRequest('POST', '/api/auth/register', registrationData);
+      
+      // Store user in localStorage
+      localStorage.setItem('user', JSON.stringify(newUser));
+      
+      // Update query cache
+      queryClient.setQueryData(['/api/auth/me'], newUser);
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -184,7 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const value: AuthContextType = {
-    user: user || null,
+    user,
     isLoading,
     isError,
     isAuthenticated: !!user,
@@ -193,17 +166,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     register,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
 
-// Export the hook separately to avoid Fast Refresh issues
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
