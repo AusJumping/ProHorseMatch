@@ -1,8 +1,7 @@
-import express, { type Express, Response, Request } from "express";
+import type { Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
-import MemoryStore from "memorystore";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -106,6 +105,9 @@ import {
     console.error("Error setting up test users:", error);
   }
 })();
+import express from "express";
+import session from "express-session";
+import MemoryStore from "memorystore";
 
 // Extend Express Session
 declare module "express-session" {
@@ -154,42 +156,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session middleware
   const isProduction = process.env.NODE_ENV === "production";
   
-  // CORS middleware - must come before session middleware
-  app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cache-Control, Pragma');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    
-    if (req.method === 'OPTIONS') {
-      return res.sendStatus(200);
-    }
-    next();
-  });
-
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   
   app.use(
     session({
-      name: 'prohorsematch.sid', // Match the cookie name being used in the logs
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: false, // Must be false for development
-        httpOnly: false, // Allow client-side access for debugging
-        sameSite: 'lax', // Keep as 'lax' for development
-        domain: undefined // Let browser set domain automatically
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
+        secure: false, // Setting to false for development and easier testing
+        httpOnly: true,
+        sameSite: 'lax' // Always use lax to improve session persistence across redirects
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
-        stale: false,
+        stale: false, // Don't auto-expire sessions
       }),
-      resave: false, // Don't save if unmodified - important for proper session handling
-      saveUninitialized: false, // Don't create session until something stored
-      secret: process.env.SESSION_SECRET || "proHorseMatchSecret2025",
-      rolling: false, // Don't reset expiration on each request
-      proxy: false // Not behind a proxy
+      resave: true, // Force session to be saved back to the store
+      saveUninitialized: true, // Save uninitialized sessions
+      secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
+      // Add rolling: true to update the cookie expiration on every response
+      rolling: true
     })
   );
 
@@ -286,13 +272,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: user.id,
         is_searching: user.is_searching,
         is_selling: user.is_selling,
-        sessionId: req.sessionID,
-        cookies: req.headers.cookie
+        sessionId: req.sessionID
       });
       
       req.session.userId = user.id;
       
-      // Save session explicitly - let express-session handle cookies
+      // Save session explicitly
       await new Promise<void>((resolve) => {
         req.session.save((err) => {
           if (err) {
@@ -330,7 +315,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (err) {
         return res.status(500).json({ message: "Failed to logout" });
       }
-      res.clearCookie("prohorsematch.sid");
+      res.clearCookie("connect.sid");
       return res.json({ message: "Logged out successfully" });
     });
   });

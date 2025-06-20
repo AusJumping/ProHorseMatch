@@ -1,7 +1,6 @@
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: number;
@@ -29,31 +28,58 @@ interface AuthContextType {
   register: (userData: any, userType: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isLoading: true,
+  isError: false,
+  isAuthenticated: false,
+  login: async () => null,
+  logout: async () => {},
+  register: async () => {},
+});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch the current user with improved error handling
-  const { data, isLoading, isError } = useQuery<User | null>({
+  // Fetch the current user with improved caching
+  const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
-        const userData = await apiRequest('GET', '/api/auth/me');
-        console.log("Auth user data:", userData);
-        return userData;
-      } catch (error: any) {
-        console.log("Auth check failed:", error.message);
-        if (error.message?.includes('401') || error.message?.includes('Not authenticated')) {
-          return null;
+        const res = await fetch('/api/auth/me', { 
+          credentials: 'include',
+          cache: 'no-cache' // Ensure we don't get cached responses
+        });
+        if (res.status === 401) return null;
+        const userData = await res.json();
+        console.log("Auth user data:", userData); // Debug log
+        
+        // Store user data in localStorage for persistence
+        if (userData && userData.id) {
+          localStorage.setItem('user', JSON.stringify(userData));
         }
-        throw error;
+        
+        return userData;
+      } catch (error) {
+        console.error("Auth fetch error:", error);
+        
+        // Try to restore from localStorage if fetch fails
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            return JSON.parse(storedUser);
+          } catch (e) {
+            return null;
+          }
+        }
+        
+        return null;
       }
     },
-    retry: 1,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
+    staleTime: 60 * 1000, // Cache auth data for 1 minute
+    refetchOnWindowFocus: true,
+    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
   });
   
   // Ensure user is either User object or null, never undefined
@@ -66,56 +92,81 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       console.log("Attempting login for:", { email });
       
-      const userData = await apiRequest('POST', '/api/auth/login', { email, password });
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Login failed');
+      }
+
+      const userData = await response.json() as User;
       console.log("Login successful, user data:", userData);
       
-      // Update query cache with user data and force refetch to sync with server
+      // Store user in localStorage for quick recovery if session issues occur
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       
       // Return the user data so the calling function can check subscription status
       return userData;
-    } catch (error: any) {
-      console.error("Login error:", error);
-      throw new Error(error.message || 'Login failed');
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
   };
 
-  const logout = async (): Promise<void> => {
+  const logout = async () => {
     try {
-      await apiRequest('POST', '/api/auth/logout');
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      // Clear localStorage
+      localStorage.removeItem('user');
       
-      // Clear query cache
+      // Clear the query cache
       queryClient.setQueryData(['/api/auth/me'], null);
-      queryClient.removeQueries({ queryKey: ['/api/auth/me'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       
-      // Navigate to login page
+      // Navigate to home page using client-side routing
       navigate('/');
-    } catch (error: any) {
-      console.error("Logout error:", error);
-      // Even if logout fails on server, clear local state
-      queryClient.setQueryData(['/api/auth/me'], null);
-      queryClient.removeQueries({ queryKey: ['/api/auth/me'] });
-      navigate('/');
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw error;
     }
   };
 
-  const register = async (userData: any, userType: string): Promise<void> => {
+  const register = async (userData: any, userType: string) => {
     try {
-      const registerData = { ...userData, userType };
-      const response = await apiRequest('POST', '/api/auth/register', registerData);
-      
-      // Update query cache with new user data
-      queryClient.setQueryData(['/api/auth/me'], response);
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-    } catch (error: any) {
-      console.error("Registration error:", error);
-      throw new Error(error.message || 'Registration failed');
+      const response = await fetch(`/api/auth/register/${userType}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
+      }
+
+      // Force a full page reload to ensure auth state is properly updated
+      window.location.href = userType === 'owner' ? '/add-horse' : '/';
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
     }
   };
 
   const value: AuthContextType = {
-    user,
+    user: user || null,
     isLoading,
     isError,
     isAuthenticated: !!user,
@@ -124,9 +175,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     register,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
+// Export the hook separately to avoid Fast Refresh issues
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

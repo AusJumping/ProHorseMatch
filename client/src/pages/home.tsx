@@ -57,10 +57,10 @@ export default function Home() {
     currency: "AUD",
   });
   
-  // Check if this is the filter route to show filter by default
+  // Check if this is the discover route to show filter by default
   // Check URL parameters and localStorage for active filters
   useEffect(() => {
-    if (location === "/filter") {
+    if (location === "/discover") {
       setShowFilter(true);
     }
     
@@ -438,8 +438,8 @@ export default function Home() {
       onFilterClick={toggleFilterPanel}
     >
       <div className="flex w-full h-full">
-        {/* Filter sidebar - desktop only or when on filter route */}
-        {(!isMobile || (location === "/filter" && showFilter)) && (
+        {/* Filter sidebar - desktop only or when on discover route */}
+        {(!isMobile || (location === "/discover" && showFilter)) && (
           <div className={`${isMobile ? 'w-full' : 'w-72'} bg-white rounded-xl p-5 shadow-sm h-fit ${isMobile ? 'mb-6' : 'mr-6'}`}>
             <FilterPanel 
               isOpen={true} 

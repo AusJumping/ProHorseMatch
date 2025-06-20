@@ -68,13 +68,13 @@ const Sidebar = () => {
         <ul className="space-y-1">
           <li>
             <Button
-              variant={location === "/filter" ? "default" : "ghost"}
+              variant={location === "/" ? "default" : "ghost"}
               className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
-                location === "/filter" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
               }`}
               onClick={(e) => {
                 e.preventDefault();
-                navigate("/filter");
+                window.location.href = "/browse";
               }}
             >
               <Home className="mr-3 h-5 w-5" />
