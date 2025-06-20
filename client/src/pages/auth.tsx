@@ -112,6 +112,12 @@ export default function Auth() {
       
       // No need to call login again, we're already logged in
       
+      // Store user data in localStorage for persistence
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Force a small delay and then use window.location to ensure session cookies are properly set
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
       // Direct check for subscription status
       if (userData && userData.subscription_status === 'active') {
         console.log("User has active subscription, redirecting to welcome page");

@@ -51,7 +51,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           credentials: 'include',
           cache: 'no-cache' // Ensure we don't get cached responses
         });
-        if (res.status === 401) return null;
+        if (res.status === 401) {
+          // Clear localStorage if server says not authenticated
+          localStorage.removeItem('user');
+          return null;
+        }
         const userData = await res.json();
         console.log("Auth user data:", userData); // Debug log
         
@@ -68,8 +72,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           try {
-            return JSON.parse(storedUser);
+            const parsedUser = JSON.parse(storedUser);
+            console.log("Restored user from localStorage:", parsedUser);
+            return parsedUser;
           } catch (e) {
+            localStorage.removeItem('user');
             return null;
           }
         }
@@ -77,9 +84,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
     },
-    staleTime: 60 * 1000, // Cache auth data for 1 minute
+    staleTime: 30 * 1000, // Cache auth data for 30 seconds
     refetchOnWindowFocus: true,
-    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
+    refetchOnMount: true,
+    retry: false, // Don't retry failed auth requests
   });
   
   // Ensure user is either User object or null, never undefined
@@ -110,8 +118,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Store user in localStorage for quick recovery if session issues occur
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Update query cache with user data
+      // Update query cache with user data and force refetch to sync with server
       queryClient.setQueryData(['/api/auth/me'], userData);
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       
       // Return the user data so the calling function can check subscription status
       return userData;
