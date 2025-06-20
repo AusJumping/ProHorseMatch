@@ -42,53 +42,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Use localStorage-based authentication with server validation
+  // Token-based authentication with server validation
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
-        // First check localStorage for user data
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const userData = JSON.parse(storedUser);
-          console.log("Using stored user data:", userData);
-          return userData;
-        }
-        
-        // If no stored user, try server validation
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
           cache: 'no-cache'
         });
         
         if (res.status === 401) {
-          localStorage.removeItem('user');
           return null;
         }
         
         const userData = await res.json();
-        localStorage.setItem('user', JSON.stringify(userData));
+        console.log("Auth user data:", userData);
         return userData;
       } catch (error) {
         console.error("Auth fetch error:", error);
-        
-        // Fallback to localStorage if server fails
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            return JSON.parse(storedUser);
-          } catch (e) {
-            localStorage.removeItem('user');
-            return null;
-          }
-        }
-        
         return null;
       }
     },
-    staleTime: 5 * 60 * 1000, // Cache auth data for 5 minutes
-    refetchOnWindowFocus: false, // Don't refetch on focus to avoid session issues
-    refetchInterval: false, // Disable automatic refetching
+    staleTime: 1 * 60 * 1000, // Cache auth data for 1 minute
+    refetchOnWindowFocus: true, // Refetch on focus to check token validity
+    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep token fresh
   });
   
   // Ensure user is either User object or null, never undefined
@@ -114,10 +92,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const userData = await response.json() as User;
-      console.log("Login successful, user data:", userData);
-      
-      // Store user in localStorage for quick recovery if session issues occur
-      localStorage.setItem('user', JSON.stringify(userData));
+      console.log("Login successful, complete user data:", userData);
       
       // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);

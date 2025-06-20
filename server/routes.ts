@@ -280,17 +280,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: req.sessionID
       });
       
-      req.session.userId = user.id;
+      // Create a simple auth token (user_id:timestamp:hash)
+      const timestamp = Date.now();
+      const authToken = `${user.id}:${timestamp}:${Buffer.from(`${user.id}${timestamp}proHorseMatch`).toString('base64')}`;
       
-      // Also set a simple auth token in cookie as fallback
-      res.cookie('auth_user_id', user.id.toString(), {
+      // Set secure auth token cookie
+      res.cookie('auth_token', authToken, {
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        httpOnly: false,
+        httpOnly: true,
         secure: false,
-        sameSite: 'lax'
+        sameSite: 'lax',
+        path: '/'
       });
       
-      console.log("Setting auth cookie and session for user:", user.id);
+      console.log("Setting auth token for user:", user.id);
       
       // Return full user data including subscription info
       return res.json({
@@ -319,27 +322,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to logout" });
       }
       res.clearCookie("connect.sid");
-      res.clearCookie("auth_user_id");
+      res.clearCookie("auth_token");
       return res.json({ message: "Logged out successfully" });
     });
   });
 
+  // Helper function to validate auth token
+  const validateAuthToken = (token: string): number | null => {
+    try {
+      const [userId, timestamp, hash] = token.split(':');
+      const expectedHash = Buffer.from(`${userId}${timestamp}proHorseMatch`).toString('base64');
+      
+      if (hash === expectedHash) {
+        const tokenAge = Date.now() - parseInt(timestamp);
+        const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+        
+        if (tokenAge < maxAge) {
+          return parseInt(userId);
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Session:", {
-      sessionId: req.sessionID,
-      userId: req.session.userId,
-      cookieUserId: req.cookies?.auth_user_id
+    console.log("Auth check - Token:", {
+      hasAuthToken: !!req.cookies?.auth_token,
+      sessionId: req.sessionID
     });
     
-    // Check session first, then fallback to cookie
-    let userId = req.session.userId;
-    if (!userId && req.cookies?.auth_user_id) {
-      userId = parseInt(req.cookies.auth_user_id);
-      console.log("Using cookie fallback for user ID:", userId);
+    // Validate auth token
+    let userId = null;
+    if (req.cookies?.auth_token) {
+      userId = validateAuthToken(req.cookies.auth_token);
+      console.log("Token validation result - User ID:", userId);
     }
     
     if (!userId) {
-      console.log("Auth check failed - Not authenticated");
+      console.log("Auth check failed - No valid token");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
