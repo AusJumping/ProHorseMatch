@@ -284,16 +284,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const timestamp = Date.now();
       const authToken = `${user.id}:${timestamp}:${Buffer.from(`${user.id}${timestamp}proHorseMatch`).toString('base64')}`;
       
-      // Set secure auth token cookie
+      // Set auth token in both cookie and header for debugging
       res.cookie('auth_token', authToken, {
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        httpOnly: true,
-        secure: false,
+        httpOnly: false, // Allow frontend access
+        secure: false, // Development mode
         sameSite: 'lax',
         path: '/'
       });
       
+      // Also set in response header as fallback
+      res.set('X-Auth-Token', authToken);
+      
       console.log("Setting auth token for user:", user.id);
+      console.log("Token set in both cookie and header");
       
       // Return full user data including subscription info
       return res.json({
@@ -348,9 +352,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Token:", {
+    console.log("Auth check - Debug info:", {
       hasAuthToken: !!req.cookies?.auth_token,
-      sessionId: req.sessionID
+      allCookies: Object.keys(req.cookies || {}),
+      sessionId: req.sessionID,
+      headers: req.headers.cookie ? req.headers.cookie.substring(0, 100) + '...' : 'none'
     });
     
     // Validate auth token
@@ -358,6 +364,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (req.cookies?.auth_token) {
       userId = validateAuthToken(req.cookies.auth_token);
       console.log("Token validation result - User ID:", userId);
+    } else {
+      console.log("No auth_token cookie found in request");
     }
     
     if (!userId) {

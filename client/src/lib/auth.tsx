@@ -42,31 +42,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Token-based authentication with server validation
+  // localStorage-based authentication with server validation
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
+        // First try to get user data from localStorage
+        const storedUserData = localStorage.getItem('user_data');
+        const storedAuthToken = localStorage.getItem('auth_token');
+        
+        if (storedUserData && storedAuthToken) {
+          console.log("Using stored authentication data");
+          return JSON.parse(storedUserData);
+        }
+        
+        // Fallback to server validation with cookies
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
           cache: 'no-cache'
         });
         
         if (res.status === 401) {
+          // Clear any stale localStorage data
+          localStorage.removeItem('user_data');
+          localStorage.removeItem('auth_token');
           return null;
         }
         
         const userData = await res.json();
-        console.log("Auth user data:", userData);
+        console.log("Auth user data from server:", userData);
+        
+        // Store for future use
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        
         return userData;
       } catch (error) {
         console.error("Auth fetch error:", error);
+        
+        // Try localStorage as last resort
+        const storedUserData = localStorage.getItem('user_data');
+        if (storedUserData) {
+          console.log("Using localStorage fallback");
+          return JSON.parse(storedUserData);
+        }
+        
         return null;
       }
     },
-    staleTime: 1 * 60 * 1000, // Cache auth data for 1 minute
-    refetchOnWindowFocus: true, // Refetch on focus to check token validity
-    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep token fresh
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes since we're using localStorage
+    refetchOnWindowFocus: false, // Don't refetch to avoid clearing localStorage unnecessarily
+    refetchInterval: false, // Disable since localStorage persists
   });
   
   // Ensure user is either User object or null, never undefined
@@ -94,6 +119,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = await response.json() as User;
       console.log("Login successful, complete user data:", userData);
       
+      // Store auth token from response header if available
+      const authToken = response.headers.get('X-Auth-Token');
+      if (authToken) {
+        localStorage.setItem('auth_token', authToken);
+        console.log("Auth token stored in localStorage");
+      }
+      
+      // Store user data for immediate access
+      localStorage.setItem('user_data', JSON.stringify(userData));
+      
       // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
       
@@ -113,7 +148,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       // Clear localStorage
-      localStorage.removeItem('user');
+      localStorage.removeItem('user_data');
+      localStorage.removeItem('auth_token');
       
       // Clear the query cache
       queryClient.setQueryData(['/api/auth/me'], null);

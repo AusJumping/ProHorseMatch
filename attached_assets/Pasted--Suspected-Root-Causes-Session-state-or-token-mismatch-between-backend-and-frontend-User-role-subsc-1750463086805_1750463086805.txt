@@ -1,0 +1,44 @@
+✅ Suspected Root Causes
+Session state or token mismatch between backend and frontend
+User role/subscription data not being loaded properly after login
+Auth context not persisting or refreshing correctly across routes
+Backend route for checking login status returning stale/incorrect data
+🛠 Suggested Fixes and Checks
+1. Ensure Proper Session Handling
+
+Double check that session cookies are correctly set and sent in every request (especially to /me or /subscriptions routes).
+On the server, confirm that sessions are being read consistently from the PostgreSQL store.
+Check if cookie.sameSite should be set to 'none' (instead of 'lax') if frontend and backend are on different origins (e.g. dev environments).
+2. Fix secure and httpOnly flags
+
+On development, cookie.secure should be false.
+But on production over HTTPS, secure: true is required.
+Double check httpOnly: false — it may prevent frontend JS from accessing the cookie if needed (set to true unless frontend explicitly needs to read it).
+3. Check AuthContext or Global State in React
+
+Make sure your AuthContext (or auth hook) is fetching and refreshing user state on page load and after login.
+If using TanStack React Query or similar, ensure you’re invalidating and refetching the user subscription info after login.
+4. Validate API Call Sequence
+
+Confirm that the login flow includes:
+POST to login
+Then GET to /me or similar endpoint
+Then loading subscription level or user role
+Ensure none of these calls are being skipped or returning stale cache.
+5. Backend: Verify Subscription Fetching
+
+In your /me or /profile endpoint, ensure the subscription level or seller status is being correctly queried from the DB and included in the response.
+6. Frontend: Check Conditional Rendering
+
+Verify that subscription-level components (like "Your Horses") rely on fresh data, not localStorage or outdated state.
+If using SSR or hydration, check for mismatch between server-rendered and client-rendered user data.
+7. Add Debug Logging
+
+Temporarily log user session data on the backend in /me, /subscriptions, and /my-horses routes to confirm what’s missing.
+Log state in your frontend AuthProvider on mount, and after login, to confirm propagation.
+✅ Additional Notes
+This issue is likely not a login failure, but a failure to propagate user role or session state throughout the app.
+If applicable, also confirm that:
+Cookies are not blocked or overwritten
+Database actually stores the subscription record correctly on sign-up
+The frontend is not hitting a different domain/port that causes session loss
