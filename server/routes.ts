@@ -178,6 +178,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   
+  // Add cookie parser middleware to handle auth tokens
+  app.use(cookieParser());
+  
   app.use(
     session({
       name: 'connect.sid',
