@@ -42,12 +42,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch the current user with improved caching and localStorage fallback
+  // Fetch the current user with localStorage-first approach
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
-        // First check if we have a stored authentication state
+        // ALWAYS check localStorage first
         const isAuthStored = localStorage.getItem('isAuthenticated') === 'true';
         const storedUser = localStorage.getItem('user');
         
@@ -55,56 +55,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           try {
             const parsedUser = JSON.parse(storedUser);
             console.log("Using stored user data:", parsedUser);
+            // Don't fetch from server if we have valid localStorage data
             return parsedUser;
           } catch (e) {
             console.error("Error parsing stored user:", e);
+            // Clear corrupted data
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
           }
         }
         
-        const res = await fetch('/api/auth/me', { 
-          credentials: 'include',
-          cache: 'no-cache'
-        });
-        
-        if (res.status === 401) {
-          // Clear localStorage if not authenticated
-          localStorage.removeItem('user');
-          localStorage.removeItem('isAuthenticated');
+        // Only try server if no localStorage data
+        try {
+          const res = await fetch('/api/auth/me', { 
+            credentials: 'include',
+            cache: 'no-cache'
+          });
+          
+          if (res.status === 401) {
+            // Clear localStorage if server says not authenticated
+            localStorage.removeItem('user');
+            localStorage.removeItem('isAuthenticated');
+            return null;
+          }
+          
+          const userData = await res.json();
+          console.log("Auth user data from server:", userData);
+          
+          // Store user data in localStorage for persistence
+          if (userData && userData.id) {
+            localStorage.setItem('user', JSON.stringify(userData));
+            localStorage.setItem('isAuthenticated', 'true');
+          }
+          
+          return userData;
+        } catch (serverError) {
+          console.error("Server auth check failed:", serverError);
+          // If server fails but we had localStorage data, restore it
+          if (isAuthStored && storedUser) {
+            try {
+              console.log("Restoring stored user due to server error");
+              return JSON.parse(storedUser);
+            } catch (e) {
+              console.error("Error parsing stored user:", e);
+            }
+          }
           return null;
         }
-        
-        const userData = await res.json();
-        console.log("Auth user data from server:", userData);
-        
-        // Store user data in localStorage for persistence
-        if (userData && userData.id) {
-          localStorage.setItem('user', JSON.stringify(userData));
-          localStorage.setItem('isAuthenticated', 'true');
-        }
-        
-        return userData;
       } catch (error) {
         console.error("Auth fetch error:", error);
-        
-        // Try to restore from localStorage if fetch fails but we're marked as authenticated
-        const isAuthStored = localStorage.getItem('isAuthenticated') === 'true';
-        const storedUser = localStorage.getItem('user');
-        
-        if (isAuthStored && storedUser) {
-          try {
-            console.log("Using stored user due to fetch error");
-            return JSON.parse(storedUser);
-          } catch (e) {
-            console.error("Error parsing stored user:", e);
-          }
-        }
-        
         return null;
       }
     },
-    staleTime: 5 * 60 * 1000, // Cache auth data for 5 minutes
-    refetchOnWindowFocus: false, // Don't refetch on focus to avoid loops
-    refetchInterval: false, // Don't auto-refetch to avoid session issues
+    staleTime: Infinity, // Cache auth data indefinitely
+    refetchOnWindowFocus: false, // Don't refetch on focus
+    refetchInterval: false, // Don't auto-refetch
   });
   
   // Ensure user is either User object or null, never undefined
@@ -139,11 +144,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Force refetch to verify session works
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-      }, 100);
-      
       // Return the user data so the calling function can check subscription status
       return userData;
     } catch (error) {
@@ -161,6 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Clear localStorage
       localStorage.removeItem('user');
+      localStorage.removeItem('isAuthenticated');
       
       // Clear the query cache
       queryClient.setQueryData(['/api/auth/me'], null);
