@@ -165,7 +165,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         secure: false, // False for development
         httpOnly: false, // Allow client-side access for debugging
         sameSite: 'lax',
-        path: '/' // Explicitly set path
+        path: '/', // Explicitly set path
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
@@ -173,7 +173,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       resave: true, // Force save to ensure session persists
       saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret2024",
-      name: 'connect.sid'
+      name: 'connect.sid',
+      rolling: true, // Reset expiry on every request to keep session alive
+      proxy: false // Don't trust proxy headers
     })
   );
 
