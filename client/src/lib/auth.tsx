@@ -42,39 +42,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // localStorage-only authentication approach
-  const { data, isLoading, isError, refetch } = useQuery<User | null>({
-    queryKey: ['/api/auth/me'],
-    queryFn: async () => {
+  // Direct localStorage authentication without React Query complications
+  const [authState, setAuthState] = useState<{ user: User | null; isLoading: boolean }>(() => {
+    try {
+      const isAuthStored = localStorage.getItem('isAuthenticated') === 'true';
+      const storedUser = localStorage.getItem('user');
+      
+      console.log("Checking localStorage on init:", { isAuthStored, hasUser: !!storedUser });
+      
+      if (isAuthStored && storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        console.log("Initial auth state from localStorage:", parsedUser);
+        return { user: parsedUser, isLoading: false };
+      }
+    } catch (e) {
+      console.error("Error parsing stored user on init:", e);
+      localStorage.removeItem('user');
+      localStorage.removeItem('isAuthenticated');
+    }
+    
+    console.log("No valid auth data in localStorage");
+    return { user: null, isLoading: false };
+  });
+
+  // Add an effect to listen for localStorage changes (e.g., when user logs in from another tab)
+  useEffect(() => {
+    const handleStorageChange = () => {
       try {
-        // Check localStorage first and ONLY use localStorage
         const isAuthStored = localStorage.getItem('isAuthenticated') === 'true';
         const storedUser = localStorage.getItem('user');
         
         if (isAuthStored && storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            console.log("Using localStorage user data:", parsedUser);
-            return parsedUser;
-          } catch (e) {
-            console.error("Error parsing stored user:", e);
-            localStorage.removeItem('user');
-            localStorage.removeItem('isAuthenticated');
-            return null;
-          }
+          const parsedUser = JSON.parse(storedUser);
+          console.log("Storage change detected, updating auth state:", parsedUser);
+          setAuthState({ user: parsedUser, isLoading: false });
+        } else {
+          console.log("Storage change detected, clearing auth state");
+          setAuthState({ user: null, isLoading: false });
         }
-        
-        console.log("No authenticated user in localStorage");
-        return null;
-      } catch (error) {
-        console.error("Auth fetch error:", error);
-        return null;
+      } catch (e) {
+        console.error("Error handling storage change:", e);
+        setAuthState({ user: null, isLoading: false });
       }
-    },
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchInterval: false,
-  });
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const data = authState.user;
+  const isLoading = authState.isLoading;
+  const isError = false;
   
   // Ensure user is either User object or null, never undefined
   const user = data === undefined ? null : data;
@@ -99,14 +117,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const userData = await response.json() as User;
-      console.log("Login successful, user data:", userData);
+      console.log("Login successful, complete user data:", userData);
       
       // Store user in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(userData));
       localStorage.setItem('isAuthenticated', 'true');
       
-      // Update query cache with user data
-      queryClient.setQueryData(['/api/auth/me'], userData);
+      // Update the auth state directly
+      setAuthState({ user: userData, isLoading: false });
       
       // Return the user data so the calling function can check subscription status
       return userData;
@@ -118,18 +136,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
+      // Clear localStorage first
+      localStorage.removeItem('user');
+      localStorage.removeItem('isAuthenticated');
+      
+      // Update auth state
+      setAuthState({ user: null, isLoading: false });
+      
+      // Make logout request to server
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
-
-      // Clear localStorage
-      localStorage.removeItem('user');
-      localStorage.removeItem('isAuthenticated');
-      
-      // Clear the query cache
-      queryClient.setQueryData(['/api/auth/me'], null);
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       
       // Navigate to home page using client-side routing
       navigate('/');
