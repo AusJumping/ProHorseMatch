@@ -137,7 +137,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = await response.json() as User;
       console.log("Login successful, complete user data:", userData);
       
-      // Check if user has active subscription and redirect accordingly
+      // CRITICAL: Store auth token IMMEDIATELY before any other operations
+      console.log('Auth - About to store user data in localStorage:', userData);
+      
+      try {
+        localStorage.setItem('user', JSON.stringify(userData));
+        console.log('Auth - Stored user object in localStorage');
+        
+        if (userData.auth_token) {
+          localStorage.setItem('auth_token', userData.auth_token);
+          console.log('Auth - Stored auth token in localStorage:', userData.auth_token);
+          
+          // Verify storage worked immediately
+          const storedToken = localStorage.getItem('auth_token');
+          console.log('Auth - Verified stored token:', storedToken);
+        } else {
+          console.log('Auth - No auth_token in response data');
+        }
+      } catch (storageError) {
+        console.error('Auth - localStorage error:', storageError);
+      }
+      
+      // Update state and cache
+      setUserState(userData);
+      queryClient.setQueryData(['/api/auth/me'], userData);
+      
+      // Check subscription status
       const hasSubscription = userData.stripe_subscription_id && 
         userData.subscription_status === 'active' && 
         userData.subscription_end_date && 
@@ -146,25 +171,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (hasSubscription) {
         console.log("User has active subscription, redirecting to welcome page");
       }
-      
-      // Store user and auth token in localStorage IMMEDIATELY for persistence
-      console.log('Auth - About to store user data in localStorage:', userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      if (userData.auth_token) {
-        localStorage.setItem('auth_token', userData.auth_token);
-        console.log('Auth - Stored auth token in localStorage:', userData.auth_token);
-      }
-      
-      // Verify storage worked
-      const storedToken = localStorage.getItem('auth_token');
-      console.log('Auth - Verified stored token:', storedToken);
-      
-      // Update both local state and query cache
-      setUserState(userData);
-      queryClient.setQueryData(['/api/auth/me'], userData);
-      
-      // Force immediate refetch to establish session
-      setTimeout(() => refetch(), 100);
       
       return userData;
     } catch (error) {
