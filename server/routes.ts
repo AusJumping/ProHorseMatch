@@ -323,7 +323,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Also store user ID in session as backup
       req.session.userId = user.id;
       
-      // Return full user data including subscription info
+      // Return full user data including auth token for client-side storage
       return res.json({
         id: user.id,
         name: user.name,
@@ -336,7 +336,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripe_subscription_id: user.stripe_subscription_id,
         subscription_status: user.subscription_status,
         subscription_plan: user.subscription_plan,
-        subscription_end_date: user.subscription_end_date
+        subscription_end_date: user.subscription_end_date,
+        auth_token: authToken // Include token in response for client storage
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -365,11 +366,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     let userId = req.session.userId;
     
-    // If session doesn't have userId, check auth token
+    // If session doesn't have userId, check auth token from cookies or headers
     if (!userId) {
       console.log("Auth check - Checking cookies:", req.cookies);
-      const authToken = req.cookies?.auth_token;
-      console.log("Auth check - Auth token from cookies:", authToken);
+      let authToken = req.cookies?.auth_token || req.headers['authorization']?.replace('Bearer ', '');
+      console.log("Auth check - Auth token from cookies/headers:", authToken);
       console.log("Auth check - Available tokens in store:", Array.from(authTokens.keys()).map(k => k.substring(0, 8) + "..."));
       
       if (authToken) {
@@ -382,7 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (authToken) authTokens.delete(authToken);
         }
       } else {
-        console.log("Auth check - No auth token cookie found");
+        console.log("Auth check - No auth token found in cookies or headers");
       }
     }
     

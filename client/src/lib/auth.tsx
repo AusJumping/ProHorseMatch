@@ -16,6 +16,7 @@ interface User {
   subscription_status?: string;
   subscription_plan?: string;
   subscription_end_date?: string;
+  auth_token?: string;
 }
 
 interface AuthContextType {
@@ -146,8 +147,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log("User has active subscription, redirecting to welcome page");
       }
       
-      // Store user in localStorage for persistence
+      // Store user and auth token in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(userData));
+      if (userData.auth_token) {
+        localStorage.setItem('auth_token', userData.auth_token);
+      }
       console.log('Auth - Stored user data in localStorage:', userData);
       
       // Update both local state and query cache
