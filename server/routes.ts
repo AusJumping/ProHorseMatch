@@ -308,14 +308,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Generated auth token for user:", user.id, "token:", authToken.substring(0, 8) + "...");
       
-      // Set auth token as httpOnly cookie for security
+      // Set auth token as cookie
       res.cookie('auth_token', authToken, {
         httpOnly: false, // Allow client access for debugging
         secure: false, // False for development
         sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/'
+        path: '/',
+        domain: undefined // Let browser determine domain
       });
+      
+      console.log("Cookie set with headers:", res.getHeaders()['set-cookie']);
       
       // Also store user ID in session as backup
       req.session.userId = user.id;
