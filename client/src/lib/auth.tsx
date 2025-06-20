@@ -42,25 +42,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Pure localStorage-based authentication (no server dependency)
+  // Session-based authentication with server validation
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
-      // Always use localStorage first - this is the source of truth
-      const storedUserData = localStorage.getItem('user_data');
-      const storedAuthToken = localStorage.getItem('auth_token');
-      
-      if (storedUserData && storedAuthToken) {
-        console.log("Using stored authentication data");
-        return JSON.parse(storedUserData);
+      try {
+        const res = await fetch('/api/auth/me', { 
+          credentials: 'include',
+          cache: 'no-cache'
+        });
+        
+        if (res.status === 401) {
+          return null;
+        }
+        
+        const userData = await res.json();
+        console.log("Auth user data from server:", userData);
+        return userData;
+      } catch (error) {
+        console.error("Auth fetch error:", error);
+        return null;
       }
-      
-      console.log("No stored authentication data found");
-      return null;
     },
-    staleTime: Infinity, // Never invalidate - localStorage is persistent
-    refetchOnWindowFocus: false, // Don't refetch
-    refetchInterval: false, // Don't auto-refetch
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+    refetchInterval: false,
   });
   
   // Ensure user is either User object or null, never undefined
@@ -88,29 +94,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = await response.json() as User;
       console.log("Login successful, complete user data:", userData);
       
-      // Store auth token from response header if available
-      const authToken = response.headers.get('X-Auth-Token');
-      console.log("Auth token from header:", authToken ? "received" : "not found");
-      
-      if (authToken) {
-        localStorage.setItem('auth_token', authToken);
-        console.log("Auth token stored in localStorage");
-      } else {
-        // Create a simple auth token as fallback using user ID and timestamp
-        const fallbackToken = `${userData.id}:${Date.now()}:local`;
-        localStorage.setItem('auth_token', fallbackToken);
-        console.log("Fallback auth token created and stored");
-      }
-      
-      // Store user data for immediate access
-      localStorage.setItem('user_data', JSON.stringify(userData));
-      console.log("User data stored in localStorage");
-      
-      // Update query cache with user data immediately
+      // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
-      
-      // Force a refetch to trigger the auth state update
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       
       // Return the user data so the calling function can check subscription status
       return userData;
@@ -127,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         credentials: 'include',
       });
 
-      // Clear localStorage
+      // Clear localStorage if any exists
       localStorage.removeItem('user_data');
       localStorage.removeItem('auth_token');
       

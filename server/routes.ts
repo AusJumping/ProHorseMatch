@@ -280,24 +280,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: req.sessionID
       });
       
-      // Create a simple auth token (user_id:timestamp:hash)
-      const timestamp = Date.now();
-      const authToken = `${user.id}:${timestamp}:${Buffer.from(`${user.id}${timestamp}proHorseMatch`).toString('base64')}`;
+      req.session.userId = user.id;
       
-      // Set auth token in both cookie and header for debugging
-      res.cookie('auth_token', authToken, {
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        httpOnly: false, // Allow frontend access
-        secure: false, // Development mode
-        sameSite: 'lax',
-        path: '/'
+      // Save session explicitly
+      await new Promise<void>((resolve) => {
+        req.session.save((err: any) => {
+          if (err) {
+            console.error("Session save error:", err);
+          } else {
+            console.log("Session saved successfully");
+          }
+          resolve();
+        });
       });
-      
-      // Also set in response header as fallback
-      res.set('X-Auth-Token', authToken);
-      
-      console.log("Setting auth token for user:", user.id);
-      console.log("Token set in both cookie and header");
       
       // Return full user data including subscription info
       return res.json({
@@ -352,30 +347,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Debug info:", {
-      hasAuthToken: !!req.cookies?.auth_token,
-      allCookies: Object.keys(req.cookies || {}),
+    console.log("Auth check - Session:", {
       sessionId: req.sessionID,
-      headers: req.headers.cookie ? req.headers.cookie.substring(0, 100) + '...' : 'none'
+      userId: req.session.userId,
+      sessionContent: req.session
     });
     
-    // Validate auth token
-    let userId = null;
-    if (req.cookies?.auth_token) {
-      userId = validateAuthToken(req.cookies.auth_token);
-      console.log("Token validation result - User ID:", userId);
-    } else {
-      console.log("No auth_token cookie found in request");
-    }
-    
-    if (!userId) {
-      console.log("Auth check failed - No valid token");
+    if (!req.session.userId) {
+      console.log("Auth check failed - Not authenticated");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
     try {
-      console.log(`Auth check - Looking up user with ID ${userId}`);
-      const user = await storage.getUserById(userId);
+      console.log(`Auth check - Looking up user with ID ${req.session.userId}`);
+      const user = await storage.getUserById(req.session.userId);
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
