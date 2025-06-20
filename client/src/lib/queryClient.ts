@@ -16,8 +16,10 @@ export async function apiRequest<T = any>(
   
   // Add auth token from localStorage if available
   const authToken = localStorage.getItem('auth_token');
+  console.log("QueryClient - Auth token from localStorage:", authToken);
   if (authToken) {
     headers['Authorization'] = `Bearer ${authToken}`;
+    console.log("QueryClient - Setting Authorization header:", `Bearer ${authToken.substring(0, 8)}...`);
   }
   
   const res = await fetch(url, {
@@ -41,8 +43,10 @@ export const getQueryFn: <T>(options: {
     
     // Add auth token from localStorage if available
     const authToken = localStorage.getItem('auth_token');
+    console.log("QueryFn - Auth token from localStorage:", authToken);
     if (authToken) {
       headers['Authorization'] = `Bearer ${authToken}`;
+      console.log("QueryFn - Setting Authorization header:", `Bearer ${authToken.substring(0, 8)}...`);
     }
     
     const res = await fetch(queryKey[0] as string, {

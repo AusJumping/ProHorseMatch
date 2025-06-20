@@ -369,6 +369,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // If session doesn't have userId, check auth token from cookies or headers
     if (!userId) {
       console.log("Auth check - Checking cookies:", req.cookies);
+      console.log("Auth check - Request headers:", {
+        authorization: req.headers['authorization'],
+        'x-auth-token': req.headers['x-auth-token'],
+        cookie: req.headers['cookie']
+      });
       let authToken = req.cookies?.auth_token || req.headers['authorization']?.replace('Bearer ', '');
       console.log("Auth check - Auth token from cookies/headers:", authToken);
       console.log("Auth check - Available tokens in store:", Array.from(authTokens.keys()).map(k => k.substring(0, 8) + "..."));
