@@ -18,7 +18,11 @@ export interface IStorage {
   updateHorse(id: number, horse: Partial<Horse>): Promise<Horse | undefined>;
   deleteHorse(id: number): Promise<boolean>;
   
-  // User methods
+  // User methods for Replit Auth
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Legacy user methods
   getUsers(): Promise<User[]>;
   getUserById(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -978,6 +982,26 @@ export class MemStorage implements IStorage {
 
 // Database-backed storage implementation
 export class DatabaseStorage implements IStorage {
+  // User operations for Replit Auth
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
   // User methods for unified user model
   async getUsers(): Promise<User[]> {
     const result = await db.select().from(users);

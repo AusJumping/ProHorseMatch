@@ -2,12 +2,25 @@ import { pgTable, text, serial, integer, boolean, timestamp, jsonb, real } from 
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Session storage table for Replit Auth
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: text("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  }
+);
+
 // Unified User Model
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  password: text("password").notNull(),
-  name: text("name"),
+  id: text("id").primaryKey().notNull(), // Changed to text for Replit user IDs
+  email: text("email").unique(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  profileImageUrl: text("profile_image_url"),
+  
+  // Business fields
   business_name: text("business_name"),
   contact_name: text("contact_name"),
   
@@ -39,12 +52,18 @@ export const users = pgTable("users", {
   subscription_plan: text("subscription_plan"),
   subscription_end_date: timestamp("subscription_end_date"),
   
-  created_at: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Types for Replit Auth compatibility
+export type User = typeof users.$inferSelect;
+export type UpsertUser = typeof users.$inferInsert;
 
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
-  created_at: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // For backward compatibility - schema for searching role registration
