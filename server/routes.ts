@@ -5,8 +5,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
-import jwt from "jsonwebtoken";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
+import { authenticateToken, generateToken } from "./auth";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -106,12 +106,10 @@ import {
   }
 })();
 
-// Extend Express Session
-declare module "express-session" {
-  interface SessionData {
-    userId?: number;
-    userType?: string;
-  }
+// JWT-based authentication interface
+interface AuthenticatedRequest extends Request {
+  user?: any;
+  userId?: number;
 }
 
 
@@ -150,9 +148,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const stripe = process.env.STRIPE_SECRET_KEY 
     ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
     : null;
-  // JWT Secret
-  const JWT_SECRET = process.env.JWT_SECRET || "proHorseMatchJWTSecret2025";
-
   // CORS middleware
   app.use((req, res, next) => {
     const origin = req.headers.origin;
@@ -169,31 +164,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
-  
-  // JWT Authentication middleware
-  const authenticateToken = async (req: any, res: Response, next: any) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-
-    if (!token) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      const user = await storage.getUserById(decoded.userId);
-      
-      if (!user) {
-        return res.status(401).json({ message: "User not found" });
-      }
-      
-      req.user = user;
-      req.userId = user.id;
-      next();
-    } catch (error) {
-      return res.status(401).json({ message: "Invalid token" });
-    }
-  };
 
   // Auth routes
   app.post("/api/auth/register/customer", async (req, res) => {
@@ -212,17 +182,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         is_searching: true
       });
       
-      // Set user session
-      req.session.userId = user.id;
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        JWT_SECRET,
+        { expiresIn: '30d' }
+      );
       
       return res.status(201).json({ 
         id: user.id,
         name: user.name,
         email: user.email,
         is_searching: true,
-        is_selling: false
+        is_selling: false,
+        token: token
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Register searching user error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
@@ -244,8 +219,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         is_selling: true
       });
       
-      // Set user session
-      req.session.userId = user.id;
+      // Generate JWT token
+      const token = generateToken(user.id, user.email);
       
       return res.status(201).json({ 
         id: user.id,
@@ -253,9 +228,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         contact_name: user.contact_name,
         email: user.email,
         is_searching: false,
-        is_selling: true
+        is_selling: true,
+        token: token
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Register selling user error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
