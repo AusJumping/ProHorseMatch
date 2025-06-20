@@ -69,11 +69,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = await apiRequest('POST', '/api/auth/login', { email, password });
       console.log("Login successful, user data:", userData);
       
-      // Store JWT token if provided
-      if (userData.token) {
-        localStorage.setItem('auth_token', userData.token);
-      }
-      
       // Update query cache with user data and force refetch to sync with server
       queryClient.setQueryData(['/api/auth/me'], userData);
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
@@ -90,9 +85,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       await apiRequest('POST', '/api/auth/logout');
       
-      // Clear JWT token from localStorage
-      localStorage.removeItem('auth_token');
-      
       // Clear query cache
       queryClient.setQueryData(['/api/auth/me'], null);
       queryClient.removeQueries({ queryKey: ['/api/auth/me'] });
@@ -102,7 +94,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error: any) {
       console.error("Logout error:", error);
       // Even if logout fails on server, clear local state
-      localStorage.removeItem('auth_token');
       queryClient.setQueryData(['/api/auth/me'], null);
       queryClient.removeQueries({ queryKey: ['/api/auth/me'] });
       navigate('/');
