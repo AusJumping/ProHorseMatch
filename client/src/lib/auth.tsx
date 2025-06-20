@@ -43,41 +43,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch the current user with improved caching
+  // Fetch the current user with improved error handling
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
-        try {
-          const userData = await apiRequest('GET', '/api/auth/me');
-          console.log("Auth user data:", userData);
-          
-          // Store user data in localStorage for persistence
-          if (userData && userData.id) {
-            localStorage.setItem('user', JSON.stringify(userData));
-          }
-          
-          return userData;
-        } catch (error: any) {
-          if (error.message?.includes('401')) {
-            // Clear localStorage if server says not authenticated
-            localStorage.removeItem('user');
-            return null;
-          }
-          throw error;
+        const userData = await apiRequest('GET', '/api/auth/me');
+        console.log("Auth user data:", userData);
+        return userData;
+      } catch (error: any) {
+        console.log("Auth check failed:", error.message);
+        if (error.message?.includes('401') || error.message?.includes('Not authenticated')) {
+          return null;
         }
-      } catch (error) {
-        console.error("Auth fetch error:", error);
-        
-        // For network errors or other fetch failures, try localStorage as fallback
-        // but don't rely on it permanently - we need to fix the underlying issue
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            const parsedUser = JSON.parse(storedUser);
-            console.log("Temporarily using localStorage user due to fetch error:", parsedUser);
-            
-            // Try to verify this user is still valid on next opportunity
+        throw error;
+      }
+    },
+    retry: 1,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
             setTimeout(() => {
               queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
             }, 1000);
