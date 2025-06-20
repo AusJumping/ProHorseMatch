@@ -66,8 +66,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
         
         if (res.status === 401) {
-          // Clear stored user data if unauthorized
-          localStorage.removeItem('user');
+          // Don't immediately clear localStorage - check if we have valid stored data
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            try {
+              const parsed = JSON.parse(storedUser);
+              console.log("Auth check failed but localStorage has user, using fallback:", parsed);
+              setUserState(parsed);
+              return parsed;
+            } catch (e) {
+              console.log("localStorage user data corrupted, clearing");
+              localStorage.removeItem('user');
+              setUserState(null);
+              return null;
+            }
+          }
           setUserState(null);
           return null;
         }
