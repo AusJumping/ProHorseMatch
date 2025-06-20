@@ -49,15 +49,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
-          cache: 'no-cache' // Ensure we don't get cached responses
+          cache: 'no-cache',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
         });
+        
         if (res.status === 401) {
           // Clear localStorage if server says not authenticated
           localStorage.removeItem('user');
           return null;
         }
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
         const userData = await res.json();
-        console.log("Auth user data:", userData); // Debug log
+        console.log("Auth user data:", userData);
         
         // Store user data in localStorage for persistence
         if (userData && userData.id) {
@@ -68,12 +78,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error("Auth fetch error:", error);
         
-        // Try to restore from localStorage if fetch fails
+        // For network errors or other fetch failures, try localStorage as fallback
+        // but don't rely on it permanently - we need to fix the underlying issue
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           try {
             const parsedUser = JSON.parse(storedUser);
-            console.log("Restored user from localStorage:", parsedUser);
+            console.log("Temporarily using localStorage user due to fetch error:", parsedUser);
+            
+            // Try to verify this user is still valid on next opportunity
+            setTimeout(() => {
+              queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+            }, 1000);
+            
             return parsedUser;
           } catch (e) {
             localStorage.removeItem('user');
@@ -84,10 +101,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
       }
     },
-    staleTime: 30 * 1000, // Cache auth data for 30 seconds
+    staleTime: 0, // Always fetch fresh data
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    retry: false, // Don't retry failed auth requests
+    refetchInterval: false, // Don't auto-refetch
+    retry: 1, // Retry once on failure
   });
   
   // Ensure user is either User object or null, never undefined

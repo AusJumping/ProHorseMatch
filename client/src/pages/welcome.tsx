@@ -35,7 +35,7 @@ export default function WelcomePage() {
         
         <Button 
           className="mt-12 px-8 py-6 text-lg bg-[#cdac6e] hover:bg-[#b89b5d] text-white"
-          onClick={() => navigate("/filter")}
+          onClick={() => navigate("/browse")}
         >
           Get Started
         </Button>

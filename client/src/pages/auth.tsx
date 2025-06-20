@@ -115,8 +115,20 @@ export default function Auth() {
       // Store user data in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Force a small delay and then use window.location to ensure session cookies are properly set
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Instead of using auth.login (which we've already done), manually update the query cache
+      // and force a reload to ensure session is properly established
+      try {
+        // Force the query client to update with the new user data
+        const queryClient = (window as any).queryClient;
+        if (queryClient) {
+          queryClient.setQueryData(['/api/auth/me'], userData);
+        }
+      } catch (e) {
+        console.log("Query client not available, continuing with navigation");
+      }
+      
+      // Use a very short delay to ensure session cookie is set, then navigate
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Direct check for subscription status
       if (userData && userData.subscription_status === 'active') {
