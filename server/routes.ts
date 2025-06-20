@@ -7,6 +7,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
+import cookieParser from "cookie-parser";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { 
   insertHorseSchema, 
@@ -165,7 +166,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         secure: false, // False for development
         httpOnly: false, // Allow client-side access for debugging
         sameSite: 'lax',
-        path: '/'
+        path: '/',
+        domain: undefined // Let browser handle domain
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
@@ -173,8 +175,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       resave: true, // Force session save
       saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret2024",
-      name: 'sessionId', // Use custom name
-      rolling: false // Don't reset expiration each time
+      name: 'connect.sid', // Use standard connect session name
+      rolling: false, // Don't reset expiration each time
+      proxy: false // Important for local development
     })
   );
 
@@ -276,17 +279,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = user.id;
       
-      // Force save session
-      await new Promise<void>((resolve) => {
-        req.session.save((err) => {
-          if (err) {
-            console.error("Session save error:", err);
-          } else {
-            console.log("Session saved successfully with ID:", req.sessionID);
-          }
-          resolve();
-        });
+      // Also set a simple auth token in cookie as fallback
+      res.cookie('auth_user_id', user.id.toString(), {
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: false,
+        secure: false,
+        sameSite: 'lax'
       });
+      
+      console.log("Setting auth cookie and session for user:", user.id);
       
       // Return full user data including subscription info
       return res.json({
@@ -323,17 +324,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("Auth check - Session:", {
       sessionId: req.sessionID,
       userId: req.session.userId,
-      sessionContent: req.session
+      cookieUserId: req.cookies.auth_user_id
     });
     
-    if (!req.session.userId) {
+    // Check session first, then fallback to cookie
+    let userId = req.session.userId;
+    if (!userId && req.cookies.auth_user_id) {
+      userId = parseInt(req.cookies.auth_user_id);
+      console.log("Using cookie fallback for user ID:", userId);
+    }
+    
+    if (!userId) {
       console.log("Auth check failed - Not authenticated");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
     try {
-      console.log(`Auth check - Looking up user with ID ${req.session.userId}`);
-      const user = await storage.getUserById(req.session.userId);
+      console.log(`Auth check - Looking up user with ID ${userId}`);
+      const user = await storage.getUserById(userId);
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
