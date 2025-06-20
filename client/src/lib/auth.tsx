@@ -42,20 +42,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch the current user with improved caching
+  // Fetch the current user with proper session management
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
-          cache: 'no-cache' // Ensure we don't get cached responses
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
         });
-        if (res.status === 401) return null;
-        const userData = await res.json();
-        console.log("Auth user data:", userData); // Debug log
         
-        // Store user data in localStorage for persistence
+        if (res.status === 401) {
+          // Clear any stale localStorage data on 401
+          localStorage.removeItem('user');
+          return null;
+        }
+        
+        if (!res.ok) {
+          throw new Error(`Auth check failed: ${res.status}`);
+        }
+        
+        const userData = await res.json();
+        console.log("Session auth state:", { isAuthenticated: !!userData });
+        
+        // Store user data in localStorage for quick recovery
         if (userData && userData.id) {
           localStorage.setItem('user', JSON.stringify(userData));
         }
@@ -64,22 +76,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error("Auth fetch error:", error);
         
-        // Try to restore from localStorage if fetch fails
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            return JSON.parse(storedUser);
-          } catch (e) {
-            return null;
-          }
-        }
-        
+        // Don't fall back to localStorage on network errors
+        // This ensures we always check the server for fresh session state
+        localStorage.removeItem('user');
         return null;
       }
     },
-    staleTime: 60 * 1000, // Cache auth data for 1 minute
+    staleTime: 30 * 1000, // 30 seconds cache
     refetchOnWindowFocus: true,
-    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
+    refetchOnMount: true,
+    retry: (failureCount, error) => {
+      // Don't retry 401 errors, but retry network errors up to 2 times
+      if (error?.message?.includes('401')) return false;
+      return failureCount < 2;
+    }
   });
   
   // Ensure user is either User object or null, never undefined
