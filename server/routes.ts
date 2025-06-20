@@ -2,7 +2,7 @@ import express, { type Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
-import MemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -115,7 +115,10 @@ declare module "express-session" {
   }
 }
 
-const SessionStore = MemoryStore(session);
+const PostgresSessionStore = connectPgSimple(session);
+
+// Import the database pool
+import { pool } from "./db";
 
 // Configure multer for memory storage (we'll upload to Cloudinary)
 const upload = multer({
@@ -173,23 +176,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use(
     session({
-      name: 'prohorsematch.sid', // Match the cookie name being used in the logs
+      name: 'prohorsematch.sid',
       cookie: { 
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         secure: false, // Must be false for development
         httpOnly: false, // Allow client-side access for debugging
-        sameSite: 'lax', // Keep as 'lax' for development
-        domain: undefined // Let browser set domain automatically
+        sameSite: 'lax',
+        domain: undefined
       }, 
-      store: new SessionStore({
-        checkPeriod: 86400000, // prune expired entries every 24h
-        stale: false,
+      store: new PostgresSessionStore({
+        pool: pool, // Use the database pool
+        tableName: 'session', // Table name for sessions
+        createTableIfMissing: true, // Auto-create table if it doesn't exist
       }),
-      resave: false, // Don't save if unmodified - important for proper session handling
-      saveUninitialized: false, // Don't create session until something stored
+      resave: false,
+      saveUninitialized: false,
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret2025",
-      rolling: false, // Don't reset expiration on each request
-      proxy: false // Not behind a proxy
+      rolling: false,
+      proxy: false
     })
   );
 
