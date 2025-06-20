@@ -272,18 +272,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: user.id,
         is_searching: user.is_searching,
         is_selling: user.is_selling,
-        sessionId: req.sessionID
+        sessionId: req.sessionID,
+        cookies: req.headers.cookie
       });
       
       req.session.userId = user.id;
       
-      // Save session explicitly
+      // Save session explicitly and force cookie to be set
       await new Promise<void>((resolve) => {
         req.session.save((err) => {
           if (err) {
             console.error("Session save error:", err);
           } else {
             console.log("Session saved successfully");
+            // Force cookie to be set in response
+            res.cookie('connect.sid', req.sessionID, {
+              maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+              httpOnly: false, // Allow client-side access for debugging
+              secure: false, // Must be false for development
+              sameSite: 'lax',
+              path: '/'
+            });
           }
           resolve();
         });
