@@ -137,32 +137,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = await response.json() as User;
       console.log("Login successful, complete user data:", userData);
       
-      // CRITICAL: Store auth token IMMEDIATELY before any other operations
-      console.log('Auth - About to store user data in localStorage:', userData);
-      
-      try {
+      // IMMEDIATE synchronous storage - no async operations allowed to interfere
+      if (userData.auth_token) {
+        localStorage.setItem('auth_token', userData.auth_token);
         localStorage.setItem('user', JSON.stringify(userData));
-        console.log('Auth - Stored user object in localStorage');
+        console.log('Auth - STORED token immediately:', userData.auth_token);
         
-        if (userData.auth_token) {
-          localStorage.setItem('auth_token', userData.auth_token);
-          console.log('Auth - Stored auth token in localStorage:', userData.auth_token);
-          
-          // Verify storage worked immediately
-          const storedToken = localStorage.getItem('auth_token');
-          console.log('Auth - Verified stored token:', storedToken);
-        } else {
-          console.log('Auth - No auth_token in response data');
-        }
-      } catch (storageError) {
-        console.error('Auth - localStorage error:', storageError);
+        // Immediate verification
+        const check = localStorage.getItem('auth_token');
+        console.log('Auth - VERIFIED storage:', check);
       }
       
-      // Update state and cache
+      // Update state
       setUserState(userData);
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Check subscription status
+      // Subscription check
       const hasSubscription = userData.stripe_subscription_id && 
         userData.subscription_status === 'active' && 
         userData.subscription_end_date && 
