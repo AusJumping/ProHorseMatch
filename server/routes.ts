@@ -160,7 +160,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   
   // Detect if we're running on a secure domain (Replit uses HTTPS)
-  const isSecure = process.env.REPLIT_DEPLOYMENT || process.env.NODE_ENV === 'production';
+  const isSecure = !!(process.env.REPLIT_ENVIRONMENT === 'production' || 
+                      process.env.REPLIT_DEV_DOMAIN || 
+                      process.env.NODE_ENV === 'production');
+  
+  console.log("🔐 Cookie Configuration:", {
+    isSecure,
+    environment: process.env.REPLIT_ENVIRONMENT,
+    devDomain: process.env.REPLIT_DEV_DOMAIN,
+    nodeEnv: process.env.NODE_ENV
+  });
   
   app.use(
     session({
@@ -169,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         secure: isSecure, // Use secure cookies on HTTPS (Replit)
         httpOnly: false, // Allow client access for token fallback
-        sameSite: isSecure ? 'none' : 'lax', // Use 'none' for secure cross-origin
+        sameSite: isSecure ? 'none' : 'lax' as any, // Use 'none' for secure cross-origin
         path: '/'
       }, 
       store: new SessionStore({
@@ -301,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         httpOnly: false, // Allow frontend access
         secure: isSecure,
-        sameSite: isSecure ? 'none' : 'lax' // Allow cross-origin cookies
+        sameSite: isSecure ? 'none' : 'lax' as any // Allow cross-origin cookies
       });
       
       // Store token mapping in memory for validation
