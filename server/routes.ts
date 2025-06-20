@@ -159,14 +159,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   
+  // Detect if we're running on a secure domain (Replit uses HTTPS)
+  const isSecure = process.env.REPLIT_DEPLOYMENT || process.env.NODE_ENV === 'production';
+  
   app.use(
     session({
       name: 'connect.sid',
       cookie: { 
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: false, // Must be false for non-HTTPS development
+        secure: isSecure, // Use secure cookies on HTTPS (Replit)
         httpOnly: false, // Allow client access for token fallback
-        sameSite: 'none', // Allow cross-origin cookies
+        sameSite: isSecure ? 'none' : 'lax', // Use 'none' for secure cross-origin
         path: '/'
       }, 
       store: new SessionStore({
@@ -297,8 +300,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.cookie('auth_token', authToken, {
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         httpOnly: false, // Allow frontend access
-        secure: false,
-        sameSite: 'none' // Allow cross-origin cookies
+        secure: isSecure,
+        sameSite: isSecure ? 'none' : 'lax' // Allow cross-origin cookies
       });
       
       // Store token mapping in memory for validation
