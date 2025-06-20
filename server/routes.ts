@@ -2,11 +2,12 @@ import express, { type Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
+import MemoryStore from "memorystore";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
+import jwt from "jsonwebtoken";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { 
   insertHorseSchema, 
@@ -115,10 +116,7 @@ declare module "express-session" {
   }
 }
 
-const PostgresSessionStore = connectPgSimple(session);
-
-// Import the database pool
-import { pool } from "./db";
+const SessionStore = MemoryStore(session);
 
 // Configure multer for memory storage (we'll upload to Cloudinary)
 const upload = multer({
@@ -154,10 +152,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const stripe = process.env.STRIPE_SECRET_KEY 
     ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
     : null;
-  // Configure session middleware
-  const isProduction = process.env.NODE_ENV === "production";
-  
-  // CORS middleware - must come before session middleware
+  // JWT Secret
+  const JWT_SECRET = process.env.JWT_SECRET || "proHorseMatchJWTSecret2025";
+
+  // CORS middleware
   app.use((req, res, next) => {
     const origin = req.headers.origin;
     res.header('Access-Control-Allow-Origin', origin || '*');
@@ -174,28 +172,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   
-  app.use(
-    session({
-      name: 'prohorsematch.sid',
-      cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: false, // Must be false for development
-        httpOnly: false, // Allow client-side access for debugging
-        sameSite: 'lax',
-        domain: undefined
-      }, 
-      store: new PostgresSessionStore({
-        pool: pool, // Use the database pool
-        tableName: 'session', // Table name for sessions
-        createTableIfMissing: true, // Auto-create table if it doesn't exist
-      }),
-      resave: false,
-      saveUninitialized: false,
-      secret: process.env.SESSION_SECRET || "proHorseMatchSecret2025",
-      rolling: false,
-      proxy: false
-    })
-  );
+  // JWT Authentication middleware
+  const authenticateToken = async (req: any, res: Response, next: any) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+    if (!token) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      const user = await storage.getUserById(decoded.userId);
+      
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      
+      req.user = user;
+      req.userId = user.id;
+      next();
+    } catch (error) {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+  };
 
   // Auth routes
   app.post("/api/auth/register/customer", async (req, res) => {
