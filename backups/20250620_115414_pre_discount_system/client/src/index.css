@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 60 30% 98%;
+  --foreground: 45 10% 17%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 45 10% 17%;
+  --card: 0 0% 100%;
+  --card-foreground: 45 10% 17%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 0 0% 17%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 36 37% 41%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 40 48% 62%;  /* #cdac6e in HSL format */
+  --accent-foreground: 45 10% 17%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --success: 0 0% 17%;
+  --ring: 0 0% 17%;
+  --chart-1: 0 0% 17%;
+  --chart-2: 36 37% 41%;
+  --chart-3: 43 68% 59%;
+  --chart-4: 214 80% 56%;
+  --chart-5: 262 80% 55%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 45 10% 10%;
+  --foreground: 0 0% 98%;
+  --muted: 45 7% 15.9%;
+  --muted-foreground: 45 5% 64.9%;
+  --popover: 45 10% 12%;
+  --popover-foreground: 0 0% 98%;
+  --card: 45 10% 12%;
+  --card-foreground: 0 0% 98%;
+  --border: 45 7% 15.9%;
+  --input: 45 7% 15.9%;
+  --primary: 142 52% 24%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 36 37% 41%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 40 48% 62%;  /* #cdac6e in HSL format */
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --success: 142 70% 45%;
+  --ring: 45 4.9% 83.9%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+  
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: bold;
+    font-size: 2.5rem;
+    line-height: 1.2;
+  }
+  
+  .font-display {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .font-accent {
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+@layer components {
+  /* Desktop sidebar menu hover styling only */
+  @media (min-width: 768px) {
+    [data-sidebar="menu-button"]:hover,
+    [data-sidebar="menu-sub-button"]:hover {
+      background-color: #cdac6e !important;
+      color: white !important;
+    }
+  }
+  
+  .horse-card {
+    height: calc(100vh - 180px);
+    max-height: 700px;
+  }
+
+  @media (min-width: 768px) {
+    .horse-card {
+      max-height: 600px;
+    }
+  }
+
+  .swipe-buttons button {
+    transition: all 0.2s ease;
+  }
+  
+  .swipe-buttons button:hover {
+    transform: scale(1.05);
+  }
+
+  .like-button {
+    background-color: #cdac6e !important;
+    color: white !important;
+    border-color: #cdac6e !important;
+  }
+
+  .like-button:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+    border-color: #cdac6e !important;
+  }
+
+  .pass-button {
+    background-color: black !important;
+    color: white !important;
+    border-color: black !important;
+  }
+  
+  .pass-button:hover {
+    background-color: white !important;
+    color: black !important;
+    border-color: black !important;
+  }
+  
+  .info-button {
+    background-color: white !important;
+    color: black !important;
+    border-color: #e5e5e5 !important;
+  }
+  
+  .info-button:hover {
+    background-color: #666 !important;
+    color: white !important;
+    border-color: #666 !important;
+  }
+
+  .profile-stats-item {
+    position: relative;
+  }
+  
+  .profile-stats-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    width: 1px;
+    background-color: hsl(var(--border));
+  }
+  
+  /* Fix for dropdown visibility */
+  .select-content {
+    background-color: white !important;
+  }
+  
+  .select-item {
+    color: #333 !important;
+  }
+  
+  /* Force all SelectContent components to have visible text */
+  [data-radix-select-content] {
+    background-color: white !important;
+  }
+  
+  [data-radix-select-item] {
+    color: #333 !important;
+    background-color: white !important;
+  }
+  
+  [data-radix-select-item-text] {
+    color: #333 !important;
+  }
+  
+  [data-radix-select-viewport] {
+    background-color: white !important;
+  }
+  
+  /* Fix for all dropdown options */
+  .SelectItem {
+    color: #333 !important;
+  }
+}

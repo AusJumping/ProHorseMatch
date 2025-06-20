@@ -1,0 +1,238 @@
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, real } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+// Unified User Model
+export const users = pgTable("users", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  name: text("name"),
+  business_name: text("business_name"),
+  contact_name: text("contact_name"),
+  
+  // Roles - can be both
+  is_searching: boolean("is_searching").default(false),
+  is_selling: boolean("is_selling").default(false),
+  
+  // For searching role (previously customer)
+  location_country: text("location_country"),
+  location_radius_km: integer("location_radius_km"),
+  preferred_disciplines: text("preferred_disciplines").array(),
+  preferred_levels: text("preferred_levels").array(),
+  preferred_breeds: text("preferred_breeds").array(),
+  age_range_min: integer("age_range_min"),
+  age_range_max: integer("age_range_max"),
+  height_range_min: real("height_range_min"),
+  height_range_max: real("height_range_max"),
+  preferred_sexes: text("preferred_sexes").array(),
+  breeding_preferences: text("breeding_preferences"),
+  preferred_characteristics: text("preferred_characteristics").array(),
+  price_range_min: integer("price_range_min"),
+  price_range_max: integer("price_range_max"),
+  currency: text("currency"),
+  
+  // Subscription fields
+  stripe_customer_id: text("stripe_customer_id"),
+  stripe_subscription_id: text("stripe_subscription_id"),
+  subscription_status: text("subscription_status"),
+  subscription_plan: text("subscription_plan"),
+  subscription_end_date: timestamp("subscription_end_date"),
+  
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Discount Codes Table
+export const discount_codes = pgTable("discount_codes", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  description: text("description"),
+  discount_type: text("discount_type").notNull(), // 'percentage', 'months_free', 'fixed_amount'
+  discount_value: integer("discount_value").notNull(), // percentage (0-100), months (1-12), or amount in cents
+  max_uses: integer("max_uses"), // null = unlimited
+  used_count: integer("used_count").default(0),
+  active: boolean("active").default(true),
+  valid_from: timestamp("valid_from").defaultNow(),
+  valid_until: timestamp("valid_until"),
+  applicable_plans: text("applicable_plans").array(), // which subscription plans this applies to
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Discount Code Usage Tracking
+export const discount_code_usage = pgTable("discount_code_usage", {
+  id: serial("id").primaryKey(),
+  discount_code_id: integer("discount_code_id").references(() => discount_codes.id),
+  user_id: integer("user_id").references(() => users.id),
+  used_at: timestamp("used_at").defaultNow(),
+  subscription_id: text("subscription_id"), // Stripe subscription ID
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  created_at: true,
+});
+
+// For backward compatibility - schema for searching role registration
+export const insertSearchingUserSchema = insertUserSchema.omit({
+  business_name: true,
+  contact_name: true,
+}).extend({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  is_searching: z.literal(true).default(true),
+});
+
+// For backward compatibility - schema for selling role registration 
+export const insertSellingUserSchema = insertUserSchema.omit({
+  name: true,
+}).extend({
+  business_name: z.string().min(2, { message: "Business name must be at least 2 characters" }),
+  contact_name: z.string().min(2, { message: "Contact name must be at least 2 characters" }),
+  is_selling: z.literal(true).default(true),
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertSearchingUser = z.infer<typeof insertSearchingUserSchema>;
+export type InsertSellingUser = z.infer<typeof insertSellingUserSchema>;
+export type User = typeof users.$inferSelect;
+
+// Legacy types for backward compatibility
+export type InsertOwner = InsertSellingUser;
+export type Owner = User;
+export type InsertCustomer = InsertSearchingUser;
+export type Customer = User;
+
+// Horse Model
+export const horses = pgTable("horses", {
+  id: serial("id").primaryKey(),
+  owner_id: integer("owner_id").notNull(),
+  name: text("name").notNull(),
+  location_country: text("location_country").notNull(),
+  location_radius_km: integer("location_radius_km"),
+  disciplines: text("disciplines").array().notNull(),
+  levels: text("levels").array().notNull(),
+  breeds: text("breeds").array().notNull(),
+  age: integer("age").notNull(),
+  height_hands: real("height_hands"),
+  height_cm: integer("height_cm"),
+  sex: text("sex").notNull(),
+  colour: text("colour").notNull(),
+  sire: text("sire"),
+  dam: text("dam"),
+  dam_sire: text("dam_sire"),
+  characteristics: text("characteristics").array(),
+  price_min: integer("price_min").notNull(),
+  price_max: integer("price_max").notNull(),
+  currency: text("currency").notNull(),
+  description: text("description"),
+  photos: text("photos").array().notNull(),
+  videos: text("videos").array(),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertHorseSchema = createInsertSchema(horses).omit({
+  id: true,
+  created_at: true,
+});
+
+export type InsertHorse = z.infer<typeof insertHorseSchema>;
+export type Horse = typeof horses.$inferSelect;
+
+// Match model
+export const matches = pgTable("matches", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull(),
+  horse_id: integer("horse_id").notNull(),
+  is_liked: boolean("is_liked").notNull(),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertMatchSchema = createInsertSchema(matches).omit({
+  id: true,
+  created_at: true,
+});
+
+export type InsertMatch = z.infer<typeof insertMatchSchema>;
+export type Match = typeof matches.$inferSelect;
+
+// Message model
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull(),
+  owner_id: integer("owner_id").notNull(),
+  horse_id: integer("horse_id").notNull(),
+  content: text("content").notNull(),
+  sender_type: text("sender_type").notNull(), // "customer" or "owner"
+  created_at: timestamp("created_at").defaultNow(),
+  is_read: boolean("is_read").default(false),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  created_at: true,
+  is_read: true,
+});
+
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
+
+// Conversation (for listing unique conversations)
+export const conversations = pgTable("conversations", {
+  id: serial("id").primaryKey(),
+  customer_id: integer("customer_id").notNull(),
+  owner_id: integer("owner_id").notNull(),
+  horse_id: integer("horse_id").notNull(),
+  last_message_id: integer("last_message_id"),
+  last_message_time: timestamp("last_message_time"),
+  unread_count: integer("unread_count").default(0),
+});
+
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  last_message_id: true,
+  last_message_time: true,
+  unread_count: true,
+});
+
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Conversation = typeof conversations.$inferSelect;
+
+// Constants for app
+export const disciplines = ["Jumping", "Dressage", "Eventing"];
+export const sexes = ["Mare", "Gelding", "Stallion"];
+export const colours = ["Bay", "Brown", "Black", "Grey", "Chestnut", "Palomino", "Tobiano", "Buckskin", "Other"];
+export const breeds = [
+  "Warmblood", 
+  "Thoroughbred", 
+  "Other"
+];
+export const characteristics = [
+  "Forward",
+  "Brave",
+  "Careful",
+  "Scope",
+  "Schoolmaster",
+  "Honest",
+  "Bold",
+  "Sensitive",
+  "Calm"
+];
+export const jumpingLevels = ["Children", "Junior", "Amateur", "Young Rider", "Mini Prix", "Grand Prix"];
+export const dressageLevels = ["Preliminary", "Novice", "Elementary", "Medium", "Advanced", "Prix St. Georges", "Intermediate I", "Intermediate II", "Grand Prix"];
+export const eventingLevels = ["EvA60", "EvA80", "EvA95", "1*", "2*", "3*", "4*", "5*"];
+
+// Discount Code Schemas
+export const insertDiscountCodeSchema = createInsertSchema(discount_codes).omit({
+  id: true,
+  used_count: true,
+  created_at: true,
+});
+
+export const insertDiscountCodeUsageSchema = createInsertSchema(discount_code_usage).omit({
+  id: true,
+  used_at: true,
+});
+
+export type InsertDiscountCode = z.infer<typeof insertDiscountCodeSchema>;
+export type DiscountCode = typeof discount_codes.$inferSelect;
+export type InsertDiscountCodeUsage = z.infer<typeof insertDiscountCodeUsageSchema>;
+export type DiscountCodeUsage = typeof discount_code_usage.$inferSelect;
