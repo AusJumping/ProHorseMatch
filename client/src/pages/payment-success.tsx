@@ -97,7 +97,7 @@ export default function PaymentSuccess() {
                   Return Home
                 </Button>
                 <Button
-                  onClick={() => navigate('/browse')}
+                  onClick={() => navigate('/filter')}
                   className="w-full"
                 >
                   Browse More Horses <ChevronRight className="ml-1 h-4 w-4" />

@@ -93,7 +93,7 @@ export default function Home() {
   }, [activeFilters, queryClient]);
 
   // Debug log
-  console.log("Home - Auth state:", { isAuthenticated, is_selling: user?.is_selling, is_searching: user?.is_searching, location, showFilter });
+  console.log("Home - Auth state:", { isAuthenticated, location, showFilter });
 
   const [swipingIndex, setSwipingIndex] = useState(0);
 
