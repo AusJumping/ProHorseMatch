@@ -106,7 +106,6 @@ import {
   }
 })();
 import express from "express";
-import session from "express-session";
 import MemoryStore from "memorystore";
 
 // Extend Express Session
@@ -171,11 +170,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         checkPeriod: 86400000, // prune expired entries every 24h
         stale: false, // Don't auto-expire sessions
       }),
-      resave: true, // Force session to be saved back to the store
-      saveUninitialized: true, // Save uninitialized sessions
+      resave: false, // Don't save session if unmodified
+      saveUninitialized: false, // Don't save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      // Add rolling: true to update the cookie expiration on every response
-      rolling: true
+      name: 'connect.sid' // Explicitly set session name
     })
   );
 
