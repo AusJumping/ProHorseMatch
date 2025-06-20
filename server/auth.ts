@@ -29,25 +29,20 @@ export async function login(req: Request, res: Response) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    // Set session
+    // Set session data
     (req as any).session.userId = user.id;
+    (req as any).session.userEmail = user.email;
+    (req as any).session.loginTime = new Date().toISOString();
     
-    // Explicitly save the session to ensure persistence
-    (req as any).session.save((err: any) => {
-      if (err) {
-        console.error('Session save error:', err);
-        return res.status(500).json({ message: 'Failed to save session' });
-      }
-      
-      console.log("Login successful - Session created:", {
-        userId: user.id,
-        sessionId: req.sessionID
-      });
-
-      // Return user without password
-      const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+    console.log("Login successful - Session created:", {
+      userId: user.id,
+      sessionId: req.sessionID,
+      sessionData: (req as any).session
     });
+
+    // Return user without password immediately
+    const { password: _, ...userWithoutPassword } = user;
+    res.json(userWithoutPassword);
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });
