@@ -129,27 +129,41 @@ export default function SubscriptionPage() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   
+  // Try to get user from localStorage if authentication is failing
+  const fallbackUser = (() => {
+    if (user) return user;
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  // Use fallback user if primary user data is unavailable
+  const currentUser = user || fallbackUser;
+  
   // Get current subscription status - handle failures gracefully
   const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({
     queryKey: ['/api/subscription'],
     retry: 1,
-    enabled: !!user,
+    enabled: !!currentUser,
     select: (data) => {
       if (data?.hasSubscription) {
         return data;
       }
       
       // Fallback for when the Stripe API call fails but we still have user data
-      if (user?.stripe_subscription_id) {
-        const isBetaPlan = user.stripe_subscription_id.startsWith('beta-');
+      if (currentUser?.stripe_subscription_id) {
+        const isBetaPlan = currentUser.stripe_subscription_id.startsWith('beta-');
         
         return {
           hasSubscription: true,
-          subscriptionId: user.stripe_subscription_id,
-          status: user.subscription_status || 'active',
-          planId: user.subscription_plan || (isBetaPlan ? 'beta-seller' : 'standard'),
-          currentPeriodEnd: user.subscription_end_date 
-            ? new Date(user.subscription_end_date).getTime() / 1000 
+          subscriptionId: currentUser.stripe_subscription_id,
+          status: currentUser.subscription_status || 'active',
+          planId: currentUser.subscription_plan || (isBetaPlan ? 'beta-seller' : 'standard'),
+          currentPeriodEnd: currentUser.subscription_end_date 
+            ? new Date(currentUser.subscription_end_date).getTime() / 1000 
             : (Date.now() + 90 * 24 * 60 * 60 * 1000) / 1000,
         };
       }
@@ -208,8 +222,19 @@ export default function SubscriptionPage() {
     return new Date(timestamp * 1000).toLocaleDateString();
   };
 
-  // Show loading state
-  if (isLoadingAuth) {
+  // Try to get user from localStorage if authentication is failing
+  const fallbackUser = (() => {
+    if (user) return user;
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  // Show loading state only if no fallback data is available
+  if (isLoadingAuth && !fallbackUser) {
     return (
       <Layout pageTitle="Subscription">
         <div className="container mx-auto py-12 max-w-4xl">
@@ -222,8 +247,8 @@ export default function SubscriptionPage() {
     );
   }
 
-  // Show login prompt if not authenticated
-  if (!user) {
+  // Show login prompt only if neither user nor fallback data is available
+  if (!user && !fallbackUser) {
     return (
       <Layout pageTitle="Subscription">
         <div className="container mx-auto py-12 max-w-4xl">
@@ -243,9 +268,18 @@ export default function SubscriptionPage() {
     );
   }
 
-  // Show current subscription if user has one
-  if (subscriptionData?.hasSubscription) {
-    const { subscriptionId, status, planId, currentPeriodEnd } = subscriptionData;
+  // Use fallback user if primary user data is unavailable
+  const currentUser = user || fallbackUser;
+
+  // Show current subscription if user has one (from API or localStorage)
+  if (subscriptionData?.hasSubscription || currentUser?.stripe_subscription_id) {
+    // Use API data if available, otherwise use user data
+    const subscriptionId = subscriptionData?.subscriptionId || currentUser?.stripe_subscription_id;
+    const status = subscriptionData?.status || currentUser?.subscription_status || 'active';
+    const planId = subscriptionData?.planId || currentUser?.subscription_plan;
+    const currentPeriodEnd = subscriptionData?.currentPeriodEnd || 
+      (currentUser?.subscription_end_date ? new Date(currentUser.subscription_end_date).getTime() / 1000 : undefined);
+    
     const isBetaPlan = subscriptionId?.startsWith('beta-');
     const plan = isBetaPlan 
       ? betaPlans.find(p => p.id === planId) || betaPlans[0]
