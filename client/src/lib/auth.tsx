@@ -147,12 +147,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log("User has active subscription, redirecting to welcome page");
       }
       
-      // Store user and auth token in localStorage for persistence
+      // Store user and auth token in localStorage IMMEDIATELY for persistence
+      console.log('Auth - About to store user data in localStorage:', userData);
       localStorage.setItem('user', JSON.stringify(userData));
       if (userData.auth_token) {
         localStorage.setItem('auth_token', userData.auth_token);
+        console.log('Auth - Stored auth token in localStorage:', userData.auth_token);
       }
-      console.log('Auth - Stored user data in localStorage:', userData);
+      
+      // Verify storage worked
+      const storedToken = localStorage.getItem('auth_token');
+      console.log('Auth - Verified stored token:', storedToken);
       
       // Update both local state and query cache
       setUserState(userData);
