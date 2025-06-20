@@ -161,21 +161,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use(
     session({
-      name: 'prohorsematch.sid', // Custom session name
+      name: 'connect.sid', // Use standard session name for better compatibility
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
         secure: false, // False for development
-        httpOnly: true,
-        sameSite: 'lax'
+        httpOnly: false, // Allow client-side access for debugging
+        sameSite: 'lax',
+        path: '/' // Ensure cookie applies to all paths
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
         stale: false,
+        max: 1000 // Maximum number of sessions
       }),
-      resave: false, // Don't save session if unmodified
-      saveUninitialized: false, // Don't create session until something stored
+      resave: true, // Save session even if unmodified to keep it alive
+      saveUninitialized: true, // Create session immediately
       secret: process.env.SESSION_SECRET || "proHorseMatchSessionSecret2024",
-      rolling: true // Extend session on activity
+      rolling: false // Don't change session ID on each request
     })
   );
 
@@ -275,17 +277,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: req.sessionID
       });
       
+      // Store user ID in session without regenerating
       req.session.userId = user.id;
+      console.log("Setting session userId:", user.id, "for sessionId:", req.sessionID);
       
-      // Save session explicitly
-      await new Promise<void>((resolve) => {
+      // Save session explicitly and wait for completion
+      await new Promise<void>((resolve, reject) => {
         req.session.save((err) => {
           if (err) {
             console.error("Session save error:", err);
+            reject(err);
           } else {
-            console.log("Session saved successfully");
+            console.log("Session saved successfully with userId:", user.id, "sessionId:", req.sessionID);
+            resolve();
           }
-          resolve();
         });
       });
       

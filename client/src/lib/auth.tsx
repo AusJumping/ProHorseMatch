@@ -42,48 +42,61 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch the current user with improved caching
+  // Initialize user state from localStorage first
+  const [userState, setUserState] = useState<User | null>(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Fetch the current user with improved persistence
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
-          cache: 'no-cache' // Ensure we don't get cached responses
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
-        if (res.status === 401) return null;
+        
+        if (res.status === 401) {
+          // Clear stored user data if unauthorized
+          localStorage.removeItem('user');
+          setUserState(null);
+          return null;
+        }
+        
         const userData = await res.json();
-        console.log("Auth user data:", userData); // Debug log
+        console.log("Auth user data:", userData);
         
         // Store user data in localStorage for persistence
         if (userData && userData.id) {
           localStorage.setItem('user', JSON.stringify(userData));
+          setUserState(userData);
         }
         
         return userData;
       } catch (error) {
         console.error("Auth fetch error:", error);
         
-        // Try to restore from localStorage if fetch fails
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            return JSON.parse(storedUser);
-          } catch (e) {
-            return null;
-          }
-        }
-        
-        return null;
+        // Return stored user if network fails but don't rely on it exclusively
+        return userState;
       }
     },
-    staleTime: 60 * 1000, // Cache auth data for 1 minute
-    refetchOnWindowFocus: true,
-    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
+    staleTime: 30 * 1000, // Cache auth data for 30 seconds
+    refetchOnWindowFocus: false, // Don't refetch on focus to avoid disruption
+    refetchInterval: false, // Don't auto-refetch
+    retry: 1 // Only retry once on failure
   });
   
-  // Ensure user is either User object or null, never undefined
-  const user = data === undefined ? null : data;
+  // Use server data if available, otherwise fall back to localStorage
+  const user = data !== undefined ? data : userState;
   
   // Debug log for auth state
   console.log("Auth state:", { isAuthenticated: !!user });
@@ -123,11 +136,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Store user in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Update query cache immediately with fresh data
+      // Update both local state and query cache
+      setUserState(userData);
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Refetch to ensure session is established
-      await refetch();
+      // Force immediate refetch to establish session
+      setTimeout(() => refetch(), 100);
       
       return userData;
     } catch (error) {
