@@ -1,134 +1,35 @@
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2, Check, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { useAuth } from '@/lib/auth';
+import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import Layout from '@/components/Layout';
+import { apiRequest } from '@/lib/queryClient';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, Check, Star, Crown, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import TermsDialog from '@/components/TermsDialog';
+import { Label } from '@/components/ui/label';
+import Layout from '@/components/Layout';
 
-// Ensure we have the public key
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing environment variable: VITE_STRIPE_PUBLIC_KEY');
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  currency: string;
+  features: string[];
+  recommended?: boolean;
+  popular?: boolean;
 }
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-
-// Beta plans - Free during beta period
-const betaPlans = [
-  {
-    id: 'beta-seller',
-    name: 'SELLER',
-    price: 0,
-    interval: 'month',
-    description: 'Free for a limited time',
-    features: [
-      'List unlimited horses for sale',
-      'Detailed horse profile creation',
-      'Connect with interested buyers',
-      'Unlimited searches',
-      'No payment details required'
-    ],
-    buttonText: 'Get Started'
-  },
-  {
-    id: 'beta-searching',
-    name: 'SEARCHING',
-    price: 0,
-    interval: 'month',
-    description: 'Free for a limited time',
-    features: [
-      'Use advanced filtering options',
-      'Connect with sellers directly',
-      'Save favorite horses',
-      'Unlimited searches',
-      'No payment details required'
-    ],
-    buttonText: 'Get Started'
-  }
-];
-
-// Future plans (will be available after beta)
-const futurePlans = [
-  {
-    id: 'standard',
-    name: 'STANDARD',
-    price: 39.95,
-    interval: 'month',
-    currency: 'AUD',
-    description: '',
-    features: [
-      'List up to 5 horses',
-      'Unlimited searches',
-      'Basic horse profile creation',
-      'Connect with interested buyers',
-      'Email notifications',
-      'GST Included'
-    ],
-    buttonText: 'Coming Soon',
-    isComingSoon: true
-  },
-  {
-    id: 'professional',
-    name: 'PROFESSIONAL',
-    price: 69.95,
-    interval: 'month',
-    currency: 'AUD',
-    description: '',
-    isPopular: true,
-    features: [
-      'List up to 15 horses',
-      'Unlimited searches',
-      'Advanced horse profile creation',
-      'Priority listing placement',
-      'Connect with interested buyers',
-      'Advanced notification options',
-      'GST Included'
-    ],
-    buttonText: 'Coming Soon',
-    isComingSoon: true
-  },
-  {
-    id: 'elite',
-    name: 'ELITE',
-    price: 99.95,
-    interval: 'month',
-    currency: 'AUD',
-    description: '',
-    features: [
-      'List unlimited horses',
-      'Unlimited searches',
-      'Detailed horse profile creation',
-      'Connect with interested buyers',
-      'Notification options',
-      'GST Included'
-    ],
-    buttonText: 'Coming Soon',
-    isComingSoon: true
-  }
-];
-
-// Main subscription page component
-export default function SubscriptionPage() {
-  const [selectedPlan, setSelectedPlan] = useState('beta-seller');
-  const [tosAgreed, setTosAgreed] = useState(false);
+export default function SubscriptionSimplePage() {
+  const { user, isLoading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
-  
-  // Get authentication status
-  const { data: user, isLoading: isLoadingAuth } = useQuery({
-    queryKey: ['/api/auth/me'],
-    retry: false,
-  });
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  
+  const [selectedPlan, setSelectedPlan] = useState<string>('');
+  const [tosAgreed, setTosAgreed] = useState(false);
+
   // Try to get user from localStorage if authentication is failing
   const fallbackUser = (() => {
     if (user) return user;
@@ -142,14 +43,77 @@ export default function SubscriptionPage() {
 
   // Use fallback user if primary user data is unavailable
   const currentUser = user || fallbackUser;
-  
+
+  // Beta subscription plans
+  const betaPlans: SubscriptionPlan[] = [
+    {
+      id: 'beta-searching',
+      name: 'BETA SEARCHING',
+      price: 0,
+      currency: 'AUD',
+      features: [
+        'Browse all horses',
+        'Advanced search filters',
+        'Contact horse owners',
+        'Save favorites',
+        'Beta period access'
+      ],
+      popular: true
+    },
+    {
+      id: 'beta-seller',
+      name: 'BETA SELLING',
+      price: 0,
+      currency: 'AUD',
+      features: [
+        'List unlimited horses',
+        'Professional horse profiles',
+        'Direct buyer messaging',
+        'Performance analytics',
+        'Beta period access'
+      ],
+      recommended: true
+    }
+  ];
+
+  // Future subscription plans
+  const futurePlans: SubscriptionPlan[] = [
+    {
+      id: 'searching-monthly',
+      name: 'SEARCHING',
+      price: 29,
+      currency: 'AUD',
+      features: [
+        'Browse all horses',
+        'Advanced search filters',
+        'Contact horse owners',
+        'Save favorites',
+        'Priority support'
+      ]
+    },
+    {
+      id: 'selling-monthly',
+      name: 'SELLING',
+      price: 49,
+      currency: 'AUD',
+      features: [
+        'List unlimited horses',
+        'Professional horse profiles',
+        'Direct buyer messaging',
+        'Performance analytics',
+        'Priority support'
+      ],
+      recommended: true
+    }
+  ];
+
   // Get current subscription status - handle failures gracefully
   const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({
     queryKey: ['/api/subscription'],
     retry: 1,
     enabled: !!currentUser,
     select: (data) => {
-      if (data?.hasSubscription) {
+      if (data && typeof data === 'object' && 'hasSubscription' in data && data.hasSubscription) {
         return data;
       }
       
@@ -212,7 +176,7 @@ export default function SubscriptionPage() {
     
     setSelectedPlan(planId);
     
-    // For beta plans, activate the subscription
+    // For beta plans, activate immediately
     if (planId.startsWith('beta-')) {
       activateBetaSubscription(planId);
     }
@@ -221,17 +185,6 @@ export default function SubscriptionPage() {
   const formatDate = (timestamp: number) => {
     return new Date(timestamp * 1000).toLocaleDateString();
   };
-
-  // Try to get user from localStorage if authentication is failing
-  const fallbackUser = (() => {
-    if (user) return user;
-    try {
-      const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  })();
 
   // Show loading state only if no fallback data is available
   if (isLoadingAuth && !fallbackUser) {
@@ -268,16 +221,13 @@ export default function SubscriptionPage() {
     );
   }
 
-  // Use fallback user if primary user data is unavailable
-  const currentUser = user || fallbackUser;
-
   // Show current subscription if user has one (from API or localStorage)
   if (subscriptionData?.hasSubscription || currentUser?.stripe_subscription_id) {
     // Use API data if available, otherwise use user data
-    const subscriptionId = subscriptionData?.subscriptionId || currentUser?.stripe_subscription_id;
-    const status = subscriptionData?.status || currentUser?.subscription_status || 'active';
-    const planId = subscriptionData?.planId || currentUser?.subscription_plan;
-    const currentPeriodEnd = subscriptionData?.currentPeriodEnd || 
+    const subscriptionId = (subscriptionData as any)?.subscriptionId || currentUser?.stripe_subscription_id;
+    const status = (subscriptionData as any)?.status || currentUser?.subscription_status || 'active';
+    const planId = (subscriptionData as any)?.planId || currentUser?.subscription_plan;
+    const currentPeriodEnd = (subscriptionData as any)?.currentPeriodEnd || 
       (currentUser?.subscription_end_date ? new Date(currentUser.subscription_end_date).getTime() / 1000 : undefined);
     
     const isBetaPlan = subscriptionId?.startsWith('beta-');
@@ -317,72 +267,37 @@ export default function SubscriptionPage() {
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold font-accent">Billing Information</h3>
-                  {isBetaPlan ? (
-                    <p className="text-sm">
-                      Your beta subscription is active until further notice
-                    </p>
-                  ) : (
-                    <p className="text-sm">
-                      Your subscription renews on <span className="font-medium">{formatDate(currentPeriodEnd)}</span>
-                    </p>
-                  )}
+                <div className="space-y-3">
+                  <h4 className="font-semibold">Plan Features</h4>
+                  <ul className="space-y-2">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-2 text-sm">
+                        <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
-
-              {/* Feature list */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold font-accent">Features</h3>
-                <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 mr-2 flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Future plans preview for beta users */}
-              {isBetaPlan && (
-                <div className="space-y-4 pt-6 border-t border-gray-200 mt-6">
-                  <h3 className="text-lg font-semibold font-accent">Coming Soon</h3>
+              
+              {currentPeriodEnd && (
+                <div className="pt-4 border-t">
                   <p className="text-sm text-muted-foreground">
-                    These premium plans will be available after our beta period. 
-                    Enjoy free access now while it lasts!
+                    {isBetaPlan ? 'Beta access valid until' : 'Next billing date'}: {formatDate(currentPeriodEnd)}
                   </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                    {futurePlans.map((futurePlan) => (
-                      <Card key={futurePlan.id} className={`border ${futurePlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
-                        <CardHeader className="pb-2">
-                          {futurePlan.isPopular && (
-                            <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-md">
-                              Most Popular
-                            </div>
-                          )}
-                          <CardTitle className="text-lg font-accent">{futurePlan.name}</CardTitle>
-                          <div className="text-2xl font-bold">
-                            ${futurePlan.price}
-                            <span className="text-sm font-normal text-muted-foreground">/month</span>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <ul className="space-y-2">
-                            {futurePlan.features.slice(0, 4).map((feature, index) => (
-                              <li key={index} className="flex items-start text-sm">
-                                <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                                {feature}
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
                 </div>
               )}
+              
+              <div className="flex gap-4 pt-4">
+                <Button onClick={() => navigate('/browse')} className="flex-1">
+                  Browse Horses
+                </Button>
+                {currentUser?.is_selling && (
+                  <Button variant="outline" onClick={() => navigate('/my-horses')} className="flex-1">
+                    Manage Horses
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -390,117 +305,156 @@ export default function SubscriptionPage() {
     );
   }
 
-  // Show subscription selection for users without subscription
+  // Show subscription plan selection
   return (
-    <Layout pageTitle="Choose Your Plan">
+    <Layout pageTitle="Subscription Plans">
       <div className="container mx-auto py-12 max-w-6xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold font-accent mb-4">Choose Your Plan</h1>
-          <p className="text-lg text-muted-foreground">
-            Start with our free beta plans - no payment required!
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold font-accent mb-4">Choose Your Plan</h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Join our beta program and get free access to all premium features. 
+            Help us build the future of horse trading.
           </p>
         </div>
 
         {/* Beta Plans */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {betaPlans.map((plan) => (
-            <Card key={plan.id} className="relative border-2 border-primary">
-              <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-md">
-                FREE BETA
-              </div>
-              <CardHeader>
-                <CardTitle className="text-xl font-accent">{plan.name}</CardTitle>
-                <div className="text-3xl font-bold">
-                  FREE
-                  <span className="text-sm font-normal text-muted-foreground ml-2">{plan.description}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <ul className="space-y-2">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start text-sm">
-                      <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                
-                <Button 
-                  className="w-full" 
-                  onClick={() => handleSelectPlan(plan.id)}
-                  disabled={isActivatingBeta && selectedPlan === plan.id}
-                >
-                  {isActivatingBeta && selectedPlan === plan.id ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Activating...
-                    </>
-                  ) : (
-                    plan.buttonText
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Terms of Service Agreement */}
-        <div className="flex items-center space-x-2 justify-center mb-6">
-          <Checkbox 
-            id="terms" 
-            checked={tosAgreed}
-            onCheckedChange={setTosAgreed}
-          />
-          <label htmlFor="terms" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            I agree to the{" "}
-            <TermsDialog>
-              <Button variant="link" className="p-0 h-auto text-sm text-primary underline-offset-2" size="sm">
-                Terms of Service <ExternalLink className="h-3 w-3 ml-1 inline" />
-              </Button>
-            </TermsDialog>
-          </label>
-        </div>
-
-        {/* Future Plans Preview */}
-        <div className="space-y-4 pt-6 border-t border-gray-200">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold font-accent mb-2">Coming After Beta</h2>
-            <p className="text-muted-foreground">
-              These premium plans will be available after our beta period ends
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <Badge variant="secondary" className="text-lg px-4 py-2 mb-4">
+              <Crown className="h-5 w-5 mr-2" />
+              Beta Access - Free for Limited Time
+            </Badge>
+            <h2 className="text-2xl font-semibold">Beta Subscription Plans</h2>
+            <p className="text-muted-foreground mt-2">
+              Get full access to all features during our beta period
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            {futurePlans.map((plan) => (
-              <Card key={plan.id} className={`border ${plan.isPopular ? 'border-primary' : 'border-gray-200'} opacity-75`}>
-                <CardHeader className="pb-2">
-                  {plan.isPopular && (
-                    <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-md">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {betaPlans.map((plan) => (
+              <Card 
+                key={plan.id} 
+                className={`relative ${plan.popular ? 'ring-2 ring-primary' : ''} ${plan.recommended ? 'ring-2 ring-amber-500' : ''}`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge className="bg-primary text-primary-foreground">
+                      <Star className="h-3 w-3 mr-1" />
                       Most Popular
-                    </div>
-                  )}
-                  <CardTitle className="text-lg font-accent">{plan.name}</CardTitle>
-                  <div className="text-2xl font-bold">
-                    ${plan.price}
-                    <span className="text-sm font-normal text-muted-foreground">/month</span>
+                    </Badge>
+                  </div>
+                )}
+                {plan.recommended && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge variant="secondary" className="bg-amber-500 text-white">
+                      <Zap className="h-3 w-3 mr-1" />
+                      Recommended
+                    </Badge>
+                  </div>
+                )}
+                
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-xl font-accent">{plan.name}</CardTitle>
+                  <div className="text-3xl font-bold">
+                    FREE
+                    <span className="text-sm font-normal text-muted-foreground ml-2">during beta</span>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <ul className="space-y-2">
+                
+                <CardContent className="space-y-6">
+                  <ul className="space-y-3">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start text-sm">
-                        <Check className="h-4 w-4 text-green-600 mr-2 mt-0.5 flex-shrink-0" />
-                        {feature}
+                      <li key={index} className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   
-                  <Button className="w-full" disabled>
-                    {plan.buttonText}
+                  <Button 
+                    onClick={() => handleSelectPlan(plan.id)}
+                    disabled={isActivatingBeta && selectedPlan === plan.id}
+                    className="w-full"
+                    variant={plan.recommended ? "default" : "outline"}
+                  >
+                    {isActivatingBeta && selectedPlan === plan.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Activating...
+                      </>
+                    ) : (
+                      'Start Beta Access'
+                    )}
                   </Button>
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+
+        {/* Future Plans Preview */}
+        <div className="opacity-60">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-semibold">Future Pricing</h2>
+            <p className="text-muted-foreground mt-2">
+              After beta period, these will be our standard plans
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {futurePlans.map((plan) => (
+              <Card key={plan.id} className="relative">
+                {plan.recommended && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <Badge variant="secondary">Recommended</Badge>
+                  </div>
+                )}
+                
+                <CardHeader className="text-center pb-4">
+                  <CardTitle className="text-xl font-accent">{plan.name}</CardTitle>
+                  <div className="text-3xl font-bold">
+                    ${plan.price}
+                    <span className="text-sm font-normal text-muted-foreground">/{plan.currency}/month</span>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="space-y-6">
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, index) => (
+                      <li key={index} className="flex items-center gap-3">
+                        <Check className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  
+                  <Button disabled className="w-full" variant="outline">
+                    Available After Beta
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Terms of Service Agreement */}
+        <div className="mt-12 max-w-md mx-auto">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="terms" 
+              checked={tosAgreed}
+              onCheckedChange={(checked) => setTosAgreed(checked === true)}
+            />
+            <Label htmlFor="terms" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              I agree to the{' '}
+              <button 
+                type="button"
+                className="text-primary underline hover:no-underline"
+                onClick={() => window.open('/terms', '_blank')}
+              >
+                Terms of Service
+              </button>
+            </Label>
           </div>
         </div>
       </div>
