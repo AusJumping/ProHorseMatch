@@ -298,13 +298,24 @@ export default function SubscriptionPage() {
       try {
         // Only convert if we have a different currency than AUD (base currency for plans)
         if (currentCurrency !== 'AUD') {
-          const newPlans = await Promise.all(futurePlans.map(async (plan) => {
-            const convertedPrice = await convertPrice(plan.price, 'AUD');
+          const newPlans = futurePlans.map((plan) => {
+            // Simple conversion using static rates for now to avoid re-render loops
+            // This prevents infinite re-renders while still showing approximate converted prices
+            const conversionRates: { [key: string]: number } = {
+              'USD': 0.66, // AUD to USD
+              'EUR': 0.60, // AUD to EUR
+              'GBP': 0.52, // AUD to GBP
+              'CAD': 0.88, // AUD to CAD
+            };
+            
+            const rate = conversionRates[currentCurrency] || 1;
+            const convertedPrice = plan.price * rate;
+            
             return {
               ...plan,
               price: parseFloat(convertedPrice.toFixed(2))
             };
-          }));
+          });
           setConvertedFuturePlans(newPlans);
         } else {
           setConvertedFuturePlans(futurePlans);
@@ -317,7 +328,7 @@ export default function SubscriptionPage() {
     };
     
     convertPrices();
-  }, [currentCurrency]); // Only depend on currentCurrency, not convertPrice
+  }, [currentCurrency]); // Only depend on currentCurrency to prevent infinite re-renders
   
   // Get current subscription status - handle failures gracefully
   const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({
