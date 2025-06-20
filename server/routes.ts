@@ -163,14 +163,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       cookie: { 
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         secure: false, // False for development
-        httpOnly: true,
-        sameSite: 'lax'
+        httpOnly: false, // Allow client-side access for debugging
+        sameSite: 'lax',
+        path: '/' // Explicitly set path
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
       }),
-      resave: false,
-      saveUninitialized: false,
+      resave: true, // Force save to ensure session persists
+      saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret2024",
       name: 'connect.sid'
     })
@@ -321,7 +322,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("Auth check - Session:", {
       sessionId: req.sessionID,
       userId: req.session.userId,
-      sessionContent: req.session
+      sessionContent: req.session,
+      cookies: req.headers.cookie
     });
     
     if (!req.session.userId) {
