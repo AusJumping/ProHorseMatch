@@ -364,16 +364,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // If session doesn't have userId, check auth token
     if (!userId) {
+      console.log("Auth check - Checking cookies:", req.cookies);
       const authToken = req.cookies?.auth_token;
+      console.log("Auth check - Auth token from cookies:", authToken);
+      console.log("Auth check - Available tokens in store:", Array.from(authTokens.keys()).map(k => k.substring(0, 8) + "..."));
+      
       if (authToken) {
         const tokenData = authTokens.get(authToken);
         if (tokenData && tokenData.expires > Date.now()) {
           userId = tokenData.userId;
           console.log("Auth check - Found valid auth token for user:", userId);
         } else {
-          console.log("Auth check - Auth token expired or invalid");
+          console.log("Auth check - Auth token expired or invalid", tokenData);
           if (authToken) authTokens.delete(authToken);
         }
+      } else {
+        console.log("Auth check - No auth token cookie found");
       }
     }
     
