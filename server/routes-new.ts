@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import session from "express-session";
 import cookieParser from "cookie-parser";
 import multer from "multer";
+import connectPgSimple from "connect-pg-simple";
 import { login, logout, getCurrentUser, requireAuth } from "./auth";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { 
@@ -29,15 +30,22 @@ import {
 const upload = multer({ storage: multer.memoryStorage() });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Session configuration
+  // Session configuration with PostgreSQL store
+  const PgSession = connectPgSimple(session);
   app.use(session({
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: true
+    }),
     secret: process.env.SESSION_SECRET || 'your-secret-key',
     resave: false,
     saveUninitialized: false,
+    name: 'connect.sid',
     cookie: {
       secure: false, // Set to true in production with HTTPS
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      httpOnly: false, // Allow JavaScript access for debugging
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: 'lax' // Allow cross-site requests
     }
   }));
 

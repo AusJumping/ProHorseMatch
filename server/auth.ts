@@ -31,14 +31,23 @@ export async function login(req: Request, res: Response) {
 
     // Set session
     (req as any).session.userId = user.id;
-    console.log("Login successful - Session created:", {
-      userId: user.id,
-      sessionId: req.sessionID
-    });
+    
+    // Explicitly save the session to ensure persistence
+    (req as any).session.save((err: any) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ message: 'Failed to save session' });
+      }
+      
+      console.log("Login successful - Session created:", {
+        userId: user.id,
+        sessionId: req.sessionID
+      });
 
-    // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
-    res.json(userWithoutPassword);
+      // Return user without password
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -48,6 +57,13 @@ export async function login(req: Request, res: Response) {
 // Get current user
 export async function getCurrentUser(req: any, res: Response) {
   try {
+    console.log('Auth check - Session debug:', {
+      sessionId: req.sessionID,
+      userId: req.session?.userId,
+      hasSession: !!req.session,
+      sessionKeys: req.session ? Object.keys(req.session) : []
+    });
+    
     if (!req.session?.userId) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
