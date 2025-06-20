@@ -26,7 +26,7 @@ import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import WelcomePage from "@/pages/welcome";
-import { AuthProvider } from "@/lib/auth";
+import { AuthProvider } from "@/lib/auth-session";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 function Router() {

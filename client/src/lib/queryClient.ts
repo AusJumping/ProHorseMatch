@@ -14,19 +14,11 @@ export async function apiRequest<T = any>(
 ): Promise<T> {
   const headers: Record<string, string> = data ? { "Content-Type": "application/json" } : {};
   
-  // Add auth token from localStorage if available
-  const authToken = localStorage.getItem('auth_token');
-  console.log("QueryClient - Auth token from localStorage:", authToken);
-  if (authToken) {
-    headers['Authorization'] = `Bearer ${authToken}`;
-    console.log("QueryClient - Setting Authorization header:", `Bearer ${authToken.substring(0, 8)}...`);
-  }
-  
   const res = await fetch(url, {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
+    credentials: "include", // Session cookies are handled automatically
   });
 
   await throwIfResNotOk(res);
