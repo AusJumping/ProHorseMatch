@@ -33,6 +33,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Landing} />
       <Route path="/browse" component={Home} />
+      <Route path="/filter" component={Home} />
       <Route path="/auth" component={Auth} />
       <Route path="/horse/:id" component={HorseDetail} />
 
