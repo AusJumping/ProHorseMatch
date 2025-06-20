@@ -163,16 +163,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       cookie: { 
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         secure: false, // False for development
-        httpOnly: true,
+        httpOnly: false, // Allow JavaScript access for debugging
         sameSite: 'lax'
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
       }),
-      resave: false,
-      saveUninitialized: false,
+      resave: true, // Force session save on each request
+      saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret2024",
-      name: 'connect.sid'
+      name: 'sessionId'
     })
   );
 
