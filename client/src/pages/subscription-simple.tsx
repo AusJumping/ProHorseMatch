@@ -35,14 +35,24 @@ export default function SubscriptionSimplePage() {
     if (user) return user;
     try {
       const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
+      const parsed = stored ? JSON.parse(stored) : null;
+      console.log('Subscription page - fallback user from localStorage:', parsed);
+      return parsed;
+    } catch (error) {
+      console.log('Subscription page - localStorage parse error:', error);
       return null;
     }
   })();
 
   // Use fallback user if primary user data is unavailable
   const currentUser = user || fallbackUser;
+  
+  console.log('Subscription page - Auth state:', { 
+    user: !!user, 
+    fallbackUser: !!fallbackUser, 
+    currentUser: !!currentUser,
+    hasSubscription: currentUser?.stripe_subscription_id 
+  });
 
   // Beta subscription plans
   const betaPlans: SubscriptionPlan[] = [
