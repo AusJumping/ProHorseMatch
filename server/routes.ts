@@ -161,21 +161,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use(
     session({
+      name: 'prohorsematch.sid', // Custom session name
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
-        secure: false, // Setting to false for development and easier testing
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        secure: false, // False for development
         httpOnly: true,
-        sameSite: 'lax' // Always use lax to improve session persistence across redirects
+        sameSite: 'lax'
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
-        stale: false, // Don't auto-expire sessions
+        stale: false,
       }),
-      resave: true, // Force session to be saved back to the store
-      saveUninitialized: true, // Save uninitialized sessions
-      secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      // Add rolling: true to update the cookie expiration on every response
-      rolling: true
+      resave: false, // Don't save session if unmodified
+      saveUninitialized: false, // Don't create session until something stored
+      secret: process.env.SESSION_SECRET || "proHorseMatchSessionSecret2024",
+      rolling: true // Extend session on activity
     })
   );
 
@@ -321,14 +321,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Session:", {
+    console.log("Auth check - Full session debug:", {
       sessionId: req.sessionID,
       userId: req.session.userId,
+      cookieHeader: req.headers.cookie,
+      sessionKeys: Object.keys(req.session || {}),
       sessionContent: req.session
     });
     
     if (!req.session.userId) {
-      console.log("Auth check failed - Not authenticated");
+      console.log("Auth check failed - userId not found in session");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
