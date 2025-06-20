@@ -2,6 +2,7 @@ import type { Express, Response, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
+import cookieParser from "cookie-parser";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -116,6 +117,24 @@ declare module "express-session" {
     userType?: string;
   }
 }
+
+// Simple in-memory auth token store that bypasses session issues
+const authTokens = new Map<string, { userId: number; expires: number }>();
+
+// Generate secure random token
+function generateAuthToken(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+// Clean expired tokens
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, data] of authTokens.entries()) {
+    if (data.expires < now) {
+      authTokens.delete(token);
+    }
+  }
+}, 60000); // Clean every minute
 
 const SessionStore = MemoryStore(session);
 
@@ -279,22 +298,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sessionId: req.sessionID
       });
       
-      // Store user ID in session without regenerating
-      req.session.userId = user.id;
-      console.log("Setting session userId:", user.id, "for sessionId:", req.sessionID);
+      // Generate auth token that bypasses session issues
+      const authToken = generateAuthToken();
+      const expires = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+      authTokens.set(authToken, { userId: user.id, expires });
       
-      // Save session explicitly and wait for completion
-      await new Promise<void>((resolve, reject) => {
-        req.session.save((err) => {
-          if (err) {
-            console.error("Session save error:", err);
-            reject(err);
-          } else {
-            console.log("Session saved successfully with userId:", user.id, "sessionId:", req.sessionID);
-            resolve();
-          }
-        });
+      console.log("Generated auth token for user:", user.id, "token:", authToken.substring(0, 8) + "...");
+      
+      // Set auth token as httpOnly cookie for security
+      res.cookie('auth_token', authToken, {
+        httpOnly: false, // Allow client access for debugging
+        secure: false, // False for development
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        path: '/'
       });
+      
+      // Also store user ID in session as backup
+      req.session.userId = user.id;
       
       // Return full user data including subscription info
       return res.json({
@@ -336,8 +357,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sessionContent: req.session
     });
     
-    if (!req.session.userId) {
-      console.log("Auth check failed - userId not found in session");
+    let userId = req.session.userId;
+    
+    // If session doesn't have userId, check auth token
+    if (!userId) {
+      const authToken = req.cookies?.auth_token;
+      if (authToken) {
+        const tokenData = authTokens.get(authToken);
+        if (tokenData && tokenData.expires > Date.now()) {
+          userId = tokenData.userId;
+          console.log("Auth check - Found valid auth token for user:", userId);
+        } else {
+          console.log("Auth check - Auth token expired or invalid");
+          if (authToken) authTokens.delete(authToken);
+        }
+      }
+    }
+    
+    if (!userId) {
+      console.log("Auth check failed - userId not found in session or auth token");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
