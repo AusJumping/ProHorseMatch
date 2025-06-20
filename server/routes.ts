@@ -1,4 +1,5 @@
 import type { Express, Response, Request } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
@@ -105,7 +106,6 @@ import {
     console.error("Error setting up test users:", error);
   }
 })();
-import express from "express";
 import MemoryStore from "memorystore";
 
 // Extend Express Session
@@ -161,19 +161,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(
     session({
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
-        secure: false, // Setting to false for development and easier testing
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        secure: false, // False for development
         httpOnly: true,
-        sameSite: 'lax' // Always use lax to improve session persistence across redirects
+        sameSite: 'lax'
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
-        stale: false, // Don't auto-expire sessions
       }),
-      resave: false, // Don't save session if unmodified
-      saveUninitialized: false, // Don't save uninitialized sessions
-      secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
-      name: 'connect.sid' // Explicitly set session name
+      resave: false,
+      saveUninitialized: false,
+      secret: process.env.SESSION_SECRET || "proHorseMatchSecret2024",
+      name: 'connect.sid'
     })
   );
 
