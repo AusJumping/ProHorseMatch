@@ -159,6 +159,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   
+  // Add cookie parser middleware
+  app.use(cookieParser());
+  
   app.use(
     session({
       cookie: { 
@@ -316,6 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(500).json({ message: "Failed to logout" });
       }
       res.clearCookie("connect.sid");
+      res.clearCookie("auth_user_id");
       return res.json({ message: "Logged out successfully" });
     });
   });
@@ -324,12 +328,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("Auth check - Session:", {
       sessionId: req.sessionID,
       userId: req.session.userId,
-      cookieUserId: req.cookies.auth_user_id
+      cookieUserId: req.cookies?.auth_user_id
     });
     
     // Check session first, then fallback to cookie
     let userId = req.session.userId;
-    if (!userId && req.cookies.auth_user_id) {
+    if (!userId && req.cookies?.auth_user_id) {
       userId = parseInt(req.cookies.auth_user_id);
       console.log("Using cookie fallback for user ID:", userId);
     }
