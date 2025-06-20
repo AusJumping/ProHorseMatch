@@ -74,7 +74,7 @@ const Sidebar = () => {
               }`}
               onClick={(e) => {
                 e.preventDefault();
-                window.location.href = "/filter";
+                window.location.href = "/browse";
               }}
             >
               <Home className="mr-3 h-5 w-5" />

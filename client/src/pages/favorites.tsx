@@ -18,16 +18,33 @@ export default function Favorites() {
   const [favoriteHorses, setFavoriteHorses] = useState<Horse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user's matches
+  // First check for any user data in localStorage
+  const [hasLocalUser, setHasLocalUser] = useState<boolean>(false);
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Try to find user in localStorage
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          setHasLocalUser(true);
+        }
+      } catch (e) {
+        console.error("Error checking local storage:", e);
+      }
+    }
+  }, [isAuthenticated]);
+
+  // Fetch user's matches - enable even if only local storage auth is available
   const { data: matches, isLoading: matchesLoading } = useQuery<Match[]>({
     queryKey: ['/api/matches'],
-    enabled: isAuthenticated,
+    enabled: isAuthenticated || hasLocalUser,
   });
 
-  // Fetch all horses
+  // Fetch all horses - enable even if only local storage auth is available
   const { data: horses, isLoading: horsesLoading } = useQuery<Horse[]>({
     queryKey: ['/api/horses'],
-    enabled: isAuthenticated,
+    enabled: isAuthenticated || hasLocalUser,
   });
 
   useEffect(() => {
@@ -119,8 +136,8 @@ export default function Favorites() {
     navigate(`/horse/${horseId}`);
   };
 
-  // Allow the page to render if authenticated
-  if (!isAuthenticated) {
+  // Allow the page to render even if we're using local storage auth
+  if (!isAuthenticated && !hasLocalUser) {
     return null; // Already redirected in useEffect
   }
 

@@ -162,19 +162,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     session({
       cookie: { 
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        secure: false, // False for development  
-        httpOnly: false, // Allow client-side access
-        sameSite: 'lax',
-        path: '/'
+        secure: false, // False for development
+        httpOnly: true,
+        sameSite: 'lax'
       }, 
       store: new SessionStore({
-        checkPeriod: 86400000,
+        checkPeriod: 86400000, // prune expired entries every 24h
       }),
-      resave: false, 
+      resave: false,
       saveUninitialized: false,
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret2024",
-      name: 'sessionId', // Use a clearer cookie name
-      rolling: false
+      name: 'connect.sid'
     })
   );
 
@@ -276,13 +274,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = user.id;
       
-      // Save session and return user data
-      req.session.save((err) => {
-        if (err) {
-          console.error("Session save error:", err);
-        } else {
-          console.log("Session saved successfully with ID:", req.sessionID);
-        }
+      // Save session explicitly
+      await new Promise<void>((resolve) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+          } else {
+            console.log("Session saved successfully");
+          }
+          resolve();
+        });
       });
       
       // Return full user data including subscription info
@@ -320,8 +321,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("Auth check - Session:", {
       sessionId: req.sessionID,
       userId: req.session.userId,
-      sessionContent: req.session,
-      cookies: req.headers.cookie
+      sessionContent: req.session
     });
     
     if (!req.session.userId) {

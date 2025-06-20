@@ -42,84 +42,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Initialize auth state and check localStorage on every component mount
-  const [authState, setAuthState] = useState<{ user: User | null; isLoading: boolean }>({ user: null, isLoading: true });
-
-  // Check authentication status on component mount by making API call to server
-  useEffect(() => {
-    const checkAuth = async () => {
+  // Fetch the current user with improved caching
+  const { data, isLoading, isError, refetch } = useQuery<User | null>({
+    queryKey: ['/api/auth/me'],
+    queryFn: async () => {
       try {
-        // First check localStorage for immediate UI response
-        const isAuthStored = localStorage.getItem('isAuthenticated') === 'true';
-        const storedUser = localStorage.getItem('user');
-        
-        console.log("Checking localStorage:", { isAuthStored, hasUser: !!storedUser });
-        
-        if (isAuthStored && storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          console.log("Found localStorage auth data, setting initial state:", parsedUser);
-          setAuthState({ user: parsedUser, isLoading: false });
-          return;
-        }
-
-        // If no localStorage data, check with server using session cookies
-        console.log("No localStorage data, checking server session...");
-        const response = await fetch('/api/auth/me', {
-          method: 'GET',
+        const res = await fetch('/api/auth/me', { 
           credentials: 'include',
+          cache: 'no-cache' // Ensure we don't get cached responses
         });
-
-        if (response.ok) {
-          const userData = await response.json();
-          console.log("Server returned valid user session:", userData);
-          
-          // Store in localStorage for future use
-          localStorage.setItem('user', JSON.stringify(userData));
-          localStorage.setItem('isAuthenticated', 'true');
-          localStorage.setItem('authTimestamp', Date.now().toString());
-          
-          setAuthState({ user: userData, isLoading: false });
-        } else {
-          console.log("No valid server session found, response status:", response.status);
-          setAuthState({ user: null, isLoading: false });
-        }
-      } catch (e) {
-        console.error("Error checking authentication:", e);
-        setAuthState({ user: null, isLoading: false });
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  // Add an effect to listen for localStorage changes (e.g., when user logs in from another tab)
-  useEffect(() => {
-    const handleStorageChange = () => {
-      try {
-        const isAuthStored = localStorage.getItem('isAuthenticated') === 'true';
-        const storedUser = localStorage.getItem('user');
+        if (res.status === 401) return null;
+        const userData = await res.json();
+        console.log("Auth user data:", userData); // Debug log
         
-        if (isAuthStored && storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          console.log("Storage change detected, updating auth state:", parsedUser);
-          setAuthState({ user: parsedUser, isLoading: false });
-        } else {
-          console.log("Storage change detected, clearing auth state");
-          setAuthState({ user: null, isLoading: false });
+        // Store user data in localStorage for persistence
+        if (userData && userData.id) {
+          localStorage.setItem('user', JSON.stringify(userData));
         }
-      } catch (e) {
-        console.error("Error handling storage change:", e);
-        setAuthState({ user: null, isLoading: false });
+        
+        return userData;
+      } catch (error) {
+        console.error("Auth fetch error:", error);
+        
+        // Try to restore from localStorage if fetch fails
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            return JSON.parse(storedUser);
+          } catch (e) {
+            return null;
+          }
+        }
+        
+        return null;
       }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  const data = authState.user;
-  const isLoading = authState.isLoading;
-  const isError = false;
+    },
+    staleTime: 60 * 1000, // Cache auth data for 1 minute
+    refetchOnWindowFocus: true,
+    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
+  });
   
   // Ensure user is either User object or null, never undefined
   const user = data === undefined ? null : data;
@@ -144,33 +105,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const userData = await response.json() as User;
-      console.log("Login successful, complete user data:", userData);
+      console.log("Login successful, user data:", userData);
       
-      // Store user in localStorage for persistence with additional debugging
-      try {
-        const userString = JSON.stringify(userData);
-        localStorage.setItem('user', userString);
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('authTimestamp', Date.now().toString());
-        
-        console.log("Stored auth data in localStorage:", {
-          user: userString.substring(0, 100) + '...',
-          isAuthenticated: localStorage.getItem('isAuthenticated'),
-          timestamp: localStorage.getItem('authTimestamp')
-        });
-        
-        // Update the auth state directly
-        setAuthState({ user: userData, isLoading: false });
-        
-        // Force a storage event to sync across components
-        window.dispatchEvent(new StorageEvent('storage', {
-          key: 'isAuthenticated',
-          newValue: 'true',
-          storageArea: localStorage
-        }));
-      } catch (e) {
-        console.error("Failed to store auth data:", e);
-      }
+      // Store user in localStorage for quick recovery if session issues occur
+      localStorage.setItem('user', JSON.stringify(userData));
+      
+      // Update query cache with user data
+      queryClient.setQueryData(['/api/auth/me'], userData);
       
       // Return the user data so the calling function can check subscription status
       return userData;
@@ -182,18 +123,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      // Clear localStorage first
-      localStorage.removeItem('user');
-      localStorage.removeItem('isAuthenticated');
-      
-      // Update auth state
-      setAuthState({ user: null, isLoading: false });
-      
-      // Make logout request to server
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });
+
+      // Clear localStorage
+      localStorage.removeItem('user');
+      
+      // Clear the query cache
+      queryClient.setQueryData(['/api/auth/me'], null);
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       
       // Navigate to home page using client-side routing
       navigate('/');
