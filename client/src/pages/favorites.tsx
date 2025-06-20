@@ -119,8 +119,8 @@ export default function Favorites() {
     navigate(`/horse/${horseId}`);
   };
 
-  // Allow the page to render even if we're using local storage auth
-  if (!isAuthenticated && !hasLocalUser) {
+  // Allow the page to render if authenticated
+  if (!isAuthenticated) {
     return null; // Already redirected in useEffect
   }
 
