@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -317,7 +317,7 @@ export default function SubscriptionPage() {
     };
     
     convertPrices();
-  }, [currentCurrency, convertPrice]);
+  }, [currentCurrency]); // Only depend on currentCurrency, not convertPrice
   
   // Get current subscription status - handle failures gracefully
   const { data: subscriptionData, isLoading: isLoadingSubscription, error: subscriptionError } = useQuery({

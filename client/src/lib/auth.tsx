@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { apiRequest } from "@/lib/queryClient";
 
 interface User {
   id: number;
