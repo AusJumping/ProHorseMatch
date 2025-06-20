@@ -44,10 +44,10 @@ export const getQueryFn: <T>(options: {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "returnNull" }), // Return null for 401s instead of throwing
+      queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: true, // Check auth on window focus
-      staleTime: 1000 * 60 * 5, // 5 minutes instead of Infinity
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
       retry: false,
     },
     mutations: {

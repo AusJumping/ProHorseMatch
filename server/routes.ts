@@ -159,35 +159,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve static files from the uploads directory
   app.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
   
-  // Detect if we're running on a secure domain (Replit uses HTTPS)
-  const isSecure = !!(process.env.REPLIT_ENVIRONMENT === 'production' || 
-                      process.env.REPLIT_DEV_DOMAIN || 
-                      process.env.NODE_ENV === 'production');
-  
-  console.log("🔐 Cookie Configuration:", {
-    isSecure,
-    environment: process.env.REPLIT_ENVIRONMENT,
-    devDomain: process.env.REPLIT_DEV_DOMAIN,
-    nodeEnv: process.env.NODE_ENV
-  });
-  
   app.use(
     session({
-      name: 'connect.sid',
       cookie: { 
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: isSecure, // Use secure cookies on HTTPS (Replit)
-        httpOnly: false, // Allow client access for token fallback
-        sameSite: isSecure ? 'none' : 'lax' as any, // Use 'none' for secure cross-origin
-        path: '/'
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days for longer sessions
+        secure: false, // Setting to false for development and easier testing
+        httpOnly: true,
+        sameSite: 'lax' // Always use lax to improve session persistence across redirects
       }, 
       store: new SessionStore({
-        checkPeriod: 86400000,
-        stale: false,
+        checkPeriod: 86400000, // prune expired entries every 24h
+        stale: false, // Don't auto-expire sessions
       }),
-      resave: true,
-      saveUninitialized: true,
-      secret: process.env.SESSION_SECRET || "proHorseMatchSessionSecret2024",
+      resave: true, // Force session to be saved back to the store
+      saveUninitialized: true, // Save uninitialized sessions
+      secret: process.env.SESSION_SECRET || "proHorseMatchSecret",
+      // Add rolling: true to update the cookie expiration on every response
       rolling: true
     })
   );
@@ -290,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = user.id;
       
-      // Force session save and generate auth token
+      // Save session explicitly
       await new Promise<void>((resolve) => {
         req.session.save((err) => {
           if (err) {
@@ -300,27 +287,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           resolve();
         });
-      });
-      
-      // Generate simple auth token for additional persistence
-      const authToken = `${user.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      
-      // Set additional auth cookie as backup
-      res.cookie('auth_token', authToken, {
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        httpOnly: false, // Allow frontend access
-        secure: isSecure,
-        sameSite: isSecure ? 'none' : 'lax' as any // Allow cross-origin cookies
-      });
-      
-      // Store token mapping in memory for validation
-      if (!global.authTokens) {
-        global.authTokens = new Map();
-      }
-      global.authTokens.set(authToken, {
-        userId: user.id,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       });
       
       // Return full user data including subscription info
@@ -336,8 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripe_subscription_id: user.stripe_subscription_id,
         subscription_status: user.subscription_status,
         subscription_plan: user.subscription_plan,
-        subscription_end_date: user.subscription_end_date,
-        auth_token: authToken
+        subscription_end_date: user.subscription_end_date
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -356,32 +321,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Full session debug:", {
+    console.log("Auth check - Session:", {
       sessionId: req.sessionID,
       userId: req.session.userId,
-      cookieHeader: req.headers.cookie,
-      sessionKeys: Object.keys(req.session || {}),
       sessionContent: req.session
     });
     
-    let userId = req.session.userId;
-    
-    // Fallback to auth token if session doesn't have userId
-    if (!userId) {
-      const authToken = req.cookies?.auth_token;
-      if (authToken && global.authTokens) {
-        const tokenData = global.authTokens.get(authToken);
-        if (tokenData && tokenData.expiresAt > new Date()) {
-          userId = tokenData.userId;
-          console.log("Auth check - Using auth token fallback for user:", userId);
-          // Restore session
-          req.session.userId = userId;
-        }
-      }
-    }
-    
-    if (!userId) {
-      console.log("Auth check failed - No valid session or token");
+    if (!req.session.userId) {
+      console.log("Auth check failed - Not authenticated");
       return res.status(401).json({ message: "Not authenticated" });
     }
     

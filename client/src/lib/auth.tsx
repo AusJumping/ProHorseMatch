@@ -16,7 +16,6 @@ interface User {
   subscription_status?: string;
   subscription_plan?: string;
   subscription_end_date?: string;
-  auth_token?: string;
 }
 
 interface AuthContextType {
@@ -43,32 +42,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Fetch the current user with proper session management
+  // Fetch the current user with improved caching
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
-          headers: {
-            'Cache-Control': 'no-cache'
-          }
+          cache: 'no-cache' // Ensure we don't get cached responses
         });
-        
-        if (res.status === 401) {
-          // Clear any stale localStorage data on 401
-          localStorage.removeItem('user');
-          return null;
-        }
-        
-        if (!res.ok) {
-          throw new Error(`Auth check failed: ${res.status}`);
-        }
-        
+        if (res.status === 401) return null;
         const userData = await res.json();
-        console.log("Session auth state:", { isAuthenticated: !!userData });
+        console.log("Auth user data:", userData); // Debug log
         
-        // Store user data in localStorage for quick recovery
+        // Store user data in localStorage for persistence
         if (userData && userData.id) {
           localStorage.setItem('user', JSON.stringify(userData));
         }
@@ -77,20 +64,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch (error) {
         console.error("Auth fetch error:", error);
         
-        // Don't fall back to localStorage on network errors
-        // This ensures we always check the server for fresh session state
-        localStorage.removeItem('user');
+        // Try to restore from localStorage if fetch fails
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          try {
+            return JSON.parse(storedUser);
+          } catch (e) {
+            return null;
+          }
+        }
+        
         return null;
       }
     },
-    staleTime: 30 * 1000, // 30 seconds cache
+    staleTime: 60 * 1000, // Cache auth data for 1 minute
     refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    retry: (failureCount, error) => {
-      // Don't retry 401 errors, but retry network errors up to 2 times
-      if (error?.message?.includes('401')) return false;
-      return failureCount < 2;
-    }
+    refetchInterval: 2 * 60 * 1000, // Refetch every 2 minutes to keep session fresh
   });
   
   // Ensure user is either User object or null, never undefined
@@ -101,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {
-      console.log("Submitting login form with data:", { email, password });
+      console.log("Attempting login for:", { email });
       
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -116,26 +105,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       const userData = await response.json() as User;
-      console.log("Login successful, complete user data:", userData);
+      console.log("Login successful, user data:", userData);
       
-      // Store user in localStorage for persistence
+      // Store user in localStorage for quick recovery if session issues occur
       localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Store auth token if provided
-      if (userData.auth_token) {
-        localStorage.setItem('auth_token', userData.auth_token);
-        // Set as cookie for automatic sending
-        document.cookie = `auth_token=${userData.auth_token}; path=/; max-age=2592000; SameSite=Lax`;
-      }
       
       // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Force immediate refetch to ensure persistence
-      setTimeout(() => {
-        refetch();
-      }, 100);
-      
+      // Return the user data so the calling function can check subscription status
       return userData;
     } catch (error) {
       console.error('Login error:', error);
