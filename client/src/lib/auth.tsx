@@ -47,34 +47,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
-        const res = await fetch('/api/auth/me', { 
-          credentials: 'include',
-          cache: 'no-cache',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+        try {
+          const userData = await apiRequest('GET', '/api/auth/me');
+          console.log("Auth user data:", userData);
+          
+          // Store user data in localStorage for persistence
+          if (userData && userData.id) {
+            localStorage.setItem('user', JSON.stringify(userData));
           }
-        });
-        
-        if (res.status === 401) {
-          // Clear localStorage if server says not authenticated
-          localStorage.removeItem('user');
-          return null;
+          
+          return userData;
+        } catch (error: any) {
+          if (error.message?.includes('401')) {
+            // Clear localStorage if server says not authenticated
+            localStorage.removeItem('user');
+            return null;
+          }
+          throw error;
         }
-        
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        
-        const userData = await res.json();
-        console.log("Auth user data:", userData);
-        
-        // Store user data in localStorage for persistence
-        if (userData && userData.id) {
-          localStorage.setItem('user', JSON.stringify(userData));
-        }
-        
-        return userData;
       } catch (error) {
         console.error("Auth fetch error:", error);
         
