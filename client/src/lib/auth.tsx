@@ -16,6 +16,7 @@ interface User {
   subscription_status?: string;
   subscription_plan?: string;
   subscription_end_date?: string;
+  auth_token?: string;
 }
 
 interface AuthContextType {
@@ -117,13 +118,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userData = await response.json() as User;
       console.log("Login successful, complete user data:", userData);
       
-      // Store user in localStorage
+      // Store user in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(userData));
       
-      // Update query cache with user data and force immediate update
+      // Store auth token if provided
+      if (userData.auth_token) {
+        localStorage.setItem('auth_token', userData.auth_token);
+        // Set as cookie for automatic sending
+        document.cookie = `auth_token=${userData.auth_token}; path=/; max-age=2592000; SameSite=Lax`;
+      }
+      
+      // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
       
-      // Force immediate refetch to ensure session is properly established
+      // Force immediate refetch to ensure persistence
       setTimeout(() => {
         refetch();
       }, 100);

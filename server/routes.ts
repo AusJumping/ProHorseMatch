@@ -161,21 +161,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.use(
     session({
-      name: 'prohorsematch.sid', // Custom session name
+      name: 'connect.sid', // Use default name for better compatibility
       cookie: { 
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-        secure: false, // False for development
-        httpOnly: true,
-        sameSite: 'lax'
+        secure: false,
+        httpOnly: false, // Allow client access for debugging
+        sameSite: 'lax',
+        path: '/'
       }, 
       store: new SessionStore({
-        checkPeriod: 86400000, // prune expired entries every 24h
+        checkPeriod: 86400000,
         stale: false,
       }),
-      resave: false, // Don't save session if unmodified
-      saveUninitialized: false, // Don't create session until something stored
+      resave: true, // Force save to ensure persistence
+      saveUninitialized: true, // Create session immediately
       secret: process.env.SESSION_SECRET || "proHorseMatchSessionSecret2024",
-      rolling: true // Extend session on activity
+      rolling: true
     })
   );
 
@@ -277,7 +278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = user.id;
       
-      // Save session explicitly
+      // Force session save and generate auth token
       await new Promise<void>((resolve) => {
         req.session.save((err) => {
           if (err) {
@@ -287,6 +288,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           resolve();
         });
+      });
+      
+      // Generate simple auth token for additional persistence
+      const authToken = `${user.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Set additional auth cookie as backup
+      res.cookie('auth_token', authToken, {
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+        httpOnly: false, // Allow frontend access
+        secure: false,
+        sameSite: 'lax'
+      });
+      
+      // Store token mapping in memory for validation
+      if (!global.authTokens) {
+        global.authTokens = new Map();
+      }
+      global.authTokens.set(authToken, {
+        userId: user.id,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       });
       
       // Return full user data including subscription info
@@ -302,7 +324,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripe_subscription_id: user.stripe_subscription_id,
         subscription_status: user.subscription_status,
         subscription_plan: user.subscription_plan,
-        subscription_end_date: user.subscription_end_date
+        subscription_end_date: user.subscription_end_date,
+        auth_token: authToken
       });
     } catch (error: any) {
       console.error("Login error:", error);
@@ -329,8 +352,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sessionContent: req.session
     });
     
-    if (!req.session.userId) {
-      console.log("Auth check failed - userId not found in session");
+    let userId = req.session.userId;
+    
+    // Fallback to auth token if session doesn't have userId
+    if (!userId) {
+      const authToken = req.cookies?.auth_token;
+      if (authToken && global.authTokens) {
+        const tokenData = global.authTokens.get(authToken);
+        if (tokenData && tokenData.expiresAt > new Date()) {
+          userId = tokenData.userId;
+          console.log("Auth check - Using auth token fallback for user:", userId);
+          // Restore session
+          req.session.userId = userId;
+        }
+      }
+    }
+    
+    if (!userId) {
+      console.log("Auth check failed - No valid session or token");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
