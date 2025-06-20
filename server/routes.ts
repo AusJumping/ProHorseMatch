@@ -163,18 +163,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       cookie: { 
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
         secure: false, // False for development
-        httpOnly: true,
+        httpOnly: false, // Allow client-side access for debugging
         sameSite: 'lax',
         path: '/'
       }, 
       store: new SessionStore({
         checkPeriod: 86400000, // prune expired entries every 24h
       }),
-      resave: false,
-      saveUninitialized: false,
+      resave: true, // Force session save
+      saveUninitialized: true, // Save uninitialized sessions
       secret: process.env.SESSION_SECRET || "proHorseMatchSecret2024",
-      name: 'connect.sid',
-      rolling: true // Reset cookie expiration on each request
+      name: 'sessionId', // Use custom name
+      rolling: false // Don't reset expiration each time
     })
   );
 
@@ -276,13 +276,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = user.id;
       
-      // Save session explicitly
+      // Force save session
       await new Promise<void>((resolve) => {
         req.session.save((err) => {
           if (err) {
             console.error("Session save error:", err);
           } else {
-            console.log("Session saved successfully");
+            console.log("Session saved successfully with ID:", req.sessionID);
           }
           resolve();
         });
