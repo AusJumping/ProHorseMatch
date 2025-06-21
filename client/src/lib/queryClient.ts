@@ -42,7 +42,7 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     // Get auth token from localStorage
-    const authToken = localStorage.getItem('authToken');
+    const authToken = localStorage.getItem('auth_token');
     const headers: Record<string, string> = {};
     
     if (authToken) {
