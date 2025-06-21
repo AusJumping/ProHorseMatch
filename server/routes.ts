@@ -280,13 +280,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = user.id;
       
-      // Save session explicitly
+      // Save session explicitly and log response headers
       await new Promise<void>((resolve) => {
         req.session.save((err: any) => {
           if (err) {
             console.error("Session save error:", err);
           } else {
             console.log("Session saved successfully");
+            console.log("Response headers being set:", res.getHeaders());
           }
           resolve();
         });
@@ -345,9 +346,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Session:", {
+    console.log("Auth check - Full debug:", {
       sessionId: req.sessionID,
       userId: req.session.userId,
+      cookies: req.headers.cookie,
+      allHeaders: Object.keys(req.headers),
       sessionContent: req.session
     });
     
