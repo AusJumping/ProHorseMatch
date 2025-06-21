@@ -42,14 +42,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
 
-  // Session-based authentication with server validation
+  // Token-based authentication with cookie and header support
   const { data, isLoading, isError, refetch } = useQuery<User | null>({
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
+        // Get auth token from cookie
+        const authToken = document.cookie
+          .split(';')
+          .find(cookie => cookie.trim().startsWith('auth_token='))
+          ?.split('=')[1];
+        
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json'
+        };
+        
+        if (authToken) {
+          headers.Authorization = `Bearer ${authToken}`;
+        }
+        
         const res = await fetch('/api/auth/me', { 
           credentials: 'include',
-          cache: 'no-cache'
+          cache: 'no-cache',
+          headers
         });
         
         if (res.status === 401) {

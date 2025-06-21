@@ -280,31 +280,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = user.id;
       
-      // Save session explicitly and ensure cookie is set
-      await new Promise<void>((resolve) => {
-        req.session.save((err: any) => {
-          if (err) {
-            console.error("Session save error:", err);
-          } else {
-            console.log("Session saved successfully");
-            console.log("Session ID:", req.sessionID);
-            console.log("User ID in session:", req.session.userId);
-            
-            // Explicitly ensure the session cookie is set
-            res.cookie('connect.sid', req.sessionID, {
-              maxAge: 30 * 24 * 60 * 60 * 1000,
-              httpOnly: true,
-              secure: false,
-              sameSite: 'lax',
-              path: '/'
-            });
-            
-            console.log("Explicitly set session cookie");
-            console.log("Response headers after cookie set:", res.getHeaders());
-          }
-          resolve();
-        });
+      // Create a simple auth token instead of relying on sessions
+      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+      
+      // Store auth token mapping in memory (simple approach for development)
+      if (!global.authTokens) {
+        global.authTokens = new Map();
+      }
+      global.authTokens.set(authToken, {
+        userId: user.id,
+        expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
       });
+      
+      console.log("Created auth token:", authToken);
+      
+      // Set multiple cookies to ensure one works
+      res.cookie('auth_token', authToken, {
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+        httpOnly: false, // Allow frontend access
+        secure: false,
+        sameSite: 'lax',
+        path: '/'
+      });
+      
+      // Also set as header for immediate use
+      res.setHeader('X-Auth-Token', authToken);
       
       // Return full user data including subscription info
       return res.json({
@@ -359,22 +359,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Full debug:", {
-      sessionId: req.sessionID,
-      userId: req.session.userId,
+    // Check for auth token in multiple places
+    let authToken = req.headers.authorization?.replace('Bearer ', '');
+    if (!authToken && req.headers.cookie) {
+      const cookies = req.headers.cookie.split(';').reduce((acc: any, cookie) => {
+        const [key, value] = cookie.trim().split('=');
+        acc[key] = value;
+        return acc;
+      }, {});
+      authToken = cookies.auth_token;
+    }
+    
+    console.log("Auth check - Token debug:", {
+      authToken: authToken ? authToken.substring(0, 10) + '...' : 'none',
       cookies: req.headers.cookie,
-      allHeaders: Object.keys(req.headers),
-      sessionContent: req.session
+      hasGlobalTokens: !!global.authTokens
     });
     
-    if (!req.session.userId) {
-      console.log("Auth check failed - Not authenticated");
+    if (!authToken || !global.authTokens) {
+      console.log("Auth check failed - No token or token store");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
+    const tokenData = global.authTokens.get(authToken);
+    if (!tokenData || tokenData.expires < Date.now()) {
+      console.log("Auth check failed - Invalid or expired token");
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    const userId = tokenData.userId;
+    
     try {
-      console.log(`Auth check - Looking up user with ID ${req.session.userId}`);
-      const user = await storage.getUserById(req.session.userId);
+      console.log(`Auth check - Looking up user with ID ${userId}`);
+      const user = await storage.getUserById(userId);
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
