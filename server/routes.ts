@@ -2285,7 +2285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete Conversation Endpoint
-  app.delete("/api/conversations/:id", isAuthenticated, async (req: any, res: Response) => {
+  app.delete("/api/conversations/:id", isTokenAuthenticated, async (req: any, res: Response) => {
     console.log("🗑️ DELETE CONVERSATION ENDPOINT HIT - conversationId:", req.params.id);
     try {
       const conversationId = parseInt(req.params.id);
@@ -2324,7 +2324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =============================================================================
 
   // Get all conversations for the current user
-  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
     console.log(`🔥🔥🔥 CONVERSATIONS ENDPOINT HIT - DEBUG MODE ACTIVATED 🔥🔥🔥`);
     try {
       console.log(`🔥 CONVERSATIONS ROUTE START: Request received for user session`);
@@ -2406,7 +2406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get messages for a specific conversation
-  app.get("/api/conversations/:customerId/:ownerId/:horseId/messages", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/conversations/:customerId/:ownerId/:horseId/messages", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
       const customerId = parseInt(req.params.customerId);
@@ -2430,7 +2430,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send a new message
-  app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/messages", isTokenAuthenticated, async (req: any, res: Response) => {
     console.log("=== MESSAGE ENDPOINT HIT ===");
     try {
       const userId = req.session.userId;
@@ -2501,7 +2501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create or get conversation endpoint
-  app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
       const { customer_id, owner_id, horse_id } = req.body;
@@ -2547,7 +2547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mark conversation as read (reset unread count)
-  app.patch("/api/conversations/:conversationId/read", isAuthenticated, async (req: any, res: Response) => {
+  app.patch("/api/conversations/:conversationId/read", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const conversationId = parseInt(req.params.conversationId);
       const userId = req.session.userId;
