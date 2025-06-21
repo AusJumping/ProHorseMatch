@@ -311,8 +311,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Also set as header for immediate use
       res.setHeader('X-Auth-Token', authToken);
+      res.setHeader('Access-Control-Expose-Headers', 'X-Auth-Token');
       
-      // Return full user data including subscription info
+      console.log("=== RESPONSE DEBUG ===");
+      console.log("Setting auth token header:", authToken);
+      console.log("Response headers:", res.getHeaders());
+      
+      // Return full user data including subscription info AND auth token
       return res.json({
         id: user.id,
         name: user.name,
@@ -325,7 +330,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stripe_subscription_id: user.stripe_subscription_id,
         subscription_status: user.subscription_status,
         subscription_plan: user.subscription_plan,
-        subscription_end_date: user.subscription_end_date
+        subscription_end_date: user.subscription_end_date,
+        auth_token: authToken // Include token directly in response body
       });
     } catch (error: any) {
       console.error("Login error:", error);

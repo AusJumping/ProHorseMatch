@@ -113,20 +113,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(error.message || 'Login failed');
       }
 
-      const userData = await response.json() as User;
+      const userData = await response.json() as User & { auth_token?: string };
       console.log("Login successful, complete user data:", userData);
       
-      // Extract and store auth token from response headers
-      const authToken = response.headers.get('X-Auth-Token');
+      // Extract and store auth token from response body
+      const authToken = userData.auth_token;
       console.log("=== TOKEN EXTRACTION ===");
-      console.log("Response headers:", Array.from(response.headers.entries()));
-      console.log("Auth token from header:", authToken);
+      console.log("Auth token from response body:", authToken);
       
       if (authToken) {
         localStorage.setItem('auth_token', authToken);
         console.log("Stored auth token in localStorage:", authToken);
+        
+        // Verify storage immediately
+        const storedToken = localStorage.getItem('auth_token');
+        console.log("Verification - token retrieved from localStorage:", storedToken);
       } else {
-        console.log("No auth token found in response headers");
+        console.log("No auth token found in response body");
       }
       
       // Update query cache with user data
