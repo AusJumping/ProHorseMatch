@@ -459,6 +459,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Middleware to check if a user is authenticated (token-based)
   const isTokenAuthenticated = async (req: any, res: Response, next: any) => {
+    console.log(`Token auth check for ${req.method} ${req.path}`);
+    
     // Check for auth token in multiple places
     let authToken = req.headers.authorization?.replace('Bearer ', '');
     if (!authToken && req.headers.cookie) {
@@ -470,15 +472,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       authToken = cookies.auth_token;
     }
     
+    console.log("Token auth debug:", {
+      authToken: authToken ? authToken.substring(0, 10) + '...' : 'none',
+      authHeader: req.headers.authorization,
+      hasGlobalTokens: !!global.authTokens,
+      tokenCount: global.authTokens ? global.authTokens.size : 0
+    });
+    
     if (!authToken || !global.authTokens) {
+      console.log("Token auth failed - No token or token store");
       return res.status(401).json({ message: "Authentication required" });
     }
     
     const tokenData = global.authTokens.get(authToken);
     if (!tokenData || tokenData.expires < Date.now()) {
+      console.log("Token auth failed - Invalid or expired token");
       return res.status(401).json({ message: "Authentication required" });
     }
     
+    console.log(`Token auth success for user ${tokenData.userId}`);
     // Add user info to request for use in route handlers
     req.userId = tokenData.userId;
     next();
