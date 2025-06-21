@@ -2285,11 +2285,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete Conversation Endpoint
-  app.delete("/api/conversations/:id", isAuthenticated, async (req: any, res: Response) => {
+  app.delete("/api/conversations/:id", isTokenAuthenticated, async (req: any, res: Response) => {
     console.log("🗑️ DELETE CONVERSATION ENDPOINT HIT - conversationId:", req.params.id);
     try {
       const conversationId = parseInt(req.params.id);
-      const userId = req.session.userId;
+      const userId = req.userId;
       
       console.log("DELETE CONVERSATION: userId:", userId, "conversationId:", conversationId);
 
@@ -2324,7 +2324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =============================================================================
 
   // Get all conversations for the current user
-  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
     console.log(`🔥🔥🔥 CONVERSATIONS ENDPOINT HIT - DEBUG MODE ACTIVATED 🔥🔥🔥`);
     try {
       console.log(`🔥 CONVERSATIONS ROUTE START: Request received for user session`);
@@ -2334,8 +2334,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
 
-      const userId = req.session.userId;
-      console.log(`CONVERSATIONS ROUTE: Session userId: ${userId}`);
+      const userId = req.userId;
+      console.log(`CONVERSATIONS ROUTE: Token userId: ${userId}`);
       
       const user = await storage.getUserById(userId);
       console.log(`CONVERSATIONS ROUTE: User lookup result:`, user);
@@ -2406,9 +2406,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get messages for a specific conversation
-  app.get("/api/conversations/:customerId/:ownerId/:horseId/messages", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/conversations/:customerId/:ownerId/:horseId/messages", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       const customerId = parseInt(req.params.customerId);
       const ownerId = parseInt(req.params.ownerId);
       const horseId = parseInt(req.params.horseId);
