@@ -449,11 +449,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Middleware to check if a user is authenticated
+  // Middleware to check if a user is authenticated (session-based)
   const isAuthenticated = (req: any, res: Response, next: any) => {
     if (!req.session.userId) {
       return res.status(401).json({ message: "Authentication required" });
     }
+    next();
+  };
+
+  // Middleware to check if a user is authenticated (token-based)
+  const isTokenAuthenticated = async (req: any, res: Response, next: any) => {
+    // Check for auth token in multiple places
+    let authToken = req.headers.authorization?.replace('Bearer ', '');
+    if (!authToken && req.headers.cookie) {
+      const cookies = req.headers.cookie.split(';').reduce((acc: any, cookie) => {
+        const [key, value] = cookie.trim().split('=');
+        acc[key] = value;
+        return acc;
+      }, {});
+      authToken = cookies.auth_token;
+    }
+    
+    if (!authToken || !global.authTokens) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    const tokenData = global.authTokens.get(authToken);
+    if (!tokenData || tokenData.expires < Date.now()) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    // Add user info to request for use in route handlers
+    req.userId = tokenData.userId;
     next();
   };
   
@@ -1339,10 +1366,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Match routes
-  app.post("/api/matches", isAuthenticated, async (req, res) => {
+  app.post("/api/matches", isTokenAuthenticated, async (req, res) => {
     try {
       // Get the user
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(req.userId);
       
       if (!user) {
         return res.status(403).json({ message: "User not found" });
@@ -1354,12 +1381,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertMatchSchema.parse(req.body);
       
       // Ensure customer_id matches the logged-in user
-      if (validatedData.customer_id !== req.session.userId) {
+      if (validatedData.customer_id !== req.userId) {
         return res.status(403).json({ message: "Cannot create match for another user" });
       }
       
       // Check if a match already exists for this user and horse
-      const existingMatches = await storage.getMatchesByCustomerId(req.session.userId);
+      const existingMatches = await storage.getMatchesByCustomerId(req.userId);
       const matchExists = existingMatches.some(match => 
         match.horse_id === validatedData.horse_id
       );
@@ -1384,9 +1411,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get user's matches
-  app.get("/api/matches", isAuthenticated, async (req, res) => {
+  app.get("/api/matches", isTokenAuthenticated, async (req, res) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       const matches = await storage.getMatchesByCustomerId(userId);
       return res.json(matches);
     } catch (error) {
@@ -1396,10 +1423,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update match (used to toggle like/unlike)
-  app.patch("/api/matches/:id", isAuthenticated, async (req, res) => {
+  app.patch("/api/matches/:id", isTokenAuthenticated, async (req, res) => {
     try {
       const matchId = parseInt(req.params.id);
-      const userId = req.session.userId;
+      const userId = req.userId;
       
       // Get the match to check ownership
       const match = await storage.getMatchById(matchId);

@@ -212,10 +212,20 @@ export default function Home() {
     }
     
     try {
+      // Get auth token for API request
+      const authToken = localStorage.getItem('authToken');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`;
+      }
+
       // Use fetch directly to get more control over the response
       const response = await fetch('/api/matches', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           customer_id: currentUser.id,
           horse_id: horseId,
