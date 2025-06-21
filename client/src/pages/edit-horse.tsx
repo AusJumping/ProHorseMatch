@@ -408,15 +408,23 @@ export default function EditHorse() {
                                   <SelectValue placeholder="Select country" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Australia">Australia</SelectItem>
-                                  <SelectItem value="Germany">Germany</SelectItem>
-                                  <SelectItem value="Netherlands">Netherlands</SelectItem>
-                                  <SelectItem value="Belgium">Belgium</SelectItem>
-                                  <SelectItem value="France">France</SelectItem>
-                                  <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                                  <SelectItem value="United States">United States</SelectItem>
-                                  <SelectItem value="Ireland">Ireland</SelectItem>
-                                  <SelectItem value="Sweden">Sweden</SelectItem>
+                                  {constants && constants.countries ? (
+                                    constants.countries.map((country) => (
+                                      <SelectItem key={country} value={country}>
+                                        {country}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <SelectItem value="Australia">Australia</SelectItem>
+                                      <SelectItem value="New Zealand">New Zealand</SelectItem>
+                                      <SelectItem value="North America">North America</SelectItem>
+                                      <SelectItem value="Northern Europe">Northern Europe</SelectItem>
+                                      <SelectItem value="Central Europe">Central Europe</SelectItem>
+                                      <SelectItem value="Southern Europe">Southern Europe</SelectItem>
+                                      <SelectItem value="United Kingdom and Ireland">United Kingdom and Ireland</SelectItem>
+                                    </>
+                                  )}
                                 </SelectContent>
                               </Select>
                             </FormControl>

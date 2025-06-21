@@ -18,10 +18,7 @@ interface FilterPanelProps {
   horseCount?: number;
 }
 
-// Available filter options (would come from API in a real app)
-const countries = [
-  "Any Location", "Australia", "United States"
-];
+// Available filter options
 const radiusOptions = ["Any", "50km", "100km", "150km", "200km", "300km", "500km"];
 
 const FilterPanel = ({ 
@@ -714,9 +711,22 @@ const FilterPanel = ({
                     <SelectValue placeholder="Any Location" />
                   </SelectTrigger>
                   <SelectContent>
-                    {countries.map((country) => (
-                      <SelectItem key={country} value={country === "Any Location" ? "any_location" : country}>{country}</SelectItem>
-                    ))}
+                    <SelectItem value="any_location">Any Location</SelectItem>
+                    {constants && constants.countries ? (
+                      constants.countries.map((country) => (
+                        <SelectItem key={country} value={country}>{country}</SelectItem>
+                      ))
+                    ) : (
+                      <>
+                        <SelectItem value="Australia">Australia</SelectItem>
+                        <SelectItem value="New Zealand">New Zealand</SelectItem>
+                        <SelectItem value="North America">North America</SelectItem>
+                        <SelectItem value="Northern Europe">Northern Europe</SelectItem>
+                        <SelectItem value="Central Europe">Central Europe</SelectItem>
+                        <SelectItem value="Southern Europe">Southern Europe</SelectItem>
+                        <SelectItem value="United Kingdom and Ireland">United Kingdom and Ireland</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
