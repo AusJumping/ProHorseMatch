@@ -2430,10 +2430,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send a new message
-  app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/messages", isTokenAuthenticated, async (req: any, res: Response) => {
     console.log("=== MESSAGE ENDPOINT HIT ===");
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       console.log("POST /api/messages - Request body:", req.body);
       const { customer_id, owner_id, horse_id, content } = req.body;
 
@@ -2501,9 +2501,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create or get conversation endpoint
-  app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       const { customer_id, owner_id, horse_id } = req.body;
 
       console.log("Creating conversation with:", { customer_id, owner_id, horse_id, userId });
@@ -2547,10 +2547,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mark conversation as read (reset unread count)
-  app.patch("/api/conversations/:conversationId/read", isAuthenticated, async (req: any, res: Response) => {
+  app.patch("/api/conversations/:conversationId/read", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const conversationId = parseInt(req.params.conversationId);
-      const userId = req.session.userId;
+      const userId = req.userId;
 
       // Get the conversation to verify ownership
       const conversation = await storage.getConversationById(conversationId);
@@ -2576,9 +2576,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mark messages as read
-  app.patch("/api/messages/:messageId/read", isAuthenticated, async (req: any, res: Response) => {
+  app.patch("/api/messages/:messageId/read", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       const messageId = parseInt(req.params.messageId);
 
       const message = await storage.getMessageById(messageId);
@@ -2603,7 +2603,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get unread message count
-  app.get("/api/messages/unread", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/messages/unread", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUserById(userId);
