@@ -21,11 +21,7 @@ export default function MyHorses() {
 
   // Fetch horses owned by the current user
   const { data: horses, isLoading, refetch } = useQuery<Horse[]>({
-    queryKey: ["/api/my-horses"],
-    queryFn: async () => {
-      const response = await apiRequest<Horse[]>("GET", "/api/horses/owner");
-      return response;
-    },
+    queryKey: ["/api/horses/owner"],
     enabled: !!user
   });
   
