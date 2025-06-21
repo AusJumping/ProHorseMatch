@@ -1210,10 +1210,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get horses by owner ID (for owner's profile)
-  app.get("/api/horses/owner", isAuthenticated, async (req, res) => {
+  app.get("/api/horses/owner", isTokenAuthenticated, async (req, res) => {
     try {
       // Get the user with their roles
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(req.userId);
       
       console.log(`GET /api/horses/owner - user:`, user);
       
@@ -1222,7 +1222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only users with selling permission can access their horses" });
       }
       
-      const ownerId = req.session.userId;
+      const ownerId = req.userId;
       console.log(`GET /api/horses/owner - searching for owner_id:`, ownerId);
       
       // Get all horses first for debugging
