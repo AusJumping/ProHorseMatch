@@ -280,14 +280,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = user.id;
       
-      // Save session explicitly and log response headers
+      // Save session explicitly and ensure cookie is set
       await new Promise<void>((resolve) => {
         req.session.save((err: any) => {
           if (err) {
             console.error("Session save error:", err);
           } else {
             console.log("Session saved successfully");
-            console.log("Response headers being set:", res.getHeaders());
+            console.log("Session ID:", req.sessionID);
+            console.log("User ID in session:", req.session.userId);
+            
+            // Explicitly ensure the session cookie is set
+            res.cookie('connect.sid', req.sessionID, {
+              maxAge: 30 * 24 * 60 * 60 * 1000,
+              httpOnly: true,
+              secure: false,
+              sameSite: 'lax',
+              path: '/'
+            });
+            
+            console.log("Explicitly set session cookie");
+            console.log("Response headers after cookie set:", res.getHeaders());
           }
           resolve();
         });
