@@ -71,5 +71,5 @@ export function formatPrice(price: number, currency: string): string {
  * @returns Array of currency codes
  */
 export function getSupportedCurrencies(): string[] {
-  return ["AUD", "USD"];
+  return ["AUD", "USD", "EUR", "GBP", "NZD"];
 }

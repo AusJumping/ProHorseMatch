@@ -396,6 +396,9 @@ export default function Profile() {
                                   <SelectContent className="text-black bg-white">
                                     <SelectItem value="USD" className="text-gray-900">US Dollar (USD)</SelectItem>
                                     <SelectItem value="AUD" className="text-gray-900">Australian Dollar (AUD)</SelectItem>
+                                    <SelectItem value="EUR" className="text-gray-900">Euro (EUR)</SelectItem>
+                                    <SelectItem value="GBP" className="text-gray-900">British Pound (GBP)</SelectItem>
+                                    <SelectItem value="NZD" className="text-gray-900">New Zealand Dollar (NZD)</SelectItem>
                                   </SelectContent>
                                 </Select>
                                 <FormMessage />

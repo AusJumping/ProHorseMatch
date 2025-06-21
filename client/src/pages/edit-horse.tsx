@@ -578,6 +578,7 @@ export default function EditHorse() {
                                 <SelectItem value="EUR">EUR</SelectItem>
                                 <SelectItem value="USD">USD</SelectItem>
                                 <SelectItem value="GBP">GBP</SelectItem>
+                                <SelectItem value="NZD">NZD</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />

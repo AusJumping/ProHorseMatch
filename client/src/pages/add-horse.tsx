@@ -22,6 +22,24 @@ import { useMobile } from "@/hooks/use-mobile";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useCurrency } from "@/contexts/CurrencyContext";
 
+// Helper function to format price with currency symbol
+const formatPriceWithCurrency = (amount: number, currency: string): string => {
+  switch (currency) {
+    case "USD":
+      return `$${amount.toLocaleString()}`;
+    case "GBP":
+      return `£${amount.toLocaleString()}`;
+    case "EUR":
+      return `€${amount.toLocaleString()}`;
+    case "AUD":
+      return `A$${amount.toLocaleString()}`;
+    case "NZD":
+      return `NZ$${amount.toLocaleString()}`;
+    default:
+      return `$${amount.toLocaleString()}`;
+  }
+};
+
 // Form schema for adding a horse
 const horseFormSchema = z.object({
   // Required fields - all dropdown selections must be completed
