@@ -2344,7 +2344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Expires', '0');
 
       const userId = req.userId;
-      console.log(`CONVERSATIONS ROUTE: Session userId: ${userId}`);
+      console.log(`CONVERSATIONS ROUTE: Token userId: ${userId}`);
       
       const user = await storage.getUserById(userId);
       console.log(`CONVERSATIONS ROUTE: User lookup result:`, user);
@@ -2417,7 +2417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get messages for a specific conversation
   app.get("/api/conversations/:customerId/:ownerId/:horseId/messages", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       const customerId = parseInt(req.params.customerId);
       const ownerId = parseInt(req.params.ownerId);
       const horseId = parseInt(req.params.horseId);
@@ -2442,7 +2442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isTokenAuthenticated, async (req: any, res: Response) => {
     console.log("=== MESSAGE ENDPOINT HIT ===");
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       console.log("POST /api/messages - Request body:", req.body);
       const { customer_id, owner_id, horse_id, content } = req.body;
 
