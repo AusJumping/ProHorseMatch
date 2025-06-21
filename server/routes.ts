@@ -250,7 +250,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/login", async (req, res) => {
     try {
+      console.log("=== LOGIN REQUEST START ===");
       console.log("Login attempt:", req.body);
+      console.log("Request headers:", {
+        userAgent: req.headers['user-agent'],
+        origin: req.headers.origin,
+        referer: req.headers.referer
+      });
       const { email, password } = req.body;
       
       if (!email || !password) {

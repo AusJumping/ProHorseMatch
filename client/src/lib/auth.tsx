@@ -49,11 +49,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         // Get auth token from localStorage first, then fallback to cookie
         let authToken = localStorage.getItem('auth_token');
+        console.log("=== AUTH CHECK ===");
+        console.log("Token from localStorage:", authToken);
+        
         if (!authToken) {
           authToken = document.cookie
             .split(';')
             .find(cookie => cookie.trim().startsWith('auth_token='))
             ?.split('=')[1];
+          console.log("Token from cookie:", authToken);
         }
         
         const headers: Record<string, string> = {
@@ -114,9 +118,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Extract and store auth token from response headers
       const authToken = response.headers.get('X-Auth-Token');
+      console.log("=== TOKEN EXTRACTION ===");
+      console.log("Response headers:", Array.from(response.headers.entries()));
+      console.log("Auth token from header:", authToken);
+      
       if (authToken) {
         localStorage.setItem('auth_token', authToken);
-        console.log("Stored auth token in localStorage");
+        console.log("Stored auth token in localStorage:", authToken);
+      } else {
+        console.log("No auth token found in response headers");
       }
       
       // Update query cache with user data
