@@ -372,8 +372,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     console.log("Auth check - Token debug:", {
       authToken: authToken ? authToken.substring(0, 10) + '...' : 'none',
+      authHeader: req.headers.authorization,
       cookies: req.headers.cookie,
-      hasGlobalTokens: !!global.authTokens
+      hasGlobalTokens: !!global.authTokens,
+      tokenCount: global.authTokens ? global.authTokens.size : 0
     });
     
     if (!authToken || !global.authTokens) {

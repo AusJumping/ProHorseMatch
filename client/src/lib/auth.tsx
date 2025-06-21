@@ -47,11 +47,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     queryKey: ['/api/auth/me'],
     queryFn: async () => {
       try {
-        // Get auth token from cookie
-        const authToken = document.cookie
-          .split(';')
-          .find(cookie => cookie.trim().startsWith('auth_token='))
-          ?.split('=')[1];
+        // Get auth token from localStorage first, then fallback to cookie
+        let authToken = localStorage.getItem('auth_token');
+        if (!authToken) {
+          authToken = document.cookie
+            .split(';')
+            .find(cookie => cookie.trim().startsWith('auth_token='))
+            ?.split('=')[1];
+        }
         
         const headers: Record<string, string> = {
           'Content-Type': 'application/json'
@@ -108,6 +111,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const userData = await response.json() as User;
       console.log("Login successful, complete user data:", userData);
+      
+      // Extract and store auth token from response headers
+      const authToken = response.headers.get('X-Auth-Token');
+      if (authToken) {
+        localStorage.setItem('auth_token', authToken);
+        console.log("Stored auth token in localStorage");
+      }
       
       // Update query cache with user data
       queryClient.setQueryData(['/api/auth/me'], userData);
