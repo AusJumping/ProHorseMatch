@@ -70,6 +70,7 @@ export default function Messages() {
   // Fetch conversations
   const { data: conversations, isLoading: conversationsLoading } = useQuery({
     queryKey: ['/api/conversations'],
+    queryFn: () => apiRequest('GET', '/api/conversations'),
     enabled: isAuthenticated,
     refetchInterval: 5000, // Refresh every 5 seconds for new messages
   });
