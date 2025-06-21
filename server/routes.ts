@@ -1,5 +1,14 @@
 import type { Express, Response, Request } from "express";
 import express from "express";
+
+// Extend Request interface to include userId
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: number;
+    }
+  }
+}
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
@@ -2289,7 +2298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("🗑️ DELETE CONVERSATION ENDPOINT HIT - conversationId:", req.params.id);
     try {
       const conversationId = parseInt(req.params.id);
-      const userId = req.session.userId;
+      const userId = req.userId;
       
       console.log("DELETE CONVERSATION: userId:", userId, "conversationId:", conversationId);
 
@@ -2334,7 +2343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
 
-      const userId = req.session.userId;
+      const userId = req.userId;
       console.log(`CONVERSATIONS ROUTE: Session userId: ${userId}`);
       
       const user = await storage.getUserById(userId);
@@ -2576,7 +2585,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mark messages as read
-  app.patch("/api/messages/:messageId/read", isAuthenticated, async (req: any, res: Response) => {
+  app.patch("/api/messages/:messageId/read", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
       const messageId = parseInt(req.params.messageId);
@@ -2603,7 +2612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get unread message count
-  app.get("/api/messages/unread", isAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/messages/unread", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.session.userId;
       const user = await storage.getUserById(userId);
