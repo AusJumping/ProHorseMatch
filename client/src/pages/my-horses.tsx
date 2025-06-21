@@ -24,7 +24,10 @@ export default function MyHorses() {
     queryKey: ["/api/horses/owner"],
     queryFn: async () => {
       console.log("My Horses - Fetching with token auth");
+      console.log("My Horses - localStorage keys:", Object.keys(localStorage));
+      console.log("My Horses - All localStorage:", { ...localStorage });
       const authToken = localStorage.getItem('authToken');
+      console.log("My Horses - Auth token from localStorage:", authToken);
       console.log("My Horses - Auth token:", authToken ? `${authToken.substring(0, 10)}...` : 'none');
       
       const headers: Record<string, string> = {};
