@@ -68,8 +68,28 @@ export default function Messages() {
   });
 
   // Fetch conversations
-  const { data: conversations, isLoading: conversationsLoading } = useQuery({
+  const { data: conversations, isLoading: conversationsLoading } = useQuery<ConversationWithDetails[]>({
     queryKey: ['/api/conversations'],
+    queryFn: async () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('No authentication token');
+      }
+      
+      const response = await fetch('/api/conversations', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch conversations: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    },
     enabled: isAuthenticated,
     refetchInterval: 5000, // Refresh every 5 seconds for new messages
   });
@@ -77,12 +97,29 @@ export default function Messages() {
   // Fetch messages for selected conversation
   const { data: messages, isLoading: messagesLoading } = useQuery({
     queryKey: ['/api/conversations', selectedConversation?.customer_id, selectedConversation?.owner_id, selectedConversation?.horse_id, 'messages'],
-    queryFn: () => {
-      if (!selectedConversation) return Promise.resolve([]);
-      return fetch(`/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`)
-        .then(res => res.json());
+    queryFn: async () => {
+      if (!selectedConversation) return [];
+      
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('No authentication token');
+      }
+      
+      const response = await fetch(`/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch messages: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     },
-    enabled: !!selectedConversation,
+    enabled: !!selectedConversation && isAuthenticated,
     refetchInterval: 2000, // Refresh every 2 seconds for real-time feel
   });
 
@@ -390,7 +427,7 @@ export default function Messages() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {messages && messages.map((message: Message) => {
+                    {messages && Array.isArray(messages) && messages.map((message: Message) => {
                       const isMyMessage = message.sender_type === (user?.is_selling ? 'owner' : 'customer');
                       return (
                         <div
