@@ -73,3 +73,40 @@ export function formatPrice(price: number, currency: string): string {
 export function getSupportedCurrencies(): string[] {
   return ["AUD", "USD", "EUR", "GBP", "NZD"];
 }
+
+/**
+ * Get minimum price for a currency (equivalent to $5,000 USD)
+ * @param currency - The currency code
+ * @returns Minimum price in the specified currency
+ */
+export function getMinPrice(currency: string): number {
+  const baseMinUSD = 5000;
+  return Math.round(convertPrice(baseMinUSD, 'USD', currency));
+}
+
+/**
+ * Get maximum price for a currency (equivalent to $500,000 USD)
+ * @param currency - The currency code
+ * @returns Maximum price in the specified currency
+ */
+export function getMaxPrice(currency: string): number {
+  const baseMaxUSD = 500000;
+  return Math.round(convertPrice(baseMaxUSD, 'USD', currency));
+}
+
+/**
+ * Get price ranges for all supported currencies
+ * @returns Object with min/max prices for each currency
+ */
+export function getPriceRanges(): Record<string, { min: number; max: number }> {
+  const ranges: Record<string, { min: number; max: number }> = {};
+  
+  getSupportedCurrencies().forEach(currency => {
+    ranges[currency] = {
+      min: getMinPrice(currency),
+      max: getMaxPrice(currency)
+    };
+  });
+  
+  return ranges;
+}

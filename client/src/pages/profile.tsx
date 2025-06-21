@@ -20,9 +20,10 @@ import { useLocation } from "wouter";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { useMobile } from "@/hooks/use-mobile";
+import { getMinPrice, getMaxPrice } from "@/lib/currencyConverter";
 
-// Schemas for form validation
-const profileFormSchema = z.object({
+// Dynamic schema that validates price ranges based on currency
+const createProfileFormSchema = (currency: string = "AUD") => z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }).optional(),
   email: z.string().email({ message: "Please enter a valid email address" }).optional(),
   location_country: z.string().optional(),
@@ -36,8 +37,16 @@ const profileFormSchema = z.object({
   preferred_sexes: z.array(z.string()).optional().default([]),
   breeding_preferences: z.string().optional().default(""),
   preferred_characteristics: z.array(z.string()).optional().default([]),
-  price_range_min: z.number().min(0).optional().or(z.literal('')).transform(val => typeof val === 'string' ? 0 : val),
-  price_range_max: z.number().min(0).optional().or(z.literal('')).transform(val => typeof val === 'string' ? 999999999 : val),
+  price_range_min: z.number()
+    .min(getMinPrice(currency), { message: `Minimum price must be at least ${getMinPrice(currency)} ${currency}` })
+    .optional()
+    .or(z.literal(''))
+    .transform(val => typeof val === 'string' ? getMinPrice(currency) : val),
+  price_range_max: z.number()
+    .max(getMaxPrice(currency), { message: `Maximum price cannot exceed ${getMaxPrice(currency)} ${currency}` })
+    .optional()
+    .or(z.literal(''))
+    .transform(val => typeof val === 'string' ? getMaxPrice(currency) : val),
   currency: z.string().optional().default("AUD"),
 })
 .refine(data => {
@@ -107,6 +116,10 @@ export default function Profile() {
   const { data: constants } = useQuery({
     queryKey: ['/api/constants'],
   });
+
+  // Get current currency for schema validation
+  const currentCurrency = user?.profile?.currency || "AUD";
+  const profileFormSchema = createProfileFormSchema(currentCurrency);
 
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
