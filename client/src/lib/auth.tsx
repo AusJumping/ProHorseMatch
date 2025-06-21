@@ -119,26 +119,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Extract and store auth token from response body
       const authToken = userData.auth_token;
       console.log("=== TOKEN EXTRACTION ===");
+      console.log("Full userData object:", userData);
       console.log("Auth token from response body:", authToken);
+      console.log("Auth token type:", typeof authToken);
+      console.log("Auth token exists:", !!authToken);
       
       if (authToken) {
-        localStorage.setItem('auth_token', authToken);
-        console.log("Stored auth token in localStorage:", authToken);
-        
-        // Verify storage immediately
-        const storedToken = localStorage.getItem('auth_token');
-        console.log("Verification - token retrieved from localStorage:", storedToken);
+        try {
+          localStorage.setItem('auth_token', authToken);
+          console.log("Stored auth token in localStorage:", authToken);
+          
+          // Verify storage immediately
+          const storedToken = localStorage.getItem('auth_token');
+          console.log("Verification - token retrieved from localStorage:", storedToken);
+          console.log("Storage successful:", storedToken === authToken);
+        } catch (storageError) {
+          console.error("LocalStorage error:", storageError);
+        }
       } else {
         console.log("No auth token found in response body");
+        console.log("Available userData keys:", Object.keys(userData));
       }
       
-      // Update query cache with user data
-      queryClient.setQueryData(['/api/auth/me'], userData);
+      // Update query cache with user data (excluding auth_token)
+      const { auth_token, ...userDataForCache } = userData;
+      queryClient.setQueryData(['/api/auth/me'], userDataForCache);
+      console.log("Updated auth cache with user data:", userDataForCache);
       
       // Return the user data so the calling function can check subscription status
-      return userData;
+      return userDataForCache;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('=== LOGIN ERROR ===');
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      console.error('Full error:', error);
       throw error;
     }
   };
