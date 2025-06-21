@@ -2605,7 +2605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get unread message count
   app.get("/api/messages/unread", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       const user = await storage.getUserById(userId);
       
       if (!user) {
