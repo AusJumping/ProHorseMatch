@@ -22,6 +22,33 @@ export default function MyHorses() {
   // Fetch horses owned by the current user
   const { data: horses, isLoading, refetch } = useQuery<Horse[]>({
     queryKey: ["/api/horses/owner"],
+    queryFn: async () => {
+      console.log("My Horses - Fetching with token auth");
+      const authToken = localStorage.getItem('authToken');
+      console.log("My Horses - Auth token:", authToken ? `${authToken.substring(0, 10)}...` : 'none');
+      
+      const headers: Record<string, string> = {};
+      if (authToken) {
+        headers["Authorization"] = `Bearer ${authToken}`;
+      }
+      
+      const response = await fetch("/api/horses/owner", {
+        headers,
+        credentials: "include",
+      });
+      
+      console.log("My Horses - Response status:", response.status);
+      
+      if (!response.ok) {
+        const error = await response.text();
+        console.error("My Horses - API error:", error);
+        throw new Error(`${response.status}: ${error}`);
+      }
+      
+      const data = await response.json();
+      console.log("My Horses - Received data:", data);
+      return data;
+    },
     enabled: !!user
   });
   
