@@ -22,7 +22,7 @@ export default function MyHorses() {
   // Fetch horses owned by the current user
   const { data: horses, isLoading, refetch } = useQuery<Horse[]>({
     queryKey: ["/api/horses/owner"],
-    queryFn: () => apiRequest('GET', '/api/horses/owner'),
+
     enabled: !!user
   });
   

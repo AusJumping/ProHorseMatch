@@ -1,14 +1,5 @@
 import type { Express, Response, Request } from "express";
 import express from "express";
-
-// Extend Request interface to include userId
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: number;
-    }
-  }
-}
 import { createServer, type Server } from "http";
 import { storage, MemStorage, resetStorageToEmpty } from "./storage";
 import session from "express-session";
@@ -2294,11 +2285,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete Conversation Endpoint
-  app.delete("/api/conversations/:id", isTokenAuthenticated, async (req: any, res: Response) => {
+  app.delete("/api/conversations/:id", isAuthenticated, async (req: any, res: Response) => {
     console.log("🗑️ DELETE CONVERSATION ENDPOINT HIT - conversationId:", req.params.id);
     try {
       const conversationId = parseInt(req.params.id);
-      const userId = req.userId;
+      const userId = req.session.userId;
       
       console.log("DELETE CONVERSATION: userId:", userId, "conversationId:", conversationId);
 
@@ -2333,7 +2324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =============================================================================
 
   // Get all conversations for the current user
-  app.get("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
     console.log(`🔥🔥🔥 CONVERSATIONS ENDPOINT HIT - DEBUG MODE ACTIVATED 🔥🔥🔥`);
     try {
       console.log(`🔥 CONVERSATIONS ROUTE START: Request received for user session`);
@@ -2343,8 +2334,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
 
-      const userId = req.userId;
-      console.log(`CONVERSATIONS ROUTE: Token userId: ${userId}`);
+      const userId = req.session.userId;
+      console.log(`CONVERSATIONS ROUTE: Session userId: ${userId}`);
       
       const user = await storage.getUserById(userId);
       console.log(`CONVERSATIONS ROUTE: User lookup result:`, user);
@@ -2415,9 +2406,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get messages for a specific conversation
-  app.get("/api/conversations/:customerId/:ownerId/:horseId/messages", isTokenAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/conversations/:customerId/:ownerId/:horseId/messages", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.userId;
+      const userId = req.session.userId;
       const customerId = parseInt(req.params.customerId);
       const ownerId = parseInt(req.params.ownerId);
       const horseId = parseInt(req.params.horseId);
@@ -2439,10 +2430,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send a new message
-  app.post("/api/messages", isTokenAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
     console.log("=== MESSAGE ENDPOINT HIT ===");
     try {
-      const userId = req.userId;
+      const userId = req.session.userId;
       console.log("POST /api/messages - Request body:", req.body);
       const { customer_id, owner_id, horse_id, content } = req.body;
 
@@ -2510,9 +2501,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create or get conversation endpoint
-  app.post("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.userId;
+      const userId = req.session.userId;
       const { customer_id, owner_id, horse_id } = req.body;
 
       console.log("Creating conversation with:", { customer_id, owner_id, horse_id, userId });
@@ -2556,10 +2547,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mark conversation as read (reset unread count)
-  app.patch("/api/conversations/:conversationId/read", isTokenAuthenticated, async (req: any, res: Response) => {
+  app.patch("/api/conversations/:conversationId/read", isAuthenticated, async (req: any, res: Response) => {
     try {
       const conversationId = parseInt(req.params.conversationId);
-      const userId = req.userId;
+      const userId = req.session.userId;
 
       // Get the conversation to verify ownership
       const conversation = await storage.getConversationById(conversationId);
@@ -2585,9 +2576,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mark messages as read
-  app.patch("/api/messages/:messageId/read", isTokenAuthenticated, async (req: any, res: Response) => {
+  app.patch("/api/messages/:messageId/read", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.userId;
+      const userId = req.session.userId;
       const messageId = parseInt(req.params.messageId);
 
       const message = await storage.getMessageById(messageId);
@@ -2612,9 +2603,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get unread message count
-  app.get("/api/messages/unread", isTokenAuthenticated, async (req: any, res: Response) => {
+  app.get("/api/messages/unread", isAuthenticated, async (req: any, res: Response) => {
     try {
-      const userId = req.userId;
+      const userId = req.session.userId;
       const user = await storage.getUserById(userId);
       
       if (!user) {
