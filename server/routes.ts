@@ -2385,18 +2385,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Final conversations for user ${userId}:`, uniqueConversations);
       const conversations = uniqueConversations;
 
-      // Enhance conversations with horse details
-      const conversationsWithHorses = await Promise.all(
+      // Enhance conversations with horse details and other user info
+      const conversationsWithDetails = await Promise.all(
         conversations.map(async (conversation) => {
           const horse = await storage.getHorseById(conversation.horse_id);
+          
+          // Get the other user's details (not the current user)
+          const otherUserId = conversation.customer_id === userId ? conversation.owner_id : conversation.customer_id;
+          const otherUser = await storage.getUserById(otherUserId);
+          
           return {
             ...conversation,
-            horse
+            horse,
+            otherUser: otherUser ? {
+              id: otherUser.id,
+              username: otherUser.username,
+              name: otherUser.name,
+              business_name: otherUser.business_name,
+              contact_name: otherUser.contact_name,
+              is_selling: otherUser.is_selling
+            } : null
           };
         })
       );
 
-      res.json(conversationsWithHorses);
+      res.json(conversationsWithDetails);
     } catch (error) {
       console.error("Error fetching conversations:", error);
       res.status(500).json({ 
