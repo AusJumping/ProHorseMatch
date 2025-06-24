@@ -436,6 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       return res.json({ 
         id: user.id,
+        username: user.username,
         name: user.name,
         business_name: user.business_name,
         contact_name: user.contact_name,

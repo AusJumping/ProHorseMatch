@@ -241,7 +241,13 @@ export default function Messages() {
     return conversation.otherUser.name || 
            conversation.otherUser.business_name || 
            conversation.otherUser.contact_name || 
+           conversation.otherUser.username || 
            "";
+  };
+
+  const getOtherPersonUsername = (conversation: ConversationWithDetails) => {
+    if (!conversation.otherUser) return "";
+    return `@${conversation.otherUser.username}`;
   };
 
   const getInitials = (name: string) => {
@@ -362,7 +368,7 @@ export default function Messages() {
                           </div>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          {getOtherPersonName(conversation)}
+                          {getOtherPersonUsername(conversation)}
                         </p>
                       </div>
                     </div>
@@ -406,6 +412,9 @@ export default function Messages() {
                       <p className="font-bold text-gray-900 text-lg">
                         {selectedConversation.horse?.name || 'Horse'}
                       </p>
+                      <p className="text-sm text-gray-600">
+                        Conversation with {getOtherPersonUsername(selectedConversation)}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -443,11 +452,16 @@ export default function Messages() {
                             }`}
                           >
                             <p className="text-sm leading-relaxed">{message.content}</p>
-                            <p className={`text-xs mt-2 ${
+                            <div className={`flex justify-between items-center mt-2 text-xs ${
                               isMyMessage ? 'text-white/80' : 'text-gray-500'
                             }`}>
-                              {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'just now'}
-                            </p>
+                              <span>
+                                {isMyMessage ? 'You' : (selectedConversation.otherUser?.username ? `@${selectedConversation.otherUser.username}` : 'Other')}
+                              </span>
+                              <span>
+                                {message.created_at ? formatDistanceToNow(new Date(message.created_at), { addSuffix: true }) : 'just now'}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       );
