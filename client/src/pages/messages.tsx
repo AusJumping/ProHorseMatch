@@ -17,6 +17,7 @@ interface ConversationWithDetails extends Conversation {
   horse?: Horse;
   otherUser?: {
     id: number;
+    username: string;
     name: string | null;
     business_name: string | null;
     contact_name: string | null;

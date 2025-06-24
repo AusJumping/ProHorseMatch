@@ -321,6 +321,20 @@ export default function Auth() {
                     <form onSubmit={customerRegisterForm.handleSubmit(onCustomerRegisterSubmit)} className="space-y-4">
                       <FormField
                         control={customerRegisterForm.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input placeholder="johndoe123" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={customerRegisterForm.control}
                         name="name"
                         render={({ field }) => (
                           <FormItem>
@@ -407,6 +421,20 @@ export default function Auth() {
                 <CardContent>
                   <Form {...ownerRegisterForm}>
                     <form onSubmit={ownerRegisterForm.handleSubmit(onOwnerRegisterSubmit)} className="space-y-4">
+                      <FormField
+                        control={ownerRegisterForm.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input placeholder="elitesporthorses" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       <FormField
                         control={ownerRegisterForm.control}
                         name="business_name"
