@@ -7,6 +7,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  username: text("username").notNull().unique(),
   name: text("name"),
   business_name: text("business_name"),
   contact_name: text("contact_name"),
@@ -52,6 +53,7 @@ export const insertSearchingUserSchema = insertUserSchema.omit({
   business_name: true,
   contact_name: true,
 }).extend({
+  username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   is_searching: z.literal(true).default(true),
 });
@@ -60,6 +62,7 @@ export const insertSearchingUserSchema = insertUserSchema.omit({
 export const insertSellingUserSchema = insertUserSchema.omit({
   name: true,
 }).extend({
+  username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
   business_name: z.string().min(2, { message: "Business name must be at least 2 characters" }),
   contact_name: z.string().min(2, { message: "Contact name must be at least 2 characters" }),
   is_selling: z.literal(true).default(true),

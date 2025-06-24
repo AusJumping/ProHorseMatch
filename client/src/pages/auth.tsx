@@ -22,6 +22,7 @@ const loginSchema = z.object({
 });
 
 const customerRegisterSchema = z.object({
+  username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
@@ -32,6 +33,7 @@ const customerRegisterSchema = z.object({
 });
 
 const ownerRegisterSchema = z.object({
+  username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
   business_name: z.string().min(2, { message: "Business name must be at least 2 characters" }),
   contact_name: z.string().min(2, { message: "Contact name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -71,6 +73,7 @@ export default function Auth() {
   const customerRegisterForm = useForm<z.infer<typeof customerRegisterSchema>>({
     resolver: zodResolver(customerRegisterSchema),
     defaultValues: {
+      username: "",
       name: "",
       email: "",
       password: "",
@@ -82,6 +85,7 @@ export default function Auth() {
   const ownerRegisterForm = useForm<z.infer<typeof ownerRegisterSchema>>({
     resolver: zodResolver(ownerRegisterSchema),
     defaultValues: {
+      username: "",
       business_name: "",
       contact_name: "",
       email: "",
