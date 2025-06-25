@@ -114,10 +114,24 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 25, 2025: Mobile developer investigation - APK analysis revealed empty app shell with no web content
+- June 25, 2025: Decision to focus on web app development while seeking reliable mobile developer
 - June 25, 2025: Username system implemented across messaging
-- June 25, 2025: Mobile app package created with Capacitor integration
+- June 25, 2025: Mobile app package created with Capacitor integration  
 - June 24, 2025: Initial setup
+
+## Current Status
+
+**Web Application**: Production-ready with all core features functional
+- Username messaging system working
+- Multi-currency support (USD, AUD, EUR, GBP, NZD)
+- Horse browsing, filtering, and favorites
+- Stripe payments integration
+- Complete mobile package available for future developer
+
+**Mobile Development**: Seeking new developer after current one delivered empty APK shell
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Focus on web app development until reliable mobile developer found.
