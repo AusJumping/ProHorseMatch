@@ -25,7 +25,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<User | null>;
   logout: () => Promise<void>;
-  register: (userData: any, userType: string) => Promise<void>;
+  register: (userData: any, userType: string) => Promise<User | null>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -35,7 +35,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: async () => null,
   logout: async () => {},
-  register: async () => {},
+  register: async () => null,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           authToken = document.cookie
             .split(';')
             .find(cookie => cookie.trim().startsWith('auth_token='))
-            ?.split('=')[1];
+            ?.split('=')[1] || null;
           console.log("Token from cookie:", authToken);
         }
         
@@ -180,8 +180,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (userData: any, userType: string) => {
+  const register = async (userData: any, userType: string): Promise<User | null> => {
     try {
+      console.log("Attempting registration for:", { userType, email: userData.email });
+      
       const response = await fetch(`/api/auth/register/${userType}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -194,10 +196,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(error.message || 'Registration failed');
       }
 
-      // Force a full page reload to ensure auth state is properly updated
-      window.location.href = userType === 'owner' ? '/add-horse' : '/';
+      const responseData = await response.json() as User & { auth_token?: string };
+      console.log("Registration successful, complete user data:", responseData);
+      
+      // Extract and store auth token from response body
+      const authToken = responseData.auth_token;
+      console.log("=== REGISTRATION TOKEN EXTRACTION ===");
+      console.log("Full responseData object:", responseData);
+      console.log("Auth token from response body:", authToken);
+      console.log("Auth token type:", typeof authToken);
+      console.log("Auth token exists:", !!authToken);
+      
+      if (authToken) {
+        try {
+          localStorage.setItem('auth_token', authToken);
+          console.log("Stored auth token in localStorage:", authToken);
+          
+          // Verify storage immediately
+          const storedToken = localStorage.getItem('auth_token');
+          console.log("Verification - token retrieved from localStorage:", storedToken);
+          console.log("Storage successful:", storedToken === authToken);
+        } catch (storageError) {
+          console.error("LocalStorage error:", storageError);
+        }
+      } else {
+        console.log("No auth token found in response body");
+        console.log("Available responseData keys:", Object.keys(responseData));
+      }
+      
+      // Update query cache with user data (excluding auth_token)
+      const { auth_token, ...userDataForCache } = responseData;
+      queryClient.setQueryData(['/api/auth/me'], userDataForCache);
+      console.log("Updated auth cache with user data:", userDataForCache);
+      
+      // Return the user data so the calling function can check subscription status
+      return userDataForCache;
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('=== REGISTRATION ERROR ===');
+      console.error('Error type:', error.constructor.name);
+      console.error('Error message:', error.message);
+      console.error('Full error:', error);
       throw error;
     }
   };

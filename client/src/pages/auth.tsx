@@ -120,26 +120,23 @@ export default function Auth() {
   const onCustomerRegisterSubmit = async (data: z.infer<typeof customerRegisterSchema>) => {
     try {
       const { confirmPassword, ...registerData } = data;
+      console.log("Submitting customer registration form with data:", registerData);
       
-      const response = await fetch('/api/auth/register/customer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registerData),
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Registration failed');
-      }
+      // Use the proper register function that handles token storage
+      const userData = await register(registerData, 'customer');
       
       toast({
         title: "Registration successful",
         description: "Welcome to ProHorseMatch",
       });
       
-      // Redirect to subscription page after registration
-      window.location.href = "/subscription";
+      if (userData && userData.subscription_status === 'active') {
+        console.log("User has active subscription, redirecting to welcome page");
+        window.location.href = "/welcome";
+      } else {
+        console.log("User has no active subscription, redirecting to subscription page");
+        window.location.href = "/subscription";
+      }
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -152,26 +149,23 @@ export default function Auth() {
   const onOwnerRegisterSubmit = async (data: z.infer<typeof ownerRegisterSchema>) => {
     try {
       const { confirmPassword, ...registerData } = data;
+      console.log("Submitting owner registration form with data:", registerData);
       
-      const response = await fetch('/api/auth/register/owner', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registerData),
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Registration failed');
-      }
+      // Use the proper register function that handles token storage
+      const userData = await register(registerData, 'owner');
       
       toast({
         title: "Registration successful",
         description: "Welcome to ProHorseMatch",
       });
       
-      // Redirect to subscription page after registration
-      window.location.href = "/subscription";
+      if (userData && userData.subscription_status === 'active') {
+        console.log("User has active subscription, redirecting to welcome page");
+        window.location.href = "/welcome";
+      } else {
+        console.log("User has no active subscription, redirecting to subscription page");
+        window.location.href = "/subscription";
+      }
     } catch (error: any) {
       toast({
         title: "Registration failed",
