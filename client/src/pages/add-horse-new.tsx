@@ -260,8 +260,8 @@ export default function AddHorseNew() {
                   </div>
                   
                   <ScrollArea className={isMobile ? "h-[calc(100vh-380px)]" : ""}>
-                    <TabsContent value="basic" className="space-y-6 pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <TabsContent value="basic" className="space-y-4 pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <FormField
                           control={form.control}
                           name="name"
