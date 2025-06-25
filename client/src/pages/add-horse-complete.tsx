@@ -228,11 +228,46 @@ export default function AddHorseComplete() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "basic" | "details" | "media")}>
-                  <TabsList className="grid grid-cols-3 w-full">
-                    <TabsTrigger value="basic">Basic Information</TabsTrigger>
-                    <TabsTrigger value="details">Horse Details</TabsTrigger>
-                    <TabsTrigger value="media">Media & Description</TabsTrigger>
-                  </TabsList>
+                  <div className="space-y-4">
+                    <TabsList className="grid grid-cols-3 w-full md:grid-cols-3 gap-1 h-auto p-1">
+                      <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
+                        <span className="hidden sm:inline">Basic Information</span>
+                        <span className="sm:hidden">Basic</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="details" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
+                        <span className="hidden sm:inline">Horse Details</span>
+                        <span className="sm:hidden">Details</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="media" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
+                        <span className="hidden sm:inline">Media & Description</span>
+                        <span className="sm:hidden">Media</span>
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    {/* Mobile navigation buttons */}
+                    <div className="flex justify-between sm:hidden">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={prevTab}
+                        disabled={activeTab === "basic"}
+                        className="flex items-center gap-2"
+                      >
+                        ← Previous
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={nextTab}
+                        disabled={activeTab === "media"}
+                        className="flex items-center gap-2"
+                      >
+                        Next →
+                      </Button>
+                    </div>
+                  </div>
                   
                   <ScrollArea className={isMobile ? "h-[calc(100vh-380px)]" : ""}>
                     <TabsContent value="basic" className="space-y-6 pt-4">
