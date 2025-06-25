@@ -90,6 +90,17 @@ export default function AddHorseNew() {
   const [photos, setPhotos] = useState<string[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
 
+  // Mobile navigation functions
+  const nextTab = () => {
+    if (activeTab === "basic") setActiveTab("details");
+    else if (activeTab === "details") setActiveTab("media");
+  };
+
+  const prevTab = () => {
+    if (activeTab === "media") setActiveTab("details");
+    else if (activeTab === "details") setActiveTab("basic");
+  };
+
   // Get constants for dropdowns
   const { data: constants, isLoading: constantsLoading } = useQuery({
     queryKey: ["/api/constants"],

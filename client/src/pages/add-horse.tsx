@@ -99,6 +99,17 @@ export default function AddHorse() {
   const [videoUrls, setVideoUrls] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState("basic");
   
+  // Mobile navigation functions
+  const nextTab = () => {
+    if (activeTab === "basic") setActiveTab("details");
+    else if (activeTab === "details") setActiveTab("media");
+  };
+
+  const prevTab = () => {
+    if (activeTab === "media") setActiveTab("details");
+    else if (activeTab === "details") setActiveTab("basic");
+  };
+  
   // Fetch user data
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['/api/auth/me'],
@@ -224,23 +235,7 @@ export default function AddHorse() {
     setVideoUrls(videoUrls.filter(video => video !== url));
   };
 
-  // Navigate to the next tab
-  const nextTab = () => {
-    if (activeTab === "basic") {
-      setActiveTab("details");
-    } else if (activeTab === "details") {
-      setActiveTab("media");
-    }
-    // We don't need the "media" case since the submit button is a form submit button
-  };
 
-  const prevTab = () => {
-    if (activeTab === "details") {
-      setActiveTab("basic");
-    } else if (activeTab === "media") {
-      setActiveTab("details");
-    }
-  };
 
   if (userLoading || constantsLoading) {
     return (
@@ -267,20 +262,46 @@ export default function AddHorse() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <Tabs value={activeTab} onValueChange={setActiveTab}>
-                  <TabsList className="grid grid-cols-3 w-full md:grid-cols-3 gap-1 h-auto p-1">
-                    <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
-                      <span className="hidden sm:inline">Basic Information</span>
-                      <span className="sm:hidden">Basic</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="details" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
-                      <span className="hidden sm:inline">Horse Details</span>
-                      <span className="sm:hidden">Details</span>
-                    </TabsTrigger>
-                    <TabsTrigger value="media" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
-                      <span className="hidden sm:inline">Media & Description</span>
-                      <span className="sm:hidden">Media</span>
-                    </TabsTrigger>
-                  </TabsList>
+                  <div className="space-y-4">
+                    <TabsList className="grid grid-cols-3 w-full md:grid-cols-3 gap-1 h-auto p-1">
+                      <TabsTrigger value="basic" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
+                        <span className="hidden sm:inline">Basic Information</span>
+                        <span className="sm:hidden">Basic</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="details" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
+                        <span className="hidden sm:inline">Horse Details</span>
+                        <span className="sm:hidden">Details</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="media" className="text-xs sm:text-sm px-2 py-2 whitespace-nowrap overflow-hidden">
+                        <span className="hidden sm:inline">Media & Description</span>
+                        <span className="sm:hidden">Media</span>
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    {/* Mobile navigation buttons */}
+                    <div className="flex justify-between sm:hidden">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={prevTab}
+                        disabled={activeTab === "basic"}
+                        className="flex items-center gap-2"
+                      >
+                        ← Previous
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={nextTab}
+                        disabled={activeTab === "media"}
+                        className="flex items-center gap-2"
+                      >
+                        Next →
+                      </Button>
+                    </div>
+                  </div>
                   
                   <ScrollArea className={isMobile ? "h-[calc(100vh-380px)]" : ""}>
                     <TabsContent value="basic" className="space-y-6 pt-4">

@@ -114,6 +114,7 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 25, 2025: Responsive tab improvements across all add horse pages - mobile-friendly navigation with shortened labels and next/previous buttons
 - June 25, 2025: Mobile developer investigation - APK analysis revealed empty app shell with no web content
 - June 25, 2025: Decision to focus on web app development while seeking reliable mobile developer
 - June 25, 2025: Username system implemented across messaging
