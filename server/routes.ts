@@ -203,12 +203,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set user session
       req.session.userId = user.id;
       
+      // Create a simple auth token instead of relying on sessions
+      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+      
+      // Store auth token mapping in memory (simple approach for development)
+      if (!global.authTokens) {
+        global.authTokens = new Map();
+      }
+      global.authTokens.set(authToken, {
+        userId: user.id,
+        expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+      });
+      
+      console.log("=== CUSTOMER REGISTRATION TOKEN CREATED ===");
+      console.log("Auth token created:", authToken);
+      console.log("Token stored for user ID:", user.id);
+      console.log("Global tokens count:", global.authTokens.size);
+      
       return res.status(201).json({ 
         id: user.id,
         name: user.name,
         email: user.email,
         is_searching: true,
-        is_selling: false
+        is_selling: false,
+        auth_token: authToken
       });
     } catch (error) {
       console.error("Register searching user error:", error);
@@ -235,13 +253,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set user session
       req.session.userId = user.id;
       
+      // Create a simple auth token instead of relying on sessions
+      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+      
+      // Store auth token mapping in memory (simple approach for development)
+      if (!global.authTokens) {
+        global.authTokens = new Map();
+      }
+      global.authTokens.set(authToken, {
+        userId: user.id,
+        expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+      });
+      
+      console.log("=== OWNER REGISTRATION TOKEN CREATED ===");
+      console.log("Auth token created:", authToken);
+      console.log("Token stored for user ID:", user.id);
+      console.log("Global tokens count:", global.authTokens.size);
+      
       return res.status(201).json({ 
         id: user.id,
         business_name: user.business_name,
         contact_name: user.contact_name,
         email: user.email,
         is_searching: false,
-        is_selling: true
+        is_selling: true,
+        auth_token: authToken
       });
     } catch (error) {
       console.error("Register selling user error:", error);

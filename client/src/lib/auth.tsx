@@ -150,8 +150,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return userDataForCache;
     } catch (error) {
       console.error('=== LOGIN ERROR ===');
-      console.error('Error type:', error.constructor.name);
-      console.error('Error message:', error.message);
+      console.error('Error type:', (error as Error).constructor.name);
+      console.error('Error message:', (error as Error).message);
       console.error('Full error:', error);
       throw error;
     }
@@ -233,8 +233,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return userDataForCache;
     } catch (error) {
       console.error('=== REGISTRATION ERROR ===');
-      console.error('Error type:', error.constructor.name);
-      console.error('Error message:', error.message);
+      console.error('Error type:', (error as Error).constructor.name);
+      console.error('Error message:', (error as Error).message);
       console.error('Full error:', error);
       throw error;
     }
