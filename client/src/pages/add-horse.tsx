@@ -282,7 +282,7 @@ export default function AddHorse() {
                   
                   <ScrollArea className={isMobile ? "h-[calc(100vh-430px)]" : ""}>
                     <TabsContent value="basic" className="space-y-4 pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <FormField
                           control={form.control}
                           name="name"
@@ -299,7 +299,7 @@ export default function AddHorse() {
                       </div>
 
                       {/* Currency and price section with better layout */}
-                      <div className="grid grid-cols-1 gap-6 border-t border-gray-100 pt-6 mb-8">
+                      <div className="grid grid-cols-1 gap-4 border-t border-gray-100 pt-4 mb-6">
                         {/* Currency selector takes full width */}
                         <div className="w-full mb-2">
                           <FormField
