@@ -114,8 +114,9 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
-Changelog:
-- June 24, 2025. Initial setup
+- June 25, 2025: Username system implemented across messaging
+- June 25, 2025: Mobile app package created with Capacitor integration
+- June 24, 2025: Initial setup
 
 ## User Preferences
 
