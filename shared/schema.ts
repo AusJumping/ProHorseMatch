@@ -52,9 +52,9 @@ export const insertUserSchema = createInsertSchema(users).omit({
 export const insertSearchingUserSchema = insertUserSchema.omit({
   business_name: true,
   contact_name: true,
+  name: true,
 }).extend({
   username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   is_searching: z.literal(true).default(true),
 });
 

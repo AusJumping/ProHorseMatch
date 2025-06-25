@@ -23,7 +23,6 @@ const loginSchema = z.object({
 
 const customerRegisterSchema = z.object({
   username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
   confirmPassword: z.string()
@@ -74,7 +73,6 @@ export default function Auth() {
     resolver: zodResolver(customerRegisterSchema),
     defaultValues: {
       username: "",
-      name: "",
       email: "",
       password: "",
       confirmPassword: ""
@@ -321,20 +319,6 @@ export default function Auth() {
                             <FormLabel>Username</FormLabel>
                             <FormControl>
                               <Input placeholder="johndoe123" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={customerRegisterForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="John Doe" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
