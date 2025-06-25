@@ -793,11 +793,7 @@ export default function AddHorse() {
 
                         </div>
 
-                        <div className="w-full mt-4">
-                          <Button onClick={nextTab} type="button" className="w-full">
-                            Next: Horse Details
-                          </Button>
-                        </div>
+
                       </div>
                     </TabsContent>
                     
@@ -1294,14 +1290,7 @@ export default function AddHorse() {
                         />
                       </div>
                       
-                      <div className="flex justify-between mt-4">
-                        <Button onClick={prevTab} type="button" variant="outline">
-                          Back
-                        </Button>
-                        <Button onClick={nextTab} type="button">
-                          Next: Media & Description
-                        </Button>
-                      </div>
+
                     </TabsContent>
                     
                     <TabsContent value="media" className="space-y-4 pt-4">
