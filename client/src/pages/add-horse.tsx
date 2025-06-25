@@ -304,8 +304,8 @@ export default function AddHorse() {
                   </div>
                   
                   <ScrollArea className={isMobile ? "h-[calc(100vh-380px)]" : ""}>
-                    <TabsContent value="basic" className="space-y-6 pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <TabsContent value="basic" className="space-y-4 pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <FormField
                           control={form.control}
                           name="name"
@@ -824,8 +824,8 @@ export default function AddHorse() {
                       </div>
                     </TabsContent>
                     
-                    <TabsContent value="details" className="space-y-6 pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <TabsContent value="details" className="space-y-4 pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="age"
@@ -1327,7 +1327,7 @@ export default function AddHorse() {
                       </div>
                     </TabsContent>
                     
-                    <TabsContent value="media" className="space-y-6 pt-4">
+                    <TabsContent value="media" className="space-y-4 pt-4">
                       <div>
                         <h3 className="text-lg font-medium mb-4">Photos</h3>
                         <div className="space-y-4 mb-6">

@@ -278,7 +278,7 @@ export default function AddHorseNew() {
                       </div>
 
                       {/* Currency and price section with better layout */}
-                      <div className="grid grid-cols-1 gap-6 border-t border-gray-100 pt-6 mb-8">
+                      <div className="grid grid-cols-1 gap-4 border-t border-gray-100 pt-4 mb-6">
                         {/* Currency selector takes full width */}
                         <div className="w-full mb-2">
                           <FormField
