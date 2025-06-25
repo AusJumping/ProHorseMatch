@@ -278,32 +278,9 @@ export default function AddHorse() {
                       </TabsTrigger>
                     </TabsList>
                     
-                    {/* Mobile navigation buttons */}
-                    <div className="flex justify-between sm:hidden">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={prevTab}
-                        disabled={activeTab === "basic"}
-                        className="flex items-center gap-2"
-                      >
-                        ← Previous
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={nextTab}
-                        disabled={activeTab === "media"}
-                        className="flex items-center gap-2"
-                      >
-                        Next →
-                      </Button>
-                    </div>
                   </div>
                   
-                  <ScrollArea className={isMobile ? "h-[calc(100vh-380px)]" : ""}>
+                  <ScrollArea className={isMobile ? "h-[calc(100vh-430px)]" : ""}>
                     <TabsContent value="basic" className="space-y-4 pt-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <FormField
@@ -1557,13 +1534,26 @@ export default function AddHorse() {
                         />
                       </div>
                       
-                      <div className="flex justify-between mt-8">
-                        <Button onClick={prevTab} type="button" variant="outline">
-                          Back
-                        </Button>
+                    </TabsContent>
+                  </ScrollArea>
+                  
+                  {/* Bottom navigation buttons */}
+                  <div className="mt-4 pt-4 border-t bg-background">
+                    <div className="flex justify-between">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={prevTab}
+                        disabled={activeTab === "basic"}
+                        className="flex items-center gap-2"
+                      >
+                        ← Previous
+                      </Button>
+                      {activeTab === "media" ? (
                         <Button 
                           type="button" 
                           disabled={isSubmitting}
+                          className="flex items-center gap-2"
                           onClick={() => {
                             console.log("Submit button clicked", {
                               photos: photoUrls,
@@ -1587,12 +1577,20 @@ export default function AddHorse() {
                               Submitting...
                             </>
                           ) : (
-                            "Submit Listing"
+                            "Create Horse Listing"
                           )}
                         </Button>
-                      </div>
-                    </TabsContent>
-                  </ScrollArea>
+                      ) : (
+                        <Button
+                          type="button"
+                          onClick={nextTab}
+                          className="flex items-center gap-2"
+                        >
+                          Next →
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </Tabs>
               </form>
             </Form>

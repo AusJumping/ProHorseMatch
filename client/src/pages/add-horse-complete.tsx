@@ -255,32 +255,9 @@ export default function AddHorseComplete() {
                       </TabsTrigger>
                     </TabsList>
                     
-                    {/* Mobile navigation buttons */}
-                    <div className="flex justify-between sm:hidden">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={prevTab}
-                        disabled={activeTab === "basic"}
-                        className="flex items-center gap-2"
-                      >
-                        ← Previous
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={nextTab}
-                        disabled={activeTab === "media"}
-                        className="flex items-center gap-2"
-                      >
-                        Next →
-                      </Button>
-                    </div>
                   </div>
                   
-                  <ScrollArea className={isMobile ? "h-[calc(100vh-380px)]" : ""}>
+                  <ScrollArea className={isMobile ? "h-[calc(100vh-430px)]" : ""}>
                     <TabsContent value="basic" className="space-y-4 pt-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <FormField
@@ -540,16 +517,36 @@ export default function AddHorseComplete() {
                         )}
                       />
 
-                      <div className="flex justify-between mt-8">
-                        <Button type="button" variant="outline" onClick={prevTab}>
-                          Previous
-                        </Button>
-                        <Button type="submit">
-                          Create Horse Listing
-                        </Button>
-                      </div>
                     </TabsContent>
                   </ScrollArea>
+                  
+                  {/* Bottom navigation buttons */}
+                  <div className="mt-4 pt-4 border-t bg-background">
+                    <div className="flex justify-between">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={prevTab}
+                        disabled={activeTab === "basic"}
+                        className="flex items-center gap-2"
+                      >
+                        ← Previous
+                      </Button>
+                      {activeTab === "media" ? (
+                        <Button type="submit" className="flex items-center gap-2">
+                          Create Horse Listing
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          onClick={nextTab}
+                          className="flex items-center gap-2"
+                        >
+                          Next →
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </Tabs>
               </form>
             </Form>
