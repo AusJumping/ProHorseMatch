@@ -53,18 +53,24 @@ export default function VerifyEmail() {
     
     setIsResending(true);
     try {
-      await apiRequest('/api/auth/resend-verification', {
+      const response = await fetch('/api/auth/resend-verification', {
         method: 'POST',
-        body: JSON.stringify({ email }),
         headers: {
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ email })
       });
       
-      setMessage('Verification email sent! Please check your inbox.');
-      setVerificationStatus('pending');
+      const data = await response.json();
+      
+      if (response.ok) {
+        setMessage('Verification email sent! Please check your inbox.');
+        setVerificationStatus('pending');
+      } else {
+        setMessage(data.message || 'Failed to resend verification email');
+      }
     } catch (error: any) {
-      setMessage(error.message || 'Failed to resend verification email');
+      setMessage('Network error occurred. Please try again.');
     } finally {
       setIsResending(false);
     }
