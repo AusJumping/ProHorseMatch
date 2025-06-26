@@ -282,6 +282,67 @@ export default function SavedSearches() {
 
                     <FormField
                       control={form.control}
+                      name="levels"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Levels</FormLabel>
+                          <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                            {constants.jumpingLevels?.map((level: string) => (
+                              <div key={level} className="flex items-center space-x-2">
+                                <Checkbox
+                                  checked={field.value?.includes(level)}
+                                  onCheckedChange={(checked) => {
+                                    const current = field.value || [];
+                                    if (checked) {
+                                      field.onChange([...current, level]);
+                                    } else {
+                                      field.onChange(current.filter((l) => l !== level));
+                                    }
+                                  }}
+                                />
+                                <Label className="text-sm">{level}</Label>
+                              </div>
+                            ))}
+                            {constants.dressageLevels?.map((level: string) => (
+                              <div key={level} className="flex items-center space-x-2">
+                                <Checkbox
+                                  checked={field.value?.includes(level)}
+                                  onCheckedChange={(checked) => {
+                                    const current = field.value || [];
+                                    if (checked) {
+                                      field.onChange([...current, level]);
+                                    } else {
+                                      field.onChange(current.filter((l) => l !== level));
+                                    }
+                                  }}
+                                />
+                                <Label className="text-sm">{level}</Label>
+                              </div>
+                            ))}
+                            {constants.eventingLevels?.map((level: string) => (
+                              <div key={level} className="flex items-center space-x-2">
+                                <Checkbox
+                                  checked={field.value?.includes(level)}
+                                  onCheckedChange={(checked) => {
+                                    const current = field.value || [];
+                                    if (checked) {
+                                      field.onChange([...current, level]);
+                                    } else {
+                                      field.onChange(current.filter((l) => l !== level));
+                                    }
+                                  }}
+                                />
+                                <Label className="text-sm">{level}</Label>
+                              </div>
+                            ))}
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="sexes"
                       render={({ field }) => (
                         <FormItem>
