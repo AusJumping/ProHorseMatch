@@ -1158,6 +1158,8 @@ export class DatabaseStorage implements IStorage {
 
   async getHorsesByFilters(filters: any): Promise<Horse[]> {
     console.log("DatabaseStorage.getHorsesByFilters - filters:", JSON.stringify(filters, null, 2));
+    console.log("DatabaseStorage.getHorsesByFilters - sire filter:", filters.sire);
+    console.log("DatabaseStorage.getHorsesByFilters - dam_sire filter:", filters.dam_sire);
     
     // Get all horses first and filter in JavaScript for now (simpler approach)
     const allHorses = await db.select().from(horses);

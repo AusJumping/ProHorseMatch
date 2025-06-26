@@ -1406,6 +1406,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Handle bloodline filters
+      if (req.query.sire && req.query.sire !== 'null' && req.query.sire !== '') {
+        filters.sire = req.query.sire as string;
+        console.log("Setting sire filter to:", filters.sire);
+      }
+      
+      if (req.query.dam_sire && req.query.dam_sire !== 'null' && req.query.dam_sire !== '') {
+        filters.dam_sire = req.query.dam_sire as string;
+        console.log("Setting dam_sire filter to:", filters.dam_sire);
+      }
+      
       console.log("GET /api/horses - parsed filters:", filters);
       
       const horses = await storage.getHorsesByFilters(filters);
