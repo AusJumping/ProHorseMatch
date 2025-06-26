@@ -3032,6 +3032,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Check location
     if (search.location_country && horse.location_country !== search.location_country) return false;
 
+    // Check bloodlines - sire matching (case-insensitive partial match)
+    if (search.sire && search.sire.trim()) {
+      const searchSire = search.sire.trim().toLowerCase();
+      const horseSire = horse.sire ? horse.sire.toLowerCase() : '';
+      if (!horseSire.includes(searchSire)) return false;
+    }
+
+    // Check bloodlines - dam sire matching (case-insensitive partial match)
+    if (search.dam_sire && search.dam_sire.trim()) {
+      const searchDamSire = search.dam_sire.trim().toLowerCase();
+      const horseDamSire = horse.dam_sire ? horse.dam_sire.toLowerCase() : '';
+      if (!horseDamSire.includes(searchDamSire)) return false;
+    }
+
     return true;
   }
 
