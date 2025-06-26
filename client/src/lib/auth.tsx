@@ -209,11 +209,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (authToken) {
         try {
-          localStorage.setItem('auth_token', authToken);
+          localStorage.setItem('authToken', authToken);
           console.log("Stored auth token in localStorage:", authToken);
           
           // Verify storage immediately
-          const storedToken = localStorage.getItem('auth_token');
+          const storedToken = localStorage.getItem('authToken');
           console.log("Verification - token retrieved from localStorage:", storedToken);
           console.log("Storage successful:", storedToken === authToken);
         } catch (storageError) {
