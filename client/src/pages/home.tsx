@@ -153,6 +153,15 @@ export default function Home() {
         params.append('currency', activeFilters.currency);
       }
       
+      // Add bloodline filters
+      if (activeFilters.sire) {
+        params.append('sire', activeFilters.sire);
+      }
+      
+      if (activeFilters.dam_sire) {
+        params.append('dam_sire', activeFilters.dam_sire);
+      }
+      
       console.log('Filter params:', params.toString());
       
       // Fetch horses with the filter parameters
