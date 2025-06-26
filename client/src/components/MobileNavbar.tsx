@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import { 
   Home, Heart, Filter, User, List, CreditCard, 
-  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings
+  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings, Search, MessageCircle
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";

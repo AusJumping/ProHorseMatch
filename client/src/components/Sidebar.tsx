@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard, MessageCircle } from "lucide-react";
+import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard, MessageCircle, Search } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
 import { useQuery } from "@tanstack/react-query";
@@ -119,7 +119,21 @@ const Sidebar = () => {
               )}
             </Button>
           </li>
-
+          <li>
+            <Button
+              variant={location === "/saved-searches" ? "default" : "ghost"}
+              className={`w-full justify-start px-5 py-3 ${
+                location === "/saved-searches" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+              }`}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/saved-searches");
+              }}
+            >
+              <Search className="mr-3 h-5 w-5" />
+              <span>Saved Searches</span>
+            </Button>
+          </li>
 
           {user?.is_selling && (
             <>
