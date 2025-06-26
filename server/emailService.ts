@@ -93,7 +93,7 @@ This verification link will expire in 24 hours. If you didn't create an account 
     console.log('Subject: Verify your ProHorseMatch account');
     
     const { data, error } = await resend.emails.send({
-      from: 'ProHorseMatch <noreply@prohorsematch.com>',
+      from: 'ProHorseMatch <onboarding@resend.dev>',
       to: [params.to],
       subject: 'Verify your ProHorseMatch account',
       html: htmlContent,
@@ -193,7 +193,7 @@ Happy horse hunting!
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'ProHorseMatch <noreply@prohorsematch.com>',
+      from: 'ProHorseMatch <onboarding@resend.dev>',
       to: [to],
       subject: 'Welcome to ProHorseMatch - Account Verified!',
       html: htmlContent,
