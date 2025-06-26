@@ -114,6 +114,13 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 26, 2025: Authentication and subscription system fully operational
+  - CRITICAL FIX: Resolved token key inconsistency that was causing logout behavior after login
+  - Fixed authentication token storage mismatch between login/registration and auth verification
+  - Updated all authentication functions to use consistent 'authToken' localStorage key
+  - Subscription endpoints properly configured with token-based authentication middleware
+  - Beta subscription activation now working correctly without authentication errors
+  - Complete flow verified: login → subscription page → beta activation → application access
 - June 26, 2025: Authentication system completely fixed and secured
   - CRITICAL FIX: Implemented bcrypt password hashing for security (was plain text)
   - CRITICAL FIX: Fixed login authentication - users can now access accounts
