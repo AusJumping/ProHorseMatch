@@ -8,6 +8,7 @@ import path from "path";
 import fs from "fs";
 import Stripe from "stripe";
 import cookieParser from "cookie-parser";
+import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { sendVerificationEmail, sendWelcomeEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
@@ -196,6 +197,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email already in use" });
       }
       
+      // Hash password before storing
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(validatedData.password, saltRounds);
+      
       // Generate verification token
       const verificationToken = generateVerificationToken();
       const tokenExpires = createTokenExpiration();
@@ -203,6 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create user with verification fields
       const user = await storage.createUser({
         ...validatedData,
+        password: hashedPassword,
         is_searching: true,
         name: null,  // Customer registration doesn't require a name
         email_verified: false,
@@ -322,7 +328,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      if (user.password !== password) {
+      // For existing users with plain text passwords, use direct comparison
+      // For new users with hashed passwords, use bcrypt
+      let passwordValid = false;
+      if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
+        // This is a bcrypt hash
+        passwordValid = await bcrypt.compare(password, user.password);
+      } else {
+        // This is plain text (legacy users)
+        passwordValid = user.password === password;
+      }
+      
+      if (!passwordValid) {
         console.log("Login failed - Invalid password for user:", email);
         return res.status(401).json({ message: "Invalid credentials" });
       }
