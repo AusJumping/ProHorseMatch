@@ -2016,6 +2016,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         breeds,
         characteristics,
         countries,
+        jumpingLevels,
+        dressageLevels,
+        eventingLevels,
         levels: {
           Jumping: jumpingLevels,
           Dressage: dressageLevels,
