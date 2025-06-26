@@ -112,6 +112,32 @@ const MobileNavbar = () => {
           </SheetClose>
         )}
         
+        {isAuthenticated && (
+          <SheetClose asChild>
+            <Button 
+              variant="ghost" 
+              className={`justify-start h-12 ${location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+              onClick={() => navigate("/messages")}
+            >
+              <MessageCircle className="mr-3 h-5 w-5" />
+              <span>Messages</span>
+            </Button>
+          </SheetClose>
+        )}
+        
+        {isAuthenticated && (
+          <SheetClose asChild>
+            <Button 
+              variant="ghost" 
+              className={`justify-start h-12 ${location === "/saved-searches" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+              onClick={() => navigate("/saved-searches")}
+            >
+              <Search className="mr-3 h-5 w-5" />
+              <span>Saved Searches</span>
+            </Button>
+          </SheetClose>
+        )}
+        
 
         
 
