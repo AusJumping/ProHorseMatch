@@ -413,42 +413,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email verification endpoints
   app.get("/api/auth/verify-email", async (req, res) => {
     try {
+      console.log('=== EMAIL VERIFICATION REQUEST ===');
+      console.log('Query params:', req.query);
+      console.log('Request headers:', {
+        userAgent: req.headers['user-agent'],
+        origin: req.headers.origin,
+        referer: req.headers.referer
+      });
+      
       const { token } = req.query;
       
       if (!token || typeof token !== 'string') {
+        console.log('Verification failed - No token provided');
         return res.status(400).json({ message: "Verification token is required" });
       }
+      
+      console.log('Verification token received:', token.substring(0, 16) + '...');
       
       // Find user by verification token
       const user = await storage.getUserByVerificationToken(token);
       if (!user) {
+        console.log('Verification failed - Invalid token:', token.substring(0, 16) + '...');
         return res.status(400).json({ message: "Invalid verification token" });
       }
       
+      console.log('User found for verification:', {
+        id: user.id,
+        email: user.email,
+        email_verified: user.email_verified,
+        token_expires: user.verification_token_expires
+      });
+      
       // Check if token has expired
       if (user.verification_token_expires && isTokenExpired(user.verification_token_expires)) {
+        console.log('Verification failed - Token expired for user:', user.email);
         return res.status(400).json({ message: "Verification token has expired" });
       }
       
       // Check if already verified
       if (user.email_verified) {
+        console.log('User already verified:', user.email);
         return res.status(200).json({ message: "Email already verified" });
       }
       
+      console.log('Updating user verification status...');
       // Verify the user
       await storage.updateUserVerification(user.id, true, null, null);
       
+      console.log('User verification updated successfully');
+      
       // Send welcome email
+      console.log('Sending welcome email...');
       const welcomeEmailSent = await sendWelcomeEmail(user.email, user.username);
       if (!welcomeEmailSent) {
         console.warn('Failed to send welcome email to:', user.email);
+      } else {
+        console.log('Welcome email sent successfully to:', user.email);
       }
       
+      console.log('=== EMAIL VERIFICATION COMPLETE ===');
       return res.status(200).json({ 
         message: "Email verified successfully! You can now log in.",
         verified: true
       });
     } catch (error) {
+      console.error("=== EMAIL VERIFICATION ERROR ===");
       console.error("Email verification error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }

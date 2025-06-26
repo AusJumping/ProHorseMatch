@@ -114,12 +114,18 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 26, 2025: Email verification system fully operational with Resend.com
+  - Email verification debugging completed - system working correctly
+  - Registration sends verification emails successfully via Resend
+  - Verification links properly update database and activate accounts
+  - Login requires email verification (except test users with @example.com)
+  - Welcome emails sent automatically after successful verification
+  - Complete flow tested: registration → email delivery → link click → database update → login access
 - June 26, 2025: Email verification system migrated from Campaign Monitor to Resend.com
   - Switched email service provider to Resend for better deliverability and developer experience
   - Updated email service with Resend SDK integration
   - Professional HTML email templates maintained for verification and welcome emails
   - System now uses RESEND_API_KEY environment variable for authentication
-  - Complete email verification flow working: registration → verification email → account activation → login access
 - June 26, 2025: Complete email verification system implemented
   - Added database schema for email verification (email_verified, verification_token, verification_token_expires columns)
   - Added verification routes (/api/auth/verify-email, /api/auth/resend-verification)
