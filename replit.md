@@ -114,14 +114,18 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
-- June 26, 2025: Complete email verification system implemented using Campaign Monitor API
+- June 26, 2025: Email verification system migrated from Campaign Monitor to Resend.com
+  - Switched email service provider to Resend for better deliverability and developer experience
+  - Updated email service with Resend SDK integration
+  - Professional HTML email templates maintained for verification and welcome emails
+  - System now uses RESEND_API_KEY environment variable for authentication
+  - Complete email verification flow working: registration → verification email → account activation → login access
+- June 26, 2025: Complete email verification system implemented
   - Added database schema for email verification (email_verified, verification_token, verification_token_expires columns)
-  - Created comprehensive email service with Campaign Monitor integration for verification and welcome emails
   - Added verification routes (/api/auth/verify-email, /api/auth/resend-verification)
   - Updated registration process to send verification emails automatically
   - Modified login to require email verification before access
   - Added frontend verification page (/verify-email) with token handling and resend functionality
-  - Email verification system now production-ready with user's existing Campaign Monitor subscription
 - June 25, 2025: Fixed spacing gap between horse name and currency fields for more compact layout
 - June 25, 2025: Completed bottom navigation migration - moved all previous/next buttons to unified bottom section across all add horse pages for improved UX flow
 - June 25, 2025: Reduced vertical spacing between form fields across all add horse pages for better screen utilization

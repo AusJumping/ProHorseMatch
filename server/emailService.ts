@@ -1,11 +1,10 @@
-import axios from 'axios';
+import { Resend } from 'resend';
 
-if (!process.env.CAMPAIGN_MONITOR_API_KEY) {
-  throw new Error("CAMPAIGN_MONITOR_API_KEY environment variable must be set");
+if (!process.env.RESEND_API_KEY) {
+  throw new Error("RESEND_API_KEY environment variable must be set");
 }
 
-const CAMPAIGN_MONITOR_BASE_URL = 'https://api.campaignmonitor.com/api/v3.3';
-const API_KEY = process.env.CAMPAIGN_MONITOR_API_KEY;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface EmailVerificationParams {
   to: string;
@@ -79,50 +78,24 @@ This verification link will expire in 24 hours. If you didn't create an account 
   `;
 
   try {
-    const response = await axios.post(
-      `${CAMPAIGN_MONITOR_BASE_URL}/transactional/smartEmail/{smartEmailID}/send`,
-      {
-        To: [params.to],
-        Data: {
-          username: params.username,
-          verification_url: verificationUrl,
-          base_url: params.baseUrl
-        }
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    return response.status === 202;
-  } catch (error) {
-    console.error('Campaign Monitor email error:', error);
-    
-    // Fallback to basic transactional email if smart email fails
-    try {
-      const fallbackResponse = await axios.post(
-        `${CAMPAIGN_MONITOR_BASE_URL}/transactional/classicEmail/send`,
-        {
-          Subject: 'Verify your ProHorseMatch account',
-          From: 'noreply@prohorsematch.com',
-          To: [params.to],
-          HTML: htmlContent,
-          Text: textContent
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${API_KEY}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      return fallbackResponse.status === 202;
-    } catch (fallbackError) {
-      console.error('Campaign Monitor fallback email error:', fallbackError);
+    const { data, error } = await resend.emails.send({
+      from: 'ProHorseMatch <noreply@prohorsematch.com>',
+      to: [params.to],
+      subject: 'Verify your ProHorseMatch account',
+      html: htmlContent,
+      text: textContent,
+    });
+
+    if (error) {
+      console.error('Resend verification email error:', error);
       return false;
     }
+
+    console.log('Verification email sent successfully:', data);
+    return true;
+  } catch (error) {
+    console.error('Resend verification email error:', error);
+    return false;
   }
 }
 
@@ -173,25 +146,44 @@ export async function sendWelcomeEmail(to: string, username: string): Promise<bo
     </div>
   `;
 
+  const textContent = `
+Welcome to ProHorseMatch!
+
+Hi ${username},
+
+Congratulations! Your email has been verified and your ProHorseMatch account is now active. You can now:
+
+- Browse our exclusive collection of performance horses
+- Use advanced filters to find your perfect match  
+- Save horses to your favorites
+- Connect directly with horse owners
+- List your own horses for sale (if you're a seller)
+
+Visit: ${process.env.CLIENT_URL || 'https://prohorsematch.com'}
+
+Happy horse hunting!
+
+© 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+  `;
+
   try {
-    const response = await axios.post(
-      `${CAMPAIGN_MONITOR_BASE_URL}/transactional/classicEmail/send`,
-      {
-        Subject: 'Welcome to ProHorseMatch - Account Verified!',
-        From: 'noreply@prohorsematch.com',
-        To: [to],
-        HTML: htmlContent
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    return response.status === 202;
+    const { data, error } = await resend.emails.send({
+      from: 'ProHorseMatch <noreply@prohorsematch.com>',
+      to: [to],
+      subject: 'Welcome to ProHorseMatch - Account Verified!',
+      html: htmlContent,
+      text: textContent,
+    });
+
+    if (error) {
+      console.error('Resend welcome email error:', error);
+      return false;
+    }
+
+    console.log('Welcome email sent successfully:', data);
+    return true;
   } catch (error) {
-    console.error('Campaign Monitor welcome email error:', error);
+    console.error('Resend welcome email error:', error);
     return false;
   }
 }
