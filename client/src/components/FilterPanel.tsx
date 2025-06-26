@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { X, Menu } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMobile } from "@/hooks/use-mobile";
@@ -220,7 +221,9 @@ const FilterPanel = ({
       height_max: null,
       price_min: null,
       price_max: null,
-      currency: "AUD"
+      currency: "AUD",
+      sire: null,
+      dam_sire: null
     };
     setFilters(resetFilters);
     onApplyFilters(resetFilters); // Apply the reset filters immediately
@@ -565,6 +568,33 @@ const FilterPanel = ({
             </Select>
           </div>
           
+          {/* Bloodlines */}
+          <div className="filter-group">
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Bloodlines</Label>
+            <div className="space-y-3">
+              <div>
+                <Label className="block text-sm font-medium mb-1 text-neutral-700">Sire</Label>
+                <Input
+                  type="text"
+                  placeholder="Enter sire name..."
+                  value={filters.sire || ""}
+                  onChange={(e) => handleChange('sire', e.target.value || null)}
+                  className="w-full bg-neutral-100 border border-neutral-200 rounded-lg"
+                />
+              </div>
+              <div>
+                <Label className="block text-sm font-medium mb-1 text-neutral-700">Dam Sire</Label>
+                <Input
+                  type="text"
+                  placeholder="Enter dam sire name..."
+                  value={filters.dam_sire || ""}
+                  onChange={(e) => handleChange('dam_sire', e.target.value || null)}
+                  className="w-full bg-neutral-100 border border-neutral-200 rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Location */}
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Location</Label>
