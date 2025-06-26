@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     queryFn: async () => {
       try {
         // Get auth token from localStorage first, then fallback to cookie
-        let authToken = localStorage.getItem('auth_token');
+        let authToken = localStorage.getItem('authToken');
         console.log("=== AUTH CHECK ===");
         console.log("Token from localStorage:", authToken);
         
@@ -126,11 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (authToken) {
         try {
-          localStorage.setItem('auth_token', authToken);
+          localStorage.setItem('authToken', authToken);
           console.log("Stored auth token in localStorage:", authToken);
           
           // Verify storage immediately
-          const storedToken = localStorage.getItem('auth_token');
+          const storedToken = localStorage.getItem('authToken');
           console.log("Verification - token retrieved from localStorage:", storedToken);
           console.log("Storage successful:", storedToken === authToken);
         } catch (storageError) {
@@ -166,7 +166,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Clear localStorage if any exists
       localStorage.removeItem('user_data');
-      localStorage.removeItem('auth_token');
+      localStorage.removeItem('authToken');
       
       // Clear the query cache
       queryClient.setQueryData(['/api/auth/me'], null);
