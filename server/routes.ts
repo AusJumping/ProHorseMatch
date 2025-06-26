@@ -245,40 +245,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email already in use" });
       }
       
-      // In a real app, we would hash the password here
+      // Generate verification token
+      const verificationToken = generateVerificationToken();
+      const tokenExpires = createTokenExpiration();
+      
+      // Create user with verification fields
       const user = await storage.createUser({
         ...validatedData,
-        is_selling: true
+        is_selling: true,
+        email_verified: false,
+        verification_token: verificationToken,
+        verification_token_expires: tokenExpires
       });
       
-      // Set user session
-      req.session.userId = user.id;
+      // Send verification email
+      const baseUrl = req.protocol + '://' + req.get('host');
+      const emailSent = await sendVerificationEmail({
+        to: user.email,
+        username: user.username,
+        verificationToken: verificationToken,
+        baseUrl: baseUrl
+      });
       
-      // Create a simple auth token instead of relying on sessions
-      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
-      
-      // Store auth token mapping in memory (simple approach for development)
-      if (!global.authTokens) {
-        global.authTokens = new Map();
+      if (!emailSent) {
+        console.warn('Failed to send verification email to:', user.email);
       }
-      global.authTokens.set(authToken, {
-        userId: user.id,
-        expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
-      });
-      
-      console.log("=== OWNER REGISTRATION TOKEN CREATED ===");
-      console.log("Auth token created:", authToken);
-      console.log("Token stored for user ID:", user.id);
-      console.log("Global tokens count:", global.authTokens.size);
       
       return res.status(201).json({ 
-        id: user.id,
-        business_name: user.business_name,
-        contact_name: user.contact_name,
+        message: "Registration successful! Please check your email to verify your account.",
         email: user.email,
-        is_searching: false,
-        is_selling: true,
-        auth_token: authToken
+        username: user.username,
+        business_name: user.business_name,
+        requiresVerification: true
       });
     } catch (error) {
       console.error("Register selling user error:", error);
@@ -313,6 +311,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user.password !== password) {
         console.log("Login failed - Invalid password for user:", email);
         return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      // Check if email is verified (skip for test users)
+      if (!user.email_verified && !email.includes('@example.com')) {
+        console.log("Login failed - Email not verified for user:", email);
+        return res.status(403).json({ 
+          message: "Please verify your email before logging in. Check your inbox for a verification link.",
+          requiresVerification: true,
+          email: user.email
+        });
       }
       
       console.log("Login successful - Setting user session:", {
@@ -386,6 +394,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.clearCookie("auth_token");
       return res.json({ message: "Logged out successfully" });
     });
+  });
+
+  // Email verification endpoints
+  app.get("/api/auth/verify-email", async (req, res) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({ message: "Verification token is required" });
+      }
+      
+      // Find user by verification token
+      const user = await storage.getUserByVerificationToken(token);
+      if (!user) {
+        return res.status(400).json({ message: "Invalid verification token" });
+      }
+      
+      // Check if token has expired
+      if (user.verification_token_expires && isTokenExpired(user.verification_token_expires)) {
+        return res.status(400).json({ message: "Verification token has expired" });
+      }
+      
+      // Check if already verified
+      if (user.email_verified) {
+        return res.status(200).json({ message: "Email already verified" });
+      }
+      
+      // Verify the user
+      await storage.updateUserVerification(user.id, true, null, null);
+      
+      // Send welcome email
+      const welcomeEmailSent = await sendWelcomeEmail(user.email, user.username);
+      if (!welcomeEmailSent) {
+        console.warn('Failed to send welcome email to:', user.email);
+      }
+      
+      return res.status(200).json({ 
+        message: "Email verified successfully! You can now log in.",
+        verified: true
+      });
+    } catch (error) {
+      console.error("Email verification error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/auth/resend-verification", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Find user by email
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if already verified
+      if (user.email_verified) {
+        return res.status(400).json({ message: "Email is already verified" });
+      }
+      
+      // Generate new verification token
+      const verificationToken = generateVerificationToken();
+      const tokenExpires = createTokenExpiration();
+      
+      // Update user with new token
+      await storage.updateUserVerification(user.id, false, verificationToken, tokenExpires);
+      
+      // Send new verification email
+      const baseUrl = req.protocol + '://' + req.get('host');
+      const emailSent = await sendVerificationEmail({
+        to: user.email,
+        username: user.username,
+        verificationToken: verificationToken,
+        baseUrl: baseUrl
+      });
+      
+      if (!emailSent) {
+        return res.status(500).json({ message: "Failed to send verification email" });
+      }
+      
+      return res.status(200).json({ 
+        message: "Verification email sent! Please check your inbox."
+      });
+    } catch (error) {
+      console.error("Resend verification error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   // Helper function to validate auth token

@@ -25,6 +25,7 @@ import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import WelcomePage from "@/pages/welcome";
+import VerifyEmail from "@/pages/verify-email";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
@@ -35,6 +36,7 @@ function Router() {
       <Route path="/browse" component={Home} />
       <Route path="/filter" component={Home} />
       <Route path="/auth" component={Auth} />
+      <Route path="/verify-email/:token?" component={VerifyEmail} />
       <Route path="/horse/:id" component={HorseDetail} />
 
       <Route path="/profile" component={Profile} />
