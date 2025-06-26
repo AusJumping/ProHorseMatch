@@ -27,7 +27,7 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
   
   const htmlContent = `
     <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
-      <div style="background: linear-gradient(135deg, #2D2A25 0%, #6B5B3D 50%, #CDAC6E 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
         <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Welcome to ProHorseMatch</h1>
         <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">Connecting equestrian professionals worldwide</p>
       </div>
@@ -127,7 +127,7 @@ This verification link will expire in 24 hours. If you didn't create an account 
 export async function sendWelcomeEmail(to: string, username: string): Promise<boolean> {
   const htmlContent = `
     <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
-      <div style="background: linear-gradient(135deg, #2D2A25 0%, #6B5B3D 50%, #CDAC6E 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
         <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Welcome to ProHorseMatch!</h1>
         <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">Your account is now verified and ready</p>
       </div>

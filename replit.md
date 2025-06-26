@@ -121,6 +121,7 @@ This is a full-stack web application built with modern technologies:
   - Login requires email verification (except test users with @example.com)
   - Welcome emails sent automatically after successful verification
   - Complete flow tested: registration → email delivery → link click → database update → login access
+  - Email templates updated with ProHorseMatch branding: #2b2b2b header, professional typography, and brand-consistent styling
 - June 26, 2025: Email verification system migrated from Campaign Monitor to Resend.com
   - Switched email service provider to Resend for better deliverability and developer experience
   - Updated email service with Resend SDK integration
