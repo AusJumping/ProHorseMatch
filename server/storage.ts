@@ -592,6 +592,24 @@ export class MemStorage implements IStorage {
         }
       }
       
+      // Filter by bloodlines - sire matching (case-insensitive partial match)
+      if (filters.sire && filters.sire.trim()) {
+        const searchSire = filters.sire.trim().toLowerCase();
+        const horseSire = horse.sire ? horse.sire.toLowerCase() : '';
+        if (!horseSire.includes(searchSire)) {
+          return false;
+        }
+      }
+      
+      // Filter by bloodlines - dam sire matching (case-insensitive partial match)
+      if (filters.dam_sire && filters.dam_sire.trim()) {
+        const searchDamSire = filters.dam_sire.trim().toLowerCase();
+        const horseDamSire = horse.dam_sire ? horse.dam_sire.toLowerCase() : '';
+        if (!horseDamSire.includes(searchDamSire)) {
+          return false;
+        }
+      }
+      
       return true;
     });
   }
@@ -1227,6 +1245,24 @@ export class DatabaseStorage implements IStorage {
       
       if (filters.price_max !== undefined && filters.price_max !== null) {
         if (horse.price_min > filters.price_max) {
+          return false;
+        }
+      }
+      
+      // Filter by bloodlines - sire matching (case-insensitive partial match)
+      if (filters.sire && filters.sire.trim()) {
+        const searchSire = filters.sire.trim().toLowerCase();
+        const horseSire = horse.sire ? horse.sire.toLowerCase() : '';
+        if (!horseSire.includes(searchSire)) {
+          return false;
+        }
+      }
+      
+      // Filter by bloodlines - dam sire matching (case-insensitive partial match)
+      if (filters.dam_sire && filters.dam_sire.trim()) {
+        const searchDamSire = filters.dam_sire.trim().toLowerCase();
+        const horseDamSire = horse.dam_sire ? horse.dam_sire.toLowerCase() : '';
+        if (!horseDamSire.includes(searchDamSire)) {
           return false;
         }
       }
