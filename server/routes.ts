@@ -212,6 +212,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send verification email
       const baseUrl = req.protocol + '://' + req.get('host');
+      console.log('=== REGISTRATION EMAIL PROCESS START ===');
+      console.log('User created successfully:', {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        email_verified: user.email_verified,
+        verification_token: verificationToken ? 'exists' : 'missing',
+        token_expires: tokenExpires
+      });
+      console.log('Base URL for verification:', baseUrl);
+      
       const emailSent = await sendVerificationEmail({
         to: user.email,
         username: user.username,
@@ -219,8 +230,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         baseUrl: baseUrl
       });
       
+      console.log('Email send result:', emailSent);
       if (!emailSent) {
-        console.warn('Failed to send verification email to:', user.email);
+        console.error('Failed to send verification email to:', user.email);
+      } else {
+        console.log('Verification email sent successfully to:', user.email);
       }
       
       return res.status(201).json({ 

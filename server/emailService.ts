@@ -14,7 +14,16 @@ interface EmailVerificationParams {
 }
 
 export async function sendVerificationEmail(params: EmailVerificationParams): Promise<boolean> {
+  console.log('=== EMAIL VERIFICATION START ===');
+  console.log('Email service called with params:', {
+    to: params.to,
+    username: params.username,
+    baseUrl: params.baseUrl,
+    tokenLength: params.verificationToken?.length || 0
+  });
+
   const verificationUrl = `${params.baseUrl}/verify-email?token=${params.verificationToken}`;
+  console.log('Verification URL generated:', verificationUrl);
   
   const htmlContent = `
     <div style="max-width: 600px; margin: 0 auto; font-family: 'Arial', sans-serif; color: #333;">
@@ -78,6 +87,11 @@ This verification link will expire in 24 hours. If you didn't create an account 
   `;
 
   try {
+    console.log('Attempting to send email via Resend...');
+    console.log('From: ProHorseMatch <noreply@prohorsematch.com>');
+    console.log('To:', params.to);
+    console.log('Subject: Verify your ProHorseMatch account');
+    
     const { data, error } = await resend.emails.send({
       from: 'ProHorseMatch <noreply@prohorsematch.com>',
       to: [params.to],
@@ -87,14 +101,25 @@ This verification link will expire in 24 hours. If you didn't create an account 
     });
 
     if (error) {
-      console.error('Resend verification email error:', error);
+      console.error('=== RESEND EMAIL ERROR ===');
+      console.error('Error details:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error keys:', Object.keys(error));
       return false;
     }
 
-    console.log('Verification email sent successfully:', data);
+    console.log('=== EMAIL SENT SUCCESSFULLY ===');
+    console.log('Resend response data:', data);
+    console.log('Email ID:', data?.id);
     return true;
   } catch (error) {
-    console.error('Resend verification email error:', error);
+    console.error('=== EMAIL SEND EXCEPTION ===');
+    console.error('Exception details:', error);
+    console.error('Exception type:', typeof error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     return false;
   }
 }
