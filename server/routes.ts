@@ -1804,9 +1804,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Handle beta subscriptions (no payment required)
-  app.post("/api/subscription/beta", isAuthenticated, async (req, res) => {
+  app.post("/api/subscription/beta", isTokenAuthenticated, async (req, res) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       const { planId } = req.body;
       
       if (!userId) {
@@ -1865,9 +1865,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get subscription status
-  app.get("/api/subscription", isAuthenticated, async (req, res) => {
+  app.get("/api/subscription", isTokenAuthenticated, async (req, res) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       console.log(`GET /api/subscription - userId: ${userId}`);
       
       if (!userId) {
@@ -1952,9 +1952,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Cancel subscription
-  app.post("/api/cancel-subscription", isAuthenticated, async (req, res) => {
+  app.post("/api/cancel-subscription", isTokenAuthenticated, async (req, res) => {
     try {
-      const userId = req.session.userId;
+      const userId = req.userId;
       
       if (!userId) {
         return res.status(401).json({ message: "User not authenticated" });
@@ -2149,7 +2149,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription API endpoints
-  app.post('/api/subscription', isAuthenticated, async (req, res) => {
+  app.post('/api/subscription', isTokenAuthenticated, async (req, res) => {
     try {
       if (!stripe) {
         return res.status(500).json({ message: "Stripe is not configured" });
@@ -2161,7 +2161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Missing required field: planId" });
       }
       
-      const userId = req.session.userId;
+      const userId = req.userId;
       const user = await storage.getUserById(userId);
       
       if (!user) {
