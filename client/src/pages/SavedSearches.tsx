@@ -71,10 +71,7 @@ export default function SavedSearches() {
   // Create saved search mutation
   const createMutation = useMutation({
     mutationFn: async (data: SavedSearchFormData) => {
-      return apiRequest("/api/saved-searches", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("POST", "/api/saved-searches", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/saved-searches"] });
@@ -97,10 +94,7 @@ export default function SavedSearches() {
   // Update saved search mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<SavedSearchFormData> }) => {
-      return apiRequest(`/api/saved-searches/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("PUT", `/api/saved-searches/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/saved-searches"] });
@@ -123,9 +117,7 @@ export default function SavedSearches() {
   // Delete saved search mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest(`/api/saved-searches/${id}`, {
-        method: "DELETE",
-      });
+      return apiRequest("DELETE", `/api/saved-searches/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/saved-searches"] });
