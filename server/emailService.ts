@@ -26,47 +26,47 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
   console.log('Verification URL generated:', verificationUrl);
   
   const htmlContent = `
-    <div style="max-width: 600px; margin: 0 auto; font-family: 'Arial', sans-serif; color: #333;">
-      <div style="background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); padding: 30px; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to ProHorseMatch</h1>
-        <p style="color: #F5E6D3; margin: 10px 0 0 0; font-size: 16px;">Connecting riders with their perfect horse</p>
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: linear-gradient(135deg, #2D2A25 0%, #6B5B3D 50%, #CDAC6E 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Welcome to ProHorseMatch</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">Connecting equestrian professionals worldwide</p>
       </div>
       
-      <div style="background: white; padding: 40px 30px; border-left: 4px solid #D2691E;">
-        <h2 style="color: #8B4513; margin-top: 0;">Verify Your Email Address</h2>
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">Verify Your Email Address</h2>
         
-        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-          Hi ${params.username},
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${params.username}</strong>,
         </p>
         
-        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 30px; color: #4A453E;">
           Thank you for joining ProHorseMatch! To complete your registration and start discovering amazing horses, please verify your email address by clicking the button below.
         </p>
         
-        <div style="text-align: center; margin: 35px 0;">
+        <div style="text-align: center; margin: 40px 0;">
           <a href="${verificationUrl}" 
-             style="background: #D2691E; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; display: inline-block;">
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
             Verify Email Address
           </a>
         </div>
         
-        <p style="font-size: 14px; color: #666; margin-top: 30px;">
+        <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
           If the button doesn't work, copy and paste this link into your browser:
         </p>
-        <p style="font-size: 14px; color: #D2691E; word-break: break-all;">
+        <p style="font-size: 14px; color: #CDAC6E; word-break: break-all; background: #F8F6F0; padding: 12px; border-radius: 4px; border-left: 3px solid #CDAC6E;">
           ${verificationUrl}
         </p>
         
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
-          <p style="font-size: 14px; color: #888; margin: 0;">
+        <div style="margin-top: 40px; padding-top: 25px; border-top: 2px solid #E8E3D3;">
+          <p style="font-size: 14px; color: #6B5B3D; margin: 0; line-height: 1.5;">
             This verification link will expire in 24 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
           </p>
         </div>
       </div>
       
-      <div style="background: #f8f8f8; padding: 20px 30px; text-align: center; border-top: 1px solid #eee;">
-        <p style="font-size: 12px; color: #888; margin: 0;">
-          © 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+      <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
+          © 2025 ProHorseMatch • Connecting equestrian professionals worldwide
         </p>
       </div>
     </div>
@@ -126,46 +126,46 @@ This verification link will expire in 24 hours. If you didn't create an account 
 
 export async function sendWelcomeEmail(to: string, username: string): Promise<boolean> {
   const htmlContent = `
-    <div style="max-width: 600px; margin: 0 auto; font-family: 'Arial', sans-serif; color: #333;">
-      <div style="background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%); padding: 30px; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to ProHorseMatch!</h1>
-        <p style="color: #F5E6D3; margin: 10px 0 0 0; font-size: 16px;">Your account is now verified</p>
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: linear-gradient(135deg, #2D2A25 0%, #6B5B3D 50%, #CDAC6E 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Welcome to ProHorseMatch!</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">Your account is now verified and ready</p>
       </div>
       
-      <div style="background: white; padding: 40px 30px; border-left: 4px solid #D2691E;">
-        <h2 style="color: #8B4513; margin-top: 0;">You're All Set!</h2>
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">You're All Set!</h2>
         
-        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-          Hi ${username},
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${username}</strong>,
         </p>
         
-        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px; color: #4A453E;">
           Congratulations! Your email has been verified and your ProHorseMatch account is now active. You can now:
         </p>
         
-        <ul style="font-size: 16px; line-height: 1.8; margin-bottom: 25px; padding-left: 20px;">
-          <li>Browse our exclusive collection of performance horses</li>
-          <li>Use advanced filters to find your perfect match</li>
-          <li>Save horses to your favorites</li>
-          <li>Connect directly with horse owners</li>
-          <li>List your own horses for sale (if you're a seller)</li>
+        <ul style="font-size: 16px; line-height: 1.8; margin-bottom: 30px; padding-left: 25px; color: #4A453E;">
+          <li style="margin-bottom: 8px;">Browse our exclusive collection of performance horses</li>
+          <li style="margin-bottom: 8px;">Use advanced filters to find your perfect match</li>
+          <li style="margin-bottom: 8px;">Save horses to your favorites</li>
+          <li style="margin-bottom: 8px;">Connect directly with horse owners</li>
+          <li style="margin-bottom: 8px;">List your own horses for sale (if you're a seller)</li>
         </ul>
         
-        <div style="text-align: center; margin: 35px 0;">
+        <div style="text-align: center; margin: 40px 0;">
           <a href="${process.env.CLIENT_URL || 'https://prohorsematch.com'}" 
-             style="background: #D2691E; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; display: inline-block;">
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
             Start Browsing Horses
           </a>
         </div>
         
-        <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25; text-align: center; font-weight: 500;">
           Happy horse hunting!
         </p>
       </div>
       
-      <div style="background: #f8f8f8; padding: 20px 30px; text-align: center; border-top: 1px solid #eee;">
-        <p style="font-size: 12px; color: #888; margin: 0;">
-          © 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+      <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
+          © 2025 ProHorseMatch • Connecting equestrian professionals worldwide
         </p>
       </div>
     </div>
