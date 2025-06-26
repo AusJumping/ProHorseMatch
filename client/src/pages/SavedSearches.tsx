@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -187,14 +188,17 @@ export default function SavedSearches() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading saved searches...</div>
-      </div>
+      <Layout pageTitle="Saved Searches">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">Loading saved searches...</div>
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <Layout pageTitle="Saved Searches">
+      <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Saved Searches</h1>
@@ -690,6 +694,7 @@ export default function SavedSearches() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </Layout>
   );
 }
