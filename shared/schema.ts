@@ -198,6 +198,8 @@ export const savedSearches = pgTable("saved_searches", {
   currency: text("currency"),
   location_country: text("location_country"),
   location_radius_km: integer("location_radius_km"),
+  sire: text("sire"),
+  dam_sire: text("dam_sire"),
   email_notifications: boolean("email_notifications").default(true),
   is_active: boolean("is_active").default(true),
   created_at: timestamp("created_at").defaultNow(),

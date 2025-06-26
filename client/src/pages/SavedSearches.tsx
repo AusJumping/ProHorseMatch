@@ -33,6 +33,8 @@ const savedSearchSchema = z.object({
   price_max: z.number().min(0).optional(),
   currency: z.string().optional(),
   location_country: z.string().optional(),
+  sire: z.string().optional(),
+  dam_sire: z.string().optional(),
   email_notifications: z.boolean().default(true),
   is_active: z.boolean().default(true),
 });
@@ -161,6 +163,8 @@ export default function SavedSearches() {
       price_max: search.price_max || undefined,
       currency: search.currency || "",
       location_country: search.location_country || "",
+      sire: search.sire || "",
+      dam_sire: search.dam_sire || "",
       email_notifications: search.email_notifications,
       is_active: search.is_active,
     });
@@ -532,6 +536,41 @@ export default function SavedSearches() {
                             ))}
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="sire"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sire (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Contendro I"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="dam_sire"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Dam Sire (optional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Lordanos"
+                            {...field}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
