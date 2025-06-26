@@ -114,6 +114,13 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 26, 2025: Authentication system completely fixed and secured
+  - CRITICAL FIX: Implemented bcrypt password hashing for security (was plain text)
+  - CRITICAL FIX: Fixed login authentication - users can now access accounts
+  - Fixed frontend verification page to handle both query parameters and path parameters
+  - Verified complete flow: registration → email verification → login → app access
+  - Password security: New registrations use bcrypt, legacy users supported during transition
+  - Email verification system fully operational with custom ProHorseMatch branding
 - June 26, 2025: Email verification system fully operational with Resend.com
   - Email verification debugging completed - system working correctly
   - Registration sends verification emails successfully via Resend
