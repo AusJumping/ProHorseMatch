@@ -20,8 +20,11 @@ import {
   insertMatchSchema, 
   insertMessageSchema,
   insertConversationSchema,
+  insertSavedSearchSchema,
   type InsertMessage,
   type InsertConversation,
+  type InsertSavedSearch,
+  type SavedSearch,
   disciplines,
   sexes,
   colours,
@@ -1480,6 +1483,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const horse = await storage.createHorse(validatedData);
       
+      // Check saved searches for this new horse and send notifications
+      await checkSavedSearchesForNewHorse(horse);
+      
       // Force session save to maintain login state
       req.session.touch();
       req.session.save((err) => {
@@ -2846,6 +2852,251 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // ===== SAVED SEARCH ROUTES =====
+  
+  // Get all saved searches for a user
+  app.get("/api/saved-searches", isTokenAuthenticated, async (req, res) => {
+    try {
+      const userId = req.userId;
+      const savedSearches = await storage.getSavedSearchesByUserId(userId);
+      res.json(savedSearches);
+    } catch (error: any) {
+      console.error("Get saved searches error:", error);
+      res.status(500).json({ message: "Failed to fetch saved searches" });
+    }
+  });
+
+  // Create a new saved search
+  app.post("/api/saved-searches", isTokenAuthenticated, async (req, res) => {
+    try {
+      const userId = req.userId;
+      
+      // Validate the saved search data
+      const validatedData = insertSavedSearchSchema.parse({
+        ...req.body,
+        user_id: userId
+      });
+
+      const savedSearch = await storage.createSavedSearch(validatedData);
+      res.status(201).json(savedSearch);
+    } catch (error: any) {
+      console.error("Create saved search error:", error);
+      res.status(400).json({ message: error.message || "Invalid saved search data" });
+    }
+  });
+
+  // Update a saved search
+  app.put("/api/saved-searches/:id", isTokenAuthenticated, async (req, res) => {
+    try {
+      const userId = req.userId;
+      const searchId = parseInt(req.params.id);
+      
+      // Check if the saved search belongs to the user
+      const existingSearch = await storage.getSavedSearchById(searchId);
+      if (!existingSearch || existingSearch.user_id !== userId) {
+        return res.status(404).json({ message: "Saved search not found" });
+      }
+
+      // Validate the update data (exclude user_id from updates)
+      const validatedData = insertSavedSearchSchema.partial().parse(req.body);
+      
+      const updatedSearch = await storage.updateSavedSearch(searchId, validatedData);
+      res.json(updatedSearch);
+    } catch (error: any) {
+      console.error("Update saved search error:", error);
+      res.status(400).json({ message: error.message || "Invalid saved search data" });
+    }
+  });
+
+  // Delete a saved search
+  app.delete("/api/saved-searches/:id", isTokenAuthenticated, async (req, res) => {
+    try {
+      const userId = req.userId;
+      const searchId = parseInt(req.params.id);
+      
+      // Check if the saved search belongs to the user
+      const existingSearch = await storage.getSavedSearchById(searchId);
+      if (!existingSearch || existingSearch.user_id !== userId) {
+        return res.status(404).json({ message: "Saved search not found" });
+      }
+
+      await storage.deleteSavedSearch(searchId);
+      res.json({ message: "Saved search deleted successfully" });
+    } catch (error: any) {
+      console.error("Delete saved search error:", error);
+      res.status(500).json({ message: "Failed to delete saved search" });
+    }
+  });
+
+  // Function to check saved searches against new horses and send notifications
+  async function checkSavedSearchesForNewHorse(newHorse: any) {
+    try {
+      console.log(`Checking saved searches for new horse: ${newHorse.name}`);
+      
+      // Get all active saved searches with email notifications enabled
+      const allSearches = await storage.getSavedSearches();
+      const activeSearches = allSearches.filter(search => 
+        search.is_active && search.email_notifications
+      );
+
+      console.log(`Found ${activeSearches.length} active saved searches to check`);
+
+      for (const search of activeSearches) {
+        if (await doesHorseMatchSearch(newHorse, search)) {
+          console.log(`Horse ${newHorse.name} matches saved search: ${search.name}`);
+          
+          // Check if we've already sent a notification for this combination
+          const existingNotifications = await storage.getNotificationsBySearchId(search.id);
+          const alreadyNotified = existingNotifications.some(notif => notif.horse_id === newHorse.id);
+          
+          if (!alreadyNotified) {
+            // Get user details for email
+            const user = await storage.getUserById(search.user_id);
+            if (user && user.email_verified) {
+              await sendSearchMatchEmail(user, search, newHorse);
+              
+              // Record the notification
+              await storage.createSearchNotification({
+                saved_search_id: search.id,
+                horse_id: newHorse.id
+              });
+              
+              console.log(`Sent email notification to ${user.email} for horse ${newHorse.name}`);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking saved searches for new horse:", error);
+    }
+  }
+
+  // Function to check if a horse matches a saved search
+  async function doesHorseMatchSearch(horse: any, search: SavedSearch): Promise<boolean> {
+    // Check disciplines
+    if (search.disciplines && search.disciplines.length > 0) {
+      const hasMatchingDiscipline = search.disciplines.some(d => 
+        horse.disciplines && horse.disciplines.includes(d)
+      );
+      if (!hasMatchingDiscipline) return false;
+    }
+
+    // Check levels
+    if (search.levels && search.levels.length > 0) {
+      const hasMatchingLevel = search.levels.some(l => 
+        horse.levels && horse.levels.includes(l)
+      );
+      if (!hasMatchingLevel) return false;
+    }
+
+    // Check breeds
+    if (search.breeds && search.breeds.length > 0) {
+      const hasMatchingBreed = search.breeds.some(b => 
+        horse.breeds && horse.breeds.includes(b)
+      );
+      if (!hasMatchingBreed) return false;
+    }
+
+    // Check age range
+    if (search.age_min && horse.age < search.age_min) return false;
+    if (search.age_max && horse.age > search.age_max) return false;
+
+    // Check height range (convert to consistent units)
+    if (search.height_min && horse.height_hands && horse.height_hands < search.height_min) return false;
+    if (search.height_max && horse.height_hands && horse.height_hands > search.height_max) return false;
+
+    // Check sexes
+    if (search.sexes && search.sexes.length > 0) {
+      if (!search.sexes.includes(horse.sex)) return false;
+    }
+
+    // Check characteristics
+    if (search.characteristics && search.characteristics.length > 0) {
+      const hasMatchingCharacteristic = search.characteristics.some(c => 
+        horse.characteristics && horse.characteristics.includes(c)
+      );
+      if (!hasMatchingCharacteristic) return false;
+    }
+
+    // Check price range
+    if (search.price_min && horse.price_min < search.price_min) return false;
+    if (search.price_max && horse.price_min > search.price_max) return false;
+
+    // Check currency
+    if (search.currency && horse.currency !== search.currency) return false;
+
+    // Check location
+    if (search.location_country && horse.location_country !== search.location_country) return false;
+
+    return true;
+  }
+
+  // Function to send email notification for search match
+  async function sendSearchMatchEmail(user: any, search: SavedSearch, horse: any) {
+    try {
+      if (!process.env.RESEND_API_KEY) {
+        console.log("RESEND_API_KEY not configured, skipping email notification");
+        return;
+      }
+
+      const { Resend } = await import('resend');
+      const resend = new Resend(process.env.RESEND_API_KEY);
+
+      const subject = `New Horse Match: ${horse.name}`;
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background-color: #2b2b2b; color: white; padding: 20px; text-align: center;">
+            <h1>ProHorseMatch</h1>
+            <h2>New Horse Match Found!</h2>
+          </div>
+          
+          <div style="padding: 20px;">
+            <p>Dear ${user.name || user.username},</p>
+            
+            <p>Great news! We found a horse that matches your saved search "<strong>${search.name}</strong>":</p>
+            
+            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 20px 0;">
+              <h3 style="color: #8B4513;">${horse.name}</h3>
+              <p><strong>Age:</strong> ${horse.age} years old</p>
+              <p><strong>Sex:</strong> ${horse.sex}</p>
+              <p><strong>Disciplines:</strong> ${horse.disciplines?.join(', ') || 'Not specified'}</p>
+              <p><strong>Levels:</strong> ${horse.levels?.join(', ') || 'Not specified'}</p>
+              <p><strong>Breeds:</strong> ${horse.breeds?.join(', ') || 'Not specified'}</p>
+              <p><strong>Height:</strong> ${horse.height_hands ? `${horse.height_hands}hh` : 'Not specified'}</p>
+              <p><strong>Price:</strong> ${horse.currency} ${horse.price_min}${horse.price_max !== horse.price_min ? ` - ${horse.price_max}` : ''}</p>
+              <p><strong>Location:</strong> ${horse.location_country}</p>
+            </div>
+            
+            <p style="text-align: center;">
+              <a href="${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://your-domain.com'}/horses/${horse.id}" 
+                 style="background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+                View Horse Details
+              </a>
+            </p>
+            
+            <p>Best regards,<br>The ProHorseMatch Team</p>
+            
+            <hr style="margin-top: 30px;">
+            <p style="font-size: 12px; color: #666;">
+              You received this email because you have an active saved search with email notifications enabled. 
+              You can manage your saved searches in your profile settings.
+            </p>
+          </div>
+        </div>
+      `;
+
+      await resend.emails.send({
+        from: 'ProHorseMatch <notifications@prohorsematch.com>',
+        to: user.email,
+        subject: subject,
+        html: html,
+      });
+
+    } catch (error) {
+      console.error('Error sending search match email:', error);
+    }
+  }
 
   // Create HTTP server
   const httpServer = createServer(app);
