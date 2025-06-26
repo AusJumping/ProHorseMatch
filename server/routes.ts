@@ -140,6 +140,12 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize auth token store at startup
+  if (!global.authTokens) {
+    global.authTokens = new Map();
+    console.log("Initialized auth token store at startup");
+  }
+
   // Debug all POST requests to /api/messages
   app.use((req, res, next) => {
     if (req.method === 'POST' && req.url === '/api/messages') {
