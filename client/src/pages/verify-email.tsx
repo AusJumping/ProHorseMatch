@@ -17,8 +17,17 @@ export default function VerifyEmail() {
   const [isResending, setIsResending] = useState(false);
 
   useEffect(() => {
+    // Check for token in URL params first (path parameter)
     if (params?.token) {
       verifyToken(params.token);
+      return;
+    }
+    
+    // Check for token in query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryToken = urlParams.get('token');
+    if (queryToken) {
+      verifyToken(queryToken);
     }
   }, [params?.token]);
 
