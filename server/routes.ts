@@ -9,6 +9,8 @@ import fs from "fs";
 import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
+import { sendVerificationEmail, sendWelcomeEmail } from "./emailService";
+import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -194,40 +196,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Email already in use" });
       }
       
-      // In a real app, we would hash the password here
+      // Generate verification token
+      const verificationToken = generateVerificationToken();
+      const tokenExpires = createTokenExpiration();
+      
+      // Create user with verification fields
       const user = await storage.createUser({
         ...validatedData,
         is_searching: true,
-        name: null  // Customer registration doesn't require a name
+        name: null,  // Customer registration doesn't require a name
+        email_verified: false,
+        verification_token: verificationToken,
+        verification_token_expires: tokenExpires
       });
       
-      // Set user session
-      req.session.userId = user.id;
+      // Send verification email
+      const baseUrl = req.protocol + '://' + req.get('host');
+      const emailSent = await sendVerificationEmail({
+        to: user.email,
+        username: user.username,
+        verificationToken: verificationToken,
+        baseUrl: baseUrl
+      });
       
-      // Create a simple auth token instead of relying on sessions
-      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
-      
-      // Store auth token mapping in memory (simple approach for development)
-      if (!global.authTokens) {
-        global.authTokens = new Map();
+      if (!emailSent) {
+        console.warn('Failed to send verification email to:', user.email);
       }
-      global.authTokens.set(authToken, {
-        userId: user.id,
-        expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
-      });
-      
-      console.log("=== CUSTOMER REGISTRATION TOKEN CREATED ===");
-      console.log("Auth token created:", authToken);
-      console.log("Token stored for user ID:", user.id);
-      console.log("Global tokens count:", global.authTokens.size);
       
       return res.status(201).json({ 
-        id: user.id,
-        name: user.name,
+        message: "Registration successful! Please check your email to verify your account.",
         email: user.email,
-        is_searching: true,
-        is_selling: false,
-        auth_token: authToken
+        username: user.username,
+        requiresVerification: true
       });
     } catch (error) {
       console.error("Register searching user error:", error);

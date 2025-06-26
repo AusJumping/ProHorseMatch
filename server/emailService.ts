@@ -1,11 +1,11 @@
-import { MailService } from '@sendgrid/mail';
+import axios from 'axios';
 
-if (!process.env.SENDGRID_API_KEY) {
-  throw new Error("SENDGRID_API_KEY environment variable must be set");
+if (!process.env.CAMPAIGN_MONITOR_API_KEY) {
+  throw new Error("CAMPAIGN_MONITOR_API_KEY environment variable must be set");
 }
 
-const mailService = new MailService();
-mailService.setApiKey(process.env.SENDGRID_API_KEY);
+const CAMPAIGN_MONITOR_BASE_URL = 'https://api.campaignmonitor.com/api/v3.3';
+const API_KEY = process.env.CAMPAIGN_MONITOR_API_KEY;
 
 interface EmailVerificationParams {
   to: string;
@@ -79,17 +79,50 @@ This verification link will expire in 24 hours. If you didn't create an account 
   `;
 
   try {
-    await mailService.send({
-      to: params.to,
-      from: 'noreply@prohorsematch.com', // You'll need to verify this domain with SendGrid
-      subject: 'Verify your ProHorseMatch account',
-      text: textContent,
-      html: htmlContent,
-    });
-    return true;
+    const response = await axios.post(
+      `${CAMPAIGN_MONITOR_BASE_URL}/transactional/smartEmail/{smartEmailID}/send`,
+      {
+        To: [params.to],
+        Data: {
+          username: params.username,
+          verification_url: verificationUrl,
+          base_url: params.baseUrl
+        }
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.status === 202;
   } catch (error) {
-    console.error('SendGrid email error:', error);
-    return false;
+    console.error('Campaign Monitor email error:', error);
+    
+    // Fallback to basic transactional email if smart email fails
+    try {
+      const fallbackResponse = await axios.post(
+        `${CAMPAIGN_MONITOR_BASE_URL}/transactional/classicEmail/send`,
+        {
+          Subject: 'Verify your ProHorseMatch account',
+          From: 'noreply@prohorsematch.com',
+          To: [params.to],
+          HTML: htmlContent,
+          Text: textContent
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${API_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      return fallbackResponse.status === 202;
+    } catch (fallbackError) {
+      console.error('Campaign Monitor fallback email error:', fallbackError);
+      return false;
+    }
   }
 }
 
@@ -141,15 +174,24 @@ export async function sendWelcomeEmail(to: string, username: string): Promise<bo
   `;
 
   try {
-    await mailService.send({
-      to,
-      from: 'noreply@prohorsematch.com',
-      subject: 'Welcome to ProHorseMatch - Account Verified!',
-      html: htmlContent,
-    });
-    return true;
+    const response = await axios.post(
+      `${CAMPAIGN_MONITOR_BASE_URL}/transactional/classicEmail/send`,
+      {
+        Subject: 'Welcome to ProHorseMatch - Account Verified!',
+        From: 'noreply@prohorsematch.com',
+        To: [to],
+        HTML: htmlContent
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    return response.status === 202;
   } catch (error) {
-    console.error('SendGrid welcome email error:', error);
+    console.error('Campaign Monitor welcome email error:', error);
     return false;
   }
 }
