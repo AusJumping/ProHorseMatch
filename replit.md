@@ -114,6 +114,13 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 26, 2025: Bloodline search feature fully implemented and operational
+  - Added sire and dam sire text fields to FilterPanel for direct horse browsing
+  - Implemented backend filtering logic with case-insensitive partial matching for bloodlines
+  - Fixed frontend parameter passing to include bloodline filters in API requests
+  - Fixed backend route parsing to properly handle sire and dam_sire query parameters
+  - Complete bloodline filtering now works across both saved searches and direct filtering
+  - Users can search for horses by entering partial or complete bloodline names
 - June 26, 2025: Authentication and subscription system fully operational
   - CRITICAL FIX: Resolved token key inconsistency that was causing logout behavior after login
   - Fixed authentication token storage mismatch between login/registration and auth verification

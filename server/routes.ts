@@ -1334,6 +1334,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Convert query params to filters
       const filters: any = {};
       
+      console.log("DEBUGGING: About to process filters, sire value:", req.query.sire);
+      
       // Only add filter parameters if they have values to avoid filtering by empty values
       if (req.query.disciplines && Array.isArray(req.query.disciplines) ? req.query.disciplines.length > 0 : req.query.disciplines) {
         filters.disciplines = Array.isArray(req.query.disciplines) 
@@ -1407,6 +1409,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Handle bloodline filters
+      console.log("Bloodline filter debug - sire value:", req.query.sire, "type:", typeof req.query.sire);
+      console.log("Bloodline filter debug - dam_sire value:", req.query.dam_sire, "type:", typeof req.query.dam_sire);
+      
       if (req.query.sire && req.query.sire !== 'null' && req.query.sire !== '') {
         filters.sire = req.query.sire as string;
         console.log("Setting sire filter to:", filters.sire);
