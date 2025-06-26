@@ -179,6 +179,56 @@ export const insertConversationSchema = createInsertSchema(conversations).omit({
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
 export type Conversation = typeof conversations.$inferSelect;
 
+// Saved Search model - replaces horse preferences
+export const savedSearches = pgTable("saved_searches", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull(),
+  name: text("name").notNull(), // User-defined name for the search
+  disciplines: text("disciplines").array(),
+  levels: text("levels").array(),
+  breeds: text("breeds").array(),
+  age_min: integer("age_min"),
+  age_max: integer("age_max"),
+  height_min: real("height_min"),
+  height_max: real("height_max"),
+  sexes: text("sexes").array(),
+  characteristics: text("characteristics").array(),
+  price_min: integer("price_min"),
+  price_max: integer("price_max"),
+  currency: text("currency"),
+  location_country: text("location_country"),
+  location_radius_km: integer("location_radius_km"),
+  email_notifications: boolean("email_notifications").default(true),
+  is_active: boolean("is_active").default(true),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const insertSavedSearchSchema = createInsertSchema(savedSearches).omit({
+  id: true,
+  created_at: true,
+  updated_at: true,
+});
+
+export type InsertSavedSearch = z.infer<typeof insertSavedSearchSchema>;
+export type SavedSearch = typeof savedSearches.$inferSelect;
+
+// Search notifications tracking - to prevent duplicate emails
+export const searchNotifications = pgTable("search_notifications", {
+  id: serial("id").primaryKey(),
+  saved_search_id: integer("saved_search_id").notNull(),
+  horse_id: integer("horse_id").notNull(),
+  sent_at: timestamp("sent_at").defaultNow(),
+});
+
+export const insertSearchNotificationSchema = createInsertSchema(searchNotifications).omit({
+  id: true,
+  sent_at: true,
+});
+
+export type InsertSearchNotification = z.infer<typeof insertSearchNotificationSchema>;
+export type SearchNotification = typeof searchNotifications.$inferSelect;
+
 // Constants for app
 export const disciplines = ["Jumping", "Dressage", "Eventing"];
 export const sexes = ["Mare", "Gelding", "Stallion"];

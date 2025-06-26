@@ -4,7 +4,9 @@ import {
   type Customer, type InsertCustomer,
   matches, type Match, type InsertMatch,
   messages, type Message, type InsertMessage,
-  conversations, type Conversation, type InsertConversation
+  conversations, type Conversation, type InsertConversation,
+  savedSearches, type SavedSearch, type InsertSavedSearch,
+  searchNotifications, type SearchNotification, type InsertSearchNotification
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, sql } from "drizzle-orm";
@@ -69,6 +71,19 @@ export interface IStorage {
   createConversation(conversation: InsertConversation): Promise<Conversation>;
   updateConversation(id: number, conversation: Partial<Conversation>): Promise<Conversation>;
   deleteConversation(id: number): Promise<boolean>;
+  
+  // Saved Search methods
+  getSavedSearches(): Promise<SavedSearch[]>;
+  getSavedSearchById(id: number): Promise<SavedSearch | undefined>;
+  getSavedSearchesByUserId(userId: number): Promise<SavedSearch[]>;
+  createSavedSearch(savedSearch: InsertSavedSearch): Promise<SavedSearch>;
+  updateSavedSearch(id: number, savedSearch: Partial<SavedSearch>): Promise<SavedSearch>;
+  deleteSavedSearch(id: number): Promise<boolean>;
+  
+  // Search Notification methods
+  getSearchNotifications(): Promise<SearchNotification[]>;
+  createSearchNotification(notification: InsertSearchNotification): Promise<SearchNotification>;
+  getNotificationsBySearchId(savedSearchId: number): Promise<SearchNotification[]>;
 }
 
 import * as fs from 'fs';
@@ -998,6 +1013,44 @@ export class MemStorage implements IStorage {
     }
     return deleted;
   }
+
+  // Saved Search methods - stub implementations for MemStorage
+  async getSavedSearches(): Promise<SavedSearch[]> {
+    return [];
+  }
+
+  async getSavedSearchById(id: number): Promise<SavedSearch | undefined> {
+    return undefined;
+  }
+
+  async getSavedSearchesByUserId(userId: number): Promise<SavedSearch[]> {
+    return [];
+  }
+
+  async createSavedSearch(savedSearch: InsertSavedSearch): Promise<SavedSearch> {
+    throw new Error("Saved searches not implemented in MemStorage - use DatabaseStorage");
+  }
+
+  async updateSavedSearch(id: number, savedSearch: Partial<SavedSearch>): Promise<SavedSearch> {
+    throw new Error("Saved searches not implemented in MemStorage - use DatabaseStorage");
+  }
+
+  async deleteSavedSearch(id: number): Promise<boolean> {
+    return false;
+  }
+
+  // Search Notification methods - stub implementations for MemStorage
+  async getSearchNotifications(): Promise<SearchNotification[]> {
+    return [];
+  }
+
+  async createSearchNotification(notification: InsertSearchNotification): Promise<SearchNotification> {
+    throw new Error("Search notifications not implemented in MemStorage - use DatabaseStorage");
+  }
+
+  async getNotificationsBySearchId(savedSearchId: number): Promise<SearchNotification[]> {
+    return [];
+  }
 }
 
 // Database-backed storage implementation
@@ -1443,6 +1496,79 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return result.length > 0;
+  }
+
+  // Saved Search methods
+  async getSavedSearches(): Promise<SavedSearch[]> {
+    return await db.select().from(savedSearches);
+  }
+
+  async getSavedSearchById(id: number): Promise<SavedSearch | undefined> {
+    const [search] = await db.select().from(savedSearches).where(eq(savedSearches.id, id));
+    return search;
+  }
+
+  async getSavedSearchesByUserId(userId: number): Promise<SavedSearch[]> {
+    return await db
+      .select()
+      .from(savedSearches)
+      .where(and(eq(savedSearches.user_id, userId), eq(savedSearches.is_active, true)))
+      .orderBy(desc(savedSearches.created_at));
+  }
+
+  async createSavedSearch(savedSearch: InsertSavedSearch): Promise<SavedSearch> {
+    const [newSearch] = await db.insert(savedSearches).values({
+      ...savedSearch,
+      created_at: new Date(),
+      updated_at: new Date()
+    }).returning();
+    return newSearch;
+  }
+
+  async updateSavedSearch(id: number, update: Partial<SavedSearch>): Promise<SavedSearch> {
+    const [updatedSearch] = await db
+      .update(savedSearches)
+      .set({
+        ...update,
+        updated_at: new Date()
+      })
+      .where(eq(savedSearches.id, id))
+      .returning();
+    
+    if (!updatedSearch) {
+      throw new Error("Saved search not found");
+    }
+    
+    return updatedSearch;
+  }
+
+  async deleteSavedSearch(id: number): Promise<boolean> {
+    // Soft delete by setting is_active to false
+    const result = await db
+      .update(savedSearches)
+      .set({ is_active: false, updated_at: new Date() })
+      .where(eq(savedSearches.id, id))
+      .returning();
+    
+    return result.length > 0;
+  }
+
+  // Search Notification methods
+  async getSearchNotifications(): Promise<SearchNotification[]> {
+    return await db.select().from(searchNotifications);
+  }
+
+  async createSearchNotification(notification: InsertSearchNotification): Promise<SearchNotification> {
+    const [newNotification] = await db.insert(searchNotifications).values(notification).returning();
+    return newNotification;
+  }
+
+  async getNotificationsBySearchId(savedSearchId: number): Promise<SearchNotification[]> {
+    return await db
+      .select()
+      .from(searchNotifications)
+      .where(eq(searchNotifications.saved_search_id, savedSearchId))
+      .orderBy(desc(searchNotifications.sent_at));
   }
 }
 
