@@ -32,6 +32,10 @@ export interface IStorage {
     subscription_end_date?: Date;
   }): Promise<User>;
   
+  // Email verification methods
+  getUserByVerificationToken(token: string): Promise<User | undefined>;
+  updateUserVerification(id: number, verified: boolean, token?: string | null, expires?: Date | null): Promise<User>;
+  
   // Legacy methods for backward compatibility
   getOwnerById(id: number): Promise<Owner | undefined>;
   getOwnerByEmail(email: string): Promise<Owner | undefined>;
@@ -745,6 +749,26 @@ export class MemStorage implements IStorage {
     saveStorageToDisk();
     return updatedUser;
   }
+
+  // Email verification methods
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const allUsers = Array.from(this.users.values());
+    return allUsers.find(user => user.verification_token === token);
+  }
+
+  async updateUserVerification(id: number, verified: boolean, token?: string | null, expires?: Date | null): Promise<User> {
+    const user = this.users.get(id);
+    if (!user) throw new Error("User not found");
+    
+    const updateData: any = { email_verified: verified };
+    if (token !== undefined) updateData.verification_token = token;
+    if (expires !== undefined) updateData.verification_token_expires = expires;
+    
+    const updatedUser = { ...user, ...updateData };
+    this.users.set(id, updatedUser);
+    saveStorageToDisk();
+    return updatedUser;
+  }
   
   // Legacy Owner methods
   async getOwners(): Promise<Owner[]> {
@@ -1018,6 +1042,30 @@ export class DatabaseStorage implements IStorage {
     const [result] = await db
       .update(users)
       .set(subscriptionData)
+      .where(eq(users.id, id))
+      .returning();
+    
+    if (!result) {
+      throw new Error(`User with ID ${id} not found`);
+    }
+    
+    return result;
+  }
+
+  // Email verification methods
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const [result] = await db.select().from(users).where(eq(users.verification_token, token));
+    return result;
+  }
+
+  async updateUserVerification(id: number, verified: boolean, token?: string | null, expires?: Date | null): Promise<User> {
+    const updateData: any = { email_verified: verified };
+    if (token !== undefined) updateData.verification_token = token;
+    if (expires !== undefined) updateData.verification_token_expires = expires;
+
+    const [result] = await db
+      .update(users)
+      .set(updateData)
       .where(eq(users.id, id))
       .returning();
     
