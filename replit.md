@@ -114,6 +114,14 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 30, 2025: Video uploads fixed and fully functional
+  - CRITICAL FIX: Fixed multer configuration from memory storage to disk storage for proper file handling
+  - Added static file serving for uploads directory (/uploads route)
+  - Enhanced upload endpoint with detailed logging and error handling
+  - Fixed file path handling for cross-platform compatibility (Windows/Linux)
+  - Video files now upload properly and are accessible via URL paths
+  - File size limit maintained at 25MB for both images and videos
+  - Complete video upload workflow tested and verified
 - June 30, 2025: Messages display issue completely resolved
   - CRITICAL FIX: Fixed token authentication key mismatch preventing messages from displaying
   - Changed localStorage key from 'auth_token' to 'authToken' for consistency across the application
