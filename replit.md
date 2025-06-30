@@ -114,6 +114,13 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 30, 2025: Messages display issue completely resolved
+  - CRITICAL FIX: Fixed token authentication key mismatch preventing messages from displaying
+  - Changed localStorage key from 'auth_token' to 'authToken' for consistency across the application
+  - Fixed message blinking issue during real-time updates with proper query configuration
+  - Added improved loading states and error handling for better user experience
+  - Messages now display correctly with smooth real-time updates every 2 seconds
+  - Complete messaging flow verified: conversation selection → message display → real-time updates → message sending
 - June 26, 2025: Bloodline search feature fully implemented and operational
   - Added sire and dam sire text fields to FilterPanel for direct horse browsing
   - Implemented backend filtering logic with case-insensitive partial matching for bloodlines

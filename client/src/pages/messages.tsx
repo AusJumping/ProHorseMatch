@@ -101,33 +101,23 @@ export default function Messages() {
     queryFn: async () => {
       if (!selectedConversation) return [];
       
-      const token = localStorage.getItem('authToken'); // Changed from 'auth_token' to 'authToken'
-      console.log("Messages fetch - token from localStorage:", token ? 'Present' : 'Missing');
-      
+      const token = localStorage.getItem('authToken');
       if (!token) {
         throw new Error('No authentication token');
       }
       
-      const url = `/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`;
-      console.log("Messages fetch - URL:", url);
-      
-      const response = await fetch(url, {
+      const response = await fetch(`/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         }
       });
       
-      console.log("Messages fetch - Response status:", response.status);
-      
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Messages fetch - Error response:", errorText);
         throw new Error(`Failed to fetch messages: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
-      console.log("Messages fetch - Data received:", data.length, 'messages');
       return Array.isArray(data) ? data : [];
     },
     enabled: !!selectedConversation && isAuthenticated,
@@ -470,15 +460,7 @@ export default function Messages() {
                       </div>
                     )}
                     {messages && Array.isArray(messages) && messages.map((message: Message) => {
-                      console.log("🎯 Rendering message:", message.id, message.content);
                       const isMyMessage = message.sender_type === (user?.is_selling ? 'owner' : 'customer');
-                      console.log("🎯 Message details:", {
-                        messageId: message.id,
-                        senderType: message.sender_type,
-                        isMyMessage,
-                        userIsSelling: user?.is_selling,
-                        content: message.content
-                      });
                       return (
                         <div
                           key={message.id}
