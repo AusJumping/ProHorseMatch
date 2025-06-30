@@ -96,28 +96,38 @@ export default function Messages() {
   });
 
   // Fetch messages for selected conversation
-  const { data: messages, isLoading: messagesLoading, isFetching: messagesFetching } = useQuery({
+  const { data: messages, isLoading: messagesLoading, isFetching: messagesFetching, error: messagesError } = useQuery({
     queryKey: ['/api/conversations', selectedConversation?.customer_id, selectedConversation?.owner_id, selectedConversation?.horse_id, 'messages'],
     queryFn: async () => {
       if (!selectedConversation) return [];
       
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('authToken'); // Changed from 'auth_token' to 'authToken'
+      console.log("Messages fetch - token from localStorage:", token ? 'Present' : 'Missing');
+      
       if (!token) {
         throw new Error('No authentication token');
       }
       
-      const response = await fetch(`/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`, {
+      const url = `/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`;
+      console.log("Messages fetch - URL:", url);
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         }
       });
       
+      console.log("Messages fetch - Response status:", response.status);
+      
       if (!response.ok) {
-        throw new Error(`Failed to fetch messages: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error("Messages fetch - Error response:", errorText);
+        throw new Error(`Failed to fetch messages: ${response.status} ${response.statusText}`);
       }
       
       const data = await response.json();
+      console.log("Messages fetch - Data received:", data.length, 'messages');
       return Array.isArray(data) ? data : [];
     },
     enabled: !!selectedConversation && isAuthenticated,
@@ -449,8 +459,26 @@ export default function Messages() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {messagesError && (
+                      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-red-600 text-sm">Error loading messages: {messagesError.message}</p>
+                      </div>
+                    )}
+                    {messages && Array.isArray(messages) && messages.length === 0 && (
+                      <div className="text-center py-8">
+                        <p className="text-gray-500">No messages yet. Start the conversation!</p>
+                      </div>
+                    )}
                     {messages && Array.isArray(messages) && messages.map((message: Message) => {
+                      console.log("🎯 Rendering message:", message.id, message.content);
                       const isMyMessage = message.sender_type === (user?.is_selling ? 'owner' : 'customer');
+                      console.log("🎯 Message details:", {
+                        messageId: message.id,
+                        senderType: message.sender_type,
+                        isMyMessage,
+                        userIsSelling: user?.is_selling,
+                        content: message.content
+                      });
                       return (
                         <div
                           key={message.id}
