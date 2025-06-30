@@ -241,7 +241,10 @@ export default function HorseDetail() {
           {/* Media Gallery - Side by side on desktop, full height */}
           <div className={isMobile ? "w-full h-[40vh]" : "w-1/2"}>
             <div className="h-full">
-              <MediaCarousel media={horse.photos} />
+              <MediaCarousel 
+                media={horse.photos || []} 
+                videos={horse.videos || []} 
+              />
             </div>
           </div>
           

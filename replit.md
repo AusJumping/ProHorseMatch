@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- June 30, 2025: Video display issue fixed across all sections
+  - CRITICAL FIX: Updated HorseGrid component to use MediaCarousel instead of simple Image component
+  - Fixed horse-detail.tsx to include videos prop in MediaCarousel component  
+  - Videos now display correctly in filter page horse cards and horse detail pages
+  - Consistent video/photo display across all sections: My Horses, Filter page, and Detail pages
+  - Complete media carousel functionality verified in all horse browsing areas
 - June 30, 2025: Video uploads fixed and fully functional
   - CRITICAL FIX: Fixed multer configuration from memory storage to disk storage for proper file handling
   - Added static file serving for uploads directory (/uploads route)

@@ -3,7 +3,7 @@ import { Horse } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Heart, X, Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import Image from "@/components/ui/image";
+import MediaCarousel from "@/components/MediaCarousel";
 import { formatCurrency } from "@/lib/utils";
 
 interface HorseGridProps {
@@ -35,19 +35,10 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
         {horses.map((horse) => (
           <Card key={horse.id} className="overflow-hidden flex flex-col w-[320px] flex-shrink-0">
             <div className="relative h-48 overflow-hidden">
-              {horse.photos && horse.photos.length > 0 ? (
-                <Image
-                  src={horse.photos[0]}
-                  alt={horse.name}
-                  className="w-full h-full object-cover"
-                  width={400}
-                  height={300}
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">No image</span>
-                </div>
-              )}
+              <MediaCarousel 
+                media={horse.photos || []} 
+                videos={horse.videos || []} 
+              />
             </div>
             
             <CardContent className="flex flex-col flex-grow p-4">
