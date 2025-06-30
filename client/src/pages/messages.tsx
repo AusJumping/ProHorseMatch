@@ -106,7 +106,7 @@ export default function Messages() {
         return Array.isArray(data) ? data : [];
       } catch (error) {
         clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           throw new Error('Request timed out - please check your connection');
         }
         throw error;
@@ -165,7 +165,7 @@ export default function Messages() {
         return Array.isArray(data) ? data : [];
       } catch (error) {
         clearTimeout(timeoutId);
-        if (error.name === 'AbortError') {
+        if (error instanceof Error && error.name === 'AbortError') {
           throw new Error('Request timed out - please check your connection');
         }
         throw error;
@@ -343,7 +343,27 @@ export default function Messages() {
           </div>
           
           <ScrollArea className="flex-1">
-            {conversationsLoading ? (
+            {conversationsError ? (
+              <div className="p-4 text-center">
+                <div className="text-red-600 mb-2">
+                  <MessageCircle className="h-8 w-8 mx-auto mb-2" />
+                  Connection Issue
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  {conversationsError.message.includes('timed out') 
+                    ? 'Connection timed out. Please check your internet connection.'
+                    : 'Unable to load conversations. Please try refreshing the page.'
+                  }
+                </p>
+                <Button 
+                  onClick={() => window.location.reload()} 
+                  variant="outline" 
+                  size="sm"
+                >
+                  Refresh Page
+                </Button>
+              </div>
+            ) : conversationsLoading ? (
               <div className="p-4 space-y-3">
                 {[1, 2, 3].map(i => (
                   <div key={i} className="flex items-center space-x-4 p-3 animate-pulse">

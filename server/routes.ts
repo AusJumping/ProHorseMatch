@@ -2554,9 +2554,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get all conversations for the current user
   app.get("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
+    const startTime = Date.now();
     console.log(`🔥🔥🔥 CONVERSATIONS ENDPOINT HIT - DEBUG MODE ACTIVATED 🔥🔥🔥`);
+    
     try {
       console.log(`🔥 CONVERSATIONS ROUTE START: Request received for user session`);
+      
+      // Set timeout to prevent hanging requests
+      const timeout = setTimeout(() => {
+        if (!res.headersSent) {
+          console.error('CONVERSATIONS ROUTE: Request timeout - taking too long');
+          res.status(408).json({ message: "Request timeout - server overloaded" });
+        }
+      }, 25000); // 25 second timeout
       
       // Disable caching to ensure fresh data
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -2566,10 +2576,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId;
       console.log(`CONVERSATIONS ROUTE: Token userId: ${userId}`);
       
-      const user = await storage.getUserById(userId);
-      console.log(`CONVERSATIONS ROUTE: User lookup result:`, user);
+      if (!userId || isNaN(userId)) {
+        clearTimeout(timeout);
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+      
+      // Verify user exists with error handling
+      let user;
+      try {
+        user = await storage.getUserById(userId);
+        console.log(`CONVERSATIONS ROUTE: User lookup result:`, user);
+      } catch (dbError) {
+        clearTimeout(timeout);
+        console.error(`CONVERSATIONS ROUTE: Database error during user lookup:`, dbError);
+        return res.status(500).json({ message: "Database connection error" });
+      }
       
       if (!user) {
+        clearTimeout(timeout);
         console.log(`CONVERSATIONS ROUTE: User not found for userId ${userId}`);
         return res.status(401).json({ message: "User not found" });
       }
@@ -2577,31 +2601,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get conversations where user is either customer or owner
       console.log(`CONVERSATIONS ROUTE: Fetching conversations for user ${userId}`);
       
-      // Test database connection first
+      // Test database connection first with timeout
       try {
-        const allConversationsTest = await storage.getConversations();
-        console.log(`CONVERSATIONS ROUTE: Total conversations in DB: ${allConversationsTest.length}`);
+        const dbHealthPromise = storage.getConversations();
+        const dbHealthResult = await Promise.race([
+          dbHealthPromise,
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Database health check timeout')), 10000)
+          )
+        ]);
+        console.log(`CONVERSATIONS ROUTE: Total conversations in DB: ${(dbHealthResult as any[]).length}`);
       } catch (error) {
-        console.error(`CONVERSATIONS ROUTE: Error getting all conversations:`, error);
+        clearTimeout(timeout);
+        console.error(`CONVERSATIONS ROUTE: Database health check failed:`, error);
+        return res.status(500).json({ message: "Database connectivity issue" });
       }
       
       let customerConversations = [];
       let ownerConversations = [];
       
+      // Fetch customer conversations with error handling and timeout
       try {
         console.log(`CONVERSATIONS ROUTE: About to call getConversationsByCustomerId(${userId})`);
-        customerConversations = await storage.getConversationsByCustomerId(userId);
+        const customerPromise = storage.getConversationsByCustomerId(userId);
+        customerConversations = await Promise.race([
+          customerPromise,
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Customer conversations query timeout')), 8000)
+          )
+        ]) as any[];
         console.log(`CONVERSATIONS ROUTE: Customer conversations result:`, customerConversations);
       } catch (error) {
         console.error(`CONVERSATIONS ROUTE: Error getting customer conversations:`, error);
+        customerConversations = []; // Continue with empty array
       }
       
+      // Fetch owner conversations with error handling and timeout
       try {
         console.log(`CONVERSATIONS ROUTE: About to call getConversationsByOwnerId(${userId})`);
-        ownerConversations = await storage.getConversationsByOwnerId(userId);
+        const ownerPromise = storage.getConversationsByOwnerId(userId);
+        ownerConversations = await Promise.race([
+          ownerPromise,
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Owner conversations query timeout')), 8000)
+          )
+        ]) as any[];
         console.log(`CONVERSATIONS ROUTE: Owner conversations result:`, ownerConversations);
       } catch (error) {
         console.error(`CONVERSATIONS ROUTE: Error getting owner conversations:`, error);
+        ownerConversations = []; // Continue with empty array
       }
       
       // Combine and deduplicate conversations
@@ -2613,36 +2661,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Final conversations for user ${userId}:`, uniqueConversations);
       const conversations = uniqueConversations;
 
-      // Enhance conversations with horse details and other user info
-      const conversationsWithDetails = await Promise.all(
-        conversations.map(async (conversation) => {
-          const horse = await storage.getHorseById(conversation.horse_id);
-          
-          // Get the other user's details (not the current user)
-          const otherUserId = conversation.customer_id === userId ? conversation.owner_id : conversation.customer_id;
-          const otherUser = await storage.getUserById(otherUserId);
-          
-          return {
-            ...conversation,
-            horse,
-            otherUser: otherUser ? {
-              id: otherUser.id,
-              username: otherUser.username,
-              name: otherUser.name,
-              business_name: otherUser.business_name,
-              contact_name: otherUser.contact_name,
-              is_selling: otherUser.is_selling
-            } : null
-          };
-        })
-      );
+      // Enhance conversations with horse details and other user info with error handling
+      let conversationsWithDetails;
+      try {
+        const enhancementPromises = conversations.map(async (conversation) => {
+          try {
+            // Get horse details with timeout
+            const horsePromise = storage.getHorseById(conversation.horse_id);
+            const horse = await Promise.race([
+              horsePromise,
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Horse query timeout')), 5000)
+              )
+            ]);
+            
+            // Get the other user's details (not the current user)
+            const otherUserId = conversation.customer_id === userId ? conversation.owner_id : conversation.customer_id;
+            const userPromise = storage.getUserById(otherUserId);
+            const otherUser = await Promise.race([
+              userPromise,
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('User query timeout')), 5000)
+              )
+            ]);
+            
+            return {
+              ...conversation,
+              horse: horse || null,
+              otherUser: otherUser ? {
+                id: otherUser.id,
+                username: otherUser.username,
+                name: otherUser.name,
+                business_name: otherUser.business_name,
+                contact_name: otherUser.contact_name,
+                is_selling: otherUser.is_selling
+              } : null
+            };
+          } catch (enhancementError) {
+            console.error(`Error enhancing conversation ${conversation.id}:`, enhancementError);
+            // Return basic conversation data if enhancement fails
+            return {
+              ...conversation,
+              horse: null,
+              otherUser: null
+            };
+          }
+        });
+        
+        conversationsWithDetails = await Promise.all(enhancementPromises);
+      } catch (error) {
+        clearTimeout(timeout);
+        console.error("Error enhancing conversations:", error);
+        // Return basic conversation data if all enhancements fail
+        conversationsWithDetails = conversations.map(conv => ({
+          ...conv,
+          horse: null,
+          otherUser: null
+        }));
+      }
 
+      clearTimeout(timeout);
+      const duration = Date.now() - startTime;
+      console.log(`CONVERSATIONS ROUTE: Completed in ${duration}ms`);
       res.json(conversationsWithDetails);
+      
     } catch (error) {
+      clearTimeout(timeout);
       console.error("Error fetching conversations:", error);
+      const duration = Date.now() - startTime;
+      console.log(`CONVERSATIONS ROUTE: Failed after ${duration}ms`);
       res.status(500).json({ 
         message: "Failed to fetch conversations",
-        error: error instanceof Error ? error.message : "Unknown error"
+        error: error instanceof Error ? error.message : "Database connection issue"
       });
     }
   });
