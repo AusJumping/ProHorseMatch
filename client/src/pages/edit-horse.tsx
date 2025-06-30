@@ -319,7 +319,8 @@ export default function EditHorse() {
                                   <SelectValue placeholder="Select age" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="1">1 year</SelectItem>
+                                  <SelectItem value="0">Weanling</SelectItem>
+                                  <SelectItem value="1">Yearling</SelectItem>
                                   <SelectItem value="2">2 years</SelectItem>
                                   <SelectItem value="3">3 years</SelectItem>
                                   <SelectItem value="4">4 years</SelectItem>

@@ -384,8 +384,8 @@ const FilterPanel = ({
                     )}
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">No Min</SelectItem>
-                    <SelectItem value="1">1 year</SelectItem>
+                    <SelectItem value="0">Weanling</SelectItem>
+                    <SelectItem value="1">Yearling</SelectItem>
                     <SelectItem value="2">2 years</SelectItem>
                     <SelectItem value="3">3 years</SelectItem>
                     <SelectItem value="4">4 years</SelectItem>
@@ -418,7 +418,8 @@ const FilterPanel = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="999">No Max</SelectItem>
-                    <SelectItem value="1">1 year</SelectItem>
+                    <SelectItem value="0">Weanling</SelectItem>
+                    <SelectItem value="1">Yearling</SelectItem>
                     <SelectItem value="2">2 years</SelectItem>
                     <SelectItem value="3">3 years</SelectItem>
                     <SelectItem value="4">4 years</SelectItem>
