@@ -127,7 +127,39 @@ declare module "express-session" {
 const SessionStore = MemoryStore(session);
 
 // Configure multer for memory storage (we'll upload to Cloudinary)
+// Configure multer for local file storage
 const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+      // Ensure the uploads directory exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      // Generate unique filename with timestamp
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const extension = path.extname(file.originalname);
+      cb(null, 'file-' + uniqueSuffix + extension);
+    }
+  }),
+  limits: {
+    fileSize: 25 * 1024 * 1024, // 25MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Accept images and videos
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image and video files are allowed'));
+    }
+  }
+});
+
+// Configure multer for memory storage (for Cloudinary uploads)
+const uploadMemory = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 25 * 1024 * 1024, // 25MB limit
@@ -148,6 +180,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     global.authTokens = new Map();
     console.log("Initialized auth token store at startup");
   }
+
+  // Serve static uploads directory
+  app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
   // Debug all POST requests to /api/messages
   app.use((req, res, next) => {
@@ -2047,24 +2082,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // File upload endpoint
+  // File upload endpoint for local storage
   app.post("/api/upload", upload.single("file"), (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
       
+      console.log("File uploaded:", {
+        filename: req.file.filename,
+        path: req.file.path,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
+      
       // Get file path relative to public directory
       const relativePath = req.file.path.replace(/^.*[\\\/]public/, '');
-      const fileUrl = relativePath;
+      const fileUrl = relativePath.replace(/\\/g, '/'); // Normalize path separators for URLs
       
       res.json({ 
         url: fileUrl,
-        fileType: req.file.mimetype.startsWith('image/') ? 'image' : 'video'
+        fileType: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size
       });
     } catch (error) {
       console.error("File upload error:", error);
-      res.status(500).json({ error: "File upload failed" });
+      res.status(500).json({ error: "File upload failed", details: error.message });
     }
   });
   
@@ -2720,7 +2765,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }));
       }
 
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
       const duration = Date.now() - startTime;
       console.log(`CONVERSATIONS ROUTE: Completed in ${duration}ms`);
       res.json(conversationsWithDetails);
