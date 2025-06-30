@@ -96,7 +96,7 @@ export default function Messages() {
   });
 
   // Fetch messages for selected conversation
-  const { data: messages, isLoading: messagesLoading } = useQuery({
+  const { data: messages, isLoading: messagesLoading, isFetching: messagesFetching } = useQuery({
     queryKey: ['/api/conversations', selectedConversation?.customer_id, selectedConversation?.owner_id, selectedConversation?.horse_id, 'messages'],
     queryFn: async () => {
       if (!selectedConversation) return [];
@@ -122,6 +122,9 @@ export default function Messages() {
     },
     enabled: !!selectedConversation && isAuthenticated,
     refetchInterval: 2000, // Refresh every 2 seconds for real-time feel
+    refetchIntervalInBackground: true,
+    staleTime: 1000, // Consider data stale after 1 second
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus
   });
 
 
@@ -336,7 +339,7 @@ export default function Messages() {
                             </AvatarFallback>
                           )}
                         </Avatar>
-                        {conversation.unread_count > 0 && (
+                        {conversation.unread_count && conversation.unread_count > 0 && (
                           <div className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
                             {conversation.unread_count}
                           </div>
@@ -385,44 +388,53 @@ export default function Messages() {
             <>
               {/* Chat Header */}
               <div className="p-6 border-b border-gray-200 bg-white shadow-sm">
-                <div className="flex items-center space-x-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="md:hidden p-2 hover:bg-gray-100 rounded-full"
-                    onClick={() => setSelectedConversation(null)}
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </Button>
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12 ring-2 ring-accent/20">
-                      {selectedConversation.horse?.photos && selectedConversation.horse.photos.length > 0 ? (
-                        <img 
-                          src={selectedConversation.horse.photos[0]} 
-                          alt={selectedConversation.horse.name}
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      ) : (
-                        <AvatarFallback className="bg-gradient-to-br from-accent to-accent/80 text-white text-lg font-semibold">
-                          {selectedConversation.horse?.name ? selectedConversation.horse.name.charAt(0).toUpperCase() : 'H'}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <div>
-                      <p className="font-bold text-gray-900 text-lg">
-                        {selectedConversation.horse?.name || 'Horse'}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Conversation with {getOtherPersonUsername(selectedConversation)}
-                      </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="md:hidden p-2 hover:bg-gray-100 rounded-full"
+                      onClick={() => setSelectedConversation(null)}
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </Button>
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-12 w-12 ring-2 ring-accent/20">
+                        {selectedConversation.horse?.photos && selectedConversation.horse.photos.length > 0 ? (
+                          <img 
+                            src={selectedConversation.horse.photos[0]} 
+                            alt={selectedConversation.horse.name}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <AvatarFallback className="bg-gradient-to-br from-accent to-accent/80 text-white text-lg font-semibold">
+                            {selectedConversation.horse?.name ? selectedConversation.horse.name.charAt(0).toUpperCase() : 'H'}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div>
+                        <p className="font-bold text-gray-900 text-lg">
+                          {selectedConversation.horse?.name || 'Horse'}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Conversation with {getOtherPersonUsername(selectedConversation)}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                  {/* Subtle loading indicator for background refetches */}
+                  {messagesFetching && messages && (
+                    <div className="flex items-center space-x-2 text-gray-500">
+                      <div className="w-2 h-2 bg-accent/60 rounded-full animate-pulse"></div>
+                      <span className="text-xs">Checking for new messages...</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Messages Area */}
               <ScrollArea className="flex-1 p-6">
-                {messagesLoading ? (
+                {messagesLoading && !messages ? (
                   <div className="space-y-6">
                     {[1, 2, 3].map(i => (
                       <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
