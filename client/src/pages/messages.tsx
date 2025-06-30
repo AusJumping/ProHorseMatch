@@ -68,34 +68,64 @@ export default function Messages() {
     }
   });
 
-  // Fetch conversations
-  const { data: conversations, isLoading: conversationsLoading } = useQuery<ConversationWithDetails[]>({
+  // Fetch conversations with robust error handling
+  const { data: conversations, isLoading: conversationsLoading, error: conversationsError } = useQuery<ConversationWithDetails[]>({
     queryKey: ['/api/conversations'],
     queryFn: async () => {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('authToken');
       if (!token) {
         throw new Error('No authentication token');
       }
       
-      const response = await fetch('/api/conversations', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
+      try {
+        const response = await fetch('/api/conversations', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (response.status === 401) {
+          // Token expired, redirect to login
+          localStorage.removeItem('authToken');
+          window.location.href = '/login';
+          throw new Error('Authentication expired');
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch conversations: ${response.statusText}`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch conversations: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          throw new Error('Request timed out - please check your connection');
+        }
+        throw error;
       }
-      
-      const data = await response.json();
-      return Array.isArray(data) ? data : [];
     },
     enabled: isAuthenticated,
-    refetchInterval: 5000, // Refresh every 5 seconds for new messages
+    refetchInterval: 8000, // Increased to 8 seconds to reduce server load
+    retry: (failureCount, error) => {
+      // Don't retry auth errors
+      if (error.message.includes('Authentication') || error.message.includes('401')) return false;
+      // Retry up to 3 times for other errors
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    staleTime: 3000, // Consider data stale after 3 seconds
+    gcTime: 300000, // Keep unused data for 5 minutes
   });
 
-  // Fetch messages for selected conversation
+  // Fetch messages for selected conversation with robust error handling
   const { data: messages, isLoading: messagesLoading, isFetching: messagesFetching, error: messagesError } = useQuery({
     queryKey: ['/api/conversations', selectedConversation?.customer_id, selectedConversation?.owner_id, selectedConversation?.horse_id, 'messages'],
     queryFn: async () => {
@@ -106,25 +136,54 @@ export default function Messages() {
         throw new Error('No authentication token');
       }
       
-      const response = await fetch(`/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 second timeout
+      
+      try {
+        const response = await fetch(`/api/conversations/${selectedConversation.customer_id}/${selectedConversation.owner_id}/${selectedConversation.horse_id}/messages`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (response.status === 401) {
+          // Token expired, redirect to login
+          localStorage.removeItem('authToken');
+          window.location.href = '/login';
+          throw new Error('Authentication expired');
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch messages: ${response.status} ${response.statusText}`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch messages: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          throw new Error('Request timed out - please check your connection');
+        }
+        throw error;
       }
-      
-      const data = await response.json();
-      return Array.isArray(data) ? data : [];
     },
     enabled: !!selectedConversation && isAuthenticated,
-    refetchInterval: 2000, // Refresh every 2 seconds for real-time feel
+    refetchInterval: 4000, // Increased to 4 seconds to reduce server load
     refetchIntervalInBackground: true,
-    staleTime: 1000, // Consider data stale after 1 second
+    staleTime: 2000, // Consider data stale after 2 seconds
     refetchOnWindowFocus: false, // Don't refetch when window regains focus
+    retry: (failureCount, error) => {
+      // Don't retry auth errors
+      if (error.message.includes('Authentication') || error.message.includes('401')) return false;
+      // Retry up to 2 times for other errors
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff up to 10s
+    gcTime: 60000, // Keep unused data for 1 minute
   });
 
 
