@@ -110,6 +110,27 @@ import {
     } else {
       console.log("Test customer already exists:", customer);
     }
+    
+    // Check if the admin user exists
+    const adminEmail = "info@australianjumping.com.au";
+    let admin = await storage.getUserByEmail(adminEmail);
+    
+    if (!admin) {
+      console.log(`Creating admin user: ${adminEmail}`);
+      admin = await storage.createUser({
+        email: adminEmail,
+        password: "AdminPro2025!",
+        username: "admin_prohorsematch",
+        name: "ProHorseMatch Admin",
+        business_name: "Australian Jumping Association",
+        is_selling: false,
+        is_searching: false,
+        email_verified: true
+      });
+      console.log("Created admin user:", admin);
+    } else {
+      console.log("Admin user already exists:", admin);
+    }
   } catch (error) {
     console.error("Error setting up test users:", error);
   }
