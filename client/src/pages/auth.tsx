@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
@@ -43,6 +44,19 @@ const ownerRegisterSchema = z.object({
   path: ["confirmPassword"]
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" })
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, { message: "Reset token is required" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  confirmPassword: z.string()
+}).refine(data => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"]
+});
+
 export default function Auth() {
   const { toast } = useToast();
   const { login, register } = useAuth();
@@ -52,13 +66,22 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
+  const [resetToken, setResetToken] = useState<string>("");
   
-  // Check URL query params for tab selection
+  // Check URL query params for tab selection and reset token
   useEffect(() => {
     const url = new URL(window.location.href);
     const tabParam = url.searchParams.get('tab');
+    const tokenParam = url.searchParams.get('token');
+    
     if (tabParam === 'register') {
       setActiveTab('register');
+    }
+    
+    if (tokenParam) {
+      setResetToken(tokenParam);
+      setActiveTab('reset-password');
     }
   }, [location]);
 
@@ -90,6 +113,24 @@ export default function Auth() {
       business_name: "",
       contact_name: "",
       email: "",
+      password: "",
+      confirmPassword: ""
+    }
+  });
+
+  // Forgot password form
+  const forgotPasswordForm = useForm<z.infer<typeof forgotPasswordSchema>>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: ""
+    }
+  });
+
+  // Reset password form
+  const resetPasswordForm = useForm<z.infer<typeof resetPasswordSchema>>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      token: resetToken,
       password: "",
       confirmPassword: ""
     }
@@ -171,6 +212,47 @@ export default function Auth() {
       toast({
         title: "Registration failed",
         description: error.message || "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const onForgotPasswordSubmit = async (data: z.infer<typeof forgotPasswordSchema>) => {
+    try {
+      await apiRequest('/api/auth/forgot-password', 'POST', data);
+
+      toast({
+        title: "Reset email sent",
+        description: "Check your email for password reset instructions",
+      });
+
+      setShowForgotPassword(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset email",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const onResetPasswordSubmit = async (data: z.infer<typeof resetPasswordSchema>) => {
+    try {
+      const { confirmPassword, ...resetData } = data;
+      
+      await apiRequest('/api/auth/reset-password', 'POST', resetData);
+
+      toast({
+        title: "Password reset successful",
+        description: "You can now log in with your new password",
+      });
+
+      setActiveTab('login');
+      setResetToken('');
+    } catch (error: any) {
+      toast({
+        title: "Reset failed",
+        description: error.message || "Failed to reset password",
         variant: "destructive",
       });
     }
@@ -261,7 +343,14 @@ export default function Auth() {
                   </form>
                 </Form>
               </CardContent>
-              <CardFooter className="flex justify-center">
+              <CardFooter className="flex flex-col space-y-2">
+                <Button
+                  variant="link"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-gray-600"
+                >
+                  Forgot your password?
+                </Button>
                 <Button
                   variant="link"
                   onClick={() => setActiveTab("register")}
@@ -591,6 +680,111 @@ export default function Auth() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Forgot Password Dialog */}
+        <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reset Password</DialogTitle>
+              <DialogDescription>
+                Enter your email address and we'll send you a password reset link.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...forgotPasswordForm}>
+              <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="space-y-4">
+                <FormField
+                  control={forgotPasswordForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="you@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setShowForgotPassword(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
+                    className="text-white"
+                  >
+                    Send Reset Link
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Reset Password Tab */}
+        {resetToken && (
+          <div className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Reset Your Password</CardTitle>
+                <CardDescription>
+                  Enter your new password below
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...resetPasswordForm}>
+                  <form onSubmit={resetPasswordForm.handleSubmit(onResetPasswordSubmit)} className="space-y-4">
+                    <FormField
+                      control={resetPasswordForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>New Password</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="••••••••" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={resetPasswordForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="••••••••" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button 
+                      type="submit" 
+                      className="w-full text-white"
+                      style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
+                    >
+                      Reset Password
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
       </div>
     </div>
   );
