@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard, MessageCircle, Search } from "lucide-react";
+import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard, MessageCircle, Search, Shield } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import logoImage from "../assets/logo.jpg";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +27,9 @@ const Sidebar = () => {
 
   // Debug log with more details
   console.log("Sidebar - Auth state:", { isAuthenticated, user });
+
+  // Check if current user is admin
+  const isAdmin = user?.email === "info@australianjumping.com.au";
 
   const handleLogout = async () => {
     try {
@@ -134,6 +137,24 @@ const Sidebar = () => {
               <span>Saved Searches</span>
             </Button>
           </li>
+
+          {isAdmin && (
+            <li>
+              <Button
+                variant={location === "/admin" ? "default" : "ghost"}
+                className={`w-full justify-start px-5 py-3 ${
+                  location === "/admin" ? "bg-red-600 text-white" : "text-red-600 hover:bg-red-50"
+                }`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate("/admin");
+                }}
+              >
+                <Shield className="mr-3 h-5 w-5" />
+                <span>Admin Dashboard</span>
+              </Button>
+            </li>
+          )}
 
           {user?.is_selling && (
             <>
