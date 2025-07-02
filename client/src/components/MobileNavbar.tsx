@@ -1,7 +1,7 @@
 import { useLocation } from "wouter";
 import { 
   Home, Heart, Filter, User, List, CreditCard, 
-  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings, Search, MessageCircle
+  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings, Search, MessageCircle, Shield
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
@@ -27,6 +27,7 @@ const MobileNavbar = () => {
   console.log("MobileNavbar - Auth state:", { isAuthenticated, isSelling: user?.is_selling });
   
   const isOwner = user?.is_selling;
+  const isAdmin = user?.email === "info@australianjumping.com.au";
 
   const handleLogout = async () => {
     try {
@@ -138,6 +139,20 @@ const MobileNavbar = () => {
           </SheetClose>
         )}
         
+        {isAdmin && (
+          <SheetClose asChild>
+            <Button 
+              variant="ghost" 
+              className={`justify-start h-12 ${
+                location === "/admin" ? "bg-red-600 text-white" : "text-red-600 hover:bg-red-50"
+              }`}
+              onClick={() => navigate("/admin")}
+            >
+              <Shield className="mr-3 h-5 w-5" />
+              <span>Admin Dashboard</span>
+            </Button>
+          </SheetClose>
+        )}
 
         
 
