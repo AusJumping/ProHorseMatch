@@ -114,6 +114,13 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 2, 2025: Admin dashboard implemented with comprehensive analytics
+  - Added admin-only analytics dashboard accessible at /admin route
+  - Restricted access to info@australianjumping.com.au email only
+  - Implemented backend analytics endpoints: /api/admin/analytics, /api/admin/users, /api/admin/revenue
+  - Dashboard includes user metrics, horse statistics, revenue tracking, and engagement analytics
+  - Real-time data visualization with breakdown by discipline, country, subscription plans
+  - Added admin middleware for secure access control and unauthorized request handling
 - June 30, 2025: Video display issue fixed across all sections
   - CRITICAL FIX: Updated HorseGrid component to use MediaCarousel instead of simple Image component
   - Fixed horse-detail.tsx to include videos prop in MediaCarousel component  

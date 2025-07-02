@@ -3266,6 +3266,184 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Admin middleware - restrict access to specific email
+  const isAdmin = async (req: any, res: Response, next: any) => {
+    try {
+      if (!req.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.userId);
+      if (!user || user.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      next();
+    } catch (error) {
+      console.error("Admin check error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  };
+
+  // Admin Analytics Routes
+  app.get("/api/admin/analytics", isTokenAuthenticated, isAdmin, async (req, res) => {
+    try {
+      // Get user statistics
+      const allUsers = await storage.getAllUsers();
+      const totalUsers = allUsers.length;
+      const activeSubscribers = allUsers.filter(user => user.subscription_status === 'active').length;
+      const sellers = allUsers.filter(user => user.is_selling).length;
+      const searchers = allUsers.filter(user => user.is_searching).length;
+
+      // Get horse statistics
+      const allHorses = await storage.getAllHorses();
+      const totalHorses = allHorses.length;
+      
+      // Horse breakdown by discipline
+      const disciplineStats = {};
+      allHorses.forEach(horse => {
+        if (horse.disciplines && horse.disciplines.length > 0) {
+          horse.disciplines.forEach(discipline => {
+            disciplineStats[discipline] = (disciplineStats[discipline] || 0) + 1;
+          });
+        }
+      });
+
+      // Horse breakdown by country
+      const countryStats = {};
+      allHorses.forEach(horse => {
+        if (horse.location_country) {
+          countryStats[horse.location_country] = (countryStats[horse.location_country] || 0) + 1;
+        }
+      });
+
+      // Get messaging statistics
+      const allMessages = await storage.getAllMessages();
+      const totalMessages = allMessages.length;
+
+      const allConversations = await storage.getAllConversations();
+      const totalConversations = allConversations.length;
+
+      // Get matches/likes statistics
+      const allMatches = await storage.getAllMatches();
+      const totalMatches = allMatches.length;
+      const totalLikes = allMatches.filter(match => match.is_liked).length;
+
+      // Get recent activity (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const recentUsers = allUsers.filter(user => 
+        user.created_at && new Date(user.created_at) > thirtyDaysAgo
+      ).length;
+
+      const recentHorses = allHorses.filter(horse => 
+        horse.created_at && new Date(horse.created_at) > thirtyDaysAgo
+      ).length;
+
+      res.json({
+        users: {
+          total: totalUsers,
+          activeSubscribers,
+          sellers,
+          searchers,
+          recentRegistrations: recentUsers
+        },
+        horses: {
+          total: totalHorses,
+          recentListings: recentHorses,
+          byDiscipline: disciplineStats,
+          byCountry: countryStats
+        },
+        engagement: {
+          totalMessages,
+          totalConversations,
+          totalMatches,
+          totalLikes
+        },
+        growth: {
+          usersLast30Days: recentUsers,
+          horsesLast30Days: recentHorses
+        }
+      });
+    } catch (error) {
+      console.error("Admin analytics error:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // Admin Users List
+  app.get("/api/admin/users", isTokenAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const usersList = users.map(user => ({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        business_name: user.business_name,
+        is_selling: user.is_selling,
+        is_searching: user.is_searching,
+        subscription_status: user.subscription_status,
+        subscription_plan: user.subscription_plan,
+        created_at: user.created_at,
+        email_verified: user.email_verified
+      }));
+      
+      res.json(usersList);
+    } catch (error) {
+      console.error("Admin users error:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Admin Revenue Analytics
+  app.get("/api/admin/revenue", isTokenAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const subscribers = users.filter(user => user.subscription_status === 'active');
+      
+      // Calculate revenue based on subscription plans
+      let monthlyRevenue = 0;
+      const planRevenue = {
+        'beta-seller': 0,
+        'beta-searching': 0,
+        'premium': 0,
+        'basic': 0
+      };
+
+      subscribers.forEach(user => {
+        // Note: This is estimated revenue based on plan types
+        // You would integrate with Stripe for actual revenue data
+        switch (user.subscription_plan) {
+          case 'beta-seller':
+          case 'beta-searching':
+            // Beta plans might be free or discounted
+            planRevenue[user.subscription_plan] += 0;
+            break;
+          case 'premium':
+            planRevenue['premium'] += 29; // Example price
+            monthlyRevenue += 29;
+            break;
+          case 'basic':
+            planRevenue['basic'] += 19; // Example price
+            monthlyRevenue += 19;
+            break;
+        }
+      });
+
+      res.json({
+        monthlyRevenue,
+        subscriberCount: subscribers.length,
+        planBreakdown: planRevenue,
+        averageRevenuePerUser: subscribers.length > 0 ? monthlyRevenue / subscribers.length : 0
+      });
+    } catch (error) {
+      console.error("Admin revenue error:", error);
+      res.status(500).json({ message: "Failed to fetch revenue data" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 

@@ -84,6 +84,13 @@ export interface IStorage {
   getSearchNotifications(): Promise<SearchNotification[]>;
   createSearchNotification(notification: InsertSearchNotification): Promise<SearchNotification>;
   getNotificationsBySearchId(savedSearchId: number): Promise<SearchNotification[]>;
+  
+  // Admin analytics methods
+  getAllUsers(): Promise<User[]>;
+  getAllHorses(): Promise<Horse[]>;
+  getAllMessages(): Promise<Message[]>;
+  getAllConversations(): Promise<Conversation[]>;
+  getAllMatches(): Promise<Match[]>;
 }
 
 import * as fs from 'fs';
@@ -1069,6 +1076,47 @@ export class MemStorage implements IStorage {
   async getNotificationsBySearchId(savedSearchId: number): Promise<SearchNotification[]> {
     return [];
   }
+  
+  // Admin analytics methods
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values()).sort((a, b) => {
+      const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at);
+      const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
+  
+  async getAllHorses(): Promise<Horse[]> {
+    return Array.from(this.horses.values()).sort((a, b) => {
+      const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at);
+      const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
+  
+  async getAllMessages(): Promise<Message[]> {
+    return Array.from(this.messages.values()).sort((a, b) => {
+      const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at);
+      const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
+  
+  async getAllConversations(): Promise<Conversation[]> {
+    return Array.from(this.conversations.values()).sort((a, b) => {
+      const dateA = a.last_message_time instanceof Date ? a.last_message_time : new Date(a.last_message_time);
+      const dateB = b.last_message_time instanceof Date ? b.last_message_time : new Date(b.last_message_time);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
+  
+  async getAllMatches(): Promise<Match[]> {
+    return Array.from(this.matches.values()).sort((a, b) => {
+      const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at);
+      const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
 }
 
 // Database-backed storage implementation
@@ -1607,6 +1655,27 @@ export class DatabaseStorage implements IStorage {
       .from(searchNotifications)
       .where(eq(searchNotifications.saved_search_id, savedSearchId))
       .orderBy(desc(searchNotifications.sent_at));
+  }
+  
+  // Admin analytics methods
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.created_at));
+  }
+  
+  async getAllHorses(): Promise<Horse[]> {
+    return await db.select().from(horses).orderBy(desc(horses.created_at));
+  }
+  
+  async getAllMessages(): Promise<Message[]> {
+    return await db.select().from(messages).orderBy(desc(messages.created_at));
+  }
+  
+  async getAllConversations(): Promise<Conversation[]> {
+    return await db.select().from(conversations).orderBy(desc(conversations.last_message_time));
+  }
+  
+  async getAllMatches(): Promise<Match[]> {
+    return await db.select().from(matches).orderBy(desc(matches.created_at));
   }
 }
 
