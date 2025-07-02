@@ -26,6 +26,8 @@ import {
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
+import Sidebar from '@/components/Sidebar';
+import MobileNavbar from '@/components/MobileNavbar';
 
 interface AnalyticsData {
   users: {
@@ -158,15 +160,28 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            ProHorseMatch Admin Dashboard
-          </h1>
-          <p className="text-gray-600">
-            Platform analytics and user management
-          </p>
+      {/* Mobile Navigation */}
+      <div className="lg:hidden">
+        <MobileNavbar />
+      </div>
+
+      <div className="flex">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
+          <Sidebar />
         </div>
+
+        {/* Main Content */}
+        <div className="flex-1 lg:ml-0">
+          <div className="container mx-auto px-4 py-8 lg:py-8">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                ProHorseMatch Admin Dashboard
+              </h1>
+              <p className="text-gray-600">
+                Platform analytics and user management
+              </p>
+            </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
@@ -532,7 +547,9 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+            </Tabs>
+          </div>
+        </div>
       </div>
     </div>
   );
