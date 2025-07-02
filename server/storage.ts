@@ -1131,6 +1131,11 @@ export class DatabaseStorage implements IStorage {
     const [result] = await db.select().from(users).where(eq(users.id, id));
     return result;
   }
+
+  // Alias method for backward compatibility with admin routes
+  async getUser(id: number): Promise<User | undefined> {
+    return this.getUserById(id);
+  }
   
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [result] = await db.select().from(users).where(eq(users.email, email));

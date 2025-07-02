@@ -79,27 +79,6 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
 
-  // Check if user is admin
-  if (!authLoading && (!user || user.email !== 'info@australianjumping.com.au')) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CardTitle className="text-red-600">Access Denied</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-gray-600 mb-4">
-              Admin access is restricted to authorized personnel only.
-            </p>
-            <Button onClick={() => window.location.href = '/'}>
-              Return to Home
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const { data: analytics, isLoading: analyticsLoading } = useQuery<AnalyticsData>({
     queryKey: ['/api/admin/analytics'],
     retry: false,
@@ -144,6 +123,27 @@ export default function AdminPage() {
       }
     }
   });
+
+  // Check if user is admin
+  if (!authLoading && (!user || user.email !== 'info@australianjumping.com.au')) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-red-600">Access Denied</CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-600 mb-4">
+              Admin access is restricted to authorized personnel only.
+            </p>
+            <Button onClick={() => window.location.href = '/'}>
+              Return to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (authLoading || analyticsLoading) {
     return (
@@ -222,13 +222,13 @@ export default function AdminPage() {
 
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Messages</CardTitle>
+                      <CardTitle className="text-sm font-medium">Conversations</CardTitle>
                       <MessageCircle className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold">{analytics.engagement.totalMessages}</div>
+                      <div className="text-2xl font-bold">{analytics.engagement.totalConversations}</div>
                       <p className="text-xs text-muted-foreground">
-                        {analytics.engagement.totalConversations} conversations
+                        {analytics.engagement.totalMessages} messages total
                       </p>
                     </CardContent>
                   </Card>
