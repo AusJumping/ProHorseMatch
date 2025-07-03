@@ -162,21 +162,27 @@ export default function Auth() {
   };
 
   const onCustomerRegisterSubmit = async (data: z.infer<typeof customerRegisterSchema>) => {
+    console.log("🟢 === FRONTEND REGISTRATION START ===");
+    console.log("🟢 Form data received:", data);
+    
     try {
       const { confirmPassword, ...registerData } = data;
-      console.log("*** CUSTOMER REGISTRATION STARTING ***", registerData);
+      console.log("🟢 Processing registration data:", registerData);
       
       // Show immediate test toast to verify toast system works
+      console.log("🟢 Showing test toast...");
       toast({
         title: "Testing toast system",
         description: "This should appear immediately",
         duration: 3000,
       });
+      console.log("🟢 Test toast called");
       
-      console.log("*** CALLING REGISTER FUNCTION ***");
+      console.log("🟢 About to call register function...");
       const userData = await register(registerData, 'customer');
+      console.log("🟢 Register function returned:", userData);
       
-      console.log("*** REGISTRATION COMPLETED - SHOWING EMAIL VERIFICATION MESSAGE ***");
+      console.log("🟢 Now showing email verification toast...");
       
       // Force show the verification message
       toast({
@@ -185,7 +191,8 @@ export default function Auth() {
         duration: 8000,
       });
       
-      console.log("*** EMAIL VERIFICATION TOAST SHOULD BE VISIBLE NOW ***");
+      console.log("🟢 Email verification toast called - should be visible now!");
+      console.log("🟢 === FRONTEND REGISTRATION COMPLETE ===");
       return;
       
       if (userData && userData.subscription_status === 'active') {
