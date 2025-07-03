@@ -167,6 +167,16 @@ export default function Auth() {
       // Use the proper register function that handles token storage
       const userData = await register(registerData, 'customer');
       
+      // Check if email verification is required
+      if (userData && (userData as any).requiresVerification) {
+        toast({
+          title: "Registration successful!",
+          description: (userData as any).message || "Please check your email to verify your account.",
+        });
+        // Don't redirect - user needs to verify email first
+        return;
+      }
+      
       toast({
         title: "Registration successful",
         description: "Welcome to ProHorseMatch",
@@ -195,6 +205,16 @@ export default function Auth() {
       
       // Use the proper register function that handles token storage
       const userData = await register(registerData, 'owner');
+      
+      // Check if email verification is required
+      if (userData && (userData as any).requiresVerification) {
+        toast({
+          title: "Registration successful!",
+          description: (userData as any).message || "Please check your email to verify your account.",
+        });
+        // Don't redirect - user needs to verify email first
+        return;
+      }
       
       toast({
         title: "Registration successful",
