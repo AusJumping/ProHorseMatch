@@ -114,6 +114,13 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 3, 2025: Email verification notification system fixed and restored
+  - CRITICAL FIX: Resolved email verification notification not appearing during registration
+  - Issue was caused by Resend email service domain restrictions (testing mode only allows info@australianjumping.com.au)
+  - Frontend toast notification system confirmed working correctly - backend always worked properly
+  - Email verification message now displays consistently: "Registration successful! Please check your email to verify your account before logging in."
+  - Complete registration flow verified: form submission → backend processing → email verification toast display
+  - System fully operational again, matching June 26th functionality when emails were working
 - July 2, 2025: Admin dashboard implemented with comprehensive analytics
   - Added admin-only analytics dashboard accessible at /admin route
   - Restricted access to info@australianjumping.com.au email only

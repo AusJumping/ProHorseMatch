@@ -162,38 +162,20 @@ export default function Auth() {
   };
 
   const onCustomerRegisterSubmit = async (data: z.infer<typeof customerRegisterSchema>) => {
-    alert("Registration form submitted - check console for details!");
-    console.log("🟢 === FRONTEND REGISTRATION START ===");
-    console.log("🟢 Form data received:", data);
-    
     try {
       const { confirmPassword, ...registerData } = data;
-      console.log("🟢 Processing registration data:", registerData);
       
-      // Show immediate test toast to verify toast system works
-      console.log("🟢 Showing test toast...");
-      toast({
-        title: "Testing toast system",
-        description: "This should appear immediately",
-        duration: 3000,
-      });
-      console.log("🟢 Test toast called");
-      
-      console.log("🟢 About to call register function...");
       const userData = await register(registerData, 'customer');
-      console.log("🟢 Register function returned:", userData);
       
-      console.log("🟢 Now showing email verification toast...");
-      
-      // Force show the verification message
+      // Always show email verification message for new registrations
+      // Since all new users need email verification
       toast({
         title: "Registration successful!",
         description: "Please check your email to verify your account before logging in.",
-        duration: 8000,
+        duration: 6000,
       });
       
-      console.log("🟢 Email verification toast called - should be visible now!");
-      console.log("🟢 === FRONTEND REGISTRATION COMPLETE ===");
+      // Don't redirect - user needs to verify email first
       return;
       
       if (userData && userData.subscription_status === 'active') {
@@ -457,10 +439,7 @@ export default function Auth() {
                 </CardHeader>
                 <CardContent>
                   <Form {...customerRegisterForm}>
-                    <form onSubmit={customerRegisterForm.handleSubmit(onCustomerRegisterSubmit, (errors) => {
-                      console.error("❌ FORM VALIDATION ERRORS:", errors);
-                      alert("Form validation failed - check console for errors");
-                    })} className="space-y-4">
+                    <form onSubmit={customerRegisterForm.handleSubmit(onCustomerRegisterSubmit)} className="space-y-4">
                       <FormField
                         control={customerRegisterForm.control}
                         name="username"

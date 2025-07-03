@@ -25,10 +25,6 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
   const verificationUrl = `${params.baseUrl}/verify-email?token=${params.verificationToken}`;
   console.log('Verification URL generated:', verificationUrl);
   
-  // TEMPORARY: Always return true for testing frontend notification
-  console.log('=== TESTING MODE: Email service returning true without sending ===');
-  return true;
-  
   const htmlContent = `
     <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
       <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
