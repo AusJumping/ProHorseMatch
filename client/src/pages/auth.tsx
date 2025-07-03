@@ -173,21 +173,16 @@ export default function Auth() {
       console.log("requiresVerification:", (userData as any)?.requiresVerification);
       console.log("message:", (userData as any)?.message);
       
-      // Check if email verification is required
-      if (userData && (userData as any).requiresVerification) {
-        console.log("Showing email verification toast");
-        toast({
-          title: "Registration successful!",
-          description: (userData as any).message || "Please check your email to verify your account.",
-        });
-        // Don't redirect - user needs to verify email first
-        return;
-      }
-      
+      // Always show email verification message for new registrations
+      // Since all new users need email verification
       toast({
-        title: "Registration successful",
-        description: "Welcome to ProHorseMatch",
+        title: "Registration successful!",
+        description: "Please check your email to verify your account before logging in.",
+        duration: 6000, // Show longer for important message
       });
+      
+      // Don't redirect - user needs to verify email first
+      return;
       
       if (userData && userData.subscription_status === 'active') {
         console.log("User has active subscription, redirecting to welcome page");
@@ -219,21 +214,16 @@ export default function Auth() {
       console.log("requiresVerification:", (userData as any)?.requiresVerification);
       console.log("message:", (userData as any)?.message);
       
-      // Check if email verification is required
-      if (userData && (userData as any).requiresVerification) {
-        console.log("Showing owner email verification toast");
-        toast({
-          title: "Registration successful!",
-          description: (userData as any).message || "Please check your email to verify your account.",
-        });
-        // Don't redirect - user needs to verify email first
-        return;
-      }
-      
+      // Always show email verification message for new registrations
+      // Since all new users need email verification
       toast({
-        title: "Registration successful",
-        description: "Welcome to ProHorseMatch",
+        title: "Registration successful!",
+        description: "Please check your email to verify your account before logging in.",
+        duration: 6000, // Show longer for important message
       });
+      
+      // Don't redirect - user needs to verify email first
+      return;
       
       if (userData && userData.subscription_status === 'active') {
         console.log("User has active subscription, redirecting to welcome page");
