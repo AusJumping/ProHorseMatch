@@ -60,17 +60,7 @@ const resetPasswordSchema = z.object({
 export default function Auth() {
   const { toast } = useToast();
   
-  // Test if toast system is working on page load
-  useEffect(() => {
-    console.log("Auth page loaded - testing toast system");
-    setTimeout(() => {
-      toast({
-        title: "Toast system test",
-        description: "If you see this, the toast system is working",
-        duration: 3000,
-      });
-    }, 1000);
-  }, []);
+  // Removed page load toast test - testing in registration instead
   const { login, register } = useAuth();
   const [location, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
@@ -174,26 +164,28 @@ export default function Auth() {
   const onCustomerRegisterSubmit = async (data: z.infer<typeof customerRegisterSchema>) => {
     try {
       const { confirmPassword, ...registerData } = data;
-      console.log("Submitting customer registration form with data:", registerData);
+      console.log("*** CUSTOMER REGISTRATION STARTING ***", registerData);
       
-      // Use the proper register function that handles token storage
+      // Show immediate test toast to verify toast system works
+      toast({
+        title: "Testing toast system",
+        description: "This should appear immediately",
+        duration: 3000,
+      });
+      
+      console.log("*** CALLING REGISTER FUNCTION ***");
       const userData = await register(registerData, 'customer');
       
-      console.log("=== REGISTRATION RESULT DEBUG ===");
-      console.log("userData:", userData);
-      console.log("userData type:", typeof userData);
-      console.log("requiresVerification:", (userData as any)?.requiresVerification);
-      console.log("message:", (userData as any)?.message);
+      console.log("*** REGISTRATION COMPLETED - SHOWING EMAIL VERIFICATION MESSAGE ***");
       
-      // Always show email verification message for new registrations
-      // Since all new users need email verification
+      // Force show the verification message
       toast({
         title: "Registration successful!",
         description: "Please check your email to verify your account before logging in.",
-        duration: 6000, // Show longer for important message
+        duration: 8000,
       });
       
-      // Don't redirect - user needs to verify email first
+      console.log("*** EMAIL VERIFICATION TOAST SHOULD BE VISIBLE NOW ***");
       return;
       
       if (userData && userData.subscription_status === 'active') {
