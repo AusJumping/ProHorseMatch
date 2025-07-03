@@ -457,7 +457,10 @@ export default function Auth() {
                 </CardHeader>
                 <CardContent>
                   <Form {...customerRegisterForm}>
-                    <form onSubmit={customerRegisterForm.handleSubmit(onCustomerRegisterSubmit)} className="space-y-4">
+                    <form onSubmit={customerRegisterForm.handleSubmit(onCustomerRegisterSubmit, (errors) => {
+                      console.error("❌ FORM VALIDATION ERRORS:", errors);
+                      alert("Form validation failed - check console for errors");
+                    })} className="space-y-4">
                       <FormField
                         control={customerRegisterForm.control}
                         name="username"
