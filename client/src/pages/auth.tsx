@@ -162,6 +162,7 @@ export default function Auth() {
   };
 
   const onCustomerRegisterSubmit = async (data: z.infer<typeof customerRegisterSchema>) => {
+    alert("Registration form submitted - check console for details!");
     console.log("🟢 === FRONTEND REGISTRATION START ===");
     console.log("🟢 Form data received:", data);
     
