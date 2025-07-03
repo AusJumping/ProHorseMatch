@@ -167,8 +167,15 @@ export default function Auth() {
       // Use the proper register function that handles token storage
       const userData = await register(registerData, 'customer');
       
+      console.log("=== REGISTRATION RESULT DEBUG ===");
+      console.log("userData:", userData);
+      console.log("userData type:", typeof userData);
+      console.log("requiresVerification:", (userData as any)?.requiresVerification);
+      console.log("message:", (userData as any)?.message);
+      
       // Check if email verification is required
       if (userData && (userData as any).requiresVerification) {
+        console.log("Showing email verification toast");
         toast({
           title: "Registration successful!",
           description: (userData as any).message || "Please check your email to verify your account.",
@@ -206,8 +213,15 @@ export default function Auth() {
       // Use the proper register function that handles token storage
       const userData = await register(registerData, 'owner');
       
+      console.log("=== OWNER REGISTRATION RESULT DEBUG ===");
+      console.log("userData:", userData);
+      console.log("userData type:", typeof userData);
+      console.log("requiresVerification:", (userData as any)?.requiresVerification);
+      console.log("message:", (userData as any)?.message);
+      
       // Check if email verification is required
       if (userData && (userData as any).requiresVerification) {
+        console.log("Showing owner email verification toast");
         toast({
           title: "Registration successful!",
           description: (userData as any).message || "Please check your email to verify your account.",

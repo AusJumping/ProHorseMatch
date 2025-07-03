@@ -198,16 +198,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const responseData = await response.json();
       console.log("Registration successful, complete response data:", responseData);
+      console.log("Response data keys:", Object.keys(responseData));
+      console.log("requiresVerification value:", responseData.requiresVerification);
+      console.log("requiresVerification type:", typeof responseData.requiresVerification);
       
       // Check if this is an email verification response (no auth_token)
       if (responseData.requiresVerification) {
         console.log("Registration requires email verification:", responseData.message);
+        console.log("Returning verification response data");
         // Don't set auth token or cache user data for unverified users
         return {
           ...responseData,
           requiresVerification: true
         };
       }
+      
+      console.log("Registration did not require verification, proceeding with auth token");
       
       // For verified users, handle normally with auth token
       const authToken = responseData.auth_token;
