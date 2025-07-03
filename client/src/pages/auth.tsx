@@ -59,6 +59,18 @@ const resetPasswordSchema = z.object({
 
 export default function Auth() {
   const { toast } = useToast();
+  
+  // Test if toast system is working on page load
+  useEffect(() => {
+    console.log("Auth page loaded - testing toast system");
+    setTimeout(() => {
+      toast({
+        title: "Toast system test",
+        description: "If you see this, the toast system is working",
+        duration: 3000,
+      });
+    }, 1000);
+  }, []);
   const { login, register } = useAuth();
   const [location, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
