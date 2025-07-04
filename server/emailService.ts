@@ -88,12 +88,12 @@ This verification link will expire in 24 hours. If you didn't create an account 
 
   try {
     console.log('Attempting to send email via Resend...');
-    console.log('From: ProHorseMatch <noreply@prohorsematch.com>');
+    console.log('From: ProHorseMatch <noreply@registration.prohorsematch.com>');
     console.log('To:', params.to);
     console.log('Subject: Verify your ProHorseMatch account');
     
     const { data, error } = await resend.emails.send({
-      from: 'ProHorseMatch <onboarding@resend.dev>',
+      from: 'ProHorseMatch <noreply@registration.prohorsematch.com>',
       to: [params.to],
       subject: 'Verify your ProHorseMatch account',
       html: htmlContent,
@@ -193,7 +193,7 @@ Happy horse hunting!
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'ProHorseMatch <onboarding@resend.dev>',
+      from: 'ProHorseMatch <noreply@registration.prohorsematch.com>',
       to: [to],
       subject: 'Welcome to ProHorseMatch - Account Verified!',
       html: htmlContent,
