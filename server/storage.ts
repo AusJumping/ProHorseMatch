@@ -33,6 +33,7 @@ export interface IStorage {
     subscription_plan?: string;
     subscription_end_date?: Date;
   }): Promise<User>;
+  deleteUser(id: number): Promise<boolean>;
   
   // Email verification methods
   getUserByVerificationToken(token: string): Promise<User | undefined>;
@@ -55,6 +56,8 @@ export interface IStorage {
   getMatchesByHorseId(horseId: number): Promise<Match[]>;
   createMatch(match: InsertMatch): Promise<Match>;
   updateMatch(id: number, match: Partial<Match>): Promise<Match>;
+  deleteMatchesByUserId(userId: number): Promise<boolean>;
+  deleteFavoritesByUserId(userId: number): Promise<boolean>;
   
   // Message methods
   getMessages(): Promise<Message[]>;
@@ -1117,6 +1120,32 @@ export class MemStorage implements IStorage {
       return dateB.getTime() - dateA.getTime();
     });
   }
+  
+  async deleteUser(id: number): Promise<boolean> {
+    const success = this.users.delete(id);
+    saveStorageToDisk();
+    return success;
+  }
+  
+  async deleteMatchesByUserId(userId: number): Promise<boolean> {
+    const toDelete = Array.from(this.matches.entries())
+      .filter(([_, match]) => match.customer_id === userId)
+      .map(([id, _]) => id);
+    
+    toDelete.forEach(id => this.matches.delete(id));
+    saveStorageToDisk();
+    return true;
+  }
+  
+  async deleteFavoritesByUserId(userId: number): Promise<boolean> {
+    const toDelete = Array.from(this.matches.entries())
+      .filter(([_, match]) => match.customer_id === userId && match.is_favorite)
+      .map(([id, _]) => id);
+    
+    toDelete.forEach(id => this.matches.delete(id));
+    saveStorageToDisk();
+    return true;
+  }
 }
 
 // Database-backed storage implementation
@@ -1681,6 +1710,40 @@ export class DatabaseStorage implements IStorage {
   
   async getAllMatches(): Promise<Match[]> {
     return await db.select().from(matches).orderBy(desc(matches.created_at));
+  }
+  
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      await db.delete(users).where(eq(users.id, id));
+      return true;
+    } catch (error) {
+      console.error(`Error deleting user ${id}:`, error);
+      return false;
+    }
+  }
+  
+  async deleteMatchesByUserId(userId: number): Promise<boolean> {
+    try {
+      await db.delete(matches).where(eq(matches.customer_id, userId));
+      return true;
+    } catch (error) {
+      console.error(`Error deleting matches for user ${userId}:`, error);
+      return false;
+    }
+  }
+  
+  async deleteFavoritesByUserId(userId: number): Promise<boolean> {
+    try {
+      // Note: In this schema, favorites are represented as matches with is_favorite = true
+      await db.delete(matches).where(and(
+        eq(matches.customer_id, userId),
+        eq(matches.is_favorite, true)
+      ));
+      return true;
+    } catch (error) {
+      console.error(`Error deleting favorites for user ${userId}:`, error);
+      return false;
+    }
   }
 }
 
