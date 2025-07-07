@@ -13,6 +13,13 @@ interface EmailVerificationParams {
   baseUrl: string;
 }
 
+interface PasswordResetParams {
+  to: string;
+  username: string;
+  resetToken: string;
+  baseUrl: string;
+}
+
 export async function sendVerificationEmail(params: EmailVerificationParams): Promise<boolean> {
   console.log('=== EMAIL VERIFICATION START ===');
   console.log('Email service called with params:', {
@@ -209,6 +216,107 @@ Happy horse hunting!
     return true;
   } catch (error) {
     console.error('Resend welcome email error:', error);
+    return false;
+  }
+}
+
+export async function sendPasswordResetEmail(params: PasswordResetParams): Promise<boolean> {
+  console.log('=== PASSWORD RESET EMAIL START ===');
+  console.log('Password reset email service called with params:', {
+    to: params.to,
+    username: params.username,
+    baseUrl: params.baseUrl,
+    tokenLength: params.resetToken?.length || 0
+  });
+
+  const resetUrl = `${params.baseUrl}/auth?reset_token=${params.resetToken}`;
+  console.log('Password reset URL generated:', resetUrl);
+  
+  const htmlContent = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">ProHorseMatch</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">Password Reset Request</p>
+      </div>
+      
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">Reset Your Password</h2>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${params.username}</strong>,
+        </p>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 30px; color: #4A453E;">
+          We received a request to reset your ProHorseMatch account password. Click the button below to create a new password. This link will expire in 1 hour for security.
+        </p>
+        
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${resetUrl}" 
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
+            Reset Password
+          </a>
+        </div>
+        
+        <div style="background: #FFF3E0; border-radius: 8px; padding: 25px; margin: 30px 0; border-left: 4px solid #FF9800;">
+          <h3 style="color: #E65100; margin-top: 0; font-size: 16px; font-weight: 600;">⚠️ Important Security Notice</h3>
+          <p style="color: #4A453E; margin: 10px 0 0 0; line-height: 1.6; font-size: 14px;">
+            If you didn't request this password reset, please ignore this email. Your account remains secure and no changes have been made.
+          </p>
+        </div>
+        
+        <p style="font-size: 14px; color: #8B7355; line-height: 1.6; margin-bottom: 0;">
+          This reset link will expire in 1 hour. If you need assistance, please contact our support team.
+        </p>
+      </div>
+      
+      <div style="background: #2D2A25; padding: 30px; text-align: center; border-radius: 0 0 8px 8px;">
+        <p style="color: #CDAC6E; margin: 0; font-size: 14px; font-weight: 500;">
+          Stay secure,<br>
+          The ProHorseMatch Team
+        </p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+ProHorseMatch - Password Reset
+
+Hi ${params.username},
+
+We received a request to reset your ProHorseMatch account password.
+
+Reset your password: ${resetUrl}
+
+This link will expire in 1 hour for security.
+
+Important: If you didn't request this password reset, please ignore this email. Your account remains secure and no changes have been made.
+
+Stay secure,
+The ProHorseMatch Team
+
+© 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+  `;
+
+  try {
+    console.log('Sending password reset email via Resend...');
+    
+    const { data, error } = await resend.emails.send({
+      from: 'ProHorseMatch <noreply@prohorsematch.com>',
+      to: [params.to],
+      subject: 'Reset Your ProHorseMatch Password',
+      html: htmlContent,
+      text: textContent,
+    });
+
+    if (error) {
+      console.error('Password reset email send error:', error);
+      return false;
+    }
+
+    console.log('Password reset email sent successfully:', data);
+    return true;
+  } catch (error) {
+    console.error('Password reset email send exception:', error);
     return false;
   }
 }

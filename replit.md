@@ -114,7 +114,10 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
-- July 7, 2025: User interface improvements and cross-browser compatibility enhancements
+- July 7, 2025: Password reset system fixes and UI improvements  
+  - FIXED: Password reset emails now send proper reset content instead of email verification content
+  - Created dedicated sendPasswordResetEmail function with professional reset template
+  - Fixed API parameter order issue causing "Method is not a valid HTTP token" error in forgot password
   - Changed registration page title from "Searching Registration" to "Registration Details" for clarity
   - Added comprehensive browser-specific CSS for password placeholder compatibility across all browsers
   - Enhanced password field styling for Chrome, Safari, Firefox, Edge (legacy and modern), and IE

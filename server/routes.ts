@@ -10,7 +10,7 @@ import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
-import { sendVerificationEmail, sendWelcomeEmail } from "./emailService";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
 import { 
   insertHorseSchema, 
@@ -525,10 +525,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resetUrl = `${baseUrl}/auth?reset_token=${resetToken}`;
       
       try {
-        await sendVerificationEmail({
+        await sendPasswordResetEmail({
           to: user.email,
           username: user.username || user.name || 'User',
-          verificationToken: resetToken,
+          resetToken: resetToken,
           baseUrl: baseUrl
         });
         
