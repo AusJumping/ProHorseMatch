@@ -501,6 +501,7 @@ export default function Home() {
                     isLoading={isLoading}
                     activeIndex={0} // Always start at the first horse when filters change
                     onShowMore={handleShowMore}
+                    onLike={handleLike}
                   />
                 </div>
               )}
