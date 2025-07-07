@@ -260,7 +260,13 @@ export default function Profile() {
                             <Input {...field} disabled />
                           </FormControl>
                           <FormDescription>
-                            To change your email, please contact support
+                            To change your email, please email{" "}
+                            <a 
+                              href="mailto:support@prohorsematch.com" 
+                              className="text-primary hover:text-primary/80 underline"
+                            >
+                              support@prohorsematch.com
+                            </a>
                           </FormDescription>
                           <FormMessage />
                         </FormItem>
