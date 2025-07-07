@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HorseCard from "./HorseCard";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMobile } from "@/hooks/use-mobile";
@@ -113,6 +113,7 @@ const SwipeSection = ({
         <HorseCard 
           horse={currentHorse} 
           onShowMore={onShowMore} 
+          onLike={onLike}
         />
       </div>
 
@@ -133,16 +134,6 @@ const SwipeSection = ({
         {localIndex === 0 && (
           <div className="w-10"></div>
         )}
-        
-        {/* Add to Favourites button */}
-        <Button
-          size="sm"
-          className="like-button bg-[#cdac6e] hover:bg-[#b8965c] text-white border-[#cdac6e]"
-          onClick={() => onLike(currentHorse.id)}
-        >
-          <Heart className="h-4 w-4 mr-1" />
-          Add to Favourites
-        </Button>
         
         {/* Right navigation arrow */}
         {localIndex < horses.length - 1 && (
