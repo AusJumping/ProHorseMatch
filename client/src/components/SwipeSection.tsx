@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Heart, X, Info } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface SwipeSectionProps {
   horses: Horse[];
@@ -22,6 +24,7 @@ const SwipeSection = ({
   onDislike,
   onShowMore,
 }: SwipeSectionProps) => {
+  const isMobile = useMobile();
   // Always track the current index for proper navigation
   const [localIndex, setLocalIndex] = useState(0);
   
@@ -151,7 +154,10 @@ const SwipeSection = ({
         <Button
           size="icon"
           variant="outline"
-          className="info-button w-14 h-14 rounded-full"
+          className={cn(
+            "info-button w-14 h-14 rounded-full",
+            isMobile && "bg-white hover:bg-white/90 border-white"
+          )}
           onClick={() => onShowMore(currentHorse.id)}
         >
           <Info className="h-6 w-6" />
