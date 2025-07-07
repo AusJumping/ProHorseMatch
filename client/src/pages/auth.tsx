@@ -328,7 +328,7 @@ export default function Auth() {
                             <div className="relative">
                               <Input 
                                 type={showPassword ? "text" : "password"} 
-                                placeholder="••••••••" 
+                                placeholder="Enter your password" 
                                 {...field} 
                               />
                               <Button
@@ -478,7 +478,7 @@ export default function Auth() {
                               <div className="relative">
                                 <Input 
                                   type={showRegisterPassword ? "text" : "password"} 
-                                  placeholder="••••••••" 
+                                  placeholder="Create a password" 
                                   {...field} 
                                 />
                                 <Button
@@ -511,7 +511,7 @@ export default function Auth() {
                               <div className="relative">
                                 <Input 
                                   type={showConfirmPassword ? "text" : "password"} 
-                                  placeholder="••••••••" 
+                                  placeholder="Confirm your password" 
                                   {...field} 
                                 />
                                 <Button
@@ -632,7 +632,7 @@ export default function Auth() {
                               <div className="relative">
                                 <Input 
                                   type={showRegisterPassword ? "text" : "password"} 
-                                  placeholder="••••••••" 
+                                  placeholder="Create a password" 
                                   {...field} 
                                 />
                                 <Button
@@ -665,7 +665,7 @@ export default function Auth() {
                               <div className="relative">
                                 <Input 
                                   type={showConfirmPassword ? "text" : "password"} 
-                                  placeholder="••••••••" 
+                                  placeholder="Confirm your password" 
                                   {...field} 
                                 />
                                 <Button
