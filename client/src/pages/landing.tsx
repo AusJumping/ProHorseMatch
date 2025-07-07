@@ -13,7 +13,7 @@ const Landing = () => {
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: "#2b2b2b" }}>
       <div className="max-w-4xl mx-auto text-center px-4">
         <div className="mb-8 flex justify-center">
-          <img src={logoImage} alt="Pro Horse Match" className="h-28 object-contain" />
+          <img src={logoImage} alt="Pro Horse Match" className="h-56 object-contain" />
         </div>
         
         <h1 className="font-accent text-xl font-bold mb-6" style={{ color: "#e4e2dd" }}>
