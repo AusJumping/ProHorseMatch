@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Share2, Loader2, Heart, X } from "lucide-react";
+import { Loader2, Heart, X } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { useMobile } from "@/hooks/use-mobile";
 import MediaCarousel from "@/components/MediaCarousel";
@@ -58,23 +58,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
     doConversion();
   }, [horse, currentCurrency, convertPrice]);
 
-  const handleShare = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Implement share functionality
-    if (navigator.share) {
-      navigator
-        .share({
-          title: `${horse.name} - ProHorseMatch`,
-          text: `Check out ${horse.name}, a ${horse.age}yo ${horse.breeds[0]} ${horse.sex} for sale on ProHorseMatch!`,
-          url: window.location.href,
-        })
-        .catch((error) => console.log("Error sharing", error));
-    } else {
-      // Fallback for browsers that don't support navigator.share
-      navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard!");
-    }
-  };
+
   
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -224,14 +208,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
             </Button>
           )}
           
-          <Button
-            variant="outline"
-            size="icon"
-            className="w-10 h-10 flex items-center justify-center bg-neutral-100 hover:bg-neutral-200 text-neutral-800"
-            onClick={handleShare}
-          >
-            <Share2 size={18} />
-          </Button>
+
         </div>
       </CardContent>
     </Card>

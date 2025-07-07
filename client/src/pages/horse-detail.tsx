@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, MessageSquare, Share2, ChevronLeft, Loader2 } from "lucide-react";
+import { Heart, MessageSquare, ChevronLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
@@ -174,24 +174,7 @@ export default function HorseDetail() {
     setIsMessageOpen(!isMessageOpen);
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: `${horse?.name} - ProHorseMatch`,
-          text: `Check out ${horse?.name}, a ${horse?.age}yo ${horse?.breeds[0]} ${horse?.sex} for sale on ProHorseMatch!`,
-          url: window.location.href,
-        })
-        .catch((error) => console.log("Error sharing", error));
-    } else {
-      // Fallback for browsers that don't support navigator.share
-      navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link copied",
-        description: "Horse listing URL copied to clipboard",
-      });
-    }
-  };
+
 
   const handleBack = () => {
     // Check if we have history to go back
@@ -358,15 +341,7 @@ export default function HorseDetail() {
               </div>
             )}
             
-            {/* Share button (mobile only) */}
-            {isMobile && (
-              <div className="mt-4 flex justify-center">
-                <Button variant="ghost" onClick={handleShare}>
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share
-                </Button>
-              </div>
-            )}
+
           </div>
         </div>
       </div>
