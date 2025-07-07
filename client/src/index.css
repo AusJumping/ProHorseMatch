@@ -194,4 +194,39 @@
   .SelectItem {
     color: #333 !important;
   }
+
+  /* Ensure password placeholders work consistently across all browsers including Microsoft Edge */
+  input[type="password"]:placeholder-shown {
+    font-family: inherit;
+    font-size: inherit;
+  }
+  
+  /* Webkit browsers (Chrome, Safari, newer Edge) */
+  input[type="password"]::-webkit-input-placeholder {
+    font-family: inherit;
+    font-size: inherit;
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Firefox */
+  input[type="password"]::-moz-placeholder {
+    font-family: inherit;
+    font-size: inherit;
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
+  
+  /* Microsoft Edge Legacy and IE */
+  input[type="password"]:-ms-input-placeholder {
+    font-family: inherit;
+    font-size: inherit;
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Modern browsers standard */
+  input[type="password"]::placeholder {
+    font-family: inherit;
+    font-size: inherit;
+    color: hsl(var(--muted-foreground));
+  }
 }
