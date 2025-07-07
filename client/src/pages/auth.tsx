@@ -430,7 +430,7 @@ export default function Auth() {
                       <ChevronLeft size={18} />
                     </Button>
                     <div>
-                      <CardTitle>Searching Registration</CardTitle>
+                      <CardTitle>Registration Details</CardTitle>
                       <CardDescription>
                         Create your account to find your perfect horse
                       </CardDescription>

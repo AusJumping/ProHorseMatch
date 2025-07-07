@@ -114,6 +114,11 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 7, 2025: User interface improvements and cross-browser compatibility enhancements
+  - Changed registration page title from "Searching Registration" to "Registration Details" for clarity
+  - Added comprehensive browser-specific CSS for password placeholder compatibility across all browsers
+  - Enhanced password field styling for Chrome, Safari, Firefox, Edge (legacy and modern), and IE
+  - Ensured no misleading dots appear in password placeholders on any browser platform
 - July 7, 2025: Complete email verification system operational with custom domain
   - RESOLVED: Email verification now working end-to-end with custom domain prohorsematch.com
   - Configured Resend email service to use verified domain noreply@prohorsematch.com
