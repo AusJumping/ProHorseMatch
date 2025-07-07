@@ -101,12 +101,12 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
 
       {/* Media type toggle */}
       {safeVideos.length > 0 && (
-        <div className="absolute bottom-4 left-4 flex gap-2">
+        <div className="absolute bottom-4 left-4 flex gap-1">
           <Button
-            size="sm"
+            size="xs"
             variant={!isVideo ? "default" : "outline"}
             className={cn(
-              "rounded-lg shadow-md",
+              "rounded-md shadow-md text-xs px-2 py-1 h-6",
               !isVideo ? "bg-white text-neutral-800" : "bg-white/80 hover:bg-white"
             )}
             onClick={() => setIsVideo(false)}
@@ -114,15 +114,15 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
             Photos
           </Button>
           <Button
-            size="sm"
+            size="xs"
             variant={isVideo ? "default" : "outline"}
             className={cn(
-              "rounded-lg shadow-md",
+              "rounded-md shadow-md text-xs px-2 py-1 h-6",
               isVideo ? "bg-primary text-white" : "bg-white/80 hover:bg-white"
             )}
             onClick={() => setIsVideo(true)}
           >
-            <Play className="h-4 w-4 mr-1" />
+            <Play className="h-3 w-3 mr-0.5" />
             Videos
           </Button>
         </div>
