@@ -101,7 +101,7 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
 
       {/* Media type toggle */}
       {safeVideos.length > 0 && (
-        <div className="absolute bottom-4 right-4 flex gap-1">
+        <div className="absolute top-4 left-4 flex gap-1">
           <Button
             size="xs"
             variant={!isVideo ? "default" : "outline"}
