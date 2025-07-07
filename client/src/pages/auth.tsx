@@ -237,7 +237,7 @@ export default function Auth() {
 
   const onForgotPasswordSubmit = async (data: z.infer<typeof forgotPasswordSchema>) => {
     try {
-      await apiRequest('/api/auth/forgot-password', 'POST', data);
+      await apiRequest('POST', '/api/auth/forgot-password', data);
 
       toast({
         title: "Reset email sent",
@@ -258,7 +258,7 @@ export default function Auth() {
     try {
       const { confirmPassword, ...resetData } = data;
       
-      await apiRequest('/api/auth/reset-password', 'POST', resetData);
+      await apiRequest('POST', '/api/auth/reset-password', resetData);
 
       toast({
         title: "Password reset successful",
