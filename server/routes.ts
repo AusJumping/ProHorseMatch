@@ -1632,10 +1632,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/horses", isAuthenticated, async (req, res) => {
+  app.post("/api/horses", isTokenAuthenticated, async (req, res) => {
     try {
       // Get the user with their roles
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(req.userId);
       
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
@@ -1644,7 +1644,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertHorseSchema.parse(req.body);
       
       // Ensure owner_id matches the logged-in owner
-      if (validatedData.owner_id !== req.session.userId) {
+      if (validatedData.owner_id !== req.userId) {
         return res.status(403).json({ message: "Cannot create horse for another owner" });
       }
       
@@ -1652,16 +1652,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check saved searches for this new horse and send notifications
       await checkSavedSearchesForNewHorse(horse);
-      
-      // Force session save to maintain login state
-      req.session.touch();
-      req.session.save((err) => {
-        if (err) {
-          console.error("Error saving session after horse creation:", err);
-        } else {
-          console.log("Session successfully saved after horse creation");
-        }
-      });
       
       return res.status(201).json(horse);
     } catch (error) {
@@ -1671,10 +1661,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Update a horse
-  app.put("/api/horses/:id", isAuthenticated, async (req, res) => {
+  app.put("/api/horses/:id", isTokenAuthenticated, async (req, res) => {
     try {
       // Get the user with their roles
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(req.userId);
       
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can update horses" });
@@ -1690,7 +1680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Ensure owner can only update their own horses
-      if (horse.owner_id !== req.session.userId) {
+      if (horse.owner_id !== req.userId) {
         return res.status(403).json({ message: "Cannot update another owner's horse" });
       }
       
@@ -1720,10 +1710,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Delete a horse
-  app.delete("/api/horses/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/horses/:id", isTokenAuthenticated, async (req, res) => {
     try {
       // Get the user with their roles
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(req.userId);
       
       if (!user || !user.is_selling) {
         return res.status(403).json({ message: "Only users with selling permission can delete horses" });
@@ -1737,7 +1727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Ensure owner can only delete their own horses
-      if (horse.owner_id !== req.session.userId) {
+      if (horse.owner_id !== req.userId) {
         return res.status(403).json({ message: "Cannot delete another owner's horse" });
       }
       
