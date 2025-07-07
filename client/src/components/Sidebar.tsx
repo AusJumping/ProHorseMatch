@@ -5,7 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Home, Heart, User, LogOut, Settings, List, PlusCircle, ShieldAlert, CreditCard, MessageCircle, Search, Shield } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import logoImage from "../assets/logo.jpg";
+import logoImage from "../assets/logo-filter.png";
 import { useQuery } from "@tanstack/react-query";
 
 const Sidebar = () => {
