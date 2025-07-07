@@ -1308,9 +1308,19 @@ export default function AddHorse() {
                                     const file = e.target.files?.[0];
                                     if (!file) return;
                                     
+                                    console.log("=== FRONTEND UPLOAD START ===");
+                                    console.log("File details:", {
+                                      name: file.name,
+                                      size: file.size,
+                                      type: file.type,
+                                      lastModified: file.lastModified
+                                    });
+                                    
                                     // Create form data
                                     const formData = new FormData();
                                     formData.append("file", file);
+                                    
+                                    console.log("FormData created, making request to /api/upload");
                                     
                                     try {
                                       // Upload the file directly without loading toast
@@ -1319,11 +1329,20 @@ export default function AddHorse() {
                                         body: formData,
                                       });
                                       
+                                      console.log("Response received:", {
+                                        status: response.status,
+                                        statusText: response.statusText,
+                                        ok: response.ok
+                                      });
+                                      
                                       if (!response.ok) {
-                                        throw new Error("Failed to upload file");
+                                        const errorText = await response.text();
+                                        console.error("Upload failed with response:", errorText);
+                                        throw new Error(`Failed to upload file: ${response.status} ${errorText}`);
                                       }
                                       
                                       const data = await response.json();
+                                      console.log("Upload successful, response data:", data);
                                       
                                       // Add the URL to the list
                                       setPhotoUrls([...photoUrls, data.url]);
@@ -1333,10 +1352,13 @@ export default function AddHorse() {
                                       
                                       // Success notification removed
                                     } catch (error) {
-                                      console.error("Upload error:", error);
+                                      console.error("=== FRONTEND UPLOAD ERROR ===");
+                                      console.error("Error details:", error);
+                                      console.error("Error message:", error.message);
+                                      console.error("Error stack:", error.stack);
                                       toast({
                                         title: "Upload failed",
-                                        description: "There was an error uploading your image. Please try again.",
+                                        description: `There was an error uploading your image: ${error.message}`,
                                         variant: "destructive",
                                       });
                                     }
