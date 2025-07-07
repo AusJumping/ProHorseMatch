@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 7, 2025: Media upload system migrated to Cloudinary for cross-environment compatibility
+  - RESOLVED: Media uploads now work consistently between development and live environments
+  - Changed `/api/upload` endpoint from local file storage to Cloudinary cloud storage
+  - All photos and videos now stored in cloud, accessible from any environment
+  - Maintains backward compatibility - existing URLs continue to work
+  - Enhanced video and image optimization with automatic format conversion
 - July 7, 2025: Password reset system fixes and UI improvements  
   - FIXED: Password reset emails now send proper reset content instead of email verification content
   - Created dedicated sendPasswordResetEmail function with professional reset template

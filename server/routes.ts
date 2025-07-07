@@ -9,7 +9,7 @@ import fs from "fs";
 import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
-import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
+import { uploadToCloudinary, deleteFromCloudinary, cloudinary } from "./cloudinary";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
 import { 
@@ -2305,34 +2305,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // File upload endpoint for local storage
-  app.post("/api/upload", upload.single("file"), (req, res) => {
+  // File upload endpoint using Cloudinary (works in all environments)
+  app.post("/api/upload", uploadMemory.single("file"), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
       
       console.log("File uploaded:", {
-        filename: req.file.filename,
-        path: req.file.path,
+        filename: req.file.originalname,
         mimetype: req.file.mimetype,
         size: req.file.size
       });
+
+      // Determine the resource type based on file mimetype
+      const resourceType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
       
-      // Get file path relative to public directory
-      const relativePath = req.file.path.replace(/^.*[\\\/]public/, '');
-      const fileUrl = relativePath.replace(/\\/g, '/'); // Normalize path separators for URLs
+      // Upload to Cloudinary with appropriate settings
+      const uploadOptions: any = {
+        folder: 'horses',
+        resource_type: resourceType,
+      };
+
+      // Add transformations for images only
+      if (resourceType === 'image') {
+        uploadOptions.transformation = [
+          { width: 800, height: 600, crop: 'fill', quality: 'auto' },
+          { fetch_format: 'auto' }
+        ];
+      }
+
+      const result = await new Promise((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          uploadOptions,
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        ).end(req.file.buffer);
+      });
+      
+      console.log("File uploaded to Cloudinary:", {
+        url: result.secure_url,
+        public_id: result.public_id,
+        resource_type: result.resource_type
+      });
       
       res.json({ 
-        url: fileUrl,
-        fileType: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
-        filename: req.file.filename,
+        url: result.secure_url,
+        fileType: resourceType,
+        public_id: result.public_id,
+        filename: req.file.originalname,
         originalName: req.file.originalname,
         size: req.file.size
       });
     } catch (error) {
-      console.error("File upload error:", error);
-      res.status(500).json({ error: "File upload failed", details: error.message });
+      console.error("Upload error:", error);
+      res.status(500).json({ error: "Failed to upload file", details: error.message });
     }
   });
   
