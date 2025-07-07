@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 7, 2025: Complete email verification system operational with custom domain
+  - RESOLVED: Email verification now working end-to-end with custom domain prohorsematch.com
+  - Configured Resend email service to use verified domain noreply@prohorsematch.com
+  - Complete flow verified: registration → email delivery → verification → login → app access
+  - Email notifications display consistently during registration process
+  - Production-ready email system now fully functional for all users
 - July 3, 2025: Email verification notification system fixed and restored
   - CRITICAL FIX: Resolved email verification notification not appearing during registration
   - Issue was caused by Resend email service domain restrictions (testing mode only allows info@australianjumping.com.au)
