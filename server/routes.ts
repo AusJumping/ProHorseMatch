@@ -9,7 +9,7 @@ import fs from "fs";
 import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
-import { uploadToCloudinary, deleteFromCloudinary, cloudinary } from "./cloudinary";
+import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
 import { 
@@ -2305,87 +2305,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // File upload endpoint using Cloudinary (works in all environments)
-  app.post("/api/upload", uploadMemory.single("file"), async (req, res) => {
+  // File upload endpoint for local storage
+  app.post("/api/upload", upload.single("file"), (req, res) => {
     try {
-      console.log("=== UPLOAD REQUEST START ===");
-      console.log("Cloudinary config check:", {
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? "SET" : "MISSING",
-        api_key: process.env.CLOUDINARY_API_KEY ? "SET" : "MISSING", 
-        api_secret: process.env.CLOUDINARY_API_SECRET ? "SET" : "MISSING"
-      });
-
       if (!req.file) {
-        console.log("No file in request");
         return res.status(400).json({ error: "No file uploaded" });
       }
       
       console.log("File uploaded:", {
-        filename: req.file.originalname,
+        filename: req.file.filename,
+        path: req.file.path,
         mimetype: req.file.mimetype,
-        size: req.file.size,
-        bufferSize: req.file.buffer?.length
-      });
-
-      // Determine the resource type based on file mimetype
-      const resourceType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
-      console.log("Determined resource type:", resourceType);
-      
-      // Upload to Cloudinary with appropriate settings
-      const uploadOptions: any = {
-        folder: 'horses',
-        resource_type: resourceType,
-      };
-
-      // Add transformations for images only
-      if (resourceType === 'image') {
-        uploadOptions.transformation = [
-          { width: 800, height: 600, crop: 'fill', quality: 'auto' },
-          { fetch_format: 'auto' }
-        ];
-      }
-
-      console.log("Upload options:", uploadOptions);
-
-      const result = await new Promise((resolve, reject) => {
-        cloudinary.uploader.upload_stream(
-          uploadOptions,
-          (error, result) => {
-            if (error) {
-              console.error("Cloudinary upload error:", error);
-              reject(error);
-            } else {
-              console.log("Cloudinary upload success:", result);
-              resolve(result);
-            }
-          }
-        ).end(req.file.buffer);
+        size: req.file.size
       });
       
-      console.log("File uploaded to Cloudinary successfully:", {
-        url: result.secure_url,
-        public_id: result.public_id,
-        resource_type: result.resource_type
-      });
+      // Get file path relative to public directory
+      const relativePath = req.file.path.replace(/^.*[\\\/]public/, '');
+      const fileUrl = relativePath.replace(/\\/g, '/'); // Normalize path separators for URLs
       
       res.json({ 
-        url: result.secure_url,
-        fileType: resourceType,
-        public_id: result.public_id,
-        filename: req.file.originalname,
+        url: fileUrl,
+        fileType: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
+        filename: req.file.filename,
         originalName: req.file.originalname,
         size: req.file.size
       });
     } catch (error) {
-      console.error("=== UPLOAD ERROR ===");
-      console.error("Error details:", error);
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
-      res.status(500).json({ 
-        error: "Failed to upload file", 
-        details: error.message,
-        type: error.name
-      });
+      console.error("File upload error:", error);
+      res.status(500).json({ error: "File upload failed", details: error.message });
     }
   });
   
