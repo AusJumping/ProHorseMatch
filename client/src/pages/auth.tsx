@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
-import logoImage from "../assets/logo-auth.jpg";
+import logoImage from "../assets/logo-auth.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -281,7 +281,7 @@ export default function Auth() {
       <div className="max-w-md w-full">
         <div className="text-center mb-6">
           <div className="flex justify-center">
-            <img src={logoImage} alt="Pro Horse Match" className="h-20 object-contain" />
+            <img src={logoImage} alt="Pro Horse Match" className="h-40 object-contain" />
           </div>
         </div>
 
