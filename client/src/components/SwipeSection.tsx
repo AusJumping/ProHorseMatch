@@ -150,13 +150,6 @@ const SwipeSection = ({
         {/* Main action buttons */}
         <Button
           size="icon"
-          className="pass-button w-14 h-14 rounded-full"
-          onClick={handleButtonDislike}
-        >
-          <X className="h-6 w-6" />
-        </Button>
-        <Button
-          size="icon"
           variant="outline"
           className="info-button w-14 h-14 rounded-full"
           onClick={() => onShowMore(currentHorse.id)}
