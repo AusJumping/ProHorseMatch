@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Heart, X } from "lucide-react";
+import { Loader2, Heart } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { useMobile } from "@/hooks/use-mobile";
 import MediaCarousel from "@/components/MediaCarousel";
@@ -104,21 +104,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
           videos={horse.videos || []} 
         />
         
-        {/* Semi-transparent overlay for liked/dismissed horses - For mobile only and NOT in the SwipeSection */}
-        {isMobile && (hasBeenLiked || hasBeenDismissed) && !showFavoriteButton && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
-            {hasBeenLiked && (
-              <div className="bg-white/80 w-16 h-16 rounded-full flex items-center justify-center">
-                <Heart className="h-10 w-10 text-[#cdac6e] fill-[#cdac6e]" />
-              </div>
-            )}
-            {hasBeenDismissed && (
-              <div className="bg-white/80 w-16 h-16 rounded-full flex items-center justify-center">
-                <X className="h-10 w-10 text-black" />
-              </div>
-            )}
-          </div>
-        )}
+
       </div>
 
       {/* Horse Info Section */}
