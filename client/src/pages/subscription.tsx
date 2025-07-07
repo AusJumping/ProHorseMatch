@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, CheckCircle2, ExternalLink, AlertTriangle } from 'lucide-react';
+import { Loader2, Check, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
@@ -14,7 +14,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TermsDialog from '@/components/TermsDialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Ensure we have the public key
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
@@ -282,8 +281,6 @@ export default function SubscriptionPage() {
   const [convertedFuturePlans, setConvertedFuturePlans] = useState(futurePlans);
   const [tosAgreed, setTosAgreed] = useState(false);
   const [isPendingSubscribe, setIsPendingSubscribe] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
   const { toast } = useToast();
   const { currentCurrency, convertPrice, formatPrice } = useCurrency();
   
@@ -371,40 +368,28 @@ export default function SubscriptionPage() {
     },
   });
   
-  // Delete account mutation
-  const { mutate: deleteAccount, isPending: isDeletingAccount } = useMutation({
+  // Cancel subscription mutation
+  const { mutate: cancelSubscription, isPending: isCancellingSubscription } = useMutation({
     mutationFn: async () => {
       // Using apiRequest which already handles JSON parsing and errors
-      return await apiRequest('DELETE', '/api/account');
+      return await apiRequest('DELETE', '/api/subscription');
     },
     onSuccess: () => {
-      // Clear all cached data
-      queryClient.clear();
-      // Clear localStorage
-      localStorage.removeItem('authToken');
+      queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       toast({
-        title: 'Account Deleted',
-        description: 'Your account and all associated data have been permanently deleted.',
+        title: 'Subscription Cancelled',
+        description: 'Your subscription has been cancelled successfully.',
       });
-      // Redirect to home page
-      navigate('/');
     },
     onError: (error: Error) => {
       toast({
-        title: 'Account Deletion Error',
+        title: 'Cancellation Error',
         description: error.message,
         variant: 'destructive',
       });
     },
   });
-
-  const handleDeleteAccount = () => {
-    if (deleteConfirmationText === 'DELETE') {
-      deleteAccount();
-      setShowDeleteConfirmation(false);
-      setDeleteConfirmationText('');
-    }
-  };
   
   // Beta subscription activation mutation
   const { mutate: activateBetaSubscription, isPending: isActivatingBeta } = useMutation({
@@ -639,79 +624,21 @@ export default function SubscriptionPage() {
                   )}
                   
                   {status === 'active' && (
-                    <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="destructive" 
-                          className="mt-4"
-                        >
-                          Delete Account
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-lg">
-                        <DialogHeader>
-                          <DialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="h-5 w-5 text-red-500" />
-                            Delete Account
-                          </DialogTitle>
-                          <DialogDescription>
-                            This action cannot be undone. This will permanently delete your account.
-                          </DialogDescription>
-                        </DialogHeader>
-                        
-                        <Alert className="border-red-200 bg-red-50">
-                          <AlertTriangle className="h-4 w-4 text-red-500" />
-                          <AlertDescription className="text-red-700">
-                            <strong>Warning:</strong> Deleting your account will permanently remove:
-                            <ul className="mt-2 ml-4 list-disc space-y-1">
-                              <li>Your subscription and billing information</li>
-                              <li>All horses you have listed for sale</li>
-                              <li>All saved searches and favorites</li>
-                              <li>All messages and conversations</li>
-                              <li>Your profile and account data</li>
-                            </ul>
-                          </AlertDescription>
-                        </Alert>
-
-                        <div className="space-y-4">
-                          <div>
-                            <label htmlFor="deleteConfirmation" className="text-sm font-medium">
-                              Type <code className="bg-gray-100 px-1 rounded">DELETE</code> to confirm:
-                            </label>
-                            <input
-                              id="deleteConfirmation"
-                              type="text"
-                              value={deleteConfirmationText}
-                              onChange={(e) => setDeleteConfirmationText(e.target.value)}
-                              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
-                              placeholder="Type DELETE here"
-                            />
-                          </div>
-                          
-                          <div className="flex gap-3 justify-end">
-                            <DialogClose asChild>
-                              <Button variant="outline" onClick={() => setDeleteConfirmationText('')}>
-                                Cancel
-                              </Button>
-                            </DialogClose>
-                            <Button 
-                              variant="destructive" 
-                              onClick={handleDeleteAccount}
-                              disabled={deleteConfirmationText !== 'DELETE' || isDeletingAccount}
-                            >
-                              {isDeletingAccount ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Deleting...
-                                </>
-                              ) : (
-                                'Delete Account'
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    <Button 
+                      variant="destructive" 
+                      onClick={() => cancelSubscription()} 
+                      disabled={isCancellingSubscription}
+                      className="mt-4"
+                    >
+                      {isCancellingSubscription ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        'Cancel Subscription'
+                      )}
+                    </Button>
                   )}
                 </div>
               </div>
