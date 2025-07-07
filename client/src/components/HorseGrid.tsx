@@ -1,19 +1,17 @@
 import React from "react";
 import { Horse } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { Heart, X, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import MediaCarousel from "@/components/MediaCarousel";
 import { formatCurrency } from "@/lib/utils";
 
 interface HorseGridProps {
   horses: Horse[];
-  onLike: (horseId: number) => void;
-  onDislike: (horseId: number) => void;
   onShowMore: (horseId: number) => void;
 }
 
-const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) => {
+const HorseGrid = ({ horses, onShowMore }: HorseGridProps) => {
   if (!horses.length) {
     return (
       <div className="w-full flex flex-col items-center justify-center h-[500px] bg-white rounded-xl p-8 text-center">
@@ -60,35 +58,15 @@ const HorseGrid = ({ horses, onLike, onDislike, onShowMore }: HorseGridProps) =>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 mt-4">
+              <div className="mt-4">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="pass-button"
-                  onClick={() => onDislike(horse.id)}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Pass
-                </Button>
-                
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="info-button"
+                  className="info-button w-full"
                   onClick={() => onShowMore(horse.id)}
                 >
                   <Info className="h-4 w-4 mr-1" />
-                  Info
-                </Button>
-                
-                <Button
-                  size="sm"
-                  className="like-button"
-                  onClick={() => onLike(horse.id)}
-                  style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" }}
-                >
-                  <Heart className="h-4 w-4 mr-1" />
-                  Like
+                  More Info
                 </Button>
               </div>
             </CardContent>

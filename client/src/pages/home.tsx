@@ -500,8 +500,6 @@ export default function Home() {
                     horses={horses || []}
                     isLoading={isLoading}
                     activeIndex={0} // Always start at the first horse when filters change
-                    onLike={handleLike}
-                    onDislike={handleDislike}
                     onShowMore={handleShowMore}
                   />
                 </div>
@@ -511,8 +509,6 @@ export default function Home() {
             /* Horse grid for non-touch devices */
             <HorseGrid
               horses={horses || []}
-              onLike={handleLike}
-              onDislike={handleDislike}
               onShowMore={handleShowMore}
             />
           )}

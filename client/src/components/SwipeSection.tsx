@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import HorseCard from "./HorseCard";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Heart, X, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Horse } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMobile } from "@/hooks/use-mobile";
@@ -11,8 +11,6 @@ interface SwipeSectionProps {
   horses: Horse[];
   isLoading: boolean;
   activeIndex: number;
-  onLike: (horseId: number) => void;
-  onDislike: (horseId: number) => void;
   onShowMore: (horseId: number) => void;
 }
 
@@ -20,8 +18,6 @@ const SwipeSection = ({
   horses,
   isLoading,
   activeIndex,
-  onLike,
-  onDislike,
   onShowMore,
 }: SwipeSectionProps) => {
   const isMobile = useMobile();
@@ -65,27 +61,15 @@ const SwipeSection = ({
     }
   };
 
-  // Modified to handle like without advancing immediately
-  // This allows the parent component to properly handle authentication
-  const handleButtonLike = () => {
-    onLike(currentHorse.id);
-    // Note: we'll let the parent component handle moving to next horse
-    // This prevents issues with authentication
-  };
 
-  const handleButtonDislike = () => {
-    onDislike(currentHorse.id);
-    goToNextHorse();
-  };
 
   if (isLoading) {
     return (
       <div className="w-full max-w-lg mx-auto">
         <Skeleton className="horse-card rounded-xl" />
         <div className="flex justify-center mt-4 gap-4">
-          <Skeleton className="w-14 h-14 rounded-full" />
-          <Skeleton className="w-12 h-12 rounded-full" />
-          <Skeleton className="w-14 h-14 rounded-full" />
+          <Skeleton className="w-10 h-10 rounded-full" />
+          <Skeleton className="w-10 h-10 rounded-full" />
         </div>
       </div>
     );
@@ -127,8 +111,6 @@ const SwipeSection = ({
         <HorseCard 
           horse={currentHorse} 
           onShowMore={onShowMore} 
-          onLike={onLike}
-          showFavoriteButton={true}
         />
       </div>
 
@@ -150,26 +132,7 @@ const SwipeSection = ({
           <div className="w-10"></div>
         )}
         
-        {/* Main action buttons */}
-        <Button
-          size="icon"
-          variant="outline"
-          className={cn(
-            "info-button w-14 h-14 rounded-full",
-            isMobile && "bg-white hover:bg-white/90 border-white"
-          )}
-          onClick={() => onShowMore(currentHorse.id)}
-        >
-          <Info className="h-6 w-6" />
-        </Button>
-        <Button
-          size="icon"
-          className="like-button w-14 h-14 rounded-full"
-          onClick={handleButtonLike}
-          style={{ backgroundColor: "#cdac6e", borderColor: "#cdac6e" }}
-        >
-          <Heart className="h-6 w-6" />
-        </Button>
+
         
         {/* Right navigation arrow */}
         {localIndex < horses.length - 1 && (
