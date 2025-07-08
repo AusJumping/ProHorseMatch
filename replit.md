@@ -117,6 +117,8 @@ This is a full-stack web application built with modern technologies:
 - July 8, 2025: Filter system and toast notifications standardized
   - FIXED: Level dropdown restored in filter section with improved UX logic
   - Level dropdown now shows as disabled with helpful message when no discipline selected
+  - FIXED: "Any Level" filtering bug - backend now properly handles "any_level" selection by skipping level filtering
+  - RESOLVED: Discipline switching now works correctly (Dressage to Jumping shows proper horses)
   - FIXED: Toast message duration standardized to 5 seconds across all notifications
   - Changed TOAST_REMOVE_DELAY from 1,000,000ms to 5,000ms for consistent user experience
   - Enhanced price privacy: detail page prices only visible to horse owners
