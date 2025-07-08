@@ -437,14 +437,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       global.authTokens.set(authToken, {
         userId: user.id,
-        expires: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+        expires: Date.now() + (60 * 60 * 1000), // 1 hour expiration for security
+        lastActivity: Date.now()
       });
       
       console.log("Created auth token:", authToken);
       
-      // Set multiple cookies to ensure one works
+      // Set multiple cookies to ensure one works (1 hour expiration)
       res.cookie('auth_token', authToken, {
-        maxAge: 30 * 24 * 60 * 60 * 1000,
+        maxAge: 60 * 60 * 1000, // 1 hour expiration
         httpOnly: false, // Allow frontend access
         secure: false,
         sameSite: 'lax',
@@ -846,8 +847,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const tokenData = global.authTokens.get(authToken);
     if (!tokenData || tokenData.expires < Date.now()) {
       console.log("Token auth failed - Invalid or expired token");
+      // Clean up expired token
+      if (tokenData) {
+        global.authTokens.delete(authToken);
+      }
       return res.status(401).json({ message: "Authentication required" });
     }
+    
+    // Update lastActivity timestamp for activity tracking
+    tokenData.lastActivity = Date.now();
+    global.authTokens.set(authToken, tokenData);
     
     console.log(`Token auth success for user ${tokenData.userId}`);
     // Add user info to request for use in route handlers

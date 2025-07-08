@@ -114,6 +114,14 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 8, 2025: Auto-logout security system fully implemented with 1-hour timeout
+  - Enhanced server-side token authentication with 1-hour expiration (previously 30 days)
+  - Added activity tracking to `isTokenAuthenticated` middleware for session management
+  - Implemented comprehensive frontend auto-logout hook (`useAutoLogout`) with inactivity detection
+  - Frontend monitors user activity (clicks, scrolls, keyboard input) and triggers logout after 1 hour
+  - Token cleanup on server: expired tokens automatically removed to prevent memory leaks
+  - Complete security flow: login → 1-hour token → activity tracking → automatic logout → redirect to landing
+  - Integration into App.tsx ensures all authenticated users are protected by auto-logout
 - July 8, 2025: Navigation and UI improvements completed
   - FIXED: Level dropdown restored in filter section with improved UX logic
   - Level dropdown now shows as disabled with helpful message when no discipline selected

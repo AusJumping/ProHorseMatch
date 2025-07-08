@@ -29,8 +29,12 @@ import WelcomePage from "@/pages/welcome";
 import VerifyEmail from "@/pages/verify-email";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { useAutoLogout } from "@/hooks/useAutoLogout";
 
 function Router() {
+  // Initialize auto-logout functionality
+  useAutoLogout();
+  
   return (
     <Switch>
       <Route path="/" component={Landing} />
