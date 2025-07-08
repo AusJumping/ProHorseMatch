@@ -275,7 +275,7 @@ const FilterPanel = ({
           </div>
           
           {/* Discipline Levels */}
-          {filters.disciplines && filters.disciplines.length > 0 && filters.disciplines[0] !== "all_disciplines" && (
+          {(filters.disciplines && filters.disciplines.length > 0 && filters.disciplines[0] && filters.disciplines[0] !== "all_disciplines") ? (
             <div className="filter-group">
               <Label className="block font-accent font-semibold mb-2 text-neutral-800">Level</Label>
               <Select 
@@ -287,10 +287,19 @@ const FilterPanel = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any_level">Any Level</SelectItem>
-                  {constants?.levels && filters.disciplines[0] && constants.levels[filters.disciplines[0]]?.map((level: string) => (
+                  {constants?.levels && constants.levels[filters.disciplines[0]]?.map((level: string) => (
                     <SelectItem key={level} value={level}>{level}</SelectItem>
                   ))}
                 </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div className="filter-group">
+              <Label className="block font-accent font-semibold mb-2 text-neutral-800 opacity-50">Level</Label>
+              <Select disabled>
+                <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg opacity-50">
+                  <SelectValue placeholder="Select a discipline first" />
+                </SelectTrigger>
               </Select>
             </div>
           )}
