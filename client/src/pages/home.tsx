@@ -421,6 +421,11 @@ export default function Home() {
       cleanFilters.disciplines = [];
     }
     
+    // Clean up the levels array - remove "any_level" value if present
+    if (cleanFilters.levels?.includes("any_level")) {
+      cleanFilters.levels = [];
+    }
+    
     // Clean up the breeds array - empty array means all breeds
     if (cleanFilters.breeds?.includes("all_breeds")) {
       cleanFilters.breeds = [];
