@@ -1239,8 +1239,8 @@ export class DatabaseStorage implements IStorage {
         }
       }
       
-      // Filter by levels if specified
-      if (filters.levels && filters.levels.length > 0) {
+      // Filter by levels if specified (skip if "any_level" is selected)
+      if (filters.levels && filters.levels.length > 0 && !filters.levels.includes("any_level")) {
         if (!horse.levels.some(l => filters.levels.includes(l))) {
           return false;
         }
