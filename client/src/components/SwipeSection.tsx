@@ -125,17 +125,17 @@ const SwipeSection = ({
             variant="secondary" 
             size="icon" 
             className={cn(
-              "rounded-full bg-white hover:bg-white/90 shadow-lg border-2 border-gray-200 z-20 transition-all duration-200 hover:scale-110",
-              isMobile ? "w-14 h-14" : "w-10 h-10"
+              "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 z-20 transition-all duration-200 hover:scale-110 active:scale-95",
+              isMobile ? "w-16 h-16" : "w-10 h-10"
             )}
             onClick={goToPrevHorse}
           >
-            <ChevronLeft className={cn("text-black", isMobile ? "h-8 w-8" : "h-6 w-6")} />
+            <ChevronLeft className={cn("text-black font-bold", isMobile ? "h-10 w-10 stroke-2" : "h-6 w-6")} />
           </Button>
         )}
         {/* Spacer when no left arrow */}
         {localIndex === 0 && (
-          <div className={cn(isMobile ? "w-14" : "w-10")}></div>
+          <div className={cn(isMobile ? "w-16" : "w-10")}></div>
         )}
         
         {/* Right navigation arrow */}
@@ -144,17 +144,17 @@ const SwipeSection = ({
             variant="secondary" 
             size="icon" 
             className={cn(
-              "rounded-full bg-white hover:bg-white/90 shadow-lg border-2 border-gray-200 z-20 transition-all duration-200 hover:scale-110",
-              isMobile ? "w-14 h-14" : "w-10 h-10"
+              "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 z-20 transition-all duration-200 hover:scale-110 active:scale-95",
+              isMobile ? "w-16 h-16" : "w-10 h-10"
             )}
             onClick={goToNextHorse}
           >
-            <ChevronRight className={cn("text-black", isMobile ? "h-8 w-8" : "h-6 w-6")} />
+            <ChevronRight className={cn("text-black font-bold", isMobile ? "h-10 w-10 stroke-2" : "h-6 w-6")} />
           </Button>
         )}
         {/* Spacer when no right arrow */}
         {localIndex >= horses.length - 1 && (
-          <div className={cn(isMobile ? "w-14" : "w-10")}></div>
+          <div className={cn(isMobile ? "w-16" : "w-10")}></div>
         )}
       </div>
     </div>
