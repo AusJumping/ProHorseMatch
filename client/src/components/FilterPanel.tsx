@@ -244,7 +244,7 @@ const FilterPanel = ({
             <Button
               variant="outline"
               onClick={handleReset}
-              className="text-sm px-3 py-1.5 h-8"
+              className="text-sm px-3 py-1.5 h-8 reset-button"
             >
               Reset All
             </Button>
@@ -671,7 +671,7 @@ const FilterPanel = ({
         <div className="flex gap-3 mt-6">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 reset-button"
             onClick={handleReset}
           >
             Reset All

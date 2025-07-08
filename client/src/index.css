@@ -148,6 +148,13 @@
     color: white !important;
     border-color: #cdac6e !important;
   }
+  
+  /* Reset All button hover styling */
+  .reset-button:hover {
+    background-color: #cdac6e !important;
+    color: white !important;
+    border-color: #cdac6e !important;
+  }
 
   .profile-stats-item {
     position: relative;
