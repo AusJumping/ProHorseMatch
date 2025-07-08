@@ -61,8 +61,7 @@ const HorseGrid = ({ horses, onShowMore }: HorseGridProps) => {
               <div className="mt-4">
                 <Button
                   size="sm"
-                  variant="outline"
-                  className="info-button w-full"
+                  className="info-button w-full bg-black hover:bg-gray-800 text-white"
                   onClick={() => onShowMore(horse.id)}
                 >
                   <Info className="h-4 w-4 mr-1" />

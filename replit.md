@@ -122,6 +122,7 @@ This is a full-stack web application built with modern technologies:
   - FIXED: Toast message duration standardized to 5 seconds across all notifications
   - Changed TOAST_REMOVE_DELAY from 1,000,000ms to 5,000ms for consistent user experience
   - Enhanced price privacy: detail page prices only visible to horse owners
+  - Updated "More Info" button styling to black background with white text across mobile and desktop
 - July 7, 2025: Password reset system fixes and UI improvements  
   - FIXED: Password reset emails now send proper reset content instead of email verification content
   - Created dedicated sendPasswordResetEmail function with professional reset template
