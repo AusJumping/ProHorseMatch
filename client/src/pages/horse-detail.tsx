@@ -37,20 +37,25 @@ export default function HorseDetail() {
   useEffect(() => {
     const checkFavorite = async () => {
       try {
-        const matches = await fetch("/api/matches", { credentials: "include" }).then(res => res.json());
+        if (!isAuthenticated) {
+          setIsSaved(false);
+          return;
+        }
+        const matches = await apiRequest("GET", "/api/matches");
         const isLiked = matches.some(
           (match: any) => match.horse_id === parseInt(params!.id) && match.is_liked
         );
         setIsSaved(isLiked);
       } catch (error) {
         console.error("Error checking if horse is favorite:", error);
+        setIsSaved(false);
       }
     };
 
     if (params?.id) {
       checkFavorite();
     }
-  }, [params?.id]);
+  }, [params?.id, isAuthenticated]);
 
   const handleSave = async () => {
     try {
@@ -76,8 +81,7 @@ export default function HorseDetail() {
       }
       
       // First check if there's already a match for this user and horse
-      const response = await fetch("/api/matches", { credentials: "include" });
-      const existingMatches = await response.json();
+      const existingMatches = await apiRequest("GET", "/api/matches");
       
       const matchExists = existingMatches.some(
         (match: any) => match.horse_id === parseInt(params!.id) && match.customer_id === user.id
@@ -89,14 +93,7 @@ export default function HorseDetail() {
           (m: any) => m.horse_id === parseInt(params!.id) && m.customer_id === user.id
         );
         
-        await fetch(`/api/matches/${match.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ is_liked: true }),
-          credentials: 'include'
-        });
+        await apiRequest("PATCH", `/api/matches/${match.id}`, { is_liked: true });
         
         setIsSaved(true);
         toast({
