@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'wouter';
 
 const TIMEOUT_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 const CHECK_INTERVAL = 30 * 1000; // Check every 30 seconds
 
 export const useAutoLogout = () => {
-  const [, navigate] = useLocation();
   const lastActivityRef = useRef<number>(Date.now());
   const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const logout = () => {
+    console.log('Auto-logout triggered due to inactivity');
+    
     // Clear auth token
     localStorage.removeItem('authToken');
     
@@ -17,8 +17,8 @@ export const useAutoLogout = () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
     
-    // Redirect to landing page
-    navigate('/');
+    // Force redirect to landing page using window.location
+    window.location.href = '/';
   };
 
   const updateActivity = () => {
@@ -28,8 +28,13 @@ export const useAutoLogout = () => {
   const checkForTimeout = () => {
     const timeSinceLastActivity = Date.now() - lastActivityRef.current;
     
+    // Only logout if user is actually authenticated
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      return; // Already logged out
+    }
+    
     if (timeSinceLastActivity >= TIMEOUT_DURATION) {
-      console.log('Auto-logout triggered due to inactivity');
       logout();
     }
   };
