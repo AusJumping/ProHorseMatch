@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Heart, MessageSquare, ChevronLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
 
@@ -83,6 +83,10 @@ export default function HorseDetail() {
         await apiRequest("PATCH", `/api/matches/${existingMatch.id}`, { is_liked: newLikedStatus });
         
         setIsSaved(newLikedStatus);
+        
+        // Invalidate the matches cache to ensure other pages get updated data
+        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+        
         toast({
           title: newLikedStatus ? "Horse saved" : "Horse removed",
           description: newLikedStatus ? "This horse has been added to your favorites." : "This horse has been removed from your favorites.",
@@ -98,6 +102,10 @@ export default function HorseDetail() {
         });
         
         setIsSaved(true);
+        
+        // Invalidate the matches cache to ensure other pages get updated data
+        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+        
         toast({
           title: "Horse saved",
           description: "This horse has been added to your favorites.",

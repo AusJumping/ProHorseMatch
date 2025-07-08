@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import Layout from "@/components/Layout";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,21 +101,14 @@ export default function Favorites() {
       const match = matches?.find(m => m.horse_id === horseId && m.is_liked);
       
       if (match) {
-        // Option 1: Delete the match completely
-        // await apiRequest('DELETE', `/api/matches/${match.id}`);
-        
-        // Option 2: Update is_liked to false (we'll use this approach)
-        await fetch(`/api/matches/${match.id}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ is_liked: false }),
-          credentials: 'include'
-        });
+        // Update is_liked to false using consistent token-based authentication
+        await apiRequest('PATCH', `/api/matches/${match.id}`, { is_liked: false });
         
         // Remove this horse from the local state
         setFavoriteHorses(prev => prev.filter(horse => horse.id !== horseId));
+        
+        // Invalidate the matches cache to ensure other pages get updated data
+        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
         
         toast({
           title: "Removed from favorites",
