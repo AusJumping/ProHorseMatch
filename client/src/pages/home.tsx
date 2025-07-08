@@ -64,22 +64,71 @@ export default function Home() {
       setShowFilter(true);
     }
     
-    // Check if we have a discipline filter in localStorage or URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlDiscipline = urlParams.get('discipline');
-    const storedDiscipline = localStorage.getItem('active_discipline_filter');
-    
-    // Use URL parameter first, then localStorage
-    const disciplineFilter = urlDiscipline || storedDiscipline;
-    
-    if (disciplineFilter) {
-      console.log("Found active discipline filter:", disciplineFilter);
+    try {
+      // First try to load all filters from localStorage
+      const storedFilters = localStorage.getItem('active_filters');
+      const urlParams = new URLSearchParams(window.location.search);
       
-      // Apply the filter from storage
-      setActiveFilters(prev => ({
-        ...prev,
-        disciplines: [disciplineFilter]
-      }));
+      let filtersToApply = null;
+      
+      // Check if we have URL parameters for filters
+      const hasUrlFilters = Array.from(urlParams.keys()).some(key => 
+        ['disciplines', 'levels', 'breeds', 'sexes', 'location_country', 'currency', 'min_age', 'max_age', 'min_height', 'max_height', 'min_price', 'max_price'].includes(key)
+      );
+      
+      if (hasUrlFilters) {
+        // Parse filters from URL parameters
+        filtersToApply = {
+          disciplines: urlParams.get('disciplines') ? urlParams.get('disciplines')!.split(',') : [],
+          levels: urlParams.get('levels') ? urlParams.get('levels')!.split(',') : [],
+          breeds: urlParams.get('breeds') ? urlParams.get('breeds')!.split(',') : [],
+          sexes: urlParams.get('sexes') ? urlParams.get('sexes')!.split(',') : [],
+          location_country: urlParams.get('location_country') || null,
+          location_radius_km: urlParams.get('location_radius_km') ? parseInt(urlParams.get('location_radius_km')!) : null,
+          age_min: urlParams.get('min_age') ? parseInt(urlParams.get('min_age')!) : null,
+          age_max: urlParams.get('max_age') ? parseInt(urlParams.get('max_age')!) : null,
+          height_min: urlParams.get('min_height') ? parseInt(urlParams.get('min_height')!) : null,
+          height_max: urlParams.get('max_height') ? parseInt(urlParams.get('max_height')!) : null,
+          price_min: urlParams.get('min_price') ? parseInt(urlParams.get('min_price')!) : null,
+          price_max: urlParams.get('max_price') ? parseInt(urlParams.get('max_price')!) : null,
+          currency: urlParams.get('currency') || "AUD",
+        };
+        
+        console.log("Found URL filters:", filtersToApply);
+      } else if (storedFilters) {
+        // Use stored filters if no URL parameters
+        filtersToApply = JSON.parse(storedFilters);
+        console.log("Found stored filters:", filtersToApply);
+      } else {
+        // Fallback to legacy discipline filter
+        const urlDiscipline = urlParams.get('discipline');
+        const storedDiscipline = localStorage.getItem('active_discipline_filter');
+        const disciplineFilter = urlDiscipline || storedDiscipline;
+        
+        if (disciplineFilter) {
+          console.log("Found legacy discipline filter:", disciplineFilter);
+          filtersToApply = {
+            disciplines: [disciplineFilter],
+            breeds: [],
+            sexes: [],
+            location_country: null,
+            location_radius_km: null,
+            age_min: null,
+            age_max: null,
+            height_min: null,
+            height_max: null,
+            price_min: null,
+            price_max: null,
+            currency: "AUD",
+          };
+        }
+      }
+      
+      if (filtersToApply) {
+        setActiveFilters(filtersToApply);
+      }
+    } catch (error) {
+      console.error("Error loading filters:", error);
     }
   }, [location]);
   
@@ -393,6 +442,10 @@ export default function Home() {
     }
     
     console.log('Applying filters:', cleanFilters);
+    
+    // Store all active filters in localStorage for back navigation
+    localStorage.setItem('active_filters', JSON.stringify(cleanFilters));
+    
     // Reset the swiping index to show the first horse in the new filtered results
     setSwipingIndex(0);
     setActiveFilters(cleanFilters);

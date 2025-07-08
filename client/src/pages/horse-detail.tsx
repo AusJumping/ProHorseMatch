@@ -169,12 +169,80 @@ export default function HorseDetail() {
 
 
   const handleBack = () => {
-    // Check if we have history to go back
-    if (window.history.length > 1) {
-      window.history.back(); // This preserves the user's session and properly returns to previous page
-    } else {
-      // Fallback to home if there's no history
-      navigate("/"); 
+    try {
+      // Try to get stored filters from localStorage
+      const storedFilters = localStorage.getItem('active_filters');
+      
+      if (storedFilters) {
+        const filters = JSON.parse(storedFilters);
+        
+        // Build URL with filter parameters
+        const filterParams = new URLSearchParams();
+        
+        // Add each filter to URL params if they exist and are not empty
+        if (filters.disciplines && filters.disciplines.length > 0) {
+          filterParams.append('disciplines', filters.disciplines.join(','));
+        }
+        
+        if (filters.levels && filters.levels.length > 0) {
+          filterParams.append('levels', filters.levels.join(','));
+        }
+        
+        if (filters.breeds && filters.breeds.length > 0) {
+          filterParams.append('breeds', filters.breeds.join(','));
+        }
+        
+        if (filters.sexes && filters.sexes.length > 0) {
+          filterParams.append('sexes', filters.sexes.join(','));
+        }
+        
+        if (filters.location_country) {
+          filterParams.append('location_country', filters.location_country);
+        }
+        
+        if (filters.location_radius_km) {
+          filterParams.append('location_radius_km', filters.location_radius_km.toString());
+        }
+        
+        if (filters.age_min) {
+          filterParams.append('min_age', filters.age_min.toString());
+        }
+        
+        if (filters.age_max) {
+          filterParams.append('max_age', filters.age_max.toString());
+        }
+        
+        if (filters.height_min) {
+          filterParams.append('min_height', filters.height_min.toString());
+        }
+        
+        if (filters.height_max) {
+          filterParams.append('max_height', filters.height_max.toString());
+        }
+        
+        if (filters.price_min) {
+          filterParams.append('min_price', filters.price_min.toString());
+        }
+        
+        if (filters.price_max) {
+          filterParams.append('max_price', filters.price_max.toString());
+        }
+        
+        if (filters.currency) {
+          filterParams.append('currency', filters.currency);
+        }
+        
+        // Navigate to filter page with all parameters
+        const filterUrl = filterParams.toString() ? `/filter?${filterParams.toString()}` : '/filter';
+        navigate(filterUrl);
+      } else {
+        // No stored filters, go to filter page without parameters
+        navigate("/filter");
+      }
+    } catch (error) {
+      console.error("Error reconstructing filter URL:", error);
+      // Fallback to basic filter page
+      navigate("/filter");
     }
   };
 
