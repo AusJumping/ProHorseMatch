@@ -21,7 +21,6 @@ interface FilterPanelProps {
 }
 
 // Available filter options
-const radiusOptions = ["Any", "50km", "100km", "150km", "200km", "300km", "500km"];
 
 // Price range options for horse filtering
 const priceOptions = [
@@ -625,51 +624,32 @@ const FilterPanel = ({
           {/* Location */}
           <div className="filter-group">
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Location</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Select 
-                  value={filters.location_country || ""} 
-                  onValueChange={(value) => handleChange('location_country', value, true)}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Any Location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any_location">Any Location</SelectItem>
-                    {constants && constants.countries ? (
-                      constants.countries.map((country) => (
-                        <SelectItem key={country} value={country}>{country}</SelectItem>
-                      ))
-                    ) : (
-                      <>
-                        <SelectItem value="Australia">Australia</SelectItem>
-                        <SelectItem value="New Zealand">New Zealand</SelectItem>
-                        <SelectItem value="North America">North America</SelectItem>
-                        <SelectItem value="Northern Europe">Northern Europe</SelectItem>
-                        <SelectItem value="Central Europe">Central Europe</SelectItem>
-                        <SelectItem value="Southern Europe">Southern Europe</SelectItem>
-                        <SelectItem value="United Kingdom and Ireland">United Kingdom and Ireland</SelectItem>
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="relative w-1/3">
-                <Select 
-                  value={filters.location_radius_km ? `${filters.location_radius_km}km` : ""} 
-                  onValueChange={(value) => handleChange('location_radius_km', parseInt(value) || null)}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    <SelectValue placeholder="Any" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {radiusOptions.map((option) => (
-                      <SelectItem key={option} value={option === "Any" ? "any_radius" : option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+            <Select 
+              value={filters.location_country || ""} 
+              onValueChange={(value) => handleChange('location_country', value, true)}
+            >
+              <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
+                <SelectValue placeholder="Any Location" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any_location">Any Location</SelectItem>
+                {constants && constants.countries ? (
+                  constants.countries.map((country) => (
+                    <SelectItem key={country} value={country}>{country}</SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value="Australia">Australia</SelectItem>
+                    <SelectItem value="New Zealand">New Zealand</SelectItem>
+                    <SelectItem value="North America">North America</SelectItem>
+                    <SelectItem value="Northern Europe">Northern Europe</SelectItem>
+                    <SelectItem value="Central Europe">Central Europe</SelectItem>
+                    <SelectItem value="Southern Europe">Southern Europe</SelectItem>
+                    <SelectItem value="United Kingdom and Ireland">United Kingdom and Ireland</SelectItem>
+                  </>
+                )}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         

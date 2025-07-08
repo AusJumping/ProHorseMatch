@@ -131,6 +131,7 @@ This is a full-stack web application built with modern technologies:
   - IMPLEMENTED: Auto-apply functionality for all dropdown filters - filters now apply immediately when values change without requiring "Apply Filters" button click
   - Updated all dropdowns (Discipline, Level, Breeds, Sex, Age Range, Height Range, Location) to use auto-apply feature for improved user experience
   - Complete instant filtering: select any dropdown value and horse results update immediately for seamless browsing
+  - Removed distance dropdown from location section to simplify the location filter interface
 - July 7, 2025: Password reset system fixes and UI improvements  
   - FIXED: Password reset emails now send proper reset content instead of email verification content
   - Created dedicated sendPasswordResetEmail function with professional reset template
