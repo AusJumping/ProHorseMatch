@@ -128,6 +128,8 @@ This is a full-stack web application built with modern technologies:
   - COMPLETED: "More Info" button hover state updated to gold background (#cdac6e) with white text for brand consistency
   - ADDED: Duplicate "Reset All" button to top right of Filter box header next to "Find Horses" title for improved user accessibility
   - COMPLETED: "Reset All" buttons hover state updated to gold background (#cdac6e) with white text for consistent brand styling
+  - IMPLEMENTED: Auto-apply functionality for dropdown filters - filters now apply immediately when values change without requiring "Apply Filters" button click
+  - Updated multiple dropdowns (Discipline, Level, Breeds, Sex) to use auto-apply feature for improved user experience
 - July 7, 2025: Password reset system fixes and UI improvements  
   - FIXED: Password reset emails now send proper reset content instead of email verification content
   - Created dedicated sendPasswordResetEmail function with professional reset template

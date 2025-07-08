@@ -75,56 +75,64 @@ const FilterPanel = ({
     setFilters(activeFilters);
   }, [activeFilters]);
 
-  const handleChange = (key: string, value: any) => {
+  const handleChange = (key: string, value: any, autoApply: boolean = false) => {
     setFilters(prev => {
       // Validation for min/max pairs to ensure max is not less than min
+      let newFilters = prev;
+      
       if (key === 'price_min' && prev.price_max && value > prev.price_max && prev.price_max !== 999999999) {
         // If new min is greater than current max, set max to null or a higher value
-        return {
+        newFilters = {
           ...prev,
           [key]: value,
           price_max: 999999999 // Reset to "No Max" when min exceeds max
         };
-      }
-      
-      if (key === 'price_max' && prev.price_min && value < prev.price_min && value !== 999999999) {
+      } else if (key === 'price_max' && prev.price_min && value < prev.price_min && value !== 999999999) {
         // If new max is less than current min, don't update
         return prev;
-      }
-      
-      if (key === 'age_min' && prev.age_max && value > prev.age_max && prev.age_max !== 999) {
+      } else if (key === 'age_min' && prev.age_max && value > prev.age_max && prev.age_max !== 999) {
         // If new min is greater than current max, set max to null or a higher value
-        return {
+        newFilters = {
           ...prev,
           [key]: value,
           age_max: 999 // Reset to "No Max" when min exceeds max
         };
-      }
-      
-      if (key === 'age_max' && prev.age_min && value < prev.age_min && value !== 999) {
+      } else if (key === 'age_max' && prev.age_min && value < prev.age_min && value !== 999) {
         // If new max is less than current min, don't update
         return prev;
-      }
-      
-      if (key === 'height_min' && prev.height_max && value > prev.height_max && prev.height_max !== 999) {
+      } else if (key === 'height_min' && prev.height_max && value > prev.height_max && prev.height_max !== 999) {
         // If new min is greater than current max, set max to null or a higher value
-        return {
+        newFilters = {
           ...prev,
           [key]: value,
           height_max: 999 // Reset to "No Max" when min exceeds max
         };
-      }
-      
-      if (key === 'height_max' && prev.height_min && value < prev.height_min && value !== 999) {
+      } else if (key === 'height_max' && prev.height_min && value < prev.height_min && value !== 999) {
         // If new max is less than current min, don't update
         return prev;
+      } else {
+        // Default case: just update the value
+        newFilters = {
+          ...prev,
+          [key]: value
+        };
       }
       
-      // Default case: just update the value
-      return {
-        ...prev,
-        [key]: value
-      };
+      // Auto-apply filters for dropdown changes
+      if (autoApply) {
+        setTimeout(() => {
+          const filtersToApply = {
+            ...newFilters,
+            sire: newFilters.sire || null,
+            dam_sire: newFilters.dam_sire || null
+          };
+          
+          console.log("Auto-applying filters:", filtersToApply);
+          onApplyFilters(filtersToApply);
+        }, 100);
+      }
+      
+      return newFilters;
     });
     
     // Also update currency context if currency is changed
@@ -265,9 +273,9 @@ const FilterPanel = ({
               value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"} 
               onValueChange={(value) => {
                 if (value === "all_disciplines") {
-                  handleChange('disciplines', []);
+                  handleChange('disciplines', [], true);
                 } else {
-                  handleChange('disciplines', [value]);
+                  handleChange('disciplines', [value], true);
                 }
               }}
             >
@@ -289,7 +297,7 @@ const FilterPanel = ({
               <Label className="block font-accent font-semibold mb-2 text-neutral-800">Level</Label>
               <Select 
                 value={filters.levels?.[0] || ""} 
-                onValueChange={(value) => handleChange('levels', [value])}
+                onValueChange={(value) => handleChange('levels', [value], true)}
               >
                 <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                   <SelectValue placeholder="Any Level" />
@@ -544,9 +552,9 @@ const FilterPanel = ({
               value={filters.breeds && filters.breeds.length > 0 ? filters.breeds[0] : "all_breeds"} 
               onValueChange={(value) => {
                 if (value === "all_breeds") {
-                  handleChange('breeds', []);
+                  handleChange('breeds', [], true);
                 } else {
-                  handleChange('breeds', [value]);
+                  handleChange('breeds', [value], true);
                 }
               }}
             >
@@ -569,9 +577,9 @@ const FilterPanel = ({
               value={filters.sexes && filters.sexes.length > 0 ? filters.sexes[0] : "any_sex"} 
               onValueChange={(value) => {
                 if (value === "any_sex") {
-                  handleChange('sexes', []);
+                  handleChange('sexes', [], true);
                 } else {
-                  handleChange('sexes', [value]);
+                  handleChange('sexes', [value], true);
                 }
               }}
             >
