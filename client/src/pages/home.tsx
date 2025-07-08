@@ -57,31 +57,55 @@ export default function Home() {
     currency: "AUD",
   });
   
+  // Clear stored discipline filter on initial login to ensure "All Disciplines" default
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Clear any stored discipline filter to start fresh with "All Disciplines"
+      localStorage.removeItem('active_discipline_filter');
+      
+      // Also clear URL parameters if they exist
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('discipline')) {
+        url.searchParams.delete('discipline');
+        window.history.replaceState(null, "", url.toString());
+      }
+      
+      // Reset filters to default "All Disciplines" state
+      setActiveFilters(prev => ({
+        ...prev,
+        disciplines: []  // Empty array = All Disciplines
+      }));
+    }
+  }, [isAuthenticated, user]);
+
   // Check if this is the discover route to show filter by default
-  // Check URL parameters and localStorage for active filters
+  // Check URL parameters and localStorage for active filters (only after clearing for new logins)
   useEffect(() => {
     if (location === "/discover") {
       setShowFilter(true);
     }
     
-    // Check if we have a discipline filter in localStorage or URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlDiscipline = urlParams.get('discipline');
-    const storedDiscipline = localStorage.getItem('active_discipline_filter');
-    
-    // Use URL parameter first, then localStorage
-    const disciplineFilter = urlDiscipline || storedDiscipline;
-    
-    if (disciplineFilter) {
-      console.log("Found active discipline filter:", disciplineFilter);
+    // Only check for stored filters if user is not just logging in
+    // This prevents the "Jumping" filter from being reapplied after we clear it
+    if (isAuthenticated && user) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlDiscipline = urlParams.get('discipline');
+      const storedDiscipline = localStorage.getItem('active_discipline_filter');
       
-      // Apply the filter from storage
-      setActiveFilters(prev => ({
-        ...prev,
-        disciplines: [disciplineFilter]
-      }));
+      // Use URL parameter first, then localStorage (but localStorage should be empty for fresh logins)
+      const disciplineFilter = urlDiscipline || storedDiscipline;
+      
+      if (disciplineFilter) {
+        console.log("Found active discipline filter:", disciplineFilter);
+        
+        // Apply the filter from storage
+        setActiveFilters(prev => ({
+          ...prev,
+          disciplines: [disciplineFilter]
+        }));
+      }
     }
-  }, [location]);
+  }, [location, isAuthenticated, user]);
   
   // This effect ensures that when filters change, we reset our swiping index and refresh data
   useEffect(() => {
