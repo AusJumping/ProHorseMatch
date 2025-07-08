@@ -315,6 +315,14 @@ export default function HorseDetail() {
             {!isMessageOpen && !isOwner && (
               <div className="flex gap-3 mt-auto">
                 <Button 
+                  variant="outline"
+                  className="flex-shrink-0"
+                  onClick={handleBack}
+                >
+                  <ChevronLeft className="mr-2 h-4 w-4" />
+                  Back
+                </Button>
+                <Button 
                   variant={isSaved ? "outline" : "default"}
                   className={`flex-1 ${isSaved ? 'bg-primary-light bg-opacity-10 text-primary' : ''}`}
                   onClick={handleSave} 
@@ -334,9 +342,18 @@ export default function HorseDetail() {
             {/* Owner message - Show when viewing your own horse */}
             {isOwner && (
               <div className="mt-auto">
-                <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 text-center">
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 text-center mb-4">
                   <p className="text-accent font-medium">This is your horse listing</p>
                   <p className="text-sm text-gray-600 mt-1">You can edit or manage this listing from your dashboard</p>
+                </div>
+                <div className="flex justify-start">
+                  <Button 
+                    variant="outline"
+                    onClick={handleBack}
+                  >
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Back
+                  </Button>
                 </div>
               </div>
             )}
