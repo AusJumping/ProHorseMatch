@@ -114,7 +114,7 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
-- July 8, 2025: Filter system and toast notifications standardized
+- July 8, 2025: Navigation and UI improvements completed
   - FIXED: Level dropdown restored in filter section with improved UX logic
   - Level dropdown now shows as disabled with helpful message when no discipline selected
   - FIXED: "Any Level" filtering bug - backend now properly handles "any_level" selection by skipping level filtering
@@ -123,6 +123,8 @@ This is a full-stack web application built with modern technologies:
   - Changed TOAST_REMOVE_DELAY from 1,000,000ms to 5,000ms for consistent user experience
   - Enhanced price privacy: detail page prices only visible to horse owners
   - Updated "More Info" button styling to black background with white text across mobile and desktop
+  - COMPLETED: Main navigation menu items now have gold background (#cdac6e) with white text on hover
+  - Consistent hover styling applied to all sidebar menu items: Find Horses, My Favorites, Messages, Saved Searches, My Horses, Add Horse, Profile, Subscription, and Logout
 - July 7, 2025: Password reset system fixes and UI improvements  
   - FIXED: Password reset emails now send proper reset content instead of email verification content
   - Created dedicated sendPasswordResetEmail function with professional reset template
