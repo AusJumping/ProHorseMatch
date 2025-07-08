@@ -124,15 +124,18 @@ const SwipeSection = ({
           <Button 
             variant="secondary" 
             size="icon" 
-            className="w-10 h-10 rounded-full bg-white hover:bg-white/90 shadow-md z-20"
+            className={cn(
+              "rounded-full bg-white hover:bg-white/90 shadow-lg border-2 border-gray-200 z-20 transition-all duration-200 hover:scale-110",
+              isMobile ? "w-14 h-14" : "w-10 h-10"
+            )}
             onClick={goToPrevHorse}
           >
-            <ChevronLeft className="h-6 w-6 text-black" />
+            <ChevronLeft className={cn("text-black", isMobile ? "h-8 w-8" : "h-6 w-6")} />
           </Button>
         )}
         {/* Spacer when no left arrow */}
         {localIndex === 0 && (
-          <div className="w-10"></div>
+          <div className={cn(isMobile ? "w-14" : "w-10")}></div>
         )}
         
         {/* Right navigation arrow */}
@@ -140,15 +143,18 @@ const SwipeSection = ({
           <Button 
             variant="secondary" 
             size="icon" 
-            className="w-10 h-10 rounded-full bg-white hover:bg-white/90 shadow-md z-20"
+            className={cn(
+              "rounded-full bg-white hover:bg-white/90 shadow-lg border-2 border-gray-200 z-20 transition-all duration-200 hover:scale-110",
+              isMobile ? "w-14 h-14" : "w-10 h-10"
+            )}
             onClick={goToNextHorse}
           >
-            <ChevronRight className="h-6 w-6 text-black" />
+            <ChevronRight className={cn("text-black", isMobile ? "h-8 w-8" : "h-6 w-6")} />
           </Button>
         )}
         {/* Spacer when no right arrow */}
         {localIndex >= horses.length - 1 && (
-          <div className="w-10"></div>
+          <div className={cn(isMobile ? "w-14" : "w-10")}></div>
         )}
       </div>
     </div>

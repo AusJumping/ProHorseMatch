@@ -134,18 +134,24 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
           <Button
             size="icon"
             variant="ghost"
-            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full w-8 h-8"
+            className={cn(
+              "absolute top-1/2 left-2 transform -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full transition-all duration-200 hover:scale-110",
+              isMobile ? "w-12 h-12" : "w-8 h-8"
+            )}
             onClick={prevMedia}
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className={cn(isMobile ? "h-7 w-7" : "h-5 w-5")} />
           </Button>
           <Button
             size="icon"
             variant="ghost"
-            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black bg-opacity-30 hover:bg-opacity-50 text-white rounded-full w-8 h-8"
+            className={cn(
+              "absolute top-1/2 right-2 transform -translate-y-1/2 bg-black bg-opacity-40 hover:bg-opacity-60 text-white rounded-full transition-all duration-200 hover:scale-110",
+              isMobile ? "w-12 h-12" : "w-8 h-8"
+            )}
             onClick={nextMedia}
           >
-            <ChevronRight className="h-5 w-5" />
+            <ChevronRight className={cn(isMobile ? "h-7 w-7" : "h-5 w-5")} />
           </Button>
         </>
       )}
