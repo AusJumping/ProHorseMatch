@@ -400,7 +400,7 @@ const FilterPanel = ({
               <div className="flex-1">
                 <Select 
                   value={filters.age_min?.toString() || "0"} 
-                  onValueChange={(value) => handleChange('age_min', parseInt(value))}
+                  onValueChange={(value) => handleChange('age_min', parseInt(value), true)}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     {filters.age_min && filters.age_min !== 0 ? (
@@ -433,7 +433,7 @@ const FilterPanel = ({
               <div className="flex-1">
                 <Select 
                   value={filters.age_max?.toString() || "999"} 
-                  onValueChange={(value) => handleChange('age_max', parseInt(value))}
+                  onValueChange={(value) => handleChange('age_max', parseInt(value), true)}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     {filters.age_max && filters.age_max !== 999 ? (
@@ -474,7 +474,7 @@ const FilterPanel = ({
               <div className="flex-1">
                 <Select 
                   value={filters.height_min?.toString() || "0"} 
-                  onValueChange={(value) => handleChange('height_min', parseFloat(value))}
+                  onValueChange={(value) => handleChange('height_min', parseFloat(value), true)}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     {filters.height_min && filters.height_min !== 0 ? (
@@ -511,7 +511,7 @@ const FilterPanel = ({
               <div className="flex-1">
                 <Select 
                   value={filters.height_max?.toString() || "999"} 
-                  onValueChange={(value) => handleChange('height_max', parseFloat(value))}
+                  onValueChange={(value) => handleChange('height_max', parseFloat(value), true)}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     {filters.height_max && filters.height_max !== 999 ? (
@@ -629,7 +629,7 @@ const FilterPanel = ({
               <div className="relative flex-1">
                 <Select 
                   value={filters.location_country || ""} 
-                  onValueChange={(value) => handleChange('location_country', value)}
+                  onValueChange={(value) => handleChange('location_country', value, true)}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     <SelectValue placeholder="Any Location" />
