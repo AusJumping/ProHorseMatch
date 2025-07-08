@@ -324,8 +324,8 @@ export default function HorseDetail() {
               </div>
             )}
             
-            {/* Price Range Display */}
-            {horse.price_min && horse.price_max && (
+            {/* Price Range Display - Only show for horse owners */}
+            {isOwner && horse.price_min && horse.price_max && (
               <div className="mb-6">
                 <h3 className="font-accent font-semibold mb-2">Price Range</h3>
                 <div className="bg-primary text-white font-accent font-semibold text-lg px-4 py-2 rounded-lg inline-block">
