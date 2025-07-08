@@ -125,6 +125,7 @@ This is a full-stack web application built with modern technologies:
   - Updated "More Info" button styling to black background with white text across mobile and desktop
   - COMPLETED: Main navigation menu items now have gold background (#cdac6e) with white text on hover
   - Consistent hover styling applied to all sidebar menu items: Find Horses, My Favorites, Messages, Saved Searches, My Horses, Add Horse, Profile, Subscription, and Logout
+  - COMPLETED: "More Info" button hover state updated to gold background (#cdac6e) with white text for brand consistency
 - July 7, 2025: Password reset system fixes and UI improvements  
   - FIXED: Password reset emails now send proper reset content instead of email verification content
   - Created dedicated sendPasswordResetEmail function with professional reset template
