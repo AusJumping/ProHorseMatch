@@ -240,11 +240,20 @@ const FilterPanel = ({
       `}>
         <div className="flex justify-between items-center mb-5">
           <h2 className="font-accent font-bold text-xl">Find Horses</h2>
-          {isMobile && (
-            <div className="mobileMenu">
-              <MobileNavbar />
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={handleReset}
+              className="text-sm px-3 py-1.5 h-8"
+            >
+              Reset All
+            </Button>
+            {isMobile && (
+              <div className="mobileMenu">
+                <MobileNavbar />
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Filter Forms */}
