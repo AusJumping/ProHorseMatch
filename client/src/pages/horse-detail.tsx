@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 export default function HorseDetail() {
   const isMobile = useMobile();
@@ -20,9 +21,12 @@ export default function HorseDetail() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+  const { currentCurrency, convertPrice, formatPrice, isLoading: currencyLoading } = useCurrency();
   const [isSaved, setIsSaved] = useState(false);
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [messageContent, setMessageContent] = useState("");
+  const [convertedMinPrice, setConvertedMinPrice] = useState<number | null>(null);
+  const [convertedMaxPrice, setConvertedMaxPrice] = useState<number | null>(null);
 
   // Fetch horse data
   const { data: horse, isLoading, isError } = useQuery<Horse>({
@@ -32,6 +36,25 @@ export default function HorseDetail() {
   
   // Check if the current user owns this horse
   const isOwner = user && horse && user.id === horse.owner_id;
+  
+  // Convert price range when currency or horse changes
+  useEffect(() => {
+    async function doConversion() {
+      if (horse?.price_min) {
+        const convertedMin = await convertPrice(horse.price_min, horse.currency);
+        setConvertedMinPrice(convertedMin);
+      }
+      
+      if (horse?.price_max) {
+        const convertedMax = await convertPrice(horse.price_max, horse.currency);
+        setConvertedMaxPrice(convertedMax);
+      }
+    }
+    
+    if (horse) {
+      doConversion();
+    }
+  }, [horse, currentCurrency, convertPrice]);
 
   // Check if this horse is in the user's favorites
   useEffect(() => {
@@ -301,7 +324,29 @@ export default function HorseDetail() {
               </div>
             )}
             
-            {/* No price or buy now button as requested */}
+            {/* Price Range Display */}
+            {horse.price_min && horse.price_max && (
+              <div className="mb-6">
+                <h3 className="font-accent font-semibold mb-2">Price Range</h3>
+                <div className="bg-primary text-white font-accent font-semibold text-lg px-4 py-2 rounded-lg inline-block">
+                  {currencyLoading ? (
+                    <div className="flex items-center">
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      <span>Converting...</span>
+                    </div>
+                  ) : convertedMinPrice !== null && convertedMaxPrice !== null ? (
+                    formatPrice(convertedMinPrice) + " - " + formatPrice(convertedMaxPrice)
+                  ) : (
+                    `${horse.currency} ${horse.price_min?.toLocaleString()} - ${horse.price_max?.toLocaleString()}`
+                  )}
+                  {!currencyLoading && convertedMinPrice !== null && currentCurrency !== horse.currency && (
+                    <span className="text-sm opacity-80 ml-2">
+                      (orig. {horse.currency})
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Action Buttons - Only show if not the owner of this horse */}
             {!isMessageOpen && !isOwner && (

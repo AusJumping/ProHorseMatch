@@ -17,9 +17,10 @@ interface HorseCardProps {
   onLike?: (horseId: number) => void;
   showFavoriteButton?: boolean;
   matchStatus?: { is_liked?: boolean } | null; // Optional prop to pass in match status directly
+  showPriceOnMobile?: boolean; // New prop to control whether to show price on mobile
 }
 
-const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matchStatus }: HorseCardProps) => {
+const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matchStatus, showPriceOnMobile = false }: HorseCardProps) => {
   const isMobile = useMobile();
   const isTouchDevice = useIsTouchDevice();
   const { user, isAuthenticated } = useAuth();
@@ -145,8 +146,8 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
           </div>
         </div>
 
-        {/* Price Range Badge - Hidden on mobile */}
-        {!isMobile && (
+        {/* Price Range Badge - Show on desktop, or on mobile when showPriceOnMobile is true */}
+        {(!isMobile || showPriceOnMobile) && (
           <div className="text-left mb-2">
             <span className="bg-primary text-white font-accent font-semibold text-sm px-3 py-1 rounded-full inline-block min-w-20">
               {currencyLoading ? (

@@ -118,7 +118,8 @@ export default function MyHorses() {
                 <HorseCard 
                   horse={horse} 
                   onShowMore={() => navigate(`/horse/${horse.id}`)} 
-                  matchStatus={{ is_liked: undefined }} 
+                  matchStatus={{ is_liked: undefined }}
+                  showPriceOnMobile={true}
                 />
                 <div className="absolute top-3 right-3 flex gap-2">
                   <Button 
