@@ -330,7 +330,7 @@ export default function HorseDetail() {
                   style={!isSaved ? { backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" } : {}}
                 >
                   <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
-                  {isSaved ? 'Saved to Favorites' : 'Save to Favorites'}
+                  {isSaved ? 'Favourited' : 'Favourite'}
                 </Button>
                 <Button className="flex-1" onClick={handleContactOwner}>
                   <MessageSquare className="mr-2 h-4 w-4" />
