@@ -172,7 +172,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
         {/* Quick Actions */}
         <div className="flex gap-2">
           <Button
-            className="flex-1 bg-primary hover:bg-primary/90 text-white font-accent font-semibold"
+            className="flex-1 bg-black hover:bg-gray-800 text-white font-accent font-semibold"
             onClick={() => onShowMore(horse.id)}
           >
             {isMobile ? "More Info" : "View Full Profile"}
