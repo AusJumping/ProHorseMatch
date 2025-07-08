@@ -172,18 +172,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
         {/* Quick Actions */}
         <div className="flex gap-2">
           <Button
-            className="flex-1 font-accent font-semibold"
-            style={{ 
-              backgroundColor: '#000000 !important', 
-              color: '#ffffff !important',
-              borderColor: '#000000 !important'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#374151 !important';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#000000 !important';
-            }}
+            className="flex-1 bg-black hover:bg-gray-800 text-white font-accent font-semibold"
             onClick={() => onShowMore(horse.id)}
           >
             {isMobile ? "More Info" : "View Full Profile"}
