@@ -68,37 +68,24 @@ export default function HorseDetail() {
         navigate("/auth");
         return;
       }
-
-      // If already saved, inform user and don't create duplicate
-      if (isSaved) {
-        toast({
-          title: "Already in favorites",
-          description: "This horse is already in your favorites.",
-          variant: "default",
-          duration: 4000, // Show for a longer time (4 seconds)
-        });
-        return;
-      }
       
       // First check if there's already a match for this user and horse
       const existingMatches = await apiRequest("GET", "/api/matches");
       
-      const matchExists = existingMatches.some(
+      const existingMatch = existingMatches.find(
         (match: any) => match.horse_id === parseInt(params!.id) && match.customer_id === user.id
       );
 
-      if (matchExists) {
-        // If match exists but is not liked (was previously unliked), update it
-        const match = existingMatches.find(
-          (m: any) => m.horse_id === parseInt(params!.id) && m.customer_id === user.id
-        );
+      if (existingMatch) {
+        // Toggle the like status
+        const newLikedStatus = !existingMatch.is_liked;
         
-        await apiRequest("PATCH", `/api/matches/${match.id}`, { is_liked: true });
+        await apiRequest("PATCH", `/api/matches/${existingMatch.id}`, { is_liked: newLikedStatus });
         
-        setIsSaved(true);
+        setIsSaved(newLikedStatus);
         toast({
-          title: "Horse saved",
-          description: "This horse has been added to your favorites.",
+          title: newLikedStatus ? "Horse saved" : "Horse removed",
+          description: newLikedStatus ? "This horse has been added to your favorites." : "This horse has been removed from your favorites.",
           variant: "default",
           duration: 4000, // Show for 4 seconds
         });
@@ -323,11 +310,10 @@ export default function HorseDetail() {
                   variant={isSaved ? "outline" : "default"}
                   className={`flex-1 ${isSaved ? 'bg-primary-light bg-opacity-10 text-primary' : ''}`}
                   onClick={handleSave} 
-                  disabled={isSaved}
                   style={!isSaved ? { backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" } : {}}
                 >
                   <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
-                  {isSaved ? 'Favourited' : 'Favourite'}
+                  Favourite
                 </Button>
                 <Button className="flex-1" onClick={handleContactOwner}>
                   <MessageSquare className="mr-2 h-4 w-4" />
