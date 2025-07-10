@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 10, 2025: Excel export functionality added to admin dashboard  
+  - ADDED: "Export to Excel" button in Users tab of admin dashboard
+  - Users can now download comprehensive user data including emails, usernames, account types, subscription details
+  - Export includes all user information in organized Excel spreadsheet with proper column formatting
+  - File automatically named with current date: "ProHorseMatch_Users_YYYY-MM-DD.xlsx"
+  - Export disabled when no user data available with appropriate user feedback
 - July 10, 2025: Profile page updated with username field
   - REMOVED: Name field from Profile page Personal Information section
   - ADDED: Username field (required) to replace optional name field 

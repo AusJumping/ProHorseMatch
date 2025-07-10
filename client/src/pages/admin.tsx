@@ -26,7 +26,8 @@ import {
   XCircle,
   BarChart3,
   Trash2,
-  Edit
+  Edit,
+  Download
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -88,6 +89,80 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('overview');
   const [editingEmail, setEditingEmail] = useState<{userId: number, currentEmail: string, newEmail: string} | null>(null);
   const queryClient = useQueryClient();
+
+  // Excel export function
+  const exportUsersToExcel = () => {
+    if (!users || users.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No user data available to export",
+        variant: "destructive",
+        duration: 5000,
+      });
+      return;
+    }
+
+    // Import xlsx dynamically to avoid bundling issues
+    import('xlsx').then((XLSX) => {
+      // Prepare data for Excel export
+      const exportData = users.map(user => ({
+        'User ID': user.id,
+        'Email': user.email,
+        'Username': user.username || '',
+        'Name': user.name || '',
+        'Business Name': user.business_name || '',
+        'Account Type': `${user.is_selling ? 'Seller' : ''}${user.is_selling && user.is_searching ? ' & ' : ''}${user.is_searching ? 'Searcher' : ''}`,
+        'Subscription Status': user.subscription_status || 'None',
+        'Subscription Plan': user.subscription_plan || 'None',
+        'Email Verified': user.email_verified ? 'Yes' : 'No',
+        'Registration Date': user.created_at ? new Date(user.created_at).toLocaleDateString() : ''
+      }));
+
+      // Create workbook and worksheet
+      const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+      // Add some styling - auto-size columns
+      const columnWidths = [
+        { wch: 10 }, // User ID
+        { wch: 30 }, // Email
+        { wch: 20 }, // Username
+        { wch: 20 }, // Name
+        { wch: 25 }, // Business Name
+        { wch: 20 }, // Account Type
+        { wch: 18 }, // Subscription Status
+        { wch: 18 }, // Subscription Plan
+        { wch: 15 }, // Email Verified
+        { wch: 15 }  // Registration Date
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Users');
+
+      // Generate filename with current date
+      const today = new Date();
+      const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const filename = `ProHorseMatch_Users_${dateString}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(workbook, filename);
+
+      toast({
+        title: "Export Successful",
+        description: `User data exported to ${filename}`,
+        duration: 5000,
+      });
+    }).catch((error) => {
+      console.error('Excel export error:', error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export user data to Excel",
+        variant: "destructive",
+        duration: 5000,
+      });
+    });
+  };
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery<AnalyticsData>({
     queryKey: ['/api/admin/analytics'],
@@ -449,10 +524,22 @@ export default function AdminPage() {
           <TabsContent value="users" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>User Management</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  View and manage platform users
-                </p>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle>User Management</CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      View and manage platform users
+                    </p>
+                  </div>
+                  <Button
+                    onClick={exportUsersToExcel}
+                    disabled={usersLoading || !users || users.length === 0}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export to Excel
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 {usersLoading ? (
