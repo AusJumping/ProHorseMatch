@@ -3523,8 +3523,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const planRevenue = {
         'beta-seller': 0,
         'beta-searching': 0,
-        'premium': 0,
-        'basic': 0
+        'searching': 0,
+        'professional': 0,
+        'elite': 0
       };
 
       subscribers.forEach(user => {
@@ -3536,13 +3537,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Beta plans might be free or discounted
             planRevenue[user.subscription_plan] += 0;
             break;
-          case 'premium':
-            planRevenue['premium'] += 29; // Example price
-            monthlyRevenue += 29;
-            break;
-          case 'basic':
-            planRevenue['basic'] += 19; // Example price
+          case 'searching':
+            planRevenue['searching'] += 19; // Searching plan price
             monthlyRevenue += 19;
+            break;
+          case 'professional':
+            planRevenue['professional'] += 39; // Professional plan price
+            monthlyRevenue += 39;
+            break;
+          case 'elite':
+            planRevenue['elite'] += 59; // Elite plan price
+            monthlyRevenue += 59;
             break;
         }
       });
