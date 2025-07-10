@@ -61,7 +61,7 @@ const Sidebar = () => {
         {isAuthenticated && user && (
           <div className="mt-3 text-center">
             <p className="text-sm font-medium text-primary">
-              Welcome, {user.name || user.business_name || 'User'}
+              Welcome, {user.username || user.name || user.business_name || 'User'}
             </p>
           </div>
         )}
