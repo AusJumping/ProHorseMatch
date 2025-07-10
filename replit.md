@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 10, 2025: Enhanced Terms of Service with comprehensive horse listings liability disclaimer
+  - ADDED: New "Horse Listings and Buyer Responsibility" section to all Terms of Service components
+  - Added explicit disclaimers about platform liability regarding horse condition, health, and suitability
+  - Clarified buyer responsibility for due diligence, veterinary examinations, and professional advice
+  - Updated all three Terms of Service dialogs (subscription page, TermsOfServiceDialog, TermsDialog) for consistency
+  - Enhanced legal protection for platform regarding horse transactions and listing accuracy
 - July 10, 2025: Excel export functionality added to admin dashboard  
   - ADDED: "Export to Excel" button in Users tab of admin dashboard
   - Users can now download comprehensive user data including emails, usernames, account types, subscription details

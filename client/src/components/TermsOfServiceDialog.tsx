@@ -44,6 +44,12 @@ const TermsOfServiceDialog: React.FC = () => {
             <p>Sellers must have the legal right to sell or lease the horse they list on our platform.</p>
             <p>We reserve the right to remove any listing that violates these Terms, appears fraudulent, or is otherwise inappropriate.</p>
             
+            <h3 className="text-lg font-bold">4.1 Horse Listings and Buyer Responsibility</h3>
+            <p>ProHorseMatch is a digital platform designed to connect prospective buyers with sellers of performance horses. We do not own, inspect, or verify any horses listed on the platform. All descriptions, images, videos, and claims made in a horse listing are the sole responsibility of the seller.</p>
+            <p>ProHorseMatch does not guarantee the accuracy, health, condition, performance, temperament, or suitability of any horse listed. We do not conduct veterinary checks, training assessments, or behavioural evaluations, nor do we verify the claims made in any listing.</p>
+            <p>Buyers are solely responsible for conducting their own due diligence before proceeding with any transaction. This includes, but is not limited to, arranging independent veterinary examinations, obtaining professional advice, and inspecting the horse in person where possible. Any decisions made based on listings on the platform are entirely at the buyer's own risk.</p>
+            <p>By using ProHorseMatch, you acknowledge and agree that the platform bears no liability or responsibility for the condition, soundness, health, or suitability of any horse advertised. All negotiations, inspections, and purchases take place between the buyer and seller, and ProHorseMatch plays no role in the transaction process beyond facilitating initial contact.</p>
+            
             <h3 className="text-lg font-bold">5. Transactions Between Users</h3>
             <p>Our Services facilitate connections between Sellers and prospective buyers. We are not a party to any transaction between Users.</p>
             <p>Users are responsible for negotiating the terms of any transaction, including payment methods, delivery arrangements, and contracts.</p>
