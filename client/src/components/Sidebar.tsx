@@ -71,9 +71,9 @@ const Sidebar = () => {
         <ul className="space-y-1">
           <li>
             <Button
-              variant={location === "/" ? "default" : "ghost"}
+              variant="ghost"
               className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
-                location === "/" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                location === "/" || location === "/filter" ? "bg-[#cdac6e] text-white" : "text-neutral-800"
               }`}
               onClick={(e) => {
                 e.preventDefault();
@@ -86,9 +86,9 @@ const Sidebar = () => {
           </li>
           <li>
             <Button
-              variant={location === "/favorites" ? "default" : "ghost"}
+              variant="ghost"
               className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
-                location === "/favorites" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                location === "/favorites" ? "bg-[#cdac6e] text-white" : "text-neutral-800"
               }`}
               onClick={(e) => {
                 e.preventDefault();
@@ -101,9 +101,9 @@ const Sidebar = () => {
           </li>
           <li>
             <Button
-              variant={location === "/messages" ? "default" : "ghost"}
+              variant="ghost"
               className={`w-full justify-start px-5 py-3 relative hover:bg-[#cdac6e] hover:text-white ${
-                location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                location === "/messages" ? "bg-[#cdac6e] text-white" : "text-neutral-800"
               }`}
               onClick={(e) => {
                 e.preventDefault();
@@ -124,9 +124,9 @@ const Sidebar = () => {
           </li>
           <li>
             <Button
-              variant={location === "/saved-searches" ? "default" : "ghost"}
+              variant="ghost"
               className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
-                location === "/saved-searches" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                location === "/saved-searches" ? "bg-[#cdac6e] text-white" : "text-neutral-800"
               }`}
               onClick={(e) => {
                 e.preventDefault();
@@ -160,9 +160,9 @@ const Sidebar = () => {
             <>
               <li>
                 <Button
-                  variant={location === "/my-horses" ? "default" : "ghost"}
+                  variant="ghost"
                   className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
-                    location === "/my-horses" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                    location === "/my-horses" ? "bg-[#cdac6e] text-white" : "text-neutral-800"
                   }`}
                   onClick={(e) => {
                     e.preventDefault();
@@ -175,9 +175,9 @@ const Sidebar = () => {
               </li>
               <li>
                 <Button
-                  variant={location === "/add-horse" ? "default" : "ghost"}
+                  variant="ghost"
                   className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
-                    location === "/add-horse" ? "bg-primary-light bg-opacity-10 text-primary" : "text-neutral-800"
+                    location === "/add-horse" ? "bg-[#cdac6e] text-white" : "text-neutral-800"
                   }`}
                   onClick={(e) => {
                     e.preventDefault();
@@ -198,7 +198,9 @@ const Sidebar = () => {
           <li>
             <Button 
               variant="outline" 
-              className="w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white"
+              className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
+                location === "/profile" ? "bg-[#cdac6e] text-white" : ""
+              }`}
               onClick={(e) => {
                 e.preventDefault();
                 navigate("/profile");
@@ -211,7 +213,9 @@ const Sidebar = () => {
           <li>
             <Button 
               variant="outline"
-              className="w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white"
+              className={`w-full justify-start px-5 py-3 hover:bg-[#cdac6e] hover:text-white ${
+                location === "/subscription" ? "bg-[#cdac6e] text-white" : ""
+              }`}
               onClick={(e) => {
                 e.preventDefault();
                 navigate("/subscription");

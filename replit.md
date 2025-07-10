@@ -114,6 +114,11 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 10, 2025: Active menu items now use gold color styling
+  - COMPLETED: All sidebar navigation menu items now display gold (#cdac6e) background with white text when active
+  - Updated active state detection for: Find Horses, Favorites, Messages, Saved Searches, My Horses, Add Horse, Profile, and Subscription
+  - Enhanced CSS with data-active attribute styling for consistent active state appearance across all menu components
+  - Consistent hover and active styling now uses the same gold color for unified brand experience
 - July 10, 2025: Profile page simplified to display read-only account information
   - CHANGED: Username and email fields now display as read-only disabled inputs
   - REMOVED: Save Changes button and form submission functionality

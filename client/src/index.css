@@ -85,10 +85,12 @@
 }
 
 @layer components {
-  /* Desktop sidebar menu hover styling only */
+  /* Desktop sidebar menu hover and active styling */
   @media (min-width: 768px) {
     [data-sidebar="menu-button"]:hover,
-    [data-sidebar="menu-sub-button"]:hover {
+    [data-sidebar="menu-sub-button"]:hover,
+    [data-sidebar="menu-button"][data-active="true"],
+    [data-sidebar="menu-sub-button"][data-active="true"] {
       background-color: #cdac6e !important;
       color: white !important;
     }
