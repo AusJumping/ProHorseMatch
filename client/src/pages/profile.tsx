@@ -24,7 +24,7 @@ import { getMinPrice, getMaxPrice } from "@/lib/currencyConverter";
 
 // Dynamic schema that validates price ranges based on currency
 const createProfileFormSchema = (currency: string = "AUD") => z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }).optional(),
+  username: z.string().min(2, { message: "Username must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }).optional(),
   location_country: z.string().optional(),
   preferred_disciplines: z.array(z.string()).optional().default([]),
@@ -124,7 +124,7 @@ export default function Profile() {
   const profileForm = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: user?.name || "",
+      username: user?.username || "",
       email: user?.email || "",
       location_country: user?.profile?.location_country || undefined,
       preferred_disciplines: user?.profile?.preferred_disciplines || [],
@@ -237,10 +237,10 @@ export default function Profile() {
                   <form className="space-y-6">
                     <FormField
                       control={profileForm.control}
-                      name="name"
+                      name="username"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Your Name (optional)</FormLabel>
+                          <FormLabel>Username</FormLabel>
                           <FormControl>
                             <Input {...field} />
                           </FormControl>

@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 10, 2025: Profile page updated with username field
+  - REMOVED: Name field from Profile page Personal Information section
+  - ADDED: Username field (required) to replace optional name field 
+  - Updated form schema validation to require minimum 2 characters for username
+  - Profile page now displays and allows editing of username instead of name
+  - Changes maintain consistency with existing user data structure (username field already exists in database)
 - July 8, 2025: Auto-logout security system fully implemented with 1-hour timeout
   - Enhanced server-side token authentication with 1-hour expiration (previously 30 days)
   - Added activity tracking to `isTokenAuthenticated` middleware for session management
