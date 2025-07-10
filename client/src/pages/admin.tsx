@@ -6,6 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   Users, 
   Heart, 
@@ -22,7 +25,8 @@ import {
   CheckCircle,
   XCircle,
   BarChart3,
-  Trash2
+  Trash2,
+  Edit
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -82,6 +86,7 @@ export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
+  const [editingEmail, setEditingEmail] = useState<{userId: number, currentEmail: string, newEmail: string} | null>(null);
   const queryClient = useQueryClient();
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery<AnalyticsData>({
@@ -180,6 +185,72 @@ export default function AdminPage() {
   const handleDeleteUser = (userId: number, userEmail: string) => {
     if (window.confirm(`Are you sure you want to delete user: ${userEmail}?\n\nThis will permanently delete the user and all their data including horses, conversations, and messages. This action cannot be undone.`)) {
       deleteUserMutation.mutate(userId);
+    }
+  };
+
+  // Email update mutation
+  const updateEmailMutation = useMutation({
+    mutationFn: async (data: {userId: number, newEmail: string}) => {
+      const response = await fetch(`/api/admin/users/${data.userId}/email`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: data.newEmail }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Email Updated",
+        description: "User email has been successfully updated",
+        duration: 5000,
+      });
+      setEditingEmail(null);
+      // Invalidate and refetch user data
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: (error: Error) => {
+      console.error('Update email error:', error);
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "Admin access required for email updates",
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Update Failed",
+          description: error.message || "Failed to update email",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    }
+  });
+
+  const handleEmailUpdate = (userId: number, currentEmail: string) => {
+    setEditingEmail({
+      userId,
+      currentEmail,
+      newEmail: currentEmail
+    });
+  };
+
+  const submitEmailUpdate = () => {
+    if (editingEmail && editingEmail.newEmail !== editingEmail.currentEmail) {
+      updateEmailMutation.mutate({
+        userId: editingEmail.userId,
+        newEmail: editingEmail.newEmail
+      });
     }
   };
 
@@ -416,6 +487,16 @@ export default function AdminPage() {
                                 {user.subscription_status === 'active' && (
                                   <Badge variant="default">{user.subscription_plan}</Badge>
                                 )}
+                                {/* Edit email button */}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEmailUpdate(user.id, user.email)}
+                                  disabled={updateEmailMutation.isPending}
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-300 hover:border-blue-400"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
                                 {/* Only show delete button for non-admin users */}
                                 {user.email !== 'info@australianjumping.com.au' && (
                                   <Button
@@ -633,6 +714,56 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Email Edit Dialog */}
+      <Dialog open={!!editingEmail} onOpenChange={() => setEditingEmail(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User Email</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-email">Current Email</Label>
+              <Input
+                id="current-email"
+                value={editingEmail?.currentEmail || ''}
+                disabled
+                className="bg-gray-50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-email">New Email</Label>
+              <Input
+                id="new-email"
+                type="email"
+                value={editingEmail?.newEmail || ''}
+                onChange={(e) => setEditingEmail(prev => prev ? { ...prev, newEmail: e.target.value } : null)}
+                placeholder="Enter new email address"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setEditingEmail(null)}
+                disabled={updateEmailMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submitEmailUpdate}
+                disabled={updateEmailMutation.isPending || !editingEmail?.newEmail || editingEmail.newEmail === editingEmail.currentEmail}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {updateEmailMutation.isPending ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  'Update Email'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

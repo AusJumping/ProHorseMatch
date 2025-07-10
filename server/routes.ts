@@ -3609,6 +3609,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Update User Email
+  app.patch("/api/admin/users/:userId/email", isTokenAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { email } = req.body;
+
+      if (!userId || isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      if (!email || !email.includes('@')) {
+        return res.status(400).json({ message: "Valid email address is required" });
+      }
+
+      // Get user to check if it exists
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if the new email is already in use by another user
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser && existingUser.id !== userId) {
+        return res.status(400).json({ message: "Email address is already in use by another user" });
+      }
+
+      console.log(`Admin updating user ${userId} email from ${user.email} to ${email}`);
+
+      // Update the user's email
+      const success = await storage.updateUser(userId, { email });
+
+      if (success) {
+        console.log(`Successfully updated user ${userId} email to ${email}`);
+        return res.json({ 
+          message: `Successfully updated email for user ${user.username || 'Unknown'}`,
+          updatedUser: {
+            id: userId,
+            email: email,
+            username: user.username
+          }
+        });
+      } else {
+        console.log(`Failed to update user ${userId} email`);
+        return res.status(500).json({ message: "Failed to update user email" });
+      }
+    } catch (error) {
+      console.error("Admin update user email error:", error);
+      res.status(500).json({ message: "Failed to update user email" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
