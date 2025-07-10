@@ -9,7 +9,7 @@ import {
   searchNotifications, type SearchNotification, type InsertSearchNotification
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, sql } from "drizzle-orm";
+import { eq, and, or, desc, asc, sql } from "drizzle-orm";
 
 export interface IStorage {
   // Horse methods
@@ -26,6 +26,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<User>): Promise<User>;
+  deleteUser(id: number): Promise<boolean>;
   updateUserSubscription(id: number, subscriptionData: {
     stripe_customer_id?: string;
     stripe_subscription_id?: string;
@@ -773,6 +774,71 @@ export class MemStorage implements IStorage {
     saveStorageToDisk();
     return updatedUser;
   }
+
+  async deleteUser(id: number): Promise<boolean> {
+    console.log(`MemStorage.deleteUser - Attempting to delete user with ID: ${id}`);
+    const exists = this.users.has(id);
+    if (exists) {
+      const user = this.users.get(id);
+      console.log(`MemStorage.deleteUser - Found user: ${JSON.stringify({
+        id: user?.id,
+        email: user?.email,
+        username: user?.username
+      })}`);
+      
+      // Delete user from local map
+      this.users.delete(id);
+      
+      // Also delete all related data
+      // Delete user's horses
+      const userHorses = Array.from(this.horses.values()).filter(horse => horse.owner_id === id);
+      userHorses.forEach(horse => {
+        this.horses.delete(horse.id);
+        console.log(`MemStorage.deleteUser - Deleted horse: ${horse.name} (ID: ${horse.id})`);
+      });
+
+      // Delete user's matches (as customer)
+      const userMatches = Array.from(this.matches.values()).filter(match => match.customer_id === id);
+      userMatches.forEach(match => {
+        this.matches.delete(match.id);
+        console.log(`MemStorage.deleteUser - Deleted match: ${match.id}`);
+      });
+
+      // Delete user's conversations and messages
+      const userConversations = Array.from(this.conversations.values()).filter(
+        conv => conv.customer_id === id || conv.owner_id === id
+      );
+      userConversations.forEach(conv => {
+        // Delete messages in this conversation
+        const convMessages = Array.from(this.messages.values()).filter(
+          msg => msg.customer_id === id || msg.owner_id === id
+        );
+        convMessages.forEach(msg => {
+          this.messages.delete(msg.id);
+        });
+        
+        this.conversations.delete(conv.id);
+        console.log(`MemStorage.deleteUser - Deleted conversation: ${conv.id}`);
+      });
+      
+      // Sync with global storage
+      if (global.__persistent_storage) {
+        global.__persistent_storage.users = this.users;
+        global.__persistent_storage.horses = this.horses;
+        global.__persistent_storage.matches = this.matches;
+        global.__persistent_storage.conversations = this.conversations;
+        global.__persistent_storage.messages = this.messages;
+        saveStorageToDisk();
+        
+        console.log(`MemStorage.deleteUser - Synchronized global storage after deletion`);
+      }
+      
+      console.log(`MemStorage.deleteUser - Successfully deleted user with ID: ${id} and all related data`);
+    } else {
+      console.log(`MemStorage.deleteUser - User with ID ${id} not found`);
+    }
+    return exists;
+  }
   
   async updateUserSubscription(id: number, subscriptionData: {
     stripe_customer_id?: string;
@@ -1154,6 +1220,38 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return result;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    try {
+      // Delete related data first due to foreign key constraints
+      
+      // Delete user's horses
+      await db.delete(horses).where(eq(horses.owner_id, id));
+      
+      // Delete user's matches
+      await db.delete(matches).where(eq(matches.customer_id, id));
+      
+      // Delete user's messages
+      await db.delete(messages).where(or(
+        eq(messages.customer_id, id),
+        eq(messages.owner_id, id)
+      ));
+      
+      // Delete user's conversations
+      await db.delete(conversations).where(or(
+        eq(conversations.customer_id, id),
+        eq(conversations.owner_id, id)
+      ));
+      
+      // Finally delete the user
+      const result = await db.delete(users).where(eq(users.id, id));
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
+    }
   }
 
   async updateUserSubscription(id: number, subscriptionData: {

@@ -3559,6 +3559,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Delete User
+  app.delete("/api/admin/users/:id", isTokenAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      // Prevent admin from deleting themselves
+      if (req.userId === userId) {
+        return res.status(400).json({ message: "Cannot delete your own admin account" });
+      }
+
+      // Get user details before deletion for logging
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      console.log(`Admin deleting user: ${user.email} (ID: ${userId})`);
+
+      // Delete the user and all related data
+      const success = await storage.deleteUser(userId);
+
+      if (success) {
+        console.log(`Successfully deleted user: ${user.email} (ID: ${userId})`);
+        return res.json({ 
+          message: `Successfully deleted user ${user.email}`,
+          deletedUser: {
+            id: userId,
+            email: user.email,
+            username: user.username
+          }
+        });
+      } else {
+        console.log(`Failed to delete user: ${user.email} (ID: ${userId})`);
+        return res.status(500).json({ message: "Failed to delete user" });
+      }
+    } catch (error) {
+      console.error("Admin delete user error:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 

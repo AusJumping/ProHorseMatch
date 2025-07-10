@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -21,11 +21,13 @@ import {
   Building,
   CheckCircle,
   XCircle,
-  BarChart3
+  BarChart3,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
+import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/Sidebar';
 import MobileNavbar from '@/components/MobileNavbar';
 
@@ -80,6 +82,7 @@ export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
+  const queryClient = useQueryClient();
 
   const { data: analytics, isLoading: analyticsLoading } = useQuery<AnalyticsData>({
     queryKey: ['/api/admin/analytics'],
@@ -125,6 +128,49 @@ export default function AdminPage() {
       }
     }
   });
+
+  // Delete user mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: number) => {
+      return await apiRequest(`/api/admin/users/${userId}`, {
+        method: 'DELETE'
+      });
+    },
+    onSuccess: (data, userId) => {
+      toast({
+        title: "User Deleted",
+        description: data.message || "User has been successfully deleted",
+        duration: 5000,
+      });
+      // Invalidate and refetch user data
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics'] });
+    },
+    onError: (error: Error) => {
+      console.error('Delete user error:', error);
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "Admin access required for user deletion",
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Delete Failed",
+          description: error.message || "Failed to delete user",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    }
+  });
+
+  const handleDeleteUser = (userId: number, userEmail: string) => {
+    if (window.confirm(`Are you sure you want to delete user: ${userEmail}?\n\nThis will permanently delete the user and all their data including horses, conversations, and messages. This action cannot be undone.`)) {
+      deleteUserMutation.mutate(userId);
+    }
+  };
 
   // Check if user is admin
   if (!authLoading && (!user || user.email !== 'info@australianjumping.com.au')) {
@@ -337,7 +383,7 @@ export default function AdminPage() {
                       {users.map(user => (
                         <div key={user.id} className="border rounded-lg p-4 space-y-2">
                           <div className="flex justify-between items-start">
-                            <div className="space-y-1">
+                            <div className="space-y-1 flex-1">
                               <div className="flex items-center space-x-2">
                                 <User className="h-4 w-4 text-muted-foreground" />
                                 <span className="font-medium">
@@ -355,9 +401,27 @@ export default function AdminPage() {
                               </div>
                             </div>
                             <div className="flex flex-col items-end space-y-1">
-                              {user.subscription_status === 'active' && (
-                                <Badge variant="default">{user.subscription_plan}</Badge>
-                              )}
+                              <div className="flex items-center space-x-2">
+                                {user.subscription_status === 'active' && (
+                                  <Badge variant="default">{user.subscription_plan}</Badge>
+                                )}
+                                {/* Only show delete button for non-admin users */}
+                                {user.email !== 'info@australianjumping.com.au' && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteUser(user.id, user.email)}
+                                    disabled={deleteUserMutation.isPending}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-300 hover:border-red-400"
+                                  >
+                                    {deleteUserMutation.isPending ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
+                                    ) : (
+                                      <Trash2 className="h-3 w-3" />
+                                    )}
+                                  </Button>
+                                )}
+                              </div>
                               <div className="flex space-x-1">
                                 {user.is_selling && (
                                   <Badge variant="secondary">Seller</Badge>
@@ -368,13 +432,20 @@ export default function AdminPage() {
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>
-                                Joined {new Date(user.created_at).toLocaleDateString()}
-                              </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="h-3 w-3" />
+                                <span>
+                                  Joined {new Date(user.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
                             </div>
+                            {user.email === 'info@australianjumping.com.au' && (
+                              <Badge variant="destructive" className="text-xs">
+                                Admin Account
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       ))}
