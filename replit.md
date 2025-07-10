@@ -114,6 +114,11 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 10, 2025: Desktop header simplified and cleaned up
+  - REMOVED: Search for horses input field from desktop header
+  - REMOVED: Add Horse button from desktop header (still available in sidebar)
+  - REMOVED: Notification bell icon from desktop header
+  - Desktop header now shows only page title/back button and maintains clean, minimal design
 - July 10, 2025: Active menu items now use gold color styling
   - COMPLETED: All sidebar navigation menu items now display gold (#cdac6e) background with white text when active
   - Updated active state detection for: Find Horses, Favorites, Messages, Saved Searches, My Horses, Add Horse, Profile, and Subscription
