@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 10, 2025: Profile page simplified to display read-only account information
+  - CHANGED: Username and email fields now display as read-only disabled inputs
+  - REMOVED: Save Changes button and form submission functionality
+  - Updated description from "Update your personal information" to "View your account information"
+  - Added contact information for username/email changes via support@prohorsematch.com
+  - Cleaned up unused form validation, schema, and component imports for better performance
 - July 10, 2025: Enhanced Terms of Service with comprehensive horse listings liability disclaimer
   - ADDED: New "Horse Listings and Buyer Responsibility" section to all Terms of Service components
   - Added explicit disclaimers about platform liability regarding horse condition, health, and suitability
