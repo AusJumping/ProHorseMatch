@@ -234,7 +234,7 @@ export default function HorseDetail() {
       showBackButton 
       onBackClick={handleBack}
     >
-      <div className={`w-full ${isMobile ? 'max-w-xs px-4' : 'max-w-xl'} mx-auto`}>
+      <div className={`w-full ${isMobile ? 'max-w-sm px-3' : 'max-w-xl'} mx-auto`}>
         <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-md">
           {/* Media Gallery - Above content for all screen sizes */}
           <div className={`w-full ${isMobile ? 'h-[35vh]' : 'h-[45vh]'}`}>

@@ -68,8 +68,8 @@ const Layout = ({
               {showBackButton && (
                 <Button 
                   variant="ghost" 
-                  size="sm" 
-                  className="mr-2 px-2" 
+                  size="icon" 
+                  className="mr-2 h-8 w-8" 
                   onClick={handleBack}
                 >
                   <ArrowLeft size={16} />
