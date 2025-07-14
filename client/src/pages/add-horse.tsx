@@ -274,7 +274,10 @@ export default function AddHorse() {
   };
 
   const removePhotoUrl = (url: string) => {
-    setPhotoUrls(photoUrls.filter(photo => photo !== url));
+    const updatedPhotos = photoUrls.filter(photo => photo !== url);
+    setPhotoUrls(updatedPhotos);
+    // Update the form field value for validation
+    form.setValue("photos", updatedPhotos);
   };
 
   const removeVideoUrl = (url: string) => {
@@ -1377,6 +1380,9 @@ export default function AddHorse() {
                                       
                                       // Add the URL to the list
                                       setPhotoUrls([...photoUrls, data.url]);
+                                      
+                                      // Update the form field value for validation
+                                      form.setValue("photos", [...photoUrls, data.url]);
                                       
                                       // Clear the input
                                       e.target.value = "";
