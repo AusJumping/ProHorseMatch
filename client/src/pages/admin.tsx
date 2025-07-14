@@ -27,7 +27,8 @@ import {
   BarChart3,
   Trash2,
   Edit,
-  Download
+  Download,
+  Eye
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -74,6 +75,30 @@ interface User {
   subscription_plan: string;
   created_at: string;
   email_verified: boolean;
+}
+
+interface Horse {
+  id: number;
+  owner_id: number;
+  name: string;
+  disciplines: string[];
+  levels: string[];
+  breeds: string[];
+  age: number;
+  height_hands: number | null;
+  sex: string;
+  sire: string;
+  dam: string;
+  dam_sire: string;
+  price_min: number;
+  price_max: number;
+  currency: string;
+  location_country: string;
+  description: string;
+  photos: string[];
+  videos: string[];
+  created_at: string;
+  owner?: User;
 }
 
 interface RevenueData {
@@ -195,6 +220,20 @@ export default function AdminPage() {
     }
   });
 
+  const { data: horses, isLoading: horsesLoading } = useQuery<Horse[]>({
+    queryKey: ['/api/admin/horses'],
+    retry: false,
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "Admin access required.",
+          variant: "destructive",
+        });
+      }
+    }
+  });
+
   const { data: revenue, isLoading: revenueLoading } = useQuery<RevenueData>({
     queryKey: ['/api/admin/revenue'],
     retry: false,
@@ -260,6 +299,60 @@ export default function AdminPage() {
   const handleDeleteUser = (userId: number, userEmail: string) => {
     if (window.confirm(`Are you sure you want to delete user: ${userEmail}?\n\nThis will permanently delete the user and all their data including horses, conversations, and messages. This action cannot be undone.`)) {
       deleteUserMutation.mutate(userId);
+    }
+  };
+
+  // Delete horse mutation
+  const deleteHorseMutation = useMutation({
+    mutationFn: async (horseId: number) => {
+      const response = await fetch(`/api/admin/horses/${horseId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Horse Deleted",
+        description: data.message || "Horse has been successfully deleted",
+        duration: 5000,
+      });
+      // Invalidate and refetch data
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/horses'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics'] });
+    },
+    onError: (error: Error) => {
+      console.error('Delete horse error:', error);
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "Admin access required for horse deletion",
+          variant: "destructive",
+          duration: 5000,
+        });
+      } else {
+        toast({
+          title: "Delete Failed",
+          description: error.message || "Failed to delete horse",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    }
+  });
+
+  const handleDeleteHorse = (horseId: number, horseName: string) => {
+    if (window.confirm(`Are you sure you want to delete horse: ${horseName}?\n\nThis will permanently delete the horse and all associated data. This action cannot be undone.`)) {
+      deleteHorseMutation.mutate(horseId);
     }
   };
 
@@ -387,9 +480,10 @@ export default function AdminPage() {
             </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="horses">Horses</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
           </TabsList>
@@ -633,6 +727,80 @@ export default function AdminPage() {
                 ) : (
                   <p className="text-center text-muted-foreground py-8">
                     No user data available
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="horses" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Horse Management</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {horsesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+                    <p className="mt-4 text-muted-foreground">Loading horses...</p>
+                  </div>
+                ) : horses && horses.length > 0 ? (
+                  <ScrollArea className="h-[600px]">
+                    <div className="space-y-4">
+                      {horses.map((horse) => (
+                        <div key={horse.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-4">
+                              <div className="flex-1">
+                                <div className="font-medium">{horse.name}</div>
+                                <div className="text-sm text-muted-foreground">
+                                  ID: {horse.id} • Owner: {horse.owner_id}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {horse.disciplines?.join(', ') || 'No disciplines'} • {horse.age}yo • {horse.sex}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {horse.price_min && horse.price_max ? 
+                                    `${horse.currency} ${horse.price_min.toLocaleString()} - ${horse.price_max.toLocaleString()}` : 
+                                    'Price not set'
+                                  }
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {horse.location_country || 'Location not set'}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => window.open(`/horses/${horse.id}`, '_blank')}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                if (window.confirm(`Are you sure you want to delete horse: ${horse.name}?\n\nThis will permanently delete the horse and all associated data. This action cannot be undone.`)) {
+                                  handleDeleteHorse(horse.id, horse.name);
+                                }
+                              }}
+                              disabled={deleteHorseMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                ) : (
+                  <p className="text-center text-muted-foreground py-8">
+                    No horses found
                   </p>
                 )}
               </CardContent>

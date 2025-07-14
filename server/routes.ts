@@ -1780,6 +1780,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =============================================================================
+  // ADMIN HORSE MANAGEMENT ROUTES - Only accessible by admin
+  // =============================================================================
+
+  // Get all horses for admin management
+  app.get("/api/admin/horses", isTokenAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUserById(req.userId);
+      
+      // Check if user is admin
+      if (!user || user.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const horses = await storage.getHorses();
+      return res.json(horses);
+    } catch (error) {
+      console.error("Admin get horses error:", error);
+      return res.status(500).json({ message: "Failed to get horses" });
+    }
+  });
+
+  // Admin update any horse
+  app.put("/api/admin/horses/:id", isTokenAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUserById(req.userId);
+      
+      // Check if user is admin
+      if (!user || user.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const id = parseInt(req.params.id);
+      
+      // Get the horse first to check if it exists
+      const horse = await storage.getHorseById(id);
+      
+      if (!horse) {
+        return res.status(404).json({ message: "Horse not found" });
+      }
+      
+      // Convert "young_horse" to null for database storage
+      const requestData = { ...req.body };
+      if (requestData.height_hands === "young_horse") {
+        requestData.height_hands = null;
+      }
+      
+      // Validate the update data
+      const validatedData = {
+        ...requestData,
+        owner_id: horse.owner_id, // Ensure owner_id cannot be changed
+        id: horse.id // Ensure id cannot be changed
+      };
+      
+      const updatedHorse = await storage.updateHorse(id, validatedData);
+      
+      return res.json(updatedHorse);
+    } catch (error) {
+      console.error("Admin update horse error:", error);
+      return res.status(400).json({ message: error.message || "Invalid request" });
+    }
+  });
+
+  // Admin delete any horse
+  app.delete("/api/admin/horses/:id", isTokenAuthenticated, async (req, res) => {
+    try {
+      const user = await storage.getUserById(req.userId);
+      
+      // Check if user is admin
+      if (!user || user.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const id = parseInt(req.params.id);
+      
+      // Get the horse first to check if it exists
+      const horse = await storage.getHorseById(id);
+      
+      if (!horse) {
+        return res.status(404).json({ message: "Horse not found" });
+      }
+      
+      // Delete the horse using the storage method
+      const deleted = await storage.deleteHorse(id);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete horse" });
+      }
+      
+      return res.json({ message: "Horse deleted successfully" });
+    } catch (error) {
+      console.error("Admin delete horse error:", error);
+      return res.status(500).json({ message: "Failed to delete horse" });
+    }
+  });
+
   // Match routes
   app.post("/api/matches", isTokenAuthenticated, async (req, res) => {
     try {
