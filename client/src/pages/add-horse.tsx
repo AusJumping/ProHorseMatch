@@ -76,9 +76,9 @@ const horseFormSchema = z.object({
   sire: z.string().min(1, "Sire information is required"),
   dam: z.string().min(1, "Dam information is required"),
   dam_sire: z.string().min(1, "Dam Sire information is required"),
-  characteristics: z.array(z.string()).min(1, "Select at least one characteristic"),
+  characteristics: z.array(z.string()).optional(),
   description: z.string().min(1, "Description is required"),
-  additional_info: z.string().min(1, "Additional information is required"),
+  additional_info: z.string().optional(),
   
   // Media requirements
   photos: z.array(z.string()).min(1, "At least one photo is required"),
