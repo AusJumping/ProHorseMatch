@@ -1485,8 +1485,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteHorse(id: number): Promise<boolean> {
-    const result = await db.delete(horses).where(eq(horses.id, id)).returning({ id: horses.id });
-    return result.length > 0;
+    try {
+      console.log(`DatabaseStorage.deleteHorse - Attempting to delete horse with ID: ${id}`);
+      
+      // First, delete all related records to maintain referential integrity
+      
+      // Delete all matches for this horse
+      const deletedMatches = await db.delete(matches).where(eq(matches.horse_id, id)).returning({ id: matches.id });
+      console.log(`DatabaseStorage.deleteHorse - Deleted ${deletedMatches.length} matches`);
+      
+      // Delete all messages for this horse
+      const deletedMessages = await db.delete(messages).where(eq(messages.horse_id, id)).returning({ id: messages.id });
+      console.log(`DatabaseStorage.deleteHorse - Deleted ${deletedMessages.length} messages`);
+      
+      // Delete all conversations for this horse
+      const deletedConversations = await db.delete(conversations).where(eq(conversations.horse_id, id)).returning({ id: conversations.id });
+      console.log(`DatabaseStorage.deleteHorse - Deleted ${deletedConversations.length} conversations`);
+      
+      // Finally, delete the horse itself
+      const result = await db.delete(horses).where(eq(horses.id, id)).returning({ id: horses.id });
+      const success = result.length > 0;
+      
+      console.log(`DatabaseStorage.deleteHorse - Horse deletion ${success ? 'successful' : 'failed'}`);
+      return success;
+    } catch (error) {
+      console.error(`DatabaseStorage.deleteHorse - Error deleting horse ${id}:`, error);
+      throw error; // Re-throw to let the calling code handle it
+    }
   }
 
   // Legacy methods for backward compatibility

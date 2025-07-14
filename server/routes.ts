@@ -1846,33 +1846,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin delete any horse
   app.delete("/api/admin/horses/:id", isTokenAuthenticated, async (req, res) => {
     try {
+      console.log(`Admin delete horse request - horse ID: ${req.params.id}, user ID: ${req.userId}`);
+      
       const user = await storage.getUserById(req.userId);
       
       // Check if user is admin
       if (!user || user.email !== 'info@australianjumping.com.au') {
+        console.log(`Admin delete horse - Access denied for user: ${user?.email || 'unknown'}`);
         return res.status(403).json({ message: "Admin access required" });
       }
       
       const id = parseInt(req.params.id);
       
+      if (isNaN(id)) {
+        console.log(`Admin delete horse - Invalid horse ID: ${req.params.id}`);
+        return res.status(400).json({ message: "Invalid horse ID" });
+      }
+      
       // Get the horse first to check if it exists
       const horse = await storage.getHorseById(id);
       
       if (!horse) {
+        console.log(`Admin delete horse - Horse not found: ${id}`);
         return res.status(404).json({ message: "Horse not found" });
       }
       
-      // Delete the horse using the storage method
+      console.log(`Admin delete horse - Found horse: ${horse.name} (ID: ${id}), proceeding with deletion`);
+      
+      // Delete the horse using the storage method (which handles related records)
       const deleted = await storage.deleteHorse(id);
       
       if (!deleted) {
+        console.log(`Admin delete horse - Deletion failed for horse ID: ${id}`);
         return res.status(500).json({ message: "Failed to delete horse" });
       }
       
-      return res.json({ message: "Horse deleted successfully" });
+      console.log(`Admin delete horse - Successfully deleted horse: ${horse.name} (ID: ${id})`);
+      return res.json({ message: `Horse '${horse.name}' deleted successfully` });
     } catch (error) {
       console.error("Admin delete horse error:", error);
-      return res.status(500).json({ message: "Failed to delete horse" });
+      console.error("Error stack:", error.stack);
+      return res.status(500).json({ 
+        message: "Failed to delete horse", 
+        error: error.message 
+      });
     }
   });
 

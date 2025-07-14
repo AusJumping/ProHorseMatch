@@ -114,14 +114,18 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
-- July 14, 2025: Admin horse management system implemented
+- July 14, 2025: Admin horse management system completed with crash prevention
   - ADDED: Admin backend routes for horse management (/api/admin/horses)
   - ADDED: Admin-only GET, PUT, DELETE endpoints for managing all horses
   - ADDED: "Horses" tab in admin dashboard with comprehensive horse management interface
   - ADDED: Horse listing view with details (ID, owner, disciplines, age, sex, price, location)
   - ADDED: View and Delete buttons for each horse with confirmation dialogs
+  - FIXED: Horse deletion crash by implementing proper foreign key relationship handling
+  - FIXED: Horse view navigation from /horses/${id} to correct /horse/${id} route
+  - ENHANCED: Delete horse functionality now safely removes all related matches, messages, and conversations
+  - ENHANCED: Comprehensive error handling and logging for admin operations
   - RESTRICTED: All horse management features available only to info@australianjumping.com.au
-  - COMPLETE: Full admin horse management system operational with proper authorization
+  - COMPLETE: Full admin horse management system operational with crash prevention and proper authorization
 - July 14, 2025: Mobile navigation and filter display fixed completely
   - FIXED: Mobile menu "Find Horses" navigation now works correctly without timeout delays
   - FIXED: Filter panel now displays properly on mobile when accessing /filter route
