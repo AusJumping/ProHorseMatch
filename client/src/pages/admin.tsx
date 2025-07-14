@@ -775,7 +775,7 @@ export default function AdminPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => window.open(`/horses/${horse.id}`, '_blank')}
+                              onClick={() => window.open(`/horse/${horse.id}`, '_blank')}
                             >
                               <Eye className="h-4 w-4 mr-2" />
                               View
