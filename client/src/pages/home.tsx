@@ -60,10 +60,21 @@ export default function Home() {
   // Check if this is the discover route to show filter by default
   // For filter route, only show filters on desktop, not mobile (mobile users see horses first)
   useEffect(() => {
+    console.log("Filter visibility effect - location:", location, "isMobile:", isMobile);
     if (location === "/discover") {
+      console.log("Setting showFilter to true for discover route");
       setShowFilter(true);
     } else if (location === "/filter" && !isMobile) {
+      console.log("Setting showFilter to true for desktop filter route");
       setShowFilter(true);
+    } else if (location === "/filter" && isMobile) {
+      // Explicitly set to false for mobile users on filter route
+      console.log("Setting showFilter to false for mobile filter route");
+      setShowFilter(false);
+    } else if (location === "/filter") {
+      // Fallback: ensure mobile filter route always hides filters initially
+      console.log("Fallback: Setting showFilter to false for any filter route");
+      setShowFilter(false);
     }
     
     // Check if we have a discipline filter in localStorage or URL
@@ -83,7 +94,7 @@ export default function Home() {
         disciplines: [disciplineFilter]
       }));
     }
-  }, [location]);
+  }, [location, isMobile]);
   
   // This effect ensures that when filters change, we reset our swiping index and refresh data
   useEffect(() => {
@@ -399,6 +410,11 @@ export default function Home() {
     setSwipingIndex(0);
     setActiveFilters(cleanFilters);
     setIsFilterOpen(false);
+    
+    // On mobile, ensure the filter panel doesn't automatically show after applying filters
+    if (isMobile && location === "/filter") {
+      setShowFilter(false);
+    }
   };
 
   const toggleFilterPanel = () => {
