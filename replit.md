@@ -114,6 +114,14 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 14, 2025: "Young Horse" height filter fully implemented and operational
+  - ADDED: "Young Horse" option to both min and max height filter dropdowns in FilterPanel.tsx
+  - UPDATED: Backend routes.ts to parse "young_horse" filter parameter and set young_horse=true flag
+  - IMPLEMENTED: Backend filtering logic in storage.ts for both DatabaseStorage and MemStorage classes
+  - FIXED: Frontend dropdown handling to properly manage "young_horse" string value instead of converting to NaN
+  - ENHANCED: Display logic to show "Young Horse" text when selected in dropdown
+  - "Young Horse" filter targets horses under 3 years old OR horses with null height values
+  - Complete end-to-end functionality verified from frontend selection to backend filtering
 - July 10, 2025: Desktop header simplified and cleaned up
   - REMOVED: Search for horses input field from desktop header
   - REMOVED: Add Horse button from desktop header (still available in sidebar)

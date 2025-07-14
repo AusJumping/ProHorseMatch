@@ -472,12 +472,12 @@ const FilterPanel = ({
             <div className="flex gap-3">
               <div className="flex-1">
                 <Select 
-                  value={filters.height_min?.toString() || "0"} 
-                  onValueChange={(value) => handleChange('height_min', parseFloat(value), true)}
+                  value={filters.height_min === "young_horse" ? "young_horse" : (filters.height_min?.toString() || "0")} 
+                  onValueChange={(value) => handleChange('height_min', value === "young_horse" ? "young_horse" : parseFloat(value), true)}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     {filters.height_min && filters.height_min !== 0 ? (
-                      <SelectValue />
+                      filters.height_min === "young_horse" ? "Young Horse" : <SelectValue />
                     ) : (
                       <span className="text-muted-foreground">Min</span>
                     )}
@@ -510,12 +510,12 @@ const FilterPanel = ({
               </div>
               <div className="flex-1">
                 <Select 
-                  value={filters.height_max?.toString() || "999"} 
-                  onValueChange={(value) => handleChange('height_max', parseFloat(value), true)}
+                  value={filters.height_max === "young_horse" ? "young_horse" : (filters.height_max?.toString() || "999")} 
+                  onValueChange={(value) => handleChange('height_max', value === "young_horse" ? "young_horse" : parseFloat(value), true)}
                 >
                   <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                     {filters.height_max && filters.height_max !== 999 ? (
-                      <SelectValue />
+                      filters.height_max === "young_horse" ? "Young Horse" : <SelectValue />
                     ) : (
                       <span className="text-muted-foreground">Max</span>
                     )}
