@@ -121,6 +121,11 @@ This is a full-stack web application built with modern technologies:
   - Updated filter display logic to show filters on mobile for both /filter and /discover routes
   - Ensured consistent navigation behavior between desktop sidebar and mobile menu
   - Complete mobile user experience: navigation → filter page → visible filters → horse browsing
+- July 14, 2025: Enhanced mobile UX flow with horses-first browsing experience
+  - CHANGED: Welcome page "Get Started" behavior to show horse listings immediately rather than filter details
+  - Mobile users now see horses by default on /filter route with filters accessible via toggle
+  - Desktop users continue to see filters by default for power-user experience
+  - Implemented mobile-first browsing experience: horses display immediately, filters optional
 - July 14, 2025: Horse detail page layout improved for better user experience
   - CHANGED: Horse detail page layout from side-by-side to vertical stack design
   - Image/media carousel now displays above text content instead of beside it
