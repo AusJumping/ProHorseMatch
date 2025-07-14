@@ -115,6 +115,11 @@ export const horses = pgTable("horses", {
 export const insertHorseSchema = createInsertSchema(horses).omit({
   id: true,
   created_at: true,
+}).extend({
+  height_hands: z.union([
+    z.number().nullable(),
+    z.literal("young_horse")
+  ]).optional(),
 });
 
 export type InsertHorse = z.infer<typeof insertHorseSchema>;

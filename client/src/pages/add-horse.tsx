@@ -60,7 +60,10 @@ const horseFormSchema = z.object({
   
   // Required numeric fields
   age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
-  height_hands: z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+  height_hands: z.union([
+    z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+    z.literal("young_horse")
+  ]),
   price_min: z.number().min(1, "Minimum price must be at least 1"),
   price_max: z.number().min(1, "Maximum price must be at least 1"),
   
@@ -132,7 +135,7 @@ export default function AddHorse() {
       levels: [],
       breeds: ["Warmblood"],
       age: 0,
-      height_hands: 0,
+      height_hands: "young_horse",
       height_cm: 0,
       sex: "",
       colour: "",
@@ -850,15 +853,16 @@ export default function AddHorse() {
                             <FormItem>
                               <FormLabel>Height (hands)</FormLabel>
                               <Select 
-                                onValueChange={(value) => field.onChange(parseFloat(value))} 
-                                value={field.value?.toString()}
+                                onValueChange={(value) => field.onChange(value === "young_horse" ? "young_horse" : parseFloat(value))} 
+                                value={field.value === "young_horse" ? "young_horse" : field.value?.toString()}
                               >
                                 <FormControl>
                                   <SelectTrigger>
-                                    <SelectValue placeholder="Select height" />
+                                    {field.value === "young_horse" ? "Young Horse" : <SelectValue placeholder="Select height" />}
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
+                                  <SelectItem value="young_horse">Young Horse</SelectItem>
                                   <SelectItem value="12.0">12.0 hh</SelectItem>
                                   <SelectItem value="12.1">12.1 hh</SelectItem>
                                   <SelectItem value="12.2">12.2 hh</SelectItem>

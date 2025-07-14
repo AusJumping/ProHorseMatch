@@ -31,7 +31,10 @@ const horseFormSchema = z.object({
   levels: z.array(z.string()).min(1, "Select at least one level"),
   breeds: z.array(z.string()).min(1, "Select at least one breed"),
   age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
-  height_hands: z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+  height_hands: z.union([
+    z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
+    z.literal("young_horse")
+  ]),
   height_cm: z.number().optional(),
   sex: z.string().min(1, "Sex is required"),
   sire: z.string().min(1, "Sire information is required"),
@@ -88,7 +91,7 @@ export default function EditHorse() {
       levels: [],
       breeds: ["Warmblood"],
       age: 0,
-      height_hands: 0,
+      height_hands: "young_horse",
       height_cm: 0,
       sex: "",
       sire: "",
@@ -118,7 +121,7 @@ export default function EditHorse() {
         levels: Array.isArray(horse.levels) ? horse.levels : [],
         breeds: Array.isArray(horse.breeds) ? horse.breeds : [],
         age: Number(horse.age) || 0,
-        height_hands: Number(horse.height_hands) || 0,
+        height_hands: horse.height_hands === null ? "young_horse" : Number(horse.height_hands) || "young_horse",
         height_cm: Number(horse.height_cm) || 0,
         sex: horse.sex || "",
         sire: horse.sire || "",
@@ -147,7 +150,7 @@ export default function EditHorse() {
         ...data,
         // Ensure numeric fields are numbers
         age: Number(data.age),
-        height_hands: Number(data.height_hands),
+        height_hands: data.height_hands === "young_horse" ? "young_horse" : Number(data.height_hands),
         height_cm: Number(data.height_cm || 0),
         price_min: Number(data.price_min),
         price_max: Number(data.price_max),
@@ -350,21 +353,29 @@ export default function EditHorse() {
                         control={form.control}
                         name="height_hands"
                         render={({ field }) => {
-                          // Format the height value to a string with one decimal place for comparison
-                          const formattedValue = field.value ? field.value.toFixed(1) : "";
+                          const currentValue = field.value;
                           
                           return (
                             <FormItem>
                               <FormLabel>Height (hands)</FormLabel>
                               <FormControl>
                                 <Select 
-                                  value={formattedValue.toString()} 
-                                  onValueChange={(value) => field.onChange(parseFloat(value))}
+                                  value={currentValue === "young_horse" ? "young_horse" : currentValue?.toString()} 
+                                  onValueChange={(value) => {
+                                    if (value === "young_horse") {
+                                      field.onChange("young_horse");
+                                    } else {
+                                      field.onChange(parseFloat(value));
+                                    }
+                                  }}
                                 >
                                   <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select height" />
+                                    <SelectValue placeholder="Select height">
+                                      {currentValue === "young_horse" ? "Young Horse" : currentValue ? `${currentValue} hh` : "Select height"}
+                                    </SelectValue>
                                   </SelectTrigger>
                                   <SelectContent>
+                                    <SelectItem value="young_horse">Young Horse</SelectItem>
                                     <SelectItem value="12.0">12.0 hh</SelectItem>
                                     <SelectItem value="12.1">12.1 hh</SelectItem>
                                     <SelectItem value="12.2">12.2 hh</SelectItem>
@@ -385,6 +396,14 @@ export default function EditHorse() {
                                     <SelectItem value="16.1">16.1 hh</SelectItem>
                                     <SelectItem value="16.2">16.2 hh</SelectItem>
                                     <SelectItem value="16.3">16.3 hh</SelectItem>
+                                    <SelectItem value="17.0">17.0 hh</SelectItem>
+                                    <SelectItem value="17.1">17.1 hh</SelectItem>
+                                    <SelectItem value="17.2">17.2 hh</SelectItem>
+                                    <SelectItem value="17.3">17.3 hh</SelectItem>
+                                    <SelectItem value="18.0">18.0 hh</SelectItem>
+                                    <SelectItem value="18.1">18.1 hh</SelectItem>
+                                    <SelectItem value="18.2">18.2 hh</SelectItem>
+                                    <SelectItem value="18.3">18.3 hh</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </FormControl>

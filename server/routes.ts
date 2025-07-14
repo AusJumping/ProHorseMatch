@@ -1662,7 +1662,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
       }
       
-      const validatedData = insertHorseSchema.parse(req.body);
+      // Convert "young_horse" to null for database storage
+      const requestData = { ...req.body };
+      if (requestData.height_hands === "young_horse") {
+        requestData.height_hands = null;
+      }
+      
+      const validatedData = insertHorseSchema.parse(requestData);
       
       // Ensure owner_id matches the logged-in owner
       if (validatedData.owner_id !== req.userId) {
@@ -1708,9 +1714,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the incoming data for debugging
       console.log("Update horse - request body:", req.body);
       
+      // Convert "young_horse" to null for database storage
+      const requestData = { ...req.body };
+      if (requestData.height_hands === "young_horse") {
+        requestData.height_hands = null;
+      }
+      
       // Validate the update data
       const validatedData = {
-        ...req.body,
+        ...requestData,
         owner_id: horse.owner_id, // Ensure owner_id cannot be changed
         id: horse.id // Ensure id cannot be changed
       };
