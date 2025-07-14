@@ -59,13 +59,25 @@ const horseFormSchema = z.object({
   currency: z.string().min(1, "Currency is required"),
   
   // Required numeric fields
-  age: z.number().min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
+  age: z.number({
+    required_error: "Age is required",
+    invalid_type_error: "Age must be a valid number"
+  }).min(0, "Age must be at least 0").max(30, "Age must be less than 30"),
   height_hands: z.union([
     z.number().min(10, "Height must be at least 10 hands").max(20, "Height must be less than 20 hands"),
     z.literal("young_horse")
-  ]),
-  price_min: z.number().min(1, "Minimum price must be at least 1"),
-  price_max: z.number().min(1, "Maximum price must be at least 1"),
+  ], {
+    required_error: "Height is required",
+    invalid_type_error: "Height must be selected"
+  }),
+  price_min: z.number({
+    required_error: "Minimum price is required",
+    invalid_type_error: "Minimum price must be a valid number"
+  }).min(1, "Minimum price must be at least 1"),
+  price_max: z.number({
+    required_error: "Maximum price is required", 
+    invalid_type_error: "Maximum price must be a valid number"
+  }).min(1, "Maximum price must be at least 1"),
   
   // Required for the form to work
   owner_id: z.number(),
@@ -133,18 +145,18 @@ export default function AddHorse() {
       location_country: "",
       disciplines: [],
       levels: [],
-      breeds: ["Warmblood"],
-      age: 0,
-      height_hands: "young_horse",
-      height_cm: 0,
+      breeds: [],
+      age: undefined,
+      height_hands: undefined,
+      height_cm: undefined,
       sex: "",
       colour: "",
       sire: "",
       dam: "",
       dam_sire: "",
       characteristics: [],
-      price_min: 0,
-      price_max: 0,
+      price_min: undefined,
+      price_max: undefined,
       currency: "AUD",
       description: "",
       photos: [],
