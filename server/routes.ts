@@ -1655,16 +1655,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/horses", isTokenAuthenticated, async (req, res) => {
     try {
-      console.log("=== HORSE CREATION DEBUG ===");
-      console.log("User ID from token:", req.userId);
-      console.log("Request body:", JSON.stringify(req.body, null, 2));
-      
       // Get the user with their roles
       const user = await storage.getUserById(req.userId);
-      console.log("User from database:", user);
       
       if (!user || !user.is_selling) {
-        console.log("User validation failed - not selling permission");
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
       }
       
@@ -1673,31 +1667,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (requestData.height_hands === "young_horse") {
         requestData.height_hands = null;
       }
-      console.log("Data after young_horse conversion:", JSON.stringify(requestData, null, 2));
       
-      console.log("About to validate with insertHorseSchema...");
       const validatedData = insertHorseSchema.parse(requestData);
-      console.log("Validation successful, validated data:", JSON.stringify(validatedData, null, 2));
       
       // Ensure owner_id matches the logged-in owner
       if (validatedData.owner_id !== req.userId) {
-        console.log(`Owner ID mismatch: validated=${validatedData.owner_id}, token=${req.userId}`);
         return res.status(403).json({ message: "Cannot create horse for another owner" });
       }
       
-      console.log("About to create horse in storage...");
       const horse = await storage.createHorse(validatedData);
-      console.log("Horse created successfully:", horse);
       
       // Check saved searches for this new horse and send notifications
       await checkSavedSearchesForNewHorse(horse);
       
       return res.status(201).json(horse);
     } catch (error) {
-      console.error("=== HORSE CREATION ERROR ===");
-      console.error("Error details:", error);
-      console.error("Error message:", error.message);
-      console.error("Error stack:", error.stack);
+      console.error("Create horse error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
   });

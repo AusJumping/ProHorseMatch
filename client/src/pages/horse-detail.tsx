@@ -235,9 +235,9 @@ export default function HorseDetail() {
       onBackClick={handleBack}
     >
       <div className="w-full max-w-4xl mx-auto">
-        <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} bg-white rounded-xl overflow-hidden shadow-md`}>
-          {/* Media Gallery - Side by side on desktop, full height */}
-          <div className={isMobile ? "w-full h-[40vh]" : "w-1/2"}>
+        <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-md">
+          {/* Media Gallery - Above content for all screen sizes */}
+          <div className="w-full h-[50vh]">
             <div className="h-full">
               <MediaCarousel 
                 media={horse.photos || []} 
@@ -247,7 +247,7 @@ export default function HorseDetail() {
           </div>
           
           {/* Details Content */}
-          <div className={isMobile ? "w-full p-4" : "w-1/2 p-6"}>
+          <div className="w-full p-6">
             <div className="flex justify-between items-start mb-2">
               <h2 className="font-accent font-bold text-2xl">{horse.name}</h2>
             </div>

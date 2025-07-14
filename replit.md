@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 14, 2025: Horse detail page layout improved for better user experience
+  - CHANGED: Horse detail page layout from side-by-side to vertical stack design
+  - Image/media carousel now displays above text content instead of beside it
+  - Improved mobile and desktop viewing with single responsive layout
+  - Media gallery height increased to 50vh for better image visibility
+  - Fixed horse creation authentication bug by adding Authorization header to frontend requests
 - July 14, 2025: Sex options enhanced with "Colt" and "Filly" choices
   - ADDED: "Colt" and "Filly" options to the top of all sex selection dropdowns
   - Updated Add Horse form gender selection to include new options
