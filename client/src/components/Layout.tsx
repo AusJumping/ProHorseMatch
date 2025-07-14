@@ -68,11 +68,11 @@ const Layout = ({
               {showBackButton && (
                 <Button 
                   variant="ghost" 
-                  size="icon" 
-                  className="mr-2" 
+                  size="sm" 
+                  className="mr-2 px-2" 
                   onClick={handleBack}
                 >
-                  <ArrowLeft size={18} />
+                  <ArrowLeft size={16} />
                 </Button>
               )}
               {pageTitle && <h2 className="font-accent font-bold text-xl">{pageTitle}</h2>}
