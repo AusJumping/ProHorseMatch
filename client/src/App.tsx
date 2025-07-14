@@ -42,8 +42,13 @@ function Router() {
     <AutoLogoutWrapper>
       <Switch>
         <Route path="/" component={Landing} />
-        <Route path="/browse" component={Home} />
         <Route path="/filter" component={Home} />
+        <Route path="/browse">
+          {() => {
+            window.location.replace('/filter');
+            return null;
+          }}
+        </Route>
         <Route path="/auth" component={Auth} />
         <Route path="/verify-email/:token?" component={VerifyEmail} />
         <Route path="/horse/:id" component={HorseDetail} />

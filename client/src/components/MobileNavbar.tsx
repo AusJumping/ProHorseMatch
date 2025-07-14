@@ -62,10 +62,10 @@ const MobileNavbar = () => {
         <SheetClose asChild>
           <Button 
             variant="ghost" 
-            className={`justify-start h-12 ${location === "/browse" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+            className={`justify-start h-12 ${location === "/filter" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
             onClick={() => {
               setTimeout(() => {
-                navigate("/browse");
+                navigate("/filter");
               }, 300);
             }}
           >
