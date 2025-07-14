@@ -63,11 +63,7 @@ const MobileNavbar = () => {
           <Button 
             variant="ghost" 
             className={`justify-start h-12 ${location === "/filter" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-            onClick={() => {
-              setTimeout(() => {
-                navigate("/filter");
-              }, 300);
-            }}
+            onClick={() => navigate("/filter")}
           >
             <Home className="mr-3 h-5 w-5" />
             <span>Find Horses</span>

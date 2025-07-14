@@ -114,6 +114,11 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 14, 2025: Mobile navigation fixed to properly navigate to filter page
+  - FIXED: Mobile menu "Find Horses" navigation now works correctly without timeout delays
+  - Updated mobile navbar to navigate directly to /filter instead of using problematic setTimeout
+  - Ensured consistent navigation behavior between desktop sidebar and mobile menu
+  - All navigation components now reliably redirect users to the correct filter page after login
 - July 14, 2025: Horse detail page layout improved for better user experience
   - CHANGED: Horse detail page layout from side-by-side to vertical stack design
   - Image/media carousel now displays above text content instead of beside it
