@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 14, 2025: Sex options enhanced with "Colt" and "Filly" choices
+  - ADDED: "Colt" and "Filly" options to the top of all sex selection dropdowns
+  - Updated Add Horse form gender selection to include new options
+  - Updated Edit Horse form gender selection to include new options  
+  - Updated Filter Panel sex dropdown to include new options
+  - Provides better categorization for young horses under 4 years old
 - July 14, 2025: Level options enhanced with "Not Applicable" and "Young Horse" choices
   - ADDED: "Not Applicable" and "Young Horse" options to the top of all level selection dropdowns
   - Updated Add Horse form level selection to include new options

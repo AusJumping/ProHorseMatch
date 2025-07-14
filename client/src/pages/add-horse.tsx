@@ -903,13 +903,19 @@ export default function AddHorse() {
                                 </FormControl>
                                 <SelectContent>
                                   {constants && constants.sexes ? (
-                                    constants.sexes.map((sex) => (
-                                      <SelectItem key={sex} value={sex}>
-                                        {sex}
-                                      </SelectItem>
-                                    ))
+                                    <>
+                                      <SelectItem value="Colt">Colt</SelectItem>
+                                      <SelectItem value="Filly">Filly</SelectItem>
+                                      {constants.sexes.map((sex) => (
+                                        <SelectItem key={sex} value={sex}>
+                                          {sex}
+                                        </SelectItem>
+                                      ))}
+                                    </>
                                   ) : (
                                     <>
+                                      <SelectItem value="Colt">Colt</SelectItem>
+                                      <SelectItem value="Filly">Filly</SelectItem>
                                       <SelectItem value="Mare">Mare</SelectItem>
                                       <SelectItem value="Gelding">Gelding</SelectItem>
                                       <SelectItem value="Stallion">Stallion</SelectItem>

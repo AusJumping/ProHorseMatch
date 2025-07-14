@@ -297,6 +297,8 @@ export default function EditHorse() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
+                                <SelectItem value="Colt">Colt</SelectItem>
+                                <SelectItem value="Filly">Filly</SelectItem>
                                 {constants?.sexes.map((sex: string) => (
                                   <SelectItem key={sex} value={sex}>{sex}</SelectItem>
                                 ))}

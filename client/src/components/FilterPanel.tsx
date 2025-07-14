@@ -579,6 +579,8 @@ const FilterPanel = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="any_sex">Any Sex</SelectItem>
+                <SelectItem value="Colt">Colt</SelectItem>
+                <SelectItem value="Filly">Filly</SelectItem>
                 {constants?.sexes?.map((sex: string) => (
                   <SelectItem key={sex} value={sex}>{sex}</SelectItem>
                 ))}
