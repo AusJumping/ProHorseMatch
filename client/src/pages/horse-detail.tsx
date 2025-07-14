@@ -237,7 +237,7 @@ export default function HorseDetail() {
       <div className="w-full max-w-4xl mx-auto">
         <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-md">
           {/* Media Gallery - Above content for all screen sizes */}
-          <div className="w-full h-[50vh]">
+          <div className={`w-full ${isMobile ? 'h-[35vh]' : 'h-[45vh]'}`}>
             <div className="h-full">
               <MediaCarousel 
                 media={horse.photos || []} 
