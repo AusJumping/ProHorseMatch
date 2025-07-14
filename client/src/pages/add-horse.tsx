@@ -190,15 +190,23 @@ export default function AddHorse() {
         submissionData.height_cm = Math.round(submissionData.height_hands * 10.16);
       }
       
+      // Get the auth token from localStorage for the header
+      const authToken = localStorage.getItem('authToken');
+      console.log("Auth token for request:", authToken);
+      
       // Make the API request with the complete data using fetch directly with credentials
       const response = await fetch("/api/horses", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(authToken && { "Authorization": `Bearer ${authToken}` }),
         },
         credentials: "include", // Important! This ensures cookies are sent with the request
         body: JSON.stringify(submissionData),
       });
+      
+      console.log("Response status:", response.status);
+      console.log("Response headers:", [...response.headers.entries()]);
       
       if (!response.ok) {
         throw new Error("Failed to add horse. Server returned an error.");
