@@ -114,6 +114,11 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 14, 2025: Height range updated to remove smaller heights (12.0-13.3hh)
+  - REMOVED: All height options between 12.0hh and 13.3hh from Add Horse, Edit Horse, and Filter forms
+  - Height dropdowns now start at 14.0hh for standard horses, with "Young Horse" option for horses under 3 years
+  - Updated all three forms consistently: add-horse.tsx, edit-horse.tsx, and FilterPanel.tsx
+  - Maintains "Young Horse" functionality for horses without set heights or under 3 years old
 - July 14, 2025: "Young Horse" height filter fully implemented and operational
   - ADDED: "Young Horse" option to both min and max height filter dropdowns in FilterPanel.tsx
   - UPDATED: Backend routes.ts to parse "young_horse" filter parameter and set young_horse=true flag

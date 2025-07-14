@@ -376,14 +376,6 @@ export default function EditHorse() {
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="young_horse">Young Horse</SelectItem>
-                                    <SelectItem value="12.0">12.0 hh</SelectItem>
-                                    <SelectItem value="12.1">12.1 hh</SelectItem>
-                                    <SelectItem value="12.2">12.2 hh</SelectItem>
-                                    <SelectItem value="12.3">12.3 hh</SelectItem>
-                                    <SelectItem value="13.0">13.0 hh</SelectItem>
-                                    <SelectItem value="13.1">13.1 hh</SelectItem>
-                                    <SelectItem value="13.2">13.2 hh</SelectItem>
-                                    <SelectItem value="13.3">13.3 hh</SelectItem>
                                     <SelectItem value="14.0">14.0 hh</SelectItem>
                                     <SelectItem value="14.1">14.1 hh</SelectItem>
                                     <SelectItem value="14.2">14.2 hh</SelectItem>
