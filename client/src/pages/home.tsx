@@ -418,7 +418,13 @@ export default function Home() {
   };
 
   const toggleFilterPanel = () => {
-    setIsFilterOpen(!isFilterOpen);
+    if (isMobile) {
+      // On mobile, toggle the main showFilter state to show/hide the filter sidebar
+      setShowFilter(!showFilter);
+    } else {
+      // On desktop, use the separate mobile filter panel state
+      setIsFilterOpen(!isFilterOpen);
+    }
   };
 
   // Generate active filter pills from the activeFilters object

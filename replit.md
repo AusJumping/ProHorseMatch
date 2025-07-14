@@ -126,6 +126,8 @@ This is a full-stack web application built with modern technologies:
   - Mobile users now see horses by default on /filter route with filters accessible via toggle
   - Desktop users continue to see filters by default for power-user experience
   - Implemented mobile-first browsing experience: horses display immediately, filters optional
+  - FIXED: Mobile filter button now correctly toggles filter visibility using showFilter state
+  - Mobile filter access fully functional: tap "Filters" button to show/hide filter panel
 - July 14, 2025: Horse detail page layout improved for better user experience
   - CHANGED: Horse detail page layout from side-by-side to vertical stack design
   - Image/media carousel now displays above text content instead of beside it
