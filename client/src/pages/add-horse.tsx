@@ -337,7 +337,7 @@ export default function AddHorse() {
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Horse Name</FormLabel>
+                              <FormLabel>Horse Name *</FormLabel>
                               <FormControl>
                                 <Input placeholder="Enter horse name" {...field} />
                               </FormControl>
@@ -374,7 +374,7 @@ export default function AddHorse() {
                         {/* Price range section with Min and Max labels */}
                         {form.watch("currency") && (
                           <div className="w-full">
-                            <FormLabel className="block mb-4">Price Range (in {form.watch("currency")})</FormLabel>
+                            <FormLabel className="block mb-4">Price Range (in {form.watch("currency")}) *</FormLabel>
                             <div className="grid grid-cols-2 gap-4">
                               <div>
                                 <FormLabel className="block mb-2">Min</FormLabel>
@@ -807,7 +807,7 @@ export default function AddHorse() {
                             name="location_country"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Country</FormLabel>
+                                <FormLabel>Country *</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
@@ -853,7 +853,7 @@ export default function AddHorse() {
                           name="age"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Age</FormLabel>
+                              <FormLabel>Age *</FormLabel>
                               <Select 
                                 onValueChange={(value) => field.onChange(parseInt(value))} 
                                 value={field.value?.toString()}
@@ -897,7 +897,7 @@ export default function AddHorse() {
                           name="height_hands"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Height (hands)</FormLabel>
+                              <FormLabel>Height (hands) *</FormLabel>
                               <Select 
                                 onValueChange={(value) => field.onChange(value === "young_horse" ? "young_horse" : parseFloat(value))} 
                                 value={field.value === "young_horse" ? "young_horse" : field.value?.toString()}
@@ -940,7 +940,7 @@ export default function AddHorse() {
                           name="sex"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Gender</FormLabel>
+                              <FormLabel>Gender *</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                   <SelectTrigger>
@@ -1018,7 +1018,7 @@ export default function AddHorse() {
                           name="breeds"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Breed</FormLabel>
+                              <FormLabel>Breed *</FormLabel>
                               <Select 
                                 onValueChange={(value) => field.onChange([value])} 
                                 defaultValue={field.value?.length ? field.value[0] : undefined}
@@ -1063,7 +1063,7 @@ export default function AddHorse() {
                           name="sire"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Sire</FormLabel>
+                              <FormLabel>Sire *</FormLabel>
                               <FormControl>
                                 <Input placeholder="Sire" {...field} />
                               </FormControl>
@@ -1091,7 +1091,7 @@ export default function AddHorse() {
                           name="dam_sire"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Dam Sire</FormLabel>
+                              <FormLabel>Dam Sire *</FormLabel>
                               <FormControl>
                                 <Input placeholder="Dam Sire" {...field} />
                               </FormControl>
@@ -1107,7 +1107,7 @@ export default function AddHorse() {
                           name="disciplines"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Main Discipline</FormLabel>
+                              <FormLabel>Main Discipline *</FormLabel>
                               <div className="grid grid-cols-1 gap-2">
                                 <Select 
                                   onValueChange={(value) => {
@@ -1179,7 +1179,7 @@ export default function AddHorse() {
                           name="levels"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Competition Level</FormLabel>
+                              <FormLabel>Competition Level *</FormLabel>
                               <div className="grid grid-cols-1 gap-2">
                                 <Select 
                                   onValueChange={(value) => {
@@ -1349,7 +1349,7 @@ export default function AddHorse() {
                     
                     <TabsContent value="media" className="space-y-4 pt-4">
                       <div>
-                        <h3 className="text-lg font-medium mb-4">Photos</h3>
+                        <h3 className="text-lg font-medium mb-4">Photos *</h3>
                         <div className="space-y-4 mb-6">
                           <div className="border rounded-md p-4">
                             <div className="flex flex-col gap-3">
