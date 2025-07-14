@@ -1553,18 +1553,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Handle height filters - convert from string directly
       if (req.query.max_height) {
-        const maxHeight = parseFloat(req.query.max_height as string);
-        if (!isNaN(maxHeight) && maxHeight !== 999) {
-          filters.height_max = maxHeight;
-          console.log("Setting height_max filter to:", maxHeight);
+        const maxHeightValue = req.query.max_height as string;
+        if (maxHeightValue === "young_horse") {
+          filters.young_horse = true;
+          console.log("Setting young_horse filter to:", true);
+        } else {
+          const maxHeight = parseFloat(maxHeightValue);
+          if (!isNaN(maxHeight) && maxHeight !== 999) {
+            filters.height_max = maxHeight;
+            console.log("Setting height_max filter to:", maxHeight);
+          }
         }
       }
       
       if (req.query.min_height) {
-        const minHeight = parseFloat(req.query.min_height as string);
-        if (!isNaN(minHeight) && minHeight !== 0) {
-          filters.height_min = minHeight;
-          console.log("Setting height_min filter to:", minHeight);
+        const minHeightValue = req.query.min_height as string;
+        if (minHeightValue === "young_horse") {
+          filters.young_horse = true;
+          console.log("Setting young_horse filter to:", true);
+        } else {
+          const minHeight = parseFloat(minHeightValue);
+          if (!isNaN(minHeight) && minHeight !== 0) {
+            filters.height_min = minHeight;
+            console.log("Setting height_min filter to:", minHeight);
+          }
         }
       }
       

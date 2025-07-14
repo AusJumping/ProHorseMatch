@@ -574,16 +574,25 @@ export class MemStorage implements IStorage {
         return false;
       }
       
-      // Filter by height range if specified
-      if (filters.height_min !== undefined && filters.height_min !== null) {
-        if (horse.height_hands < filters.height_min) {
+      // Filter by young horse special filter (under 3 years old OR null height)
+      if (filters.young_horse === true) {
+        if (!(horse.age < 3 || horse.height_hands === null)) {
           return false;
         }
       }
       
-      if (filters.height_max !== undefined && filters.height_max !== null) {
-        if (horse.height_hands > filters.height_max) {
-          return false;
+      // Filter by height range if specified (only if not using young_horse filter)
+      if (!filters.young_horse) {
+        if (filters.height_min !== undefined && filters.height_min !== null) {
+          if (horse.height_hands < filters.height_min) {
+            return false;
+          }
+        }
+        
+        if (filters.height_max !== undefined && filters.height_max !== null) {
+          if (horse.height_hands > filters.height_max) {
+            return false;
+          }
         }
       }
       
@@ -1376,16 +1385,25 @@ export class DatabaseStorage implements IStorage {
         return false;
       }
       
-      // Filter by height range if specified
-      if (filters.height_min !== undefined && filters.height_min !== null) {
-        if (horse.height_hands === null || horse.height_hands < filters.height_min) {
+      // Filter by young horse special filter (under 3 years old OR null height)
+      if (filters.young_horse === true) {
+        if (!(horse.age < 3 || horse.height_hands === null)) {
           return false;
         }
       }
       
-      if (filters.height_max !== undefined && filters.height_max !== null) {
-        if (horse.height_hands !== null && horse.height_hands > filters.height_max) {
-          return false;
+      // Filter by height range if specified (only if not using young_horse filter)
+      if (!filters.young_horse) {
+        if (filters.height_min !== undefined && filters.height_min !== null) {
+          if (horse.height_hands === null || horse.height_hands < filters.height_min) {
+            return false;
+          }
+        }
+        
+        if (filters.height_max !== undefined && filters.height_max !== null) {
+          if (horse.height_hands !== null && horse.height_hands > filters.height_max) {
+            return false;
+          }
         }
       }
       
