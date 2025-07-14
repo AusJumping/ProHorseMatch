@@ -10,7 +10,7 @@ import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail } from "./emailService";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
 import { 
   insertHorseSchema, 
@@ -79,6 +79,7 @@ import {
       owner = await storage.createUser({
         email: ownerEmail,
         password: "password123",
+        username: "elite_sporthorses",
         business_name: "Elite Sporthorses",
         contact_name: "John Smith",
         is_selling: true,
@@ -99,6 +100,7 @@ import {
       customer = await storage.createUser({
         email: customerEmail,
         password: "password123",
+        username: "sarah_thompson",
         name: "Sarah Thompson",
         is_searching: true,
         is_selling: false,
@@ -3004,6 +3006,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
         last_message_id: newMessage.id,
         unread_count: currentUnreadCount + 1
       });
+
+      // Send email notification to the recipient
+      try {
+        const senderId = userId;
+        const recipientId = senderId === parseInt(customer_id) ? parseInt(owner_id) : parseInt(customer_id);
+        
+        // Get sender and recipient information
+        const sender = await storage.getUserById(senderId);
+        const recipient = await storage.getUserById(recipientId);
+        const horse = await storage.getHorseById(parseInt(horse_id));
+        
+        if (sender && recipient && horse) {
+          console.log("Sending email notification to:", recipient.email);
+          const baseUrl = req.protocol + '://' + req.get('host');
+          const conversationUrl = `${baseUrl}/messages`;
+          
+          const emailSent = await sendMessageNotificationEmail({
+            to: recipient.email,
+            recipientName: recipient.username || recipient.name || 'User',
+            senderName: sender.username || sender.name || 'User',
+            horseName: horse.name,
+            messageContent: content.trim(),
+            conversationUrl: conversationUrl
+          });
+          
+          if (emailSent) {
+            console.log("Message notification email sent successfully to:", recipient.email);
+          } else {
+            console.warn("Failed to send message notification email to:", recipient.email);
+          }
+        } else {
+          console.warn("Could not send email notification - missing user or horse data");
+        }
+      } catch (emailError) {
+        console.error("Error sending message notification email:", emailError);
+        // Don't fail the message creation if email fails
+      }
 
       console.log("Message created successfully:", newMessage.id);
       res.json(newMessage);

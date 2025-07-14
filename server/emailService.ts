@@ -1,10 +1,20 @@
-import { Resend } from 'resend';
+import { MailService } from '@sendgrid/mail';
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error("RESEND_API_KEY environment variable must be set");
+// Support both SendGrid and Resend
+let mailService: MailService | null = null;
+let resend: any = null;
+
+if (process.env.SENDGRID_API_KEY) {
+  mailService = new MailService();
+  mailService.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('Email service initialized with SendGrid');
+} else if (process.env.RESEND_API_KEY) {
+  const { Resend } = require('resend');
+  resend = new Resend(process.env.RESEND_API_KEY);
+  console.log('Email service initialized with Resend');
+} else {
+  console.warn('No email service configured - emails will not be sent');
 }
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface EmailVerificationParams {
   to: string;
@@ -18,6 +28,15 @@ interface PasswordResetParams {
   username: string;
   resetToken: string;
   baseUrl: string;
+}
+
+interface MessageNotificationParams {
+  to: string;
+  recipientName: string;
+  senderName: string;
+  horseName: string;
+  messageContent: string;
+  conversationUrl: string;
 }
 
 export async function sendVerificationEmail(params: EmailVerificationParams): Promise<boolean> {
@@ -94,39 +113,44 @@ This verification link will expire in 24 hours. If you didn't create an account 
   `;
 
   try {
-    console.log('Attempting to send email via Resend...');
-    console.log('From: ProHorseMatch <noreply@prohorsematch.com>');
-    console.log('To:', params.to);
-    console.log('Subject: Verify your ProHorseMatch account');
+    console.log('Attempting to send verification email...');
+    console.log('Sending to:', params.to);
     
-    const { data, error } = await resend.emails.send({
-      from: 'ProHorseMatch <noreply@prohorsematch.com>',
-      to: [params.to],
-      subject: 'Verify your ProHorseMatch account',
-      html: htmlContent,
-      text: textContent,
-    });
-
-    if (error) {
-      console.error('=== RESEND EMAIL ERROR ===');
-      console.error('Error details:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error keys:', Object.keys(error));
+    if (mailService) {
+      // Use SendGrid
+      console.log('Sending via SendGrid...');
+      await mailService.send({
+        from: 'noreply@prohorsematch.com',
+        to: params.to,
+        subject: 'Verify Your ProHorseMatch Account',
+        html: htmlContent,
+        text: textContent,
+      });
+    } else if (resend) {
+      // Use Resend
+      console.log('Sending via Resend...');
+      const { data, error } = await resend.emails.send({
+        from: 'ProHorseMatch <noreply@prohorsematch.com>',
+        to: [params.to],
+        subject: 'Verify your ProHorseMatch account',
+        html: htmlContent,
+        text: textContent,
+      });
+      
+      if (error) {
+        console.error('Resend email error:', error);
+        return false;
+      }
+      console.log('Resend response:', data);
+    } else {
+      console.warn('No email service configured - verification email not sent');
       return false;
     }
-
-    console.log('=== EMAIL SENT SUCCESSFULLY ===');
-    console.log('Resend response data:', data);
-    console.log('Email ID:', data?.id);
+    
+    console.log('Verification email sent successfully');
     return true;
   } catch (error) {
-    console.error('=== EMAIL SEND EXCEPTION ===');
-    console.error('Exception details:', error);
-    console.error('Exception type:', typeof error);
-    if (error instanceof Error) {
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-    }
+    console.error('Email service error:', error);
     return false;
   }
 }
@@ -317,6 +341,118 @@ The ProHorseMatch Team
     return true;
   } catch (error) {
     console.error('Password reset email send exception:', error);
+    return false;
+  }
+}
+
+export async function sendMessageNotificationEmail(params: MessageNotificationParams): Promise<boolean> {
+  console.log('=== MESSAGE NOTIFICATION EMAIL START ===');
+  console.log('Message notification email service called with params:', {
+    to: params.to,
+    recipientName: params.recipientName,
+    senderName: params.senderName,
+    horseName: params.horseName,
+    messageLength: params.messageContent?.length || 0
+  });
+
+  const htmlContent = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">ProHorseMatch</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">New Message Received</p>
+      </div>
+      
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">You Have a New Message!</h2>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${params.recipientName}</strong>,
+        </p>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px; color: #4A453E;">
+          <strong>${params.senderName}</strong> sent you a message about <strong>${params.horseName}</strong>:
+        </p>
+        
+        <div style="background: #F8F6F0; border-left: 4px solid #CDAC6E; padding: 20px; margin: 25px 0; border-radius: 4px;">
+          <p style="font-size: 16px; line-height: 1.6; margin: 0; color: #2D2A25; font-style: italic;">
+            "${params.messageContent}"
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${params.conversationUrl}" 
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
+            Reply to Message
+          </a>
+        </div>
+        
+        <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
+          Stay connected and don't miss important conversations about your horse interests.
+        </p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
+          © 2025 ProHorseMatch • Connecting equestrian professionals worldwide
+        </p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+ProHorseMatch - New Message Received
+
+Hi ${params.recipientName},
+
+${params.senderName} sent you a message about ${params.horseName}:
+
+"${params.messageContent}"
+
+Reply to this message: ${params.conversationUrl}
+
+Stay connected and don't miss important conversations about your horse interests.
+
+© 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+  `;
+
+  try {
+    console.log('Sending message notification email...');
+    
+    if (mailService) {
+      // Use SendGrid
+      console.log('Sending via SendGrid...');
+      await mailService.send({
+        from: 'noreply@prohorsematch.com',
+        to: params.to,
+        subject: `New message about ${params.horseName} - ProHorseMatch`,
+        html: htmlContent,
+        text: textContent,
+      });
+    } else if (resend) {
+      // Use Resend
+      console.log('Sending via Resend...');
+      const { data, error } = await resend.emails.send({
+        from: 'ProHorseMatch <noreply@prohorsematch.com>',
+        to: [params.to],
+        subject: `New message about ${params.horseName} - ProHorseMatch`,
+        html: htmlContent,
+        text: textContent,
+      });
+      
+      if (error) {
+        console.error('Message notification email error:', error);
+        return false;
+      }
+      console.log('Resend response:', data);
+    } else {
+      console.warn('No email service configured - message notification not sent');
+      return false;
+    }
+    
+    console.log('Message notification email sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Message notification email service error:', error);
     return false;
   }
 }
