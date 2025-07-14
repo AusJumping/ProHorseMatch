@@ -59,16 +59,18 @@ const MobileNavbar = () => {
       </SheetHeader>
       
       <div className="flex-1 flex flex-col space-y-1">
-        <SheetClose asChild>
-          <Button 
-            variant="ghost" 
-            className={`justify-start h-12 ${location === "/filter" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-            onClick={() => navigate("/filter")}
-          >
-            <Home className="mr-3 h-5 w-5" />
-            <span>Find Horses</span>
-          </Button>
-        </SheetClose>
+        <Button 
+          variant="ghost" 
+          className={`justify-start h-12 ${location === "/filter" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
+          onClick={() => {
+            console.log("Find Horses clicked, navigating to /filter");
+            navigate("/filter");
+            setOpen(false); // Close the sheet
+          }}
+        >
+          <Home className="mr-3 h-5 w-5" />
+          <span>Find Horses</span>
+        </Button>
         
         {isAuthenticated && (
           <SheetClose asChild>
