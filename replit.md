@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 14, 2025: Level options enhanced with "Not Applicable" and "Young Horse" choices
+  - ADDED: "Not Applicable" and "Young Horse" options to the top of all level selection dropdowns
+  - Updated Add Horse form level selection to include new options
+  - Updated Edit Horse form level selection to include new options
+  - Updated Filter Panel level dropdown to include new options
+  - Provides better categorization for horses that don't fit traditional competition levels
 - July 14, 2025: Height range updated to remove smaller heights (12.0-13.3hh)
   - REMOVED: All height options between 12.0hh and 13.3hh from Add Horse, Edit Horse, and Filter forms
   - Height dropdowns now start at 14.0hh for standard horses, with "Young Horse" option for horses under 3 years
