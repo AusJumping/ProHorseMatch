@@ -173,6 +173,27 @@ export default function AddHorse() {
   const onSubmit = async (data: HorseFormValues) => {
     console.log("Form submission started", data);
     
+    // Manually trigger validation to ensure all errors are captured
+    const isValid = await form.trigger();
+    const errors = form.formState.errors;
+    
+    if (!isValid || Object.keys(errors).length > 0) {
+      console.log("Form validation errors:", errors);
+      
+      // Find the first error message to display
+      const errorFields = Object.keys(errors);
+      const firstErrorField = errorFields[0];
+      const firstError = errors[firstErrorField];
+      const errorMessage = firstError?.message || "Please complete all required fields";
+      
+      toast({
+        title: "Please complete all required fields",
+        description: `${firstErrorField}: ${errorMessage}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Add debug toast to confirm the form submission was triggered
     toast({
       title: "Submitting form...",
@@ -221,7 +242,9 @@ export default function AddHorse() {
       console.log("Response headers:", [...response.headers.entries()]);
       
       if (!response.ok) {
-        throw new Error("Failed to add horse. Server returned an error.");
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.message || errorData?.error || "Failed to add horse. Server returned an error.";
+        throw new Error(errorMessage);
       }
       
       toast({
