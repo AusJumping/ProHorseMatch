@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, MessageSquare, ChevronLeft, Loader2 } from "lucide-react";
+import { Heart, MessageSquare, ChevronLeft, Loader2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
@@ -219,8 +219,12 @@ export default function HorseDetail() {
           <div className="text-center">
             <h2 className="text-xl font-bold text-red-500">Error Loading Horse</h2>
             <p className="mt-2">Could not load horse details. Please try again later.</p>
-            <Button className="mt-4" onClick={handleBack}>
-              Go Back
+            <Button 
+              className="mt-4" 
+              size="icon"
+              onClick={handleBack}
+            >
+              <ArrowLeft className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -385,10 +389,11 @@ export default function HorseDetail() {
                 <div className="flex justify-start">
                   <Button 
                     variant="outline"
+                    size="icon"
                     onClick={handleBack}
+                    className="h-8 w-8"
                   >
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Back
+                    <ChevronLeft className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
