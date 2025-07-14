@@ -58,27 +58,35 @@ export default function Home() {
   });
   
   // Check if this is the discover route to show filter by default
-  // For filter route, only show filters on desktop, not mobile (mobile users see horses first)
+  // For filter route, check URL parameters to determine if user wants to see filters
   useEffect(() => {
     console.log("Filter visibility effect - location:", location, "isMobile:", isMobile);
+    
+    // Check for show_filters URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const showFiltersParam = urlParams.get('show_filters');
+    
     if (location === "/discover") {
       console.log("Setting showFilter to true for discover route");
       setShowFilter(true);
     } else if (location === "/filter" && !isMobile) {
       console.log("Setting showFilter to true for desktop filter route");
       setShowFilter(true);
+    } else if (location === "/filter" && isMobile && showFiltersParam === "true") {
+      // User clicked "Find Horses" in navigation - show filters
+      console.log("Setting showFilter to true for mobile filter route with show_filters=true");
+      setShowFilter(true);
     } else if (location === "/filter" && isMobile) {
-      // Explicitly set to false for mobile users on filter route
-      console.log("Setting showFilter to false for mobile filter route");
+      // Mobile users on filter route without show_filters param (like "Get Started") - show horses first
+      console.log("Setting showFilter to false for mobile filter route (horses first)");
       setShowFilter(false);
     } else if (location === "/filter") {
-      // Fallback: ensure mobile filter route always hides filters initially
-      console.log("Fallback: Setting showFilter to false for any filter route");
+      // Fallback: ensure mobile filter route shows horses first by default
+      console.log("Fallback: Setting showFilter to false for filter route");
       setShowFilter(false);
     }
     
     // Check if we have a discipline filter in localStorage or URL
-    const urlParams = new URLSearchParams(window.location.search);
     const urlDiscipline = urlParams.get('discipline');
     const storedDiscipline = localStorage.getItem('active_discipline_filter');
     

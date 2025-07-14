@@ -63,8 +63,8 @@ const MobileNavbar = () => {
           variant="ghost" 
           className={`justify-start h-12 ${location === "/filter" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
           onClick={() => {
-            console.log("Find Horses clicked, navigating to /filter");
-            navigate("/filter");
+            console.log("Find Horses clicked, navigating to /filter with show_filters");
+            navigate("/filter?show_filters=true");
             setOpen(false); // Close the sheet
           }}
         >
