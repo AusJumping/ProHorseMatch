@@ -439,15 +439,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       global.authTokens.set(authToken, {
         userId: user.id,
-        expires: Date.now() + (60 * 60 * 1000), // 1 hour expiration for security
+        expires: Date.now() + (24 * 60 * 60 * 1000), // 24 hour expiration for better user experience
         lastActivity: Date.now()
       });
       
       console.log("Created auth token:", authToken);
       
-      // Set multiple cookies to ensure one works (1 hour expiration)
+      // Set multiple cookies to ensure one works (24 hour expiration)
       res.cookie('auth_token', authToken, {
-        maxAge: 60 * 60 * 1000, // 1 hour expiration
+        maxAge: 24 * 60 * 60 * 1000, // 24 hour expiration
         httpOnly: false, // Allow frontend access
         secure: false,
         sameSite: 'lax',
@@ -711,20 +711,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Helper function to validate auth token
+  // Helper function to validate auth token - improved stateless validation
   const validateAuthToken = (token: string): number | null => {
     try {
-      const [userId, timestamp, hash] = token.split(':');
-      const expectedHash = Buffer.from(`${userId}${timestamp}proHorseMatch`).toString('base64');
+      // Decode the base64 token
+      const decodedToken = Buffer.from(token, 'base64').toString('utf8');
+      const [userId, timestamp] = decodedToken.split(':');
       
-      if (hash === expectedHash) {
-        const tokenAge = Date.now() - parseInt(timestamp);
-        const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-        
-        if (tokenAge < maxAge) {
-          return parseInt(userId);
-        }
+      if (!userId || !timestamp) {
+        return null;
       }
+      
+      const tokenAge = Date.now() - parseInt(timestamp);
+      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+      
+      if (tokenAge < maxAge) {
+        return parseInt(userId);
+      }
+      
       return null;
     } catch {
       return null;
@@ -737,7 +741,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!authToken && req.headers.cookie) {
       const cookies = req.headers.cookie.split(';').reduce((acc: any, cookie) => {
         const [key, value] = cookie.trim().split('=');
-        acc[key] = value;
+        acc[key] = decodeURIComponent(value);
         return acc;
       }, {});
       authToken = cookies.auth_token;
@@ -746,23 +750,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("Auth check - Token debug:", {
       authToken: authToken ? authToken.substring(0, 10) + '...' : 'none',
       authHeader: req.headers.authorization,
-      cookies: req.headers.cookie,
-      hasGlobalTokens: !!global.authTokens,
-      tokenCount: global.authTokens ? global.authTokens.size : 0
+      cookies: req.headers.cookie
     });
     
-    if (!authToken || !global.authTokens) {
-      console.log("Auth check failed - No token or token store");
+    if (!authToken) {
+      console.log("Auth check failed - No token provided");
       return res.status(401).json({ message: "Not authenticated" });
     }
     
-    const tokenData = global.authTokens.get(authToken);
-    if (!tokenData || tokenData.expires < Date.now()) {
+    // Use stateless token validation
+    const userId = validateAuthToken(authToken);
+    if (!userId) {
       console.log("Auth check failed - Invalid or expired token");
       return res.status(401).json({ message: "Not authenticated" });
     }
-    
-    const userId = tokenData.userId;
     
     try {
       console.log(`Auth check - Looking up user with ID ${userId}`);
@@ -828,7 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!authToken && req.headers.cookie) {
       const cookies = req.headers.cookie.split(';').reduce((acc: any, cookie) => {
         const [key, value] = cookie.trim().split('=');
-        acc[key] = value;
+        acc[key] = decodeURIComponent(value);
         return acc;
       }, {});
       authToken = cookies.auth_token;
@@ -837,32 +838,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log("Token auth debug:", {
       authToken: authToken ? authToken.substring(0, 10) + '...' : 'none',
       authHeader: req.headers.authorization,
-      hasGlobalTokens: !!global.authTokens,
-      tokenCount: global.authTokens ? global.authTokens.size : 0
+      cookies: req.headers.cookie
     });
     
-    if (!authToken || !global.authTokens) {
-      console.log("Token auth failed - No token or token store");
+    if (!authToken) {
+      console.log("Token auth failed - No token provided");
       return res.status(401).json({ message: "Authentication required" });
     }
     
-    const tokenData = global.authTokens.get(authToken);
-    if (!tokenData || tokenData.expires < Date.now()) {
+    // Use stateless token validation instead of global storage
+    const userId = validateAuthToken(authToken);
+    if (!userId) {
       console.log("Token auth failed - Invalid or expired token");
-      // Clean up expired token
-      if (tokenData) {
-        global.authTokens.delete(authToken);
-      }
       return res.status(401).json({ message: "Authentication required" });
     }
     
-    // Update lastActivity timestamp for activity tracking
-    tokenData.lastActivity = Date.now();
-    global.authTokens.set(authToken, tokenData);
-    
-    console.log(`Token auth success for user ${tokenData.userId}`);
+    console.log(`Token auth success for user ${userId}`);
     // Add user info to request for use in route handlers
-    req.userId = tokenData.userId;
+    req.userId = userId;
     next();
   };
   

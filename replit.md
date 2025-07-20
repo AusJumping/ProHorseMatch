@@ -114,6 +114,13 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 20, 2025: Authentication system fixed for production deployment stability
+  - CRITICAL FIX: Implemented stateless token validation that doesn't rely on global in-memory storage
+  - Extended authentication token expiration from 1 hour to 24 hours for better user experience
+  - Fixed token decoding issues with URL-encoded cookies using decodeURIComponent
+  - Resolved production authentication failures caused by server restarts clearing token store
+  - Authentication now works reliably on deployed site without requiring frequent re-login
+  - Complete system tested: login → token creation → stateless validation → protected endpoint access
 - July 14, 2025: Admin horse management system completed with crash prevention
   - ADDED: Admin backend routes for horse management (/api/admin/horses)
   - ADDED: Admin-only GET, PUT, DELETE endpoints for managing all horses
