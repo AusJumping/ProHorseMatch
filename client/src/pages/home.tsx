@@ -111,14 +111,12 @@ export default function Home() {
     }
   }, [location, isMobile]);
   
-  // This effect ensures that when filters change, we reset our swiping index and refresh data
+  // This effect ensures that when filters change, we reset our swiping index
   useEffect(() => {
     // Reset to the first horse when filters change
     setSwipingIndex(0);
-    
-    // Force data refresh when filters change
-    queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
-  }, [activeFilters, queryClient]);
+    setCurrentHorseIndex(0);
+  }, [activeFilters]);
 
   // Debug log
   console.log("Home - Auth state:", { isAuthenticated, is_selling: user?.is_selling, is_searching: user?.is_searching, location, showFilter });
@@ -531,7 +529,7 @@ export default function Home() {
                     activeIndex={0}
                     onShowMore={handleShowMore}
                     onLike={handleLike}
-                    onIndexChange={() => {}} // Remove the problematic state update
+                    onIndexChange={setCurrentHorseIndex} // Restore index tracking for counter display
                   />
                 </div>
               )}
