@@ -114,6 +114,11 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 21, 2025: Horse detail page terminology and pedigree display enhanced
+  - UPDATED: "Discipline" heading changed to "Primary Discipline" in horse detail stats grid for clarity
+  - UPDATED: "Breeding" heading changed to "Pedigree" in horse detail stats grid for professional terminology
+  - RESTRUCTURED: Pedigree section now displays lineage in three separate labeled rows (Sire:, Dam:, Dam Sire:) instead of single concatenated format
+  - ENHANCED: Improved readability and professional presentation of horse genealogy information in detail view
 - July 21, 2025: Enhanced horse age and height display terminology
   - UPDATED: All horse display components now show "Yearling" instead of "1 yrs" for 1-year-old horses
   - UPDATED: Height display now shows "Height TBD" instead of "hh" when height_hands is null or "young_horse"

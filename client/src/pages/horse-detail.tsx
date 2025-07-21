@@ -272,9 +272,17 @@ export default function HorseDetail() {
               </div>
               <div className="bg-neutral-50 p-3 rounded-lg">
                 <p className="text-sm text-neutral-500">Pedigree</p>
-                <p className="font-medium">
-                  {horse.sire && horse.dam_sire ? `${horse.sire} x ${horse.dam_sire}` : "Not specified"}
-                </p>
+                <div className="font-medium space-y-1">
+                  <div className="text-sm">
+                    <span className="font-medium">Sire:</span> {horse.sire || "Not specified"}
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium">Dam:</span> {horse.dam || "Not specified"}
+                  </div>
+                  <div className="text-sm">
+                    <span className="font-medium">Dam Sire:</span> {horse.dam_sire || "Not specified"}
+                  </div>
+                </div>
               </div>
               <div className="bg-neutral-50 p-3 rounded-lg">
                 <p className="text-sm text-neutral-500">Location</p>
