@@ -117,7 +117,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
           </p>
           
           {/* Lineage Information */}
-          <div className="text-neutral-800 text-sm mb-3 space-y-1">
+          <div className="text-neutral-800 text-sm mb-3 space-y-0.5">
             <div>
               <span className="font-medium">Sire:</span> {horse.sire || "Not specified"}
             </div>

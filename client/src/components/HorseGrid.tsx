@@ -44,7 +44,7 @@ const HorseGrid = ({ horses, onShowMore }: HorseGridProps) => {
                 <h3 className="text-lg font-accent font-bold">{horse.name}</h3>
                 
                 {/* Lineage Information */}
-                <div className="mt-1 text-sm text-gray-600 space-y-1">
+                <div className="mt-1 text-sm text-gray-600 space-y-0.5">
                   <div>
                     <span className="font-medium">Sire:</span> {horse.sire || "Not specified"}
                   </div>
