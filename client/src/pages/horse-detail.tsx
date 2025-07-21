@@ -274,13 +274,13 @@ export default function HorseDetail() {
                 <p className="text-sm text-neutral-500">Pedigree</p>
                 <div className="font-medium space-y-1">
                   <div className="text-sm">
-                    <span className="font-medium">Sire:</span> {horse.sire || "Not specified"}
+                    <span className="font-bold">Sire:</span> {horse.sire || "Not specified"}
                   </div>
                   <div className="text-sm">
-                    <span className="font-medium">Dam:</span> {horse.dam || "Not specified"}
+                    <span className="font-bold">Dam:</span> {horse.dam || "Not specified"}
                   </div>
                   <div className="text-sm">
-                    <span className="font-medium">Dam Sire:</span> {horse.dam_sire || "Not specified"}
+                    <span className="font-bold">Dam Sire:</span> {horse.dam_sire || "Not specified"}
                   </div>
                 </div>
               </div>
