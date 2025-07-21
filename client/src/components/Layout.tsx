@@ -15,6 +15,8 @@ interface LayoutProps {
   onBackClick?: () => void;
   showFilterButton?: boolean;
   onFilterClick?: () => void;
+  showMobileFilterButton?: boolean;
+  onMobileFilterClick?: () => void;
 }
 
 const Layout = ({
@@ -24,6 +26,8 @@ const Layout = ({
   onBackClick,
   showFilterButton = false,
   onFilterClick,
+  showMobileFilterButton = false,
+  onMobileFilterClick,
 }: LayoutProps) => {
   const isMobile = useMobile();
   const [location, navigate] = useLocation();
@@ -79,6 +83,17 @@ const Layout = ({
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Mobile Filters Button */}
+              {isMobile && showMobileFilterButton && onMobileFilterClick && (
+                <Button
+                  onClick={onMobileFilterClick}
+                  className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Filters
+                </Button>
+              )}
+              
               {/* Add Horse Button for mobile (only on home page for owners) */}
               {isMobile && isOwner && location === "/" && (
                 <Button
@@ -94,8 +109,6 @@ const Layout = ({
                   <span className="text-sm">Add Horse</span>
                 </Button>
               )}
-              
-              {/* Filter Button removed as requested */}
               
               {/* Mobile Menu Button */}
               {isMobile && (
