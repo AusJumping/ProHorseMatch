@@ -115,9 +115,19 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
           <p className="text-neutral-800 text-sm mb-1">
             {horse.age}yo {horse.breeds[0]} {horse.sex}
           </p>
-          <p className="text-neutral-800 text-sm mb-3">
-            {horse.sire && horse.dam_sire ? `${horse.sire} x ${horse.dam_sire}` : "Breeding not specified"}
-          </p>
+          
+          {/* Lineage Information */}
+          <div className="text-neutral-800 text-sm mb-3 space-y-1">
+            <div>
+              <span className="font-medium">Sire:</span> {horse.sire || "Not specified"}
+            </div>
+            <div>
+              <span className="font-medium">Dam:</span> {horse.dam || "Not specified"}
+            </div>
+            <div>
+              <span className="font-medium">Dam Sire:</span> {horse.dam_sire || "Not specified"}
+            </div>
+          </div>
 
           {/* Stats Row */}
           <div className="grid grid-cols-3 text-center py-2 border-y border-neutral-200 mb-2">
