@@ -271,6 +271,10 @@ export default function HorseDetail() {
                 <p className="font-medium">{horse.levels.join(", ")}</p>
               </div>
               <div className="bg-neutral-50 p-3 rounded-lg">
+                <p className="text-sm text-neutral-500">Colour</p>
+                <p className="font-medium">{horse.colour || "Not specified"}</p>
+              </div>
+              <div className="bg-neutral-50 p-3 rounded-lg">
                 <p className="text-sm text-neutral-500">Pedigree</p>
                 <div className="font-medium space-y-1">
                   <div className="text-sm">
