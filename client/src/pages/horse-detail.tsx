@@ -275,14 +275,14 @@ export default function HorseDetail() {
             {/* Full Width Pedigree */}
             <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden mb-4`}>
               <p className="text-sm text-neutral-500">Pedigree</p>
-              <div className={`font-medium space-y-1 ${isMobile ? 'text-xs' : ''}`}>
-                <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
+              <div className="font-medium space-y-1">
+                <div className="break-words">
                   <span className="font-bold">Sire:</span> {horse.sire || "Not specified"}
                 </div>
-                <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
+                <div className="break-words">
                   <span className="font-bold">Dam:</span> {horse.dam || "Not specified"}
                 </div>
-                <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
+                <div className="break-words">
                   <span className="font-bold">Dam Sire:</span> {horse.dam_sire || "Not specified"}
                 </div>
               </div>
