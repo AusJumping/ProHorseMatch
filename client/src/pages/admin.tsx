@@ -816,7 +816,7 @@ export default function AdminPage() {
                                   ID: {horse.id} • Owner: {horse.owner_id}
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                  {horse.disciplines?.join(', ') || 'No disciplines'} • {horse.age}yo • {horse.sex}
+                                  {horse.disciplines?.join(', ') || 'No disciplines'} • {horse.age === 1 ? "Yearling" : `${horse.age}yo`} • {horse.sex}
                                 </div>
                                 <div className="text-sm text-muted-foreground">
                                   {horse.price_min && horse.price_max ? 

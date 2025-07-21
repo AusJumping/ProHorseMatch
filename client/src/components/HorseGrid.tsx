@@ -57,7 +57,7 @@ const HorseGrid = ({ horses, onShowMore }: HorseGridProps) => {
                 </div>
                 <div className="mt-2 text-sm text-gray-600">
                   <p>
-                    {horse.age} yrs • {horse.sex} • {horse.height_hands}hh
+                    {horse.age === 1 ? "Yearling" : `${horse.age} yrs`} • {horse.sex} • {(horse.height_hands as any) === "young_horse" || !horse.height_hands ? "Young Horse" : `${horse.height_hands}hh`}
                   </p>
                 </div>
               </div>

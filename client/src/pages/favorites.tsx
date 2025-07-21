@@ -184,7 +184,7 @@ export default function Favorites() {
                   </div>
                   <div className="flex items-center mb-2">
                     <div className="text-sm text-gray-500">
-                      {horse.age} yrs &bull; {horse.sex}
+                      {horse.age === 1 ? "Yearling" : `${horse.age} yrs`} &bull; {horse.sex}
                     </div>
                   </div>
                   <div className="text-sm flex items-center text-gray-500">

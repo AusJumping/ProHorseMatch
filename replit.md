@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 21, 2025: Enhanced horse age and height display terminology
+  - UPDATED: All horse display components now show "Yearling" instead of "1 yrs" for 1-year-old horses
+  - UPDATED: Height display now shows "Young Horse" instead of "hh" when height_hands is null or "young_horse"
+  - APPLIED: Consistent terminology across HorseCard, HorseGrid, horse detail page, favorites page, and admin dashboard
+  - ENHANCED: Better equestrian terminology throughout the application for improved user experience
+  - COMPLETE: All horse listing views now use proper industry-standard terms for young horses and undefined heights
 - July 21, 2025: Horse card lineage display updated for better readability
   - UPDATED: Horse summary cards now display lineage information in three separate rows (Sire, Dam, Dam Sire) instead of single concatenated line
   - APPLIED: Consistent layout changes to both HorseCard and HorseGrid components for uniform appearance

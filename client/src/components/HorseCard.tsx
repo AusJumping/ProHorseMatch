@@ -113,7 +113,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
         <div>
           <h2 className="font-accent font-bold text-xl mb-1">{horse.name}</h2>
           <p className="text-neutral-800 text-sm mb-1">
-            {horse.age}yo {horse.breeds[0]} {horse.sex}
+            {horse.age === 1 ? "Yearling" : `${horse.age}yo`} {horse.breeds[0]} {horse.sex}
           </p>
           
           {/* Lineage Information */}
