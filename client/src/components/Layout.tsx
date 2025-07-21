@@ -63,14 +63,14 @@ const Layout = ({
   };
 
   return (
-    <div className="flex min-h-screen bg-neutral-100">
+    <div className={`flex min-h-screen bg-neutral-100 ${isMobile ? 'w-screen max-w-full overflow-x-hidden' : ''}`}>
       {/* Desktop Sidebar */}
       {!isMobile && <Sidebar />}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col ${isMobile ? 'w-full max-w-full' : ''}`}>
         {/* Header */}
-        <header className="bg-white border-b border-neutral-200 p-4">
+        <header className={`bg-white border-b border-neutral-200 p-4 ${isMobile ? 'w-full' : ''}`}>
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               {/* Mobile horse counter */}
@@ -132,7 +132,7 @@ const Layout = ({
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
+        <main className={`flex-1 p-4 md:p-6 overflow-auto ${isMobile ? 'w-full max-w-full' : ''}`}>
           {children}
         </main>
       </div>
