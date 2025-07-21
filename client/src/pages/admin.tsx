@@ -108,6 +108,36 @@ interface RevenueData {
   averageRevenuePerUser: number;
 }
 
+interface HorseDeletionResponse {
+  id: number;
+  horse_id: number;
+  user_id: number;
+  horse_name: string;
+  sold_through_app: boolean;
+  sold_elsewhere: boolean;
+  unsold: boolean;
+  created_at: string;
+}
+
+interface HorseDeletionAnalytics {
+  totalDeletions: number;
+  soldThroughApp: number;
+  soldElsewhere: number;
+  unsold: number;
+  responsesByMonth: Record<string, {
+    total: number;
+    soldThroughApp: number;
+    soldElsewhere: number;
+    unsold: number;
+  }>;
+  responsesByUser: Record<string, {
+    total: number;
+    soldThroughApp: number;
+    soldElsewhere: number;
+    unsold: number;
+  }>;
+}
+
 export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -236,6 +266,34 @@ export default function AdminPage() {
 
   const { data: revenue, isLoading: revenueLoading } = useQuery<RevenueData>({
     queryKey: ['/api/admin/revenue'],
+    retry: false,
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "Admin access required.",
+          variant: "destructive",
+        });
+      }
+    }
+  });
+
+  const { data: deletionAnalytics, isLoading: deletionAnalyticsLoading } = useQuery<HorseDeletionAnalytics>({
+    queryKey: ['/api/admin/horse-deletion-analytics'],
+    retry: false,
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "Admin access required.",
+          variant: "destructive",
+        });
+      }
+    }
+  });
+
+  const { data: deletionResponses, isLoading: deletionResponsesLoading } = useQuery<HorseDeletionResponse[]>({
+    queryKey: ['/api/admin/horse-deletion-responses'],
     retry: false,
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
@@ -480,12 +538,13 @@ export default function AdminPage() {
             </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="horses">Horses</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
+            <TabsTrigger value="deletions">Deletions</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -961,6 +1020,144 @@ export default function AdminPage() {
                       </div>
                     </div>
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="deletions" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trash2 className="h-5 w-5" />
+                  Horse Deletion Analytics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {deletionAnalyticsLoading ? (
+                  <div className="flex items-center justify-center p-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                  </div>
+                ) : deletionAnalytics ? (
+                  <div className="space-y-6">
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {deletionAnalytics.totalDeletions}
+                        </div>
+                        <p className="text-sm text-blue-700">Total Deletions</p>
+                      </div>
+                      
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">
+                          {deletionAnalytics.soldThroughApp}
+                        </div>
+                        <p className="text-sm text-green-700">Sold Through App</p>
+                        <p className="text-xs text-green-600">
+                          {deletionAnalytics.totalDeletions > 0 
+                            ? `${((deletionAnalytics.soldThroughApp / deletionAnalytics.totalDeletions) * 100).toFixed(1)}%`
+                            : '0%'}
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 bg-orange-50 rounded-lg">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {deletionAnalytics.soldElsewhere}
+                        </div>
+                        <p className="text-sm text-orange-700">Sold Elsewhere</p>
+                        <p className="text-xs text-orange-600">
+                          {deletionAnalytics.totalDeletions > 0 
+                            ? `${((deletionAnalytics.soldElsewhere / deletionAnalytics.totalDeletions) * 100).toFixed(1)}%`
+                            : '0%'}
+                        </p>
+                      </div>
+                      
+                      <div className="p-4 bg-red-50 rounded-lg">
+                        <div className="text-2xl font-bold text-red-600">
+                          {deletionAnalytics.unsold}
+                        </div>
+                        <p className="text-sm text-red-700">Unsold</p>
+                        <p className="text-xs text-red-600">
+                          {deletionAnalytics.totalDeletions > 0 
+                            ? `${((deletionAnalytics.unsold / deletionAnalytics.totalDeletions) * 100).toFixed(1)}%`
+                            : '0%'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Monthly Breakdown */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Monthly Breakdown</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {Object.entries(deletionAnalytics.responsesByMonth)
+                            .sort(([a], [b]) => b.localeCompare(a))
+                            .slice(0, 6)
+                            .map(([month, data]) => (
+                            <div key={month} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="font-medium">{month}</div>
+                              <div className="flex gap-4 text-sm">
+                                <span className="text-blue-600">Total: {data.total}</span>
+                                <span className="text-green-600">App: {data.soldThroughApp}</span>
+                                <span className="text-orange-600">Elsewhere: {data.soldElsewhere}</span>
+                                <span className="text-red-600">Unsold: {data.unsold}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Recent Deletion Responses */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Recent Deletion Responses</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {deletionResponsesLoading ? (
+                          <div className="flex items-center justify-center p-4">
+                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                          </div>
+                        ) : deletionResponses && deletionResponses.length > 0 ? (
+                          <ScrollArea className="h-64">
+                            <div className="space-y-3">
+                              {deletionResponses
+                                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                                .slice(0, 20)
+                                .map((response) => (
+                                <div key={response.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                  <div>
+                                    <div className="font-medium">{response.horse_name}</div>
+                                    <div className="text-sm text-gray-500">
+                                      {new Date(response.created_at).toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    {response.sold_through_app && (
+                                      <Badge className="bg-green-100 text-green-800">App Sale</Badge>
+                                    )}
+                                    {response.sold_elsewhere && (
+                                      <Badge className="bg-orange-100 text-orange-800">External Sale</Badge>
+                                    )}
+                                    {response.unsold && (
+                                      <Badge className="bg-red-100 text-red-800">Unsold</Badge>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </ScrollArea>
+                        ) : (
+                          <p className="text-center text-gray-500 py-4">No deletion responses yet</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500 py-4">No deletion analytics available</p>
                 )}
               </CardContent>
             </Card>

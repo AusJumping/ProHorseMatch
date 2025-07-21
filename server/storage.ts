@@ -6,7 +6,8 @@ import {
   messages, type Message, type InsertMessage,
   conversations, type Conversation, type InsertConversation,
   savedSearches, type SavedSearch, type InsertSavedSearch,
-  searchNotifications, type SearchNotification, type InsertSearchNotification
+  searchNotifications, type SearchNotification, type InsertSearchNotification,
+  horseDeletionResponses, type HorseDeletionResponse, type InsertHorseDeletionResponse
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, sql } from "drizzle-orm";
@@ -92,6 +93,11 @@ export interface IStorage {
   getAllMessages(): Promise<Message[]>;
   getAllConversations(): Promise<Conversation[]>;
   getAllMatches(): Promise<Match[]>;
+  
+  // Horse deletion response methods
+  createHorseDeletionResponse(response: InsertHorseDeletionResponse): Promise<HorseDeletionResponse>;
+  getHorseDeletionResponses(): Promise<HorseDeletionResponse[]>;
+  getHorseDeletionResponsesByUserId(userId: number): Promise<HorseDeletionResponse[]>;
 }
 
 import * as fs from 'fs';
@@ -109,11 +115,13 @@ declare global {
     matches: Map<number, Match>;
     messages: Map<number, Message>;
     conversations: Map<number, Conversation>;
+    horseDeletionResponses: Map<number, HorseDeletionResponse>;
     horseId: number;
     userId: number;
     matchId: number;
     messageId: number;
     conversationId: number;
+    horseDeletionResponseId: number;
     seeded: boolean;
   } | undefined;
 }
@@ -139,11 +147,13 @@ function saveStorageToDisk() {
       matches: Array.from(global.__persistent_storage.matches.entries()),
       messages: Array.from(global.__persistent_storage.messages.entries()),
       conversations: Array.from(global.__persistent_storage.conversations.entries()),
+      horseDeletionResponses: Array.from(global.__persistent_storage.horseDeletionResponses.entries()),
       horseId: global.__persistent_storage.horseId,
       userId: global.__persistent_storage.userId,
       matchId: global.__persistent_storage.matchId,
       messageId: global.__persistent_storage.messageId,
       conversationId: global.__persistent_storage.conversationId,
+      horseDeletionResponseId: global.__persistent_storage.horseDeletionResponseId,
       seeded: global.__persistent_storage.seeded
     };
     
@@ -166,11 +176,13 @@ function loadStorageFromDisk() {
         matches: new Map(data.matches),
         messages: new Map(data.messages),
         conversations: new Map(data.conversations),
+        horseDeletionResponses: new Map(data.horseDeletionResponses || []),
         horseId: data.horseId,
         userId: data.userId,
         matchId: data.matchId,
         messageId: data.messageId,
         conversationId: data.conversationId,
+        horseDeletionResponseId: data.horseDeletionResponseId || 1,
         seeded: data.seeded
       };
       
@@ -191,12 +203,14 @@ export class MemStorage implements IStorage {
   private matches: Map<number, Match>;
   private messages: Map<number, Message>;
   private conversations: Map<number, Conversation>;
+  private horseDeletionResponses: Map<number, HorseDeletionResponse>;
   
   private horseId: number;
   private userId: number;
   private matchId: number;
   private messageId: number;
   private conversationId: number;
+  private horseDeletionResponseId: number;
   
   constructor(skipSeed = false) {
     // First, try to load from disk file if it exists
@@ -210,12 +224,14 @@ export class MemStorage implements IStorage {
       this.matches = global.__persistent_storage.matches;
       this.messages = global.__persistent_storage.messages;
       this.conversations = global.__persistent_storage.conversations;
+      this.horseDeletionResponses = global.__persistent_storage.horseDeletionResponses;
       
       this.horseId = global.__persistent_storage.horseId;
       this.userId = global.__persistent_storage.userId;
       this.matchId = global.__persistent_storage.matchId;
       this.messageId = global.__persistent_storage.messageId;
       this.conversationId = global.__persistent_storage.conversationId;
+      this.horseDeletionResponseId = global.__persistent_storage.horseDeletionResponseId;
       
       // Log the current state for debugging
       console.log(`MemStorage: Loaded ${this.horses.size} horses from global storage`);
@@ -229,12 +245,14 @@ export class MemStorage implements IStorage {
       this.matches = diskStorage.matches;
       this.messages = diskStorage.messages;
       this.conversations = diskStorage.conversations;
+      this.horseDeletionResponses = diskStorage.horseDeletionResponses;
       
       this.horseId = diskStorage.horseId;
       this.userId = diskStorage.userId;
       this.matchId = diskStorage.matchId;
       this.messageId = diskStorage.messageId;
       this.conversationId = diskStorage.conversationId;
+      this.horseDeletionResponseId = diskStorage.horseDeletionResponseId;
       
       // Save to global for persistence across restarts
       global.__persistent_storage = {
@@ -243,11 +261,13 @@ export class MemStorage implements IStorage {
         matches: this.matches,
         messages: this.messages,
         conversations: this.conversations,
+        horseDeletionResponses: this.horseDeletionResponses,
         horseId: this.horseId,
         userId: this.userId,
         matchId: this.matchId,
         messageId: this.messageId,
         conversationId: this.conversationId,
+        horseDeletionResponseId: this.horseDeletionResponseId,
         seeded: true
       };
       
@@ -263,12 +283,14 @@ export class MemStorage implements IStorage {
       this.matches = new Map();
       this.messages = new Map();
       this.conversations = new Map();
+      this.horseDeletionResponses = new Map();
       
       this.horseId = 1;
       this.userId = 1;
       this.matchId = 1;
       this.messageId = 1;
       this.conversationId = 1;
+      this.horseDeletionResponseId = 1;
       
       // Only seed if we're starting fresh and not explicitly skipping
       if (!skipSeed) {
@@ -285,11 +307,13 @@ export class MemStorage implements IStorage {
         matches: this.matches,
         messages: this.messages,
         conversations: this.conversations,
+        horseDeletionResponses: this.horseDeletionResponses,
         horseId: this.horseId,
         userId: this.userId,
         matchId: this.matchId,
         messageId: this.messageId,
         conversationId: this.conversationId,
+        horseDeletionResponseId: this.horseDeletionResponseId,
         seeded: true
       };
       
@@ -1192,6 +1216,37 @@ export class MemStorage implements IStorage {
       return dateB.getTime() - dateA.getTime();
     });
   }
+  
+  // Horse deletion response methods
+  async createHorseDeletionResponse(response: InsertHorseDeletionResponse): Promise<HorseDeletionResponse> {
+    const newResponse: HorseDeletionResponse = {
+      ...response,
+      id: this.horseDeletionResponseId++,
+      created_at: new Date()
+    };
+    
+    this.horseDeletionResponses.set(newResponse.id, newResponse);
+    saveStorageToDisk(); // Persist to disk
+    return newResponse;
+  }
+  
+  async getHorseDeletionResponses(): Promise<HorseDeletionResponse[]> {
+    return Array.from(this.horseDeletionResponses.values()).sort((a, b) => {
+      const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at);
+      const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at);
+      return dateB.getTime() - dateA.getTime();
+    });
+  }
+  
+  async getHorseDeletionResponsesByUserId(userId: number): Promise<HorseDeletionResponse[]> {
+    return Array.from(this.horseDeletionResponses.values())
+      .filter(response => response.user_id === userId)
+      .sort((a, b) => {
+        const dateA = a.created_at instanceof Date ? a.created_at : new Date(a.created_at);
+        const dateB = b.created_at instanceof Date ? b.created_at : new Date(b.created_at);
+        return dateB.getTime() - dateA.getTime();
+      });
+  }
 }
 
 // Database-backed storage implementation
@@ -1822,6 +1877,24 @@ export class DatabaseStorage implements IStorage {
   
   async getAllMatches(): Promise<Match[]> {
     return await db.select().from(matches).orderBy(desc(matches.created_at));
+  }
+  
+  // Horse deletion response methods
+  async createHorseDeletionResponse(response: InsertHorseDeletionResponse): Promise<HorseDeletionResponse> {
+    const [newResponse] = await db.insert(horseDeletionResponses).values(response).returning();
+    return newResponse;
+  }
+  
+  async getHorseDeletionResponses(): Promise<HorseDeletionResponse[]> {
+    return await db.select().from(horseDeletionResponses).orderBy(desc(horseDeletionResponses.created_at));
+  }
+  
+  async getHorseDeletionResponsesByUserId(userId: number): Promise<HorseDeletionResponse[]> {
+    return await db
+      .select()
+      .from(horseDeletionResponses)
+      .where(eq(horseDeletionResponses.user_id, userId))
+      .orderBy(desc(horseDeletionResponses.created_at));
   }
 }
 

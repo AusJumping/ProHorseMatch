@@ -236,6 +236,26 @@ export const insertSearchNotificationSchema = createInsertSchema(searchNotificat
 export type InsertSearchNotification = z.infer<typeof insertSearchNotificationSchema>;
 export type SearchNotification = typeof searchNotifications.$inferSelect;
 
+// Horse deletion questionnaire responses
+export const horseDeletionResponses = pgTable("horse_deletion_responses", {
+  id: serial("id").primaryKey(),
+  horse_id: integer("horse_id").notNull(),
+  user_id: integer("user_id").notNull(),
+  horse_name: text("horse_name").notNull(),
+  sold_through_app: boolean("sold_through_app"),
+  sold_elsewhere: boolean("sold_elsewhere"),
+  unsold: boolean("unsold"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertHorseDeletionResponseSchema = createInsertSchema(horseDeletionResponses).omit({
+  id: true,
+  created_at: true,
+});
+
+export type InsertHorseDeletionResponse = z.infer<typeof insertHorseDeletionResponseSchema>;
+export type HorseDeletionResponse = typeof horseDeletionResponses.$inferSelect;
+
 // Constants for app
 export const disciplines = ["Jumping", "Dressage", "Eventing"];
 export const sexes = ["Mare", "Gelding", "Stallion"];

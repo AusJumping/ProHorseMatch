@@ -1737,7 +1737,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Delete a horse
+  // Delete a horse with questionnaire
   app.delete("/api/horses/:id", isTokenAuthenticated, async (req, res) => {
     try {
       // Get the user with their roles
@@ -1757,6 +1757,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Ensure owner can only delete their own horses
       if (horse.owner_id !== req.userId) {
         return res.status(403).json({ message: "Cannot delete another owner's horse" });
+      }
+      
+      // Extract questionnaire responses from request body
+      const { soldThroughApp, soldElsewhere, unsold } = req.body;
+      
+      // Store the deletion response for analytics
+      try {
+        await storage.createHorseDeletionResponse({
+          horse_id: id,
+          user_id: req.userId,
+          horse_name: horse.name,
+          sold_through_app: soldThroughApp || false,
+          sold_elsewhere: soldElsewhere || false,
+          unsold: unsold || false
+        });
+        console.log(`Horse deletion questionnaire saved for horse ${id}: sold_through_app=${soldThroughApp}, sold_elsewhere=${soldElsewhere}, unsold=${unsold}`);
+      } catch (questionnaireError) {
+        console.error("Failed to save deletion questionnaire:", questionnaireError);
+        // Continue with deletion even if questionnaire fails
       }
       
       // Delete the horse using the storage method
@@ -3826,6 +3845,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Admin update user email error:", error);
       res.status(500).json({ message: "Failed to update user email" });
+    }
+  });
+
+  // =============================================================================
+  // HORSE DELETION QUESTIONNAIRE AND ANALYTICS ENDPOINTS
+  // =============================================================================
+
+  // Admin endpoint to get all horse deletion responses
+  app.get("/api/admin/horse-deletion-responses", isTokenAuthenticated, async (req, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUserById(req.userId);
+      if (!user || user.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const responses = await storage.getHorseDeletionResponses();
+      return res.json(responses);
+    } catch (error) {
+      console.error("Admin get deletion responses error:", error);
+      return res.status(500).json({ message: "Failed to get deletion responses" });
+    }
+  });
+
+  // Admin endpoint to get horse deletion analytics
+  app.get("/api/admin/horse-deletion-analytics", isTokenAuthenticated, async (req, res) => {
+    try {
+      // Check if user is admin
+      const user = await storage.getUserById(req.userId);
+      if (!user || user.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const responses = await storage.getHorseDeletionResponses();
+      
+      // Calculate analytics
+      const analytics = {
+        totalDeletions: responses.length,
+        soldThroughApp: responses.filter(r => r.sold_through_app).length,
+        soldElsewhere: responses.filter(r => r.sold_elsewhere).length,
+        unsold: responses.filter(r => r.unsold).length,
+        responsesByMonth: {},
+        responsesByUser: {}
+      };
+
+      // Group by month
+      responses.forEach(response => {
+        const month = response.created_at.toISOString().substring(0, 7); // YYYY-MM
+        if (!analytics.responsesByMonth[month]) {
+          analytics.responsesByMonth[month] = {
+            total: 0,
+            soldThroughApp: 0,
+            soldElsewhere: 0,
+            unsold: 0
+          };
+        }
+        analytics.responsesByMonth[month].total++;
+        if (response.sold_through_app) analytics.responsesByMonth[month].soldThroughApp++;
+        if (response.sold_elsewhere) analytics.responsesByMonth[month].soldElsewhere++;
+        if (response.unsold) analytics.responsesByMonth[month].unsold++;
+      });
+
+      // Group by user
+      responses.forEach(response => {
+        const userId = response.user_id;
+        if (!analytics.responsesByUser[userId]) {
+          analytics.responsesByUser[userId] = {
+            total: 0,
+            soldThroughApp: 0,
+            soldElsewhere: 0,
+            unsold: 0
+          };
+        }
+        analytics.responsesByUser[userId].total++;
+        if (response.sold_through_app) analytics.responsesByUser[userId].soldThroughApp++;
+        if (response.sold_elsewhere) analytics.responsesByUser[userId].soldElsewhere++;
+        if (response.unsold) analytics.responsesByUser[userId].unsold++;
+      });
+
+      return res.json(analytics);
+    } catch (error) {
+      console.error("Admin get deletion analytics error:", error);
+      return res.status(500).json({ message: "Failed to get deletion analytics" });
     }
   });
 

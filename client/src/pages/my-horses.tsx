@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import Layout from "@/components/Layout";
 import HorseCard from "@/components/HorseCard";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -16,6 +17,11 @@ export default function MyHorses() {
   const { toast } = useToast();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedHorseId, setSelectedHorseId] = useState<number | null>(null);
+  const [questionnaire, setQuestionnaire] = useState({
+    soldThroughApp: false,
+    soldElsewhere: false,
+    unsold: false
+  });
   const queryClient = useQueryClient();
   const [prevLocation, setPrevLocation] = useState(location);
 
@@ -63,10 +69,21 @@ export default function MyHorses() {
 
   const handleDelete = async (horseId: number) => {
     try {
-      await apiRequest("DELETE", `/api/horses/${horseId}`);
+      // Send questionnaire responses with delete request
+      await apiRequest("DELETE", `/api/horses/${horseId}`, {
+        soldThroughApp: questionnaire.soldThroughApp,
+        soldElsewhere: questionnaire.soldElsewhere,
+        unsold: questionnaire.unsold
+      });
       toast({
         title: "Success",
         description: "Horse listing deleted successfully",
+      });
+      // Reset questionnaire state
+      setQuestionnaire({
+        soldThroughApp: false,
+        soldElsewhere: false,
+        unsold: false
       });
       refetch();
     } catch (error) {
@@ -151,30 +168,108 @@ export default function MyHorses() {
           </div>
         )}
 
-        {/* Delete Confirmation Modal */}
+        {/* Horse Deletion Questionnaire Modal */}
         {isDeleteModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
               <h3 className="font-accent font-bold text-xl mb-4">Delete Horse Listing</h3>
-              <p className="mb-6">Are you sure you want to delete this horse listing? This action cannot be undone.</p>
-              <div className="flex gap-4 justify-end">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsDeleteModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  variant="destructive"
-                  onClick={() => {
-                    if (selectedHorseId) {
-                      handleDelete(selectedHorseId);
-                      setIsDeleteModalOpen(false);
+              <p className="mb-6 text-gray-600">
+                Before we remove your horse listing, please help us understand what happened. 
+                This information helps us improve our platform for all users.
+              </p>
+              
+              {/* Questionnaire */}
+              <div className="space-y-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <Checkbox 
+                    id="soldThroughApp"
+                    checked={questionnaire.soldThroughApp}
+                    onCheckedChange={(checked) => 
+                      setQuestionnaire(prev => ({
+                        ...prev,
+                        soldThroughApp: checked as boolean
+                      }))
                     }
-                  }}
-                >
-                  Delete
-                </Button>
+                    className="mt-1"
+                  />
+                  <label htmlFor="soldThroughApp" className="text-sm leading-relaxed cursor-pointer">
+                    <span className="font-semibold">I sold this horse through ProHorseMatch</span>
+                    <br />
+                    <span className="text-gray-600">The buyer found my horse through this platform</span>
+                  </label>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Checkbox 
+                    id="soldElsewhere"
+                    checked={questionnaire.soldElsewhere}
+                    onCheckedChange={(checked) => 
+                      setQuestionnaire(prev => ({
+                        ...prev,
+                        soldElsewhere: checked as boolean
+                      }))
+                    }
+                    className="mt-1"
+                  />
+                  <label htmlFor="soldElsewhere" className="text-sm leading-relaxed cursor-pointer">
+                    <span className="font-semibold">I sold this horse through another channel</span>
+                    <br />
+                    <span className="text-gray-600">The buyer found my horse through a different platform or method</span>
+                  </label>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Checkbox 
+                    id="unsold"
+                    checked={questionnaire.unsold}
+                    onCheckedChange={(checked) => 
+                      setQuestionnaire(prev => ({
+                        ...prev,
+                        unsold: checked as boolean
+                      }))
+                    }
+                    className="mt-1"
+                  />
+                  <label htmlFor="unsold" className="text-sm leading-relaxed cursor-pointer">
+                    <span className="font-semibold">This horse is still available / not sold</span>
+                    <br />
+                    <span className="text-gray-600">I'm removing the listing but the horse hasn't been sold</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <p className="text-sm text-gray-500 mb-4">
+                  <strong>Note:</strong> This action cannot be undone. Your horse listing and all related messages will be permanently deleted.
+                </p>
+                <div className="flex gap-4 justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setIsDeleteModalOpen(false);
+                      // Reset questionnaire when canceling
+                      setQuestionnaire({
+                        soldThroughApp: false,
+                        soldElsewhere: false,
+                        unsold: false
+                      });
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="destructive"
+                    onClick={() => {
+                      if (selectedHorseId) {
+                        handleDelete(selectedHorseId);
+                        setIsDeleteModalOpen(false);
+                      }
+                    }}
+                    disabled={!questionnaire.soldThroughApp && !questionnaire.soldElsewhere && !questionnaire.unsold}
+                  >
+                    Delete Horse Listing
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
