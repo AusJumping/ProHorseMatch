@@ -127,19 +127,24 @@ const SwipeSection = ({
 
       {/* Action Buttons with navigation */}
       <div className="flex items-center justify-center gap-4 mt-5">
-        {/* Left navigation button - always show but disabled when at first horse */}
+        {/* Left navigation button - always show but styled as disabled when at first horse */}
         <Button 
           variant="secondary" 
-          disabled={localIndex === 0}
           className={cn(
-            "z-20 transition-all duration-200 hover:scale-105 active:scale-95",
+            "z-20 transition-all duration-200",
+            localIndex === 0 
+              ? "cursor-not-allowed opacity-50" 
+              : "hover:scale-105 active:scale-95",
             isMobile 
               ? "text-white px-6 py-3 rounded-lg font-medium shadow-lg" 
-              : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10",
-            localIndex === 0 && isMobile && "opacity-50 cursor-not-allowed"
+              : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
           )}
           style={isMobile ? { backgroundColor: '#cdac6e' } : undefined}
-          onClick={goToPrevHorse}
+          onClick={() => {
+            if (localIndex > 0) {
+              goToPrevHorse();
+            }
+          }}
         >
           {isMobile ? (
             "Previous"
@@ -148,19 +153,24 @@ const SwipeSection = ({
           )}
         </Button>
         
-        {/* Right navigation button - always show but disabled when at last horse */}
+        {/* Right navigation button - always show but styled as disabled when at last horse */}
         <Button 
           variant="secondary" 
-          disabled={localIndex >= horses.length - 1}
           className={cn(
-            "z-20 transition-all duration-200 hover:scale-105 active:scale-95",
+            "z-20 transition-all duration-200",
+            localIndex >= horses.length - 1 
+              ? "cursor-not-allowed opacity-50" 
+              : "hover:scale-105 active:scale-95",
             isMobile 
               ? "text-white px-6 py-3 rounded-lg font-medium shadow-lg" 
-              : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10",
-            localIndex >= horses.length - 1 && isMobile && "opacity-50 cursor-not-allowed"
+              : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
           )}
           style={isMobile ? { backgroundColor: '#cdac6e' } : undefined}
-          onClick={goToNextHorse}
+          onClick={() => {
+            if (localIndex < horses.length - 1) {
+              goToNextHorse();
+            }
+          }}
         >
           {isMobile ? (
             "Next"
