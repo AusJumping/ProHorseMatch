@@ -21,6 +21,7 @@ interface Filter {
   disciplines: string[];
   breeds: string[];
   sexes: string[];
+  levels: string[];
   location_country: string | null;
   location_radius_km: number | null;
   age_min: number | null;
@@ -30,6 +31,8 @@ interface Filter {
   price_min: number | null;
   price_max: number | null;
   currency: string | null;
+  sire: string | null;
+  dam_sire: string | null;
 }
 
 export default function Home() {
@@ -47,6 +50,7 @@ export default function Home() {
     disciplines: [],  // Empty array for All Disciplines
     breeds: [],       // Empty array for All Breeds
     sexes: [],        // Empty array for Any Sex
+    levels: [],       // Empty array for All Levels
     location_country: null,
     location_radius_km: null,
     age_min: null,
@@ -56,6 +60,8 @@ export default function Home() {
     price_min: null,
     price_max: null,
     currency: "AUD",
+    sire: null,
+    dam_sire: null,
   });
   
   // Check if this is the discover route to show filter by default

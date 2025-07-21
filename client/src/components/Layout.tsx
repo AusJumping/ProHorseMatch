@@ -39,7 +39,7 @@ const Layout = ({
   const { toast } = useToast();
   
   // Debug log
-  console.log("Layout - Auth state:", { isAuthenticated, userType: user?.type });
+  console.log("Layout - Auth state:", { isAuthenticated });
   
   const handleRefreshSession = () => {
     toast({
