@@ -381,8 +381,8 @@ export default function HorseDetail() {
                   onClick={handleSave} 
                   style={!isSaved ? { backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" } : {}}
                 >
-                  <Heart className={`mr-2 h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
-                  Favourite
+                  <Heart className={`${isMobile ? '' : 'mr-2'} h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
+                  {!isMobile && 'Favourite'}
                 </Button>
                 <Button className="flex-1" onClick={handleContactOwner}>
                   <MessageSquare className="mr-2 h-4 w-4" />
