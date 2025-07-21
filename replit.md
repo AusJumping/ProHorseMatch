@@ -114,6 +114,14 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 21, 2025: Horse deletion questionnaire feature fully implemented and operational
+  - ADDED: Comprehensive 3-question deletion modal asking users about horse sale status (sold through app, sold elsewhere, unsold)
+  - ADDED: Backend API endpoints for collecting and storing deletion response data with analytics
+  - ADDED: "Deletions" tab in admin dashboard with detailed analytics, percentage breakdowns, and monthly trends
+  - ENHANCED: Horse deletion process now requires users to select at least one questionnaire option before deletion
+  - ENHANCED: Admin dashboard displays real-time deletion analytics with response categorization and historical data
+  - COMPLETE: Full-stack questionnaire system from frontend modal to backend analytics with proper validation
+  - User feedback: "works well" - feature confirmed operational and ready for production use
 - July 20, 2025: Authentication system fixed for production deployment stability
   - CRITICAL FIX: Implemented stateless token validation that doesn't rely on global in-memory storage
   - Extended authentication token expiration from 1 hour to 24 hours for better user experience
