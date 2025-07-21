@@ -114,6 +114,13 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 21, 2025: Mobile horse navigation system fully fixed and operational
+  - RESOLVED: Mobile navigation buttons (Previous/Next) now work correctly for browsing horses
+  - FIXED: Horse counter display now updates properly showing current position (e.g., "horse 2 of 2")
+  - FIXED: Navigation state management issue where horses query was re-running on each button click
+  - ENHANCED: Converted arrow icon navigation to gold-colored buttons with "Previous"/"Next" text for better mobile UX
+  - STABILIZED: Query management to prevent unnecessary re-fetching while preserving proper navigation tracking
+  - COMPLETE: End-to-end mobile horse browsing experience with working navigation and accurate position display
 - July 21, 2025: Horse deletion questionnaire feature fully implemented and operational
   - ADDED: Comprehensive 3-question deletion modal asking users about horse sale status (sold through app, sold elsewhere, unsold)
   - ADDED: Backend API endpoints for collecting and storing deletion response data with analytics
