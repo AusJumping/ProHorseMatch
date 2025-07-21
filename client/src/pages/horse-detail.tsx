@@ -238,7 +238,7 @@ export default function HorseDetail() {
       showBackButton 
       onBackClick={handleBack}
     >
-      <div className={`w-full ${isMobile ? 'max-w-sm px-3' : 'max-w-xl'} mx-auto`}>
+      <div className={`w-full ${isMobile ? 'px-4' : 'max-w-xl px-6'} mx-auto`}>
         <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-md">
           {/* Media Gallery - Above content for all screen sizes */}
           <div className={`w-full ${isMobile ? 'h-[35vh]' : 'h-[45vh]'}`}>
@@ -251,7 +251,7 @@ export default function HorseDetail() {
           </div>
           
           {/* Details Content */}
-          <div className="w-full p-6">
+          <div className={`w-full ${isMobile ? 'p-4' : 'p-6'}`}>
             <div className="flex justify-between items-start mb-2">
               <h2 className="font-accent font-bold text-2xl">{horse.name}</h2>
             </div>
@@ -261,16 +261,16 @@ export default function HorseDetail() {
             </p>
             
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-neutral-50 p-3 rounded-lg">
+            <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'gap-3'} mb-6`}>
+              <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg`}>
                 <p className="text-sm text-neutral-500">Primary Discipline</p>
                 <p className="font-medium">{horse.disciplines.join(", ")}</p>
               </div>
-              <div className="bg-neutral-50 p-3 rounded-lg">
+              <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg`}>
                 <p className="text-sm text-neutral-500">Level</p>
                 <p className="font-medium">{horse.levels.join(", ")}</p>
               </div>
-              <div className="bg-neutral-50 p-3 rounded-lg">
+              <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg`}>
                 <p className="text-sm text-neutral-500">Pedigree</p>
                 <div className="font-medium space-y-1">
                   <div className="text-sm">
@@ -284,7 +284,7 @@ export default function HorseDetail() {
                   </div>
                 </div>
               </div>
-              <div className="bg-neutral-50 p-3 rounded-lg">
+              <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg`}>
                 <p className="text-sm text-neutral-500">Location</p>
                 <p className="font-medium">{horse.location_country}</p>
               </div>
