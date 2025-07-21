@@ -42,6 +42,7 @@ export default function Home() {
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
+  const [currentHorseIndex, setCurrentHorseIndex] = useState<number>(0);
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
     breeds: [],       // Empty array for All Breeds
@@ -489,6 +490,8 @@ export default function Home() {
       onFilterClick={toggleFilterPanel}
       showMobileFilterButton={isMobile}
       onMobileFilterClick={toggleFilterPanel}
+      horseCount={horses?.length || 0}
+      currentHorseIndex={currentHorseIndex}
     >
       <div className="flex w-full h-full">
         {/* Filter sidebar - desktop only or when explicitly showing filters */}
@@ -525,6 +528,7 @@ export default function Home() {
                     activeIndex={0} // Always start at the first horse when filters change
                     onShowMore={handleShowMore}
                     onLike={handleLike}
+                    onIndexChange={setCurrentHorseIndex}
                   />
                 </div>
               )}

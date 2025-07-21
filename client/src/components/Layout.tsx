@@ -17,6 +17,8 @@ interface LayoutProps {
   onFilterClick?: () => void;
   showMobileFilterButton?: boolean;
   onMobileFilterClick?: () => void;
+  horseCount?: number;
+  currentHorseIndex?: number;
 }
 
 const Layout = ({
@@ -28,6 +30,8 @@ const Layout = ({
   onFilterClick,
   showMobileFilterButton = false,
   onMobileFilterClick,
+  horseCount,
+  currentHorseIndex,
 }: LayoutProps) => {
   const isMobile = useMobile();
   const [location, navigate] = useLocation();
@@ -69,6 +73,13 @@ const Layout = ({
         <header className="bg-white border-b border-neutral-200 p-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
+              {/* Mobile horse counter */}
+              {isMobile && horseCount && currentHorseIndex !== undefined && (
+                <div className="text-xs text-gray-500 mr-3">
+                  Horse {currentHorseIndex + 1} of {horseCount}
+                </div>
+              )}
+              
               {showBackButton && (
                 <Button 
                   variant="ghost" 

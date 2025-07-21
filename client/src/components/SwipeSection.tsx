@@ -13,6 +13,7 @@ interface SwipeSectionProps {
   activeIndex: number;
   onShowMore: (horseId: number) => void;
   onLike: (horseId: number) => void;
+  onIndexChange?: (index: number) => void;
 }
 
 const SwipeSection = ({
@@ -21,6 +22,7 @@ const SwipeSection = ({
   activeIndex,
   onShowMore,
   onLike,
+  onIndexChange,
 }: SwipeSectionProps) => {
   const isMobile = useMobile();
   // Always track the current index for proper navigation
@@ -47,7 +49,18 @@ const SwipeSection = ({
     
     // Reset to first horse
     setLocalIndex(0);
-  }, [horses]);
+    // Notify parent of the reset
+    if (onIndexChange) {
+      onIndexChange(0);
+    }
+  }, [horses, onIndexChange]);
+
+  // Update parent when localIndex changes
+  useEffect(() => {
+    if (onIndexChange) {
+      onIndexChange(localIndex);
+    }
+  }, [localIndex, onIndexChange]);
   
   const currentHorse = horses[localIndex];
 
@@ -103,11 +116,6 @@ const SwipeSection = ({
 
   return (
     <div className="w-full max-w-lg mx-auto">
-      {/* Navigation indicators */}
-      <div className="mb-2 text-center text-xs text-gray-500">
-        Horse {localIndex + 1} of {horses.length}
-      </div>
-
       {/* Horse card */}
       <div className="relative mb-4">
         <HorseCard 
