@@ -114,6 +114,14 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 21, 2025: Mobile horse detail page layout completely fixed and optimized
+  - RESOLVED: Mobile overflow issue that was pushing content off the right side of screen
+  - FIXED: Hamburger menu positioning on mobile - now properly aligned instead of being cut off
+  - UPDATED: Horse detail card layout with full-width pedigree box and separate location box underneath
+  - ENHANCED: Consistent text sizing between desktop and mobile for all detail sections
+  - APPLIED: Proper viewport width calculations using standard mobile layout instead of calc() functions
+  - OPTIMIZED: Mobile padding and spacing for better content fit within screen bounds
+  - COMPLETE: End-to-end mobile horse detail experience with proper content positioning and navigation accessibility
 - July 21, 2025: Horse detail page terminology and pedigree display enhanced
   - UPDATED: "Discipline" heading changed to "Primary Discipline" in horse detail stats grid for clarity
   - UPDATED: "Breeding" heading changed to "Pedigree" in horse detail stats grid for professional terminology
