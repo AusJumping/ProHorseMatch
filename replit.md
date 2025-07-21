@@ -114,6 +114,11 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 21, 2025: Horse card lineage display updated for better readability
+  - UPDATED: Horse summary cards now display lineage information in three separate rows (Sire, Dam, Dam Sire) instead of single concatenated line
+  - APPLIED: Consistent layout changes to both HorseCard and HorseGrid components for uniform appearance
+  - ENHANCED: Optimized spacing between lineage rows using space-y-0.5 for compact, readable display
+  - IMPROVED: Desktop horse card layout provides clearer pedigree information for better horse evaluation
 - July 21, 2025: Mobile horse navigation system fully fixed and operational
   - RESOLVED: Mobile navigation buttons (Previous/Next) now work correctly for browsing horses
   - FIXED: Horse counter display now updates properly showing current position (e.g., "horse 2 of 2")
