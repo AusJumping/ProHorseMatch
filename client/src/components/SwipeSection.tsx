@@ -65,14 +65,22 @@ const SwipeSection = ({
   const currentHorse = horses[localIndex];
 
   const goToNextHorse = () => {
+    console.log("goToNextHorse called - current localIndex:", localIndex, "horses.length:", horses.length);
     if (localIndex < horses.length - 1) {
+      console.log("Moving to next horse:", localIndex + 1);
       setLocalIndex(localIndex + 1);
+    } else {
+      console.log("Already at last horse, can't go next");
     }
   };
 
   const goToPrevHorse = () => {
+    console.log("goToPrevHorse called - current localIndex:", localIndex);
     if (localIndex > 0) {
+      console.log("Moving to previous horse:", localIndex - 1);
       setLocalIndex(localIndex - 1);
+    } else {
+      console.log("Already at first horse, can't go previous");
     }
   };
 
@@ -140,9 +148,15 @@ const SwipeSection = ({
               : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
           )}
           style={isMobile ? { backgroundColor: '#cdac6e' } : undefined}
-          onClick={() => {
+          onClick={(e) => {
+            console.log("Previous button clicked - localIndex:", localIndex);
+            e.preventDefault();
+            e.stopPropagation();
             if (localIndex > 0) {
+              console.log("Calling goToPrevHorse");
               goToPrevHorse();
+            } else {
+              console.log("Previous button disabled - at first horse");
             }
           }}
         >
@@ -166,9 +180,15 @@ const SwipeSection = ({
               : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
           )}
           style={isMobile ? { backgroundColor: '#cdac6e' } : undefined}
-          onClick={() => {
+          onClick={(e) => {
+            console.log("Next button clicked - localIndex:", localIndex, "horses.length:", horses.length);
+            e.preventDefault();
+            e.stopPropagation();
             if (localIndex < horses.length - 1) {
+              console.log("Calling goToNextHorse");
               goToNextHorse();
+            } else {
+              console.log("Next button disabled - at last horse");
             }
           }}
         >
