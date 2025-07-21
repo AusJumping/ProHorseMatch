@@ -257,7 +257,7 @@ export default function HorseDetail() {
             </div>
             
             <p className="text-neutral-800 mb-4">
-              {horse.age === 1 ? "Yearling" : `${horse.age}yo`} {horse.breeds[0]} {horse.sex} • {(horse.height_hands as any) === "young_horse" || !horse.height_hands ? "Height TBD" : `${horse.height_hands} hands`}
+              {horse.colour || "Unknown Colour"} {horse.age === 1 ? "Yearling" : `${horse.age}yo`} {horse.breeds[0]} {horse.sex} • {(horse.height_hands as any) === "young_horse" || !horse.height_hands ? "Height TBD" : `${horse.height_hands} hands`}
             </p>
             
             {/* Stats Grid */}
@@ -269,10 +269,6 @@ export default function HorseDetail() {
               <div className="bg-neutral-50 p-3 rounded-lg">
                 <p className="text-sm text-neutral-500">Level</p>
                 <p className="font-medium">{horse.levels.join(", ")}</p>
-              </div>
-              <div className="bg-neutral-50 p-3 rounded-lg">
-                <p className="text-sm text-neutral-500">Colour</p>
-                <p className="font-medium">{horse.colour || "Not specified"}</p>
               </div>
               <div className="bg-neutral-50 p-3 rounded-lg">
                 <p className="text-sm text-neutral-500">Pedigree</p>
