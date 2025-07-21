@@ -238,8 +238,8 @@ export default function HorseDetail() {
       showBackButton 
       onBackClick={handleBack}
     >
-      <div className={`${isMobile ? 'w-full max-w-full px-4 box-border' : 'w-full max-w-xl px-6'} mx-auto`}>
-        <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-md w-full max-w-full">
+      <div className={`${isMobile ? 'w-[calc(100vw-2rem)] mx-4' : 'w-full max-w-xl px-6 mx-auto'}`}>
+        <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-md w-full">
           {/* Media Gallery - Above content for all screen sizes */}
           <div className={`w-full ${isMobile ? 'h-[35vh]' : 'h-[45vh]'}`}>
             <div className="h-full">
@@ -251,7 +251,7 @@ export default function HorseDetail() {
           </div>
           
           {/* Details Content */}
-          <div className={`w-full ${isMobile ? 'p-4' : 'p-6'}`}>
+          <div className={`${isMobile ? 'w-full p-3 overflow-hidden' : 'w-full p-6'}`}>
             <div className="flex justify-between items-start mb-2">
               <h2 className={`font-accent font-bold ${isMobile ? 'text-xl' : 'text-2xl'} break-words`}>{horse.name}</h2>
             </div>
@@ -261,30 +261,30 @@ export default function HorseDetail() {
             </p>
             
             {/* Stats Grid */}
-            <div className={`grid grid-cols-2 ${isMobile ? 'gap-2' : 'gap-3'} mb-6`}>
-              <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden`}>
+            <div className={`grid grid-cols-2 ${isMobile ? 'gap-1.5 w-full' : 'gap-3'} mb-6`}>
+              <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
                 <p className="text-sm text-neutral-500">Primary Discipline</p>
                 <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.disciplines.join(", ")}</p>
               </div>
-              <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden`}>
+              <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
                 <p className="text-sm text-neutral-500">Level</p>
                 <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.levels.join(", ")}</p>
               </div>
-              <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden`}>
+              <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
                 <p className="text-sm text-neutral-500">Pedigree</p>
                 <div className={`font-medium space-y-1 ${isMobile ? 'text-xs' : ''}`}>
-                  <div className="text-sm break-words">
+                  <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
                     <span className="font-bold">Sire:</span> {horse.sire || "Not specified"}
                   </div>
-                  <div className="text-sm break-words">
+                  <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
                     <span className="font-bold">Dam:</span> {horse.dam || "Not specified"}
                   </div>
-                  <div className="text-sm break-words">
+                  <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
                     <span className="font-bold">Dam Sire:</span> {horse.dam_sire || "Not specified"}
                   </div>
                 </div>
               </div>
-              <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden`}>
+              <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
                 <p className="text-sm text-neutral-500">Location</p>
                 <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.location_country}</p>
               </div>
