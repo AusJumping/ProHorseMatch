@@ -261,7 +261,7 @@ export default function HorseDetail() {
             </p>
             
             {/* Stats Grid */}
-            <div className={`grid grid-cols-2 ${isMobile ? 'gap-1.5 w-full' : 'gap-3'} mb-6`}>
+            <div className={`grid grid-cols-2 ${isMobile ? 'gap-1.5 w-full' : 'gap-3'} mb-4`}>
               <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
                 <p className="text-sm text-neutral-500">Primary Discipline</p>
                 <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.disciplines.join(", ")}</p>
@@ -270,24 +270,28 @@ export default function HorseDetail() {
                 <p className="text-sm text-neutral-500">Level</p>
                 <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.levels.join(", ")}</p>
               </div>
-              <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
-                <p className="text-sm text-neutral-500">Pedigree</p>
-                <div className={`font-medium space-y-1 ${isMobile ? 'text-xs' : ''}`}>
-                  <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
-                    <span className="font-bold">Sire:</span> {horse.sire || "Not specified"}
-                  </div>
-                  <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
-                    <span className="font-bold">Dam:</span> {horse.dam || "Not specified"}
-                  </div>
-                  <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
-                    <span className="font-bold">Dam Sire:</span> {horse.dam_sire || "Not specified"}
-                  </div>
+            </div>
+            
+            {/* Full Width Pedigree */}
+            <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden mb-4`}>
+              <p className="text-sm text-neutral-500">Pedigree</p>
+              <div className={`font-medium space-y-1 ${isMobile ? 'text-xs' : ''}`}>
+                <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
+                  <span className="font-bold">Sire:</span> {horse.sire || "Not specified"}
+                </div>
+                <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
+                  <span className="font-bold">Dam:</span> {horse.dam || "Not specified"}
+                </div>
+                <div className={`${isMobile ? 'text-xs' : 'text-sm'} break-words`}>
+                  <span className="font-bold">Dam Sire:</span> {horse.dam_sire || "Not specified"}
                 </div>
               </div>
-              <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
-                <p className="text-sm text-neutral-500">Location</p>
-                <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.location_country}</p>
-              </div>
+            </div>
+            
+            {/* Location Box */}
+            <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden mb-6`}>
+              <p className="text-sm text-neutral-500">Location</p>
+              <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.location_country}</p>
             </div>
             
             {/* Description */}
