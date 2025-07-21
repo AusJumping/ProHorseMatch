@@ -263,7 +263,7 @@ export default function HorseDetail() {
             {/* Stats Grid */}
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="bg-neutral-50 p-3 rounded-lg">
-                <p className="text-sm text-neutral-500">Discipline</p>
+                <p className="text-sm text-neutral-500">Primary Discipline</p>
                 <p className="font-medium">{horse.disciplines.join(", ")}</p>
               </div>
               <div className="bg-neutral-50 p-3 rounded-lg">
