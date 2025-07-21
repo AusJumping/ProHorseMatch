@@ -271,7 +271,7 @@ export default function HorseDetail() {
                 <p className="font-medium">{horse.levels.join(", ")}</p>
               </div>
               <div className="bg-neutral-50 p-3 rounded-lg">
-                <p className="text-sm text-neutral-500">Breeding</p>
+                <p className="text-sm text-neutral-500">Pedigree</p>
                 <p className="font-medium">
                   {horse.sire && horse.dam_sire ? `${horse.sire} x ${horse.dam_sire}` : "Not specified"}
                 </p>
