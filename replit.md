@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 21, 2025: Terms of Service updated with comprehensive liability disclaimer and subscription terms
+  - UPDATED: Complete Terms of Service content in subscription page with enhanced legal protection
+  - ENHANCED: Content accuracy section clarifying user responsibility for all listing information
+  - STRENGTHENED: Liability limitation language regarding horse condition, health, and suitability
+  - CLARIFIED: Subscription billing, auto-renewal, cancellation, and beta trial policies
+  - IMPROVED: Legal framework protecting platform while emphasizing buyer/seller due diligence responsibility
 - July 21, 2025: Mobile horse detail page layout completely fixed and optimized
   - RESOLVED: Mobile overflow issue that was pushing content off the right side of screen
   - FIXED: Hamburger menu positioning on mobile - now properly aligned and fully visible

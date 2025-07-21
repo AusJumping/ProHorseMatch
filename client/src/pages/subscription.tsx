@@ -214,8 +214,7 @@ const TermsOfServiceDialog = () => {
           
           <div>
             <h4 className="font-semibold">1. Content Accuracy and Listings</h4>
-            <p>ProHorseMatch is a platform that facilitates connections between buyers and sellers of performance horses. All listings, including descriptions, images, health records, training history, and other horse-related content, are provided by the users (sellers).</p>
-            <p>ProHorseMatch does not create, verify, or endorse the accuracy, completeness, legality, or authenticity of any listing content. Users of the platform acknowledge and agree that the responsibility for all content posted lies solely with the user who posted it.</p>
+            <p>ProHorseMatch is a platform that facilitates connections between buyers and sellers of performance horses. All listings, including descriptions, images, health records, training history, and other horse-related content, are provided by the users (sellers). ProHorseMatch does not create, verify, or endorse the accuracy, completeness, legality, or authenticity of any listing content. Users of the platform acknowledge and agree that the responsibility for all content posted lies solely with the user who posted it.</p>
           </div>
           
           <div>
@@ -231,32 +230,15 @@ const TermsOfServiceDialog = () => {
           <div>
             <h4 className="font-semibold">4. Limitation of Liability</h4>
             <p>To the maximum extent permitted by applicable law, ProHorseMatch disclaims all liability for any direct, indirect, incidental, special, consequential or punitive damages, including but not limited to loss of profits, loss of opportunity, personal injury, or property damage arising out of or in connection with:</p>
-            <ul className="list-disc pl-5">
+            <ul className="list-disc pl-5 mt-2">
               <li>any inaccuracies or omissions in listing content;</li>
               <li>the condition, health, or behaviour of any horse;</li>
               <li>any transaction entered into between users of the platform.</li>
             </ul>
+            <p className="mt-2">By using ProHorseMatch, you agree that any legal responsibility for the quality, health, condition, or fitness for purpose of any horse lies solely between the buyer and seller, and not with ProHorseMatch.</p>
           </div>
           
-          <h3 className="font-bold">Horse Listings and Buyer Responsibility</h3>
-          
-          <div>
-            <p>ProHorseMatch is a digital platform designed to connect prospective buyers with sellers of performance horses. We do not own, inspect, or verify any horses listed on the platform. All descriptions, images, videos, and claims made in a horse listing are the sole responsibility of the seller.</p>
-          </div>
-          
-          <div>
-            <p>ProHorseMatch does not guarantee the accuracy, health, condition, performance, temperament, or suitability of any horse listed. We do not conduct veterinary checks, training assessments, or behavioural evaluations, nor do we verify the claims made in any listing.</p>
-          </div>
-          
-          <div>
-            <p>Buyers are solely responsible for conducting their own due diligence before proceeding with any transaction. This includes, but is not limited to, arranging independent veterinary examinations, obtaining professional advice, and inspecting the horse in person where possible. Any decisions made based on listings on the platform are entirely at the buyer's own risk.</p>
-          </div>
-          
-          <div>
-            <p>By using ProHorseMatch, you acknowledge and agree that the platform bears no liability or responsibility for the condition, soundness, health, or suitability of any horse advertised. All negotiations, inspections, and purchases take place between the buyer and seller, and ProHorseMatch plays no role in the transaction process beyond facilitating initial contact.</p>
-          </div>
-          
-          <h3 className="font-bold">Subscription Terms</h3>
+          <h3 className="font-bold">5. Subscription Terms</h3>
           
           <div>
             <h4 className="font-semibold">5.1 Billing and Payments</h4>
@@ -279,9 +261,8 @@ const TermsOfServiceDialog = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold">5.5 Beta Subscriptions and Free Trials</h4>
-            <p>Beta subscriptions do not require payment details. You will be notified via email in advance before the beta subscriptions end to allow you to convert to a paid subscription.</p>
-            <p>From time to time, ProHorseMatch may offer free trial subscriptions. These will auto-renew into paid subscriptions unless cancelled before the trial period ends.</p>
+            <h4 className="font-semibold">5.5 Free Trials and Beta Subscriptions</h4>
+            <p>From time to time, ProHorseMatch may offer free trial or beta access subscriptions. These will also auto-renew into paid subscriptions unless cancelled before the trial or beta period ends. You will be notified via email in advance before any billing begins.</p>
           </div>
         </div>
       </DialogContent>
