@@ -695,9 +695,9 @@ export default function SubscriptionPage() {
                           </DialogTrigger>
                           <DialogContent className="sm:max-w-[800px]">
                             <DialogHeader>
-                              <DialogTitle>Pro Horse Match - Terms of Service</DialogTitle>
+                              <DialogTitle>Terms of Service</DialogTitle>
                               <DialogDescription>
-                                Last Updated: May 20, 2025
+                                Effective Date: 21 July 2025
                               </DialogDescription>
                             </DialogHeader>
                             <ScrollArea className="h-[450px] mt-4">

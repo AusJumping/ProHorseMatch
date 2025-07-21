@@ -21,9 +21,9 @@ const TermsOfServiceDialog: React.FC = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Pro Horse Match - Terms of Service</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Terms of Service</DialogTitle>
           <DialogDescription>
-            Last Updated: May 20, 2025
+            Effective Date: 21 July 2025
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[500px] mt-4 pr-4">
