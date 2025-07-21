@@ -42,14 +42,18 @@ const HorseGrid = ({ horses, onShowMore }: HorseGridProps) => {
             <CardContent className="flex flex-col flex-grow p-4">
               <div className="flex-grow">
                 <h3 className="text-lg font-accent font-bold">{horse.name}</h3>
-                <div className="mt-1 text-sm text-gray-600">
-                  {horse.sire && horse.dam_sire ? (
-                    <p>{horse.sire} x {horse.dam_sire}</p>
-                  ) : horse.sire ? (
-                    <p>{horse.sire}</p>
-                  ) : (
-                    <p className="text-gray-400">Breeding not specified</p>
-                  )}
+                
+                {/* Lineage Information */}
+                <div className="mt-1 text-sm text-gray-600 space-y-1">
+                  <div>
+                    <span className="font-medium">Sire:</span> {horse.sire || "Not specified"}
+                  </div>
+                  <div>
+                    <span className="font-medium">Dam:</span> {horse.dam || "Not specified"}
+                  </div>
+                  <div>
+                    <span className="font-medium">Dam Sire:</span> {horse.dam_sire || "Not specified"}
+                  </div>
                 </div>
                 <div className="mt-2 text-sm text-gray-600">
                   <p>
