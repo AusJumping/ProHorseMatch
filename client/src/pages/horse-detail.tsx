@@ -257,7 +257,7 @@ export default function HorseDetail() {
             </div>
             
             <p className="text-neutral-800 mb-4">
-              {horse.age === 1 ? "Yearling" : `${horse.age}yo`} {horse.breeds[0]} {horse.sex} • {(horse.height_hands as any) === "young_horse" || !horse.height_hands ? "Young Horse" : `${horse.height_hands} hands`}
+              {horse.age === 1 ? "Yearling" : `${horse.age}yo`} {horse.breeds[0]} {horse.sex} • {(horse.height_hands as any) === "young_horse" || !horse.height_hands ? "Height TBD" : `${horse.height_hands} hands`}
             </p>
             
             {/* Stats Grid */}
