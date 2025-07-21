@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import HorseCard from "./HorseCard";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -28,32 +28,31 @@ const SwipeSection = ({
   // Always track the current index for proper navigation
   const [localIndex, setLocalIndex] = useState(0);
   
-  // Reset index when horses array changes + do thorough debugging
+  // Only reset when horses array actually changes (not just re-renders)
+  const prevHorsesRef = useRef<typeof horses>([]);
+  
   useEffect(() => {
-    // Detailed debugging for mobile filter issues
-    console.log("SwipeSection: HORSES CHANGED");
-    console.log("Number of horses:", horses.length);
+    // Check if horses array actually changed by comparing IDs
+    const currentHorseIds = horses.map(h => h.id).sort().join(',');
+    const prevHorseIds = prevHorsesRef.current.map(h => h.id).sort().join(',');
     
-    // Examine each horse's discipline data
-    horses.forEach(horse => {
-      console.log(`Horse: ${horse.name} (ID: ${horse.id})`);
-      console.log(`- Disciplines: ${JSON.stringify(horse.disciplines || "NONE")}`);
-      console.log(`- Type of disciplines: ${typeof horse.disciplines}`);
-      console.log(`- Is array: ${Array.isArray(horse.disciplines)}`);
+    if (currentHorseIds !== prevHorseIds) {
+      console.log("SwipeSection: HORSES ACTUALLY CHANGED");
+      console.log("Number of horses:", horses.length);
       
-      // For debugging - try to directly access discipline data
-      if (horse.disciplines && Array.isArray(horse.disciplines)) {
-        console.log(`- First discipline: ${horse.disciplines[0]}`);
+      // Reset to first horse only when horses actually change
+      setLocalIndex(0);
+      // Notify parent of the reset
+      if (onIndexChange) {
+        onIndexChange(0);
       }
-    });
-    
-    // Reset to first horse
-    setLocalIndex(0);
-    // Notify parent of the reset
-    if (onIndexChange) {
-      onIndexChange(0);
+      
+      // Update ref to current horses
+      prevHorsesRef.current = horses;
+    } else {
+      console.log("SwipeSection: Horses re-rendered but didn't change, preserving index:", localIndex);
     }
-  }, [horses, onIndexChange]);
+  }, [horses, onIndexChange, localIndex]);
 
   // Update parent when localIndex changes
   useEffect(() => {
