@@ -134,9 +134,10 @@ const SwipeSection = ({
             className={cn(
               "z-20 transition-all duration-200 hover:scale-105 active:scale-95",
               isMobile 
-                ? "bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-medium" 
+                ? "text-white px-6 py-3 rounded-lg font-medium shadow-lg" 
                 : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
             )}
+            style={isMobile ? { backgroundColor: '#cdac6e' } : undefined}
             onClick={goToPrevHorse}
           >
             {isMobile ? (
@@ -158,9 +159,10 @@ const SwipeSection = ({
             className={cn(
               "z-20 transition-all duration-200 hover:scale-105 active:scale-95",
               isMobile 
-                ? "bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-medium" 
+                ? "text-white px-6 py-3 rounded-lg font-medium shadow-lg" 
                 : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
             )}
+            style={isMobile ? { backgroundColor: '#cdac6e' } : undefined}
             onClick={goToNextHorse}
           >
             {isMobile ? (
