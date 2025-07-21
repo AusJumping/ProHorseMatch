@@ -201,8 +201,6 @@ export default function Home() {
       }
       
       const result = await response.json();
-      // Reset the active index to 0 whenever we get new data
-      setSwipingIndex(0);
       return result;
     }
   });
@@ -526,15 +524,14 @@ export default function Home() {
                   
                   {/* All filter indicators completely removed as requested */}
                   
-                  {/* Create a key for the active discipline filter to force re-rendering */}
                   <SwipeSection 
-                    key={`filter-${activeFilters.disciplines.join('-')}-${Date.now()}`} // Force component remount when filters change with unique timestamp
+                    key={`filter-${activeFilters.disciplines.join('-')}`}
                     horses={horses || []}
                     isLoading={isLoading}
-                    activeIndex={0} // Always start at the first horse when filters change
+                    activeIndex={0}
                     onShowMore={handleShowMore}
                     onLike={handleLike}
-                    onIndexChange={setCurrentHorseIndex}
+                    onIndexChange={() => {}} // Remove the problematic state update
                   />
                 </div>
               )}
