@@ -125,44 +125,54 @@ const SwipeSection = ({
         />
       </div>
 
-      {/* Action Buttons with navigation arrows on sides */}
+      {/* Action Buttons with navigation */}
       <div className="flex items-center justify-center gap-4 mt-5">
-        {/* Left navigation arrow */}
+        {/* Left navigation button */}
         {localIndex > 0 && (
           <Button 
             variant="secondary" 
-            size="icon" 
             className={cn(
-              "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 z-20 transition-all duration-200 hover:scale-110 active:scale-95",
-              isMobile ? "w-16 h-16" : "w-10 h-10"
+              "z-20 transition-all duration-200 hover:scale-105 active:scale-95",
+              isMobile 
+                ? "bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-medium" 
+                : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
             )}
             onClick={goToPrevHorse}
           >
-            <ChevronLeft className={cn("text-black font-bold", isMobile ? "h-10 w-10 stroke-2" : "h-6 w-6")} />
+            {isMobile ? (
+              "Previous"
+            ) : (
+              <ChevronLeft className="h-6 w-6 text-black font-bold" />
+            )}
           </Button>
         )}
         {/* Spacer when no left arrow */}
         {localIndex === 0 && (
-          <div className={cn(isMobile ? "w-16" : "w-10")}></div>
+          <div className={cn(isMobile ? "w-20" : "w-10")}></div>
         )}
         
-        {/* Right navigation arrow */}
+        {/* Right navigation button */}
         {localIndex < horses.length - 1 && (
           <Button 
             variant="secondary" 
-            size="icon" 
             className={cn(
-              "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 z-20 transition-all duration-200 hover:scale-110 active:scale-95",
-              isMobile ? "w-16 h-16" : "w-10 h-10"
+              "z-20 transition-all duration-200 hover:scale-105 active:scale-95",
+              isMobile 
+                ? "bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-lg font-medium" 
+                : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
             )}
             onClick={goToNextHorse}
           >
-            <ChevronRight className={cn("text-black font-bold", isMobile ? "h-10 w-10 stroke-2" : "h-6 w-6")} />
+            {isMobile ? (
+              "Next"
+            ) : (
+              <ChevronRight className="h-6 w-6 text-black font-bold" />
+            )}
           </Button>
         )}
         {/* Spacer when no right arrow */}
         {localIndex >= horses.length - 1 && (
-          <div className={cn(isMobile ? "w-16" : "w-10")}></div>
+          <div className={cn(isMobile ? "w-20" : "w-10")}></div>
         )}
       </div>
     </div>
