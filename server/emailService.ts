@@ -4,17 +4,22 @@ import { MailService } from '@sendgrid/mail';
 let mailService: MailService | null = null;
 let resend: any = null;
 
-if (process.env.SENDGRID_API_KEY) {
-  mailService = new MailService();
-  mailService.setApiKey(process.env.SENDGRID_API_KEY);
-  console.log('Email service initialized with SendGrid');
-} else if (process.env.RESEND_API_KEY) {
-  const { Resend } = require('resend');
-  resend = new Resend(process.env.RESEND_API_KEY);
-  console.log('Email service initialized with Resend');
-} else {
-  console.warn('No email service configured - emails will not be sent');
+async function initializeEmailService() {
+  if (process.env.RESEND_API_KEY) {
+    const { Resend } = await import('resend');
+    resend = new Resend(process.env.RESEND_API_KEY);
+    console.log('Email service initialized with Resend');
+  } else if (process.env.SENDGRID_API_KEY) {
+    mailService = new MailService();
+    mailService.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('Email service initialized with SendGrid');
+  } else {
+    console.warn('No email service configured - emails will not be sent');
+  }
 }
+
+// Initialize the service
+initializeEmailService();
 
 interface EmailVerificationParams {
   to: string;

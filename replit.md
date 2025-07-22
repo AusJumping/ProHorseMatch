@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 22, 2025: Email verification system restored and operational
+  - FIXED: Email service configuration now prioritizes Resend over SendGrid for reliable delivery
+  - RESOLVED: ES module import issue that was preventing email service initialization
+  - VERIFIED: Email verification system now working end-to-end with successful delivery to real email addresses
+  - CONFIRMED: Server logs show successful email dispatch via Resend with proper response IDs
+  - TESTED: Both bressington2107@bigpond.com and david@australianjumping.com.au receiving verification emails
 - July 21, 2025: Terms of Service updated with comprehensive liability disclaimer and subscription terms
   - UPDATED: Complete Terms of Service content in subscription page with enhanced legal protection
   - ENHANCED: Content accuracy section clarifying user responsibility for all listing information
