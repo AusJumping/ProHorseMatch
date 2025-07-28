@@ -22,9 +22,14 @@ const Landing = () => {
           with New Owners
         </h1>
         
-        <p className="text-lg font-semibold mb-8" style={{ color: "#cdac6e" }}>
-          FREE Horse Listings (no payment details required)
-        </p>
+        <div className="mb-8">
+          <p className="text-2xl font-bold mb-2" style={{ color: "#cdac6e" }}>
+            FREE Horse Listings
+          </p>
+          <p className="text-lg" style={{ color: "#e4e2dd" }}>
+            (no payment details required)
+          </p>
+        </div>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           {isAuthenticated ? (
