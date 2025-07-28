@@ -23,7 +23,7 @@ const Landing = () => {
         </h1>
         
         <div className="mb-8">
-          <p className="text-3xl font-bold mb-2" style={{ color: "#cdac6e" }}>
+          <p className="text-2xl font-bold mb-2" style={{ color: "#cdac6e" }}>
             FREE Horse Listings
           </p>
           <p className="text-lg" style={{ color: "#e4e2dd" }}>
