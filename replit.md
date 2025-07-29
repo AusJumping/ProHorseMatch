@@ -114,6 +114,12 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 22, 2025: Password reset functionality fixed and Di Bressington account removed
+  - FIXED: Password reset email URLs now use correct 'token' parameter instead of 'reset_token'
+  - RESOLVED: Reset password button in emails now properly redirects to password reset form
+  - VERIFIED: Complete password reset flow working: forgot password → email → reset form → new password
+  - REMOVED: Di Bressington account (bressington2107@bigpond.com) and all associated data cleaned up
+  - TESTED: Password reset system fully operational with proper token handling and form display
 - July 22, 2025: Email verification system restored and operational
   - FIXED: Email service configuration now prioritizes Resend over SendGrid for reliable delivery
   - RESOLVED: ES module import issue that was preventing email service initialization

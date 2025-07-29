@@ -258,7 +258,7 @@ export async function sendPasswordResetEmail(params: PasswordResetParams): Promi
     tokenLength: params.resetToken?.length || 0
   });
 
-  const resetUrl = `${params.baseUrl}/auth?reset_token=${params.resetToken}`;
+  const resetUrl = `${params.baseUrl}/auth?token=${params.resetToken}`;
   console.log('Password reset URL generated:', resetUrl);
   
   const htmlContent = `
