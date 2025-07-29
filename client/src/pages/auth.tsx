@@ -85,7 +85,8 @@ export default function Auth() {
     
     if (tokenParam) {
       setResetToken(tokenParam);
-      setActiveTab('reset-password');
+      // Don't change tab to reset-password since it doesn't exist in tabs
+      // The reset form will show conditionally below
     }
   }, [location]);
 
@@ -294,11 +295,13 @@ export default function Auth() {
           </div>
         </div>
 
-        <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-2 mb-6">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="register">Register</TabsTrigger>
-          </TabsList>
+        {/* Hide tabs when showing reset password form */}
+        {!resetToken && (
+          <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-2 mb-6">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
+            </TabsList>
 
           <TabsContent value="login">
             <Card>
@@ -706,7 +709,6 @@ export default function Auth() {
               </Card>
             )}
           </TabsContent>
-        </Tabs>
 
         {/* Forgot Password Dialog */}
         <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
@@ -749,17 +751,19 @@ export default function Auth() {
           </DialogContent>
         </Dialog>
 
-        {/* Reset Password Tab */}
+          </Tabs>
+        )}
+
+        {/* Reset Password Form - Show when token present */}
         {resetToken && (
-          <div className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Reset Your Password</CardTitle>
-                <CardDescription>
-                  Enter your new password below
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+          <Card>
+            <CardHeader>
+              <CardTitle>Reset Your Password</CardTitle>
+              <CardDescription>
+                Enter your new password below
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
                 <Form {...resetPasswordForm}>
                   <form onSubmit={resetPasswordForm.handleSubmit(onResetPasswordSubmit)} className="space-y-4">
                     <FormField
@@ -839,7 +843,6 @@ export default function Auth() {
                 </Form>
               </CardContent>
             </Card>
-          </div>
         )}
 
       </div>
