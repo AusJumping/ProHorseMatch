@@ -68,6 +68,8 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [showResetPassword, setShowResetPassword] = useState<boolean>(false);
+  const [showResetConfirmPassword, setShowResetConfirmPassword] = useState<boolean>(false);
   const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
   const [resetToken, setResetToken] = useState<string>("");
   
@@ -132,11 +134,18 @@ export default function Auth() {
   const resetPasswordForm = useForm<z.infer<typeof resetPasswordSchema>>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      token: resetToken,
+      token: "",
       password: "",
       confirmPassword: ""
     }
   });
+
+  // Update form when resetToken changes
+  useEffect(() => {
+    if (resetToken) {
+      resetPasswordForm.setValue('token', resetToken);
+    }
+  }, [resetToken, resetPasswordForm]);
 
   const onLoginSubmit = async (data: z.infer<typeof loginSchema>) => {
     try {
@@ -760,11 +769,26 @@ export default function Auth() {
                         <FormItem>
                           <FormLabel>New Password</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="••••••••" 
-                              {...field} 
-                            />
+                            <div className="relative">
+                              <Input 
+                                type={showResetPassword ? "text" : "password"} 
+                                placeholder="Create a new password" 
+                                {...field} 
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowResetPassword(!showResetPassword)}
+                              >
+                                {showResetPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-400" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-400" />
+                                )}
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -778,11 +802,26 @@ export default function Auth() {
                         <FormItem>
                           <FormLabel>Confirm Password</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="password" 
-                              placeholder="••••••••" 
-                              {...field} 
-                            />
+                            <div className="relative">
+                              <Input 
+                                type={showResetConfirmPassword ? "text" : "password"} 
+                                placeholder="Confirm your new password" 
+                                {...field} 
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowResetConfirmPassword(!showResetConfirmPassword)}
+                              >
+                                {showResetConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-400" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-400" />
+                                )}
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
