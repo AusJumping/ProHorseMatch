@@ -114,6 +114,14 @@ This is a full-stack web application built with modern technologies:
 
 ## Changelog
 
+- July 29, 2025: Password reset system completely operational and verified working
+  - FIXED: JSX syntax errors in auth component that were preventing form rendering
+  - VERIFIED: Complete password reset flow working end-to-end with API testing
+  - CONFIRMED: Forgot password emails sent successfully via Resend service
+  - TESTED: Password reset tokens processed correctly and passwords updated in database
+  - VALIDATED: Login functionality working with newly reset passwords
+  - ENHANCED: Password visibility toggles (eyeball icons) functional on reset form
+  - COMPLETE: Full password reset workflow: forgot password → email → reset form → login with new password
 - July 22, 2025: Password reset functionality fixed and Di Bressington account removed
   - FIXED: Password reset email URLs now use correct 'token' parameter instead of 'reset_token'
   - RESOLVED: Reset password button in emails now properly redirects to password reset form
