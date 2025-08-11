@@ -169,7 +169,7 @@ const upload = multer({
     }
   }),
   limits: {
-    fileSize: 25 * 1024 * 1024, // 25MB limit
+    fileSize: 500 * 1024 * 1024, // 500MB limit
   },
   fileFilter: (req, file, cb) => {
     // Accept images and videos
@@ -185,7 +185,7 @@ const upload = multer({
 const uploadMemory = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 25 * 1024 * 1024, // 25MB limit
+    fileSize: 500 * 1024 * 1024, // 500MB limit
   },
   fileFilter: (req, file, cb) => {
     // Accept images and videos
