@@ -92,8 +92,13 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
               style={{ objectPosition: "center 35%" }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <p className="text-gray-500">No images available</p>
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-2 bg-neutral-300 rounded-full flex items-center justify-center">
+                  <span className="text-2xl">🐴</span>
+                </div>
+                <p className="text-neutral-500 text-sm">Photos coming soon</p>
+              </div>
             </div>
           )}
         </div>
