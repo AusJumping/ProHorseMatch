@@ -18,14 +18,7 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
   const safeMedia = Array.isArray(media) ? media : [];
   const safeVideos = Array.isArray(videos) ? videos : [];
   
-  // Debug logging
-  console.log("MediaCarousel debug:", {
-    media: media,
-    mediaType: typeof media,
-    isArray: Array.isArray(media),
-    safeMedia: safeMedia,
-    safeMediaLength: safeMedia.length
-  });
+
   
   // Reset index if media changes
   useEffect(() => {
@@ -99,8 +92,7 @@ const MediaCarousel = ({ media, videos = [] }: MediaCarouselProps) => {
               src={safeMedia[currentIndex]} 
               alt="Horse" 
               style={{ objectPosition: "center 35%" }}
-              onError={(e) => console.error("Image load error:", e.currentTarget.src)}
-              onLoad={() => console.log("Image loaded successfully:", safeMedia[currentIndex])}
+
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200">
