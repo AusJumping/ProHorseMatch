@@ -165,7 +165,12 @@ const upload = multer({
       // Generate unique filename with timestamp
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       const extension = path.extname(file.originalname);
-      cb(null, 'file-' + uniqueSuffix + extension);
+      const filename = 'file-' + uniqueSuffix + extension;
+      console.log("=== FILE STORAGE ===");
+      console.log("Generated filename:", filename);
+      console.log("Original filename:", file.originalname);
+      console.log("File mimetype:", file.mimetype);
+      cb(null, filename);
     }
   }),
   limits: {
@@ -1650,10 +1655,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/horses", isTokenAuthenticated, async (req, res) => {
     try {
+      console.log("=== HORSE CREATION START ===");
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      console.log("User ID:", req.userId);
+      
       // Get the user with their roles
       const user = await storage.getUserById(req.userId);
       
       if (!user || !user.is_selling) {
+        console.log("Horse creation failed - User lacks selling permission");
         return res.status(403).json({ message: "Only users with selling permission can create horses" });
       }
       
@@ -1663,21 +1673,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         requestData.height_hands = null;
       }
       
+      console.log("Validating horse data...");
       const validatedData = insertHorseSchema.parse(requestData);
+      console.log("Horse data validated successfully");
       
       // Ensure owner_id matches the logged-in owner
       if (validatedData.owner_id !== req.userId) {
+        console.log("Horse creation failed - Owner ID mismatch");
         return res.status(403).json({ message: "Cannot create horse for another owner" });
       }
       
+      console.log("Creating horse in database...");
+      console.log("Photos to save:", validatedData.photos);
+      console.log("Videos to save:", validatedData.videos);
       const horse = await storage.createHorse(validatedData);
+      console.log("Horse created successfully with ID:", horse.id);
+      console.log("Horse photos saved:", horse.photos);
       
       // Check saved searches for this new horse and send notifications
       await checkSavedSearchesForNewHorse(horse);
       
+      console.log("=== HORSE CREATION COMPLETE ===");
       return res.status(201).json(horse);
     } catch (error) {
       console.error("Create horse error:", error);
+      console.log("=== HORSE CREATION FAILED ===");
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
   });
@@ -1707,7 +1727,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Log the incoming data for debugging
-      console.log("Update horse - request body:", req.body);
+      console.log("=== HORSE UPDATE START ===");
+      console.log("Horse ID:", id);
+      console.log("Request body:", JSON.stringify(req.body, null, 2));
+      console.log("Current horse photos:", horse.photos);
+      console.log("New photos from request:", req.body.photos);
       
       // Convert "young_horse" to null for database storage
       const requestData = { ...req.body };
@@ -1723,13 +1747,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       // Update the horse using the storage method
+      console.log("Updating horse in database...");
       const updatedHorse = await storage.updateHorse(id, validatedData);
       
       if (!updatedHorse) {
+        console.log("Horse update failed - Storage returned null");
         return res.status(500).json({ message: "Failed to update horse" });
       }
       
-      console.log("Horse updated successfully:", updatedHorse);
+      console.log("Horse updated successfully with ID:", updatedHorse.id);
+      console.log("Updated horse photos:", updatedHorse.photos);
+      console.log("=== HORSE UPDATE COMPLETE ===");
       return res.json(updatedHorse);
     } catch (error) {
       console.error("Update horse error:", error);
@@ -2351,20 +2379,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // File upload endpoint for local storage
   app.post("/api/upload", upload.single("file"), (req, res) => {
     try {
+      console.log("=== LOCAL FILE UPLOAD START ===");
+      console.log("User ID:", req.session?.userId);
+      console.log("Request headers:", {
+        contentType: req.headers['content-type'],
+        contentLength: req.headers['content-length']
+      });
+      
       if (!req.file) {
+        console.log("Local file upload failed - No file provided");
         return res.status(400).json({ error: "No file uploaded" });
       }
       
-      console.log("File uploaded:", {
+      console.log("File uploaded successfully:", {
         filename: req.file.filename,
         path: req.file.path,
         mimetype: req.file.mimetype,
         size: req.file.size
       });
       
+      // Verify file actually exists on disk
+      const fs = require('fs');
+      if (fs.existsSync(req.file.path)) {
+        console.log("✅ File verified to exist on disk:", req.file.path);
+      } else {
+        console.log("❌ WARNING: File not found on disk:", req.file.path);
+      }
+      
       // Get file path relative to public directory
       const relativePath = req.file.path.replace(/^.*[\\\/]public/, '');
       const fileUrl = relativePath.replace(/\\/g, '/'); // Normalize path separators for URLs
+      
+      console.log("Generated file URL:", fileUrl);
+      console.log("=== LOCAL FILE UPLOAD COMPLETE ===");
       
       res.json({ 
         url: fileUrl,
@@ -2375,6 +2422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("File upload error:", error);
+      console.log("=== LOCAL FILE UPLOAD FAILED ===");
       res.status(500).json({ error: "File upload failed", details: error.message });
     }
   });
@@ -2779,19 +2827,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Upload image to Cloudinary
   app.post('/api/upload-image', isAuthenticated, upload.single('image'), async (req, res) => {
     try {
+      console.log("=== IMAGE UPLOAD START ===");
+      console.log("User ID:", req.session?.userId);
+      console.log("Request headers:", {
+        contentType: req.headers['content-type'],
+        contentLength: req.headers['content-length']
+      });
+      
       if (!req.file) {
+        console.log("Image upload failed - No file provided");
         return res.status(400).json({ message: "No image file provided" });
       }
 
+      console.log("File received:", {
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        buffer_length: req.file.buffer?.length
+      });
+
       // Upload to Cloudinary
+      console.log("Uploading to Cloudinary...");
       const result = await uploadToCloudinary(req.file.buffer, 'horses');
+      console.log("Cloudinary upload successful:", {
+        url: result.secure_url,
+        public_id: result.public_id,
+        format: result.format,
+        resource_type: result.resource_type
+      });
       
+      console.log("=== IMAGE UPLOAD COMPLETE ===");
       res.json({
         url: result.secure_url,
         public_id: result.public_id
       });
     } catch (error) {
       console.error("Error uploading image to Cloudinary:", error);
+      console.log("=== IMAGE UPLOAD FAILED ===");
       res.status(500).json({ 
         message: "Error uploading image",
         error: error.message 
