@@ -205,10 +205,20 @@ export default function EditHorse() {
         }
       }, 1500);
     } catch (error) {
-      console.error("Error updating horse:", error);
+      console.error("🔥 ERROR UPDATING HORSE 🔥", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      console.error("Error message:", error instanceof Error ? error.message : String(error));
+      
+      let errorMessage = "There was an error updating your horse";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'object' && error !== null && 'message' in error) {
+        errorMessage = String(error.message);
+      }
+      
       toast({
         title: "Error",
-        description: "There was an error updating your horse",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
