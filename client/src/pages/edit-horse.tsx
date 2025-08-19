@@ -177,8 +177,17 @@ export default function EditHorse() {
       
       // Check authentication token
       const authToken = localStorage.getItem('authToken');
+      console.log("🔥 AUTH TOKEN DEBUG 🔥");
       console.log("Auth token available:", authToken ? "YES" : "NO");
       console.log("Auth token length:", authToken?.length || 0);
+      console.log("Full auth token:", authToken);
+      console.log("All localStorage keys:", Object.keys(localStorage));
+      
+      // If no token, try to get it from cookies as fallback
+      if (!authToken) {
+        console.log("No token in localStorage, checking cookies...");
+        console.log("Document cookies:", document.cookie);
+      }
       
       const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, requestData);
       console.log("Response from server:", updatedHorse);
