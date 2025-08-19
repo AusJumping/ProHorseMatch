@@ -842,6 +842,14 @@ export default function AdminPage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => window.open(`/edit-horse/${horse.id}`, '_blank')}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => {
                                 if (window.confirm(`Are you sure you want to delete horse: ${horse.name}?\n\nThis will permanently delete the horse and all associated data. This action cannot be undone.`)) {
                                   handleDeleteHorse(horse.id, horse.name);

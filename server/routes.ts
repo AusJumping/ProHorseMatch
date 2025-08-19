@@ -1723,8 +1723,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Horse not found" });
       }
       
-      // Ensure owner can only update their own horses
-      if (horse.owner_id !== req.userId) {
+      // Ensure owner can only update their own horses (unless admin)
+      const isAdmin = user.email === 'info@australianjumping.com.au';
+      if (horse.owner_id !== req.userId && !isAdmin) {
         return res.status(403).json({ message: "Cannot update another owner's horse" });
       }
       

@@ -13,7 +13,11 @@ Focus on web app development until reliable mobile developer found.
 - Enhanced error handling to show specific response codes and error messages
 - Upload system now works perfectly with Cloudinary primary and local storage fallback
 - Both photo and video uploads verified working in development
-- **STATUS**: Ready for deployment - upload system fully functional and tested
+- **NEW**: Added admin horse editing capability
+- Admin can now edit all horses in the system through the admin panel
+- Modified backend permissions to allow admin override of ownership restrictions
+- Added Edit button to admin panel horse management section
+- **STATUS**: Ready for deployment - upload system and admin editing fully functional
 
 ## System Architecture
 
