@@ -171,14 +171,25 @@ export default function AddHorse() {
   };
   
   const onSubmit = async (data: HorseFormValues) => {
-    console.log("Form submission started", data);
+    console.log("📋 Form submission started", data);
+    console.log("📸 Photo URLs from state:", photoUrls);
+    console.log("📹 Video URLs from state:", videoUrls);
+    console.log("📝 Form photos field:", form.getValues("photos"));
+    console.log("📝 Form videos field:", form.getValues("videos"));
+    
+    // Always include the photo and video URLs in the form data from state
+    // This solves the issue of the URLs not being passed to the form
+    data.photos = photoUrls;
+    data.videos = videoUrls;
+    
+    console.log("📋 Updated data before validation:", data);
     
     // Manually trigger validation to ensure all errors are captured
     const isValid = await form.trigger();
     const errors = form.formState.errors;
     
     if (!isValid || Object.keys(errors).length > 0) {
-      console.log("Form validation errors:", errors);
+      console.log("❌ Form validation errors:", errors);
       
       // Find the first error message to display
       const errorFields = Object.keys(errors);
@@ -203,10 +214,7 @@ export default function AddHorse() {
     try {
       setIsSubmitting(true);
       
-      // Always include the photo and video URLs in the form data from state
-      // This solves the issue of the URLs not being passed to the form
-      data.photos = photoUrls;
-      data.videos = videoUrls;
+      // Photos and videos already updated above before validation
       
       const submissionData = {
         ...data,
@@ -1366,6 +1374,7 @@ export default function AddHorse() {
                                     formData.append("file", file);
                                     
                                     try {
+                                      console.log("🔄 Starting photo upload...");
                                       // Upload the file directly without loading toast
                                       const response = await fetch("/api/upload", {
                                         method: "POST",
@@ -1377,13 +1386,16 @@ export default function AddHorse() {
                                       }
                                       
                                       const data = await response.json();
+                                      console.log("📸 Upload response:", data);
                                       
                                       // Add the URL to the list
                                       const updatedPhotoUrls = [...photoUrls, data.url];
+                                      console.log("📝 Updated photo URLs:", updatedPhotoUrls);
                                       setPhotoUrls(updatedPhotoUrls);
                                       
                                       // Update the form field value for validation
                                       form.setValue("photos", updatedPhotoUrls);
+                                      console.log("✅ Form photos field updated:", form.getValues("photos"));
                                       
                                       // Clear the input
                                       e.target.value = "";
