@@ -183,7 +183,9 @@ export default function EditHorse() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['/api/horses'] }),
         queryClient.invalidateQueries({ queryKey: [`/api/horses/${horseId}`] }),
-        queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] })
+        queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/horses'] }),
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics'] })
       ]);
       
       // Force a refetch of all horses to ensure fresh data
@@ -191,8 +193,14 @@ export default function EditHorse() {
       
       // Show a success message first before navigating
       setTimeout(() => {
-        // Navigate back to My Horses page after a small delay
-        navigate("/my-horses");
+        // Check if user is admin - if so, navigate back to admin panel
+        const isAdmin = user?.email === 'info@australianjumping.com.au';
+        if (isAdmin) {
+          navigate("/admin");
+        } else {
+          // Navigate back to My Horses page for regular users
+          navigate("/my-horses");
+        }
       }, 1500);
     } catch (error) {
       console.error("Error updating horse:", error);
@@ -247,7 +255,10 @@ export default function EditHorse() {
     <Layout 
       pageTitle="Edit Horse" 
       showBackButton 
-      onBackClick={() => navigate('/my-horses')}
+      onBackClick={() => {
+        const isAdmin = user?.email === 'info@australianjumping.com.au';
+        navigate(isAdmin ? '/admin' : '/my-horses');
+      }}
     >
       <div className="container max-w-4xl">
         <Card className="w-full">
@@ -1096,7 +1107,10 @@ export default function EditHorse() {
                   <Button 
                     type="button" 
                     variant="outline"
-                    onClick={() => navigate('/my-horses')}
+                    onClick={() => {
+                      const isAdmin = user?.email === 'info@australianjumping.com.au';
+                      navigate(isAdmin ? '/admin' : '/my-horses');
+                    }}
                   >
                     Cancel
                   </Button>
