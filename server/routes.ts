@@ -2378,8 +2378,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // File upload endpoint for local storage (restored for compatibility)
-  app.post("/api/upload", isAuthenticated, upload.single("file"), (req, res) => {
+  // File upload endpoint for local storage (fallback - no auth required for compatibility)
+  app.post("/api/upload", upload.single("file"), (req, res) => {
     try {
       console.log("=== LOCAL FILE UPLOAD START ===");
       console.log("User ID:", req.session?.userId);

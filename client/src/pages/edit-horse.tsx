@@ -907,7 +907,11 @@ export default function EditHorse() {
                                 });
                               }
                               
-                              if (!response.ok) throw new Error('Upload failed');
+                              if (!response.ok) {
+                                const errorText = await response.text();
+                                console.error('Upload response error:', response.status, errorText);
+                                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+                              }
                               
                               const data = await response.json();
                               const currentPhotos = form.getValues("photos") || [];
@@ -1034,7 +1038,11 @@ export default function EditHorse() {
                                 });
                               }
                               
-                              if (!response.ok) throw new Error('Upload failed');
+                              if (!response.ok) {
+                                const errorText = await response.text();
+                                console.error('Video upload response error:', response.status, errorText);
+                                throw new Error(`Video upload failed: ${response.status} - ${errorText}`);
+                              }
                               
                               const data = await response.json();
                               const currentVideos = form.getValues("videos") || [];
