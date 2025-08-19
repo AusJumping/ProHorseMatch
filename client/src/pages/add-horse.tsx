@@ -1368,18 +1368,29 @@ export default function AddHorse() {
                                       return;
                                     }
                                     
-                                    // Create form data
-                                    const formData = new FormData();
-                                    formData.append("image", file);
-                                    
                                     try {
                                       setPhotoUploading(true);
                                       
-                                      // Upload the image to Cloudinary
-                                      const response = await fetch("/api/upload-image", {
+                                      // Try Cloudinary endpoint first
+                                      let formData = new FormData();
+                                      formData.append("image", file);
+                                      
+                                      let response = await fetch("/api/upload-image", {
                                         method: "POST",
                                         body: formData
                                       });
+                                      
+                                      // If Cloudinary endpoint fails, fallback to local upload
+                                      if (!response.ok) {
+                                        console.log('Cloudinary upload failed, trying local upload...');
+                                        formData = new FormData();
+                                        formData.append("file", file);
+                                        
+                                        response = await fetch("/api/upload", {
+                                          method: "POST",
+                                          body: formData
+                                        });
+                                      }
                                       
                                       if (!response.ok) {
                                         throw new Error("Failed to upload file");
@@ -1503,18 +1514,29 @@ export default function AddHorse() {
                                       return;
                                     }
                                     
-                                    // Create form data
-                                    const formData = new FormData();
-                                    formData.append("video", file);
-                                    
                                     try {
                                       setVideoUploading(true);
                                       
-                                      // Upload the video to Cloudinary
-                                      const response = await fetch("/api/upload-video", {
+                                      // Try Cloudinary endpoint first
+                                      let formData = new FormData();
+                                      formData.append("video", file);
+                                      
+                                      let response = await fetch("/api/upload-video", {
                                         method: "POST",
                                         body: formData
                                       });
+                                      
+                                      // If Cloudinary endpoint fails, fallback to local upload
+                                      if (!response.ok) {
+                                        console.log('Cloudinary video upload failed, trying local upload...');
+                                        formData = new FormData();
+                                        formData.append("file", file);
+                                        
+                                        response = await fetch("/api/upload", {
+                                          method: "POST",
+                                          body: formData
+                                        });
+                                      }
                                       
                                       if (!response.ok) {
                                         throw new Error("Failed to upload file");
