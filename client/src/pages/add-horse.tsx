@@ -1379,10 +1379,11 @@ export default function AddHorse() {
                                       const data = await response.json();
                                       
                                       // Add the URL to the list
-                                      setPhotoUrls([...photoUrls, data.url]);
+                                      const updatedPhotoUrls = [...photoUrls, data.url];
+                                      setPhotoUrls(updatedPhotoUrls);
                                       
                                       // Update the form field value for validation
-                                      form.setValue("photos", [...photoUrls, data.url]);
+                                      form.setValue("photos", updatedPhotoUrls);
                                       
                                       // Clear the input
                                       e.target.value = "";
@@ -1488,7 +1489,11 @@ export default function AddHorse() {
                                       const data = await response.json();
                                       
                                       // Add the URL to the list
-                                      setVideoUrls([...videoUrls, data.url]);
+                                      const updatedVideoUrls = [...videoUrls, data.url];
+                                      setVideoUrls(updatedVideoUrls);
+                                      
+                                      // Update the form field value for validation
+                                      form.setValue("videos", updatedVideoUrls);
                                       
                                       // Clear the input
                                       e.target.value = "";
