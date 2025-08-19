@@ -2399,7 +2399,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Verify file actually exists on disk
-      const fs = require('fs');
       if (fs.existsSync(req.file.path)) {
         console.log("✅ File verified to exist on disk:", req.file.path);
       } else {
@@ -2423,7 +2422,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("File upload error:", error);
       console.log("=== LOCAL FILE UPLOAD FAILED ===");
-      res.status(500).json({ error: "File upload failed", details: error.message });
+      res.status(500).json({ error: "File upload failed", details: (error as Error).message });
     }
   });
   
