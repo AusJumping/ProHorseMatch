@@ -112,6 +112,8 @@ export default function AddHorse() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [videoUrls, setVideoUrls] = useState<string[]>([]);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
   
   // Mobile navigation functions
@@ -1368,6 +1370,8 @@ export default function AddHorse() {
                                     formData.append("file", file);
                                     
                                     try {
+                                      setPhotoUploading(true);
+                                      
                                       // Upload the file directly
                                       const response = await fetch("/api/upload", {
                                         method: "POST",
@@ -1398,18 +1402,34 @@ export default function AddHorse() {
                                         description: "There was an error uploading your image. Please try again.",
                                         variant: "destructive",
                                       });
+                                    } finally {
+                                      setPhotoUploading(false);
                                     }
                                   }}
                                   className="flex-1"
                                 />
-                                <Button type="button" size="sm" onClick={() => {
-                                  // Find the file input and trigger a click
-                                  const fileInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
-                                  if (fileInput) {
-                                    fileInput.click();
-                                  }
-                                }}>
-                                  <Plus className="h-4 w-4 mr-1" /> Add Photo
+                                <Button 
+                                  type="button" 
+                                  size="sm" 
+                                  disabled={photoUploading}
+                                  onClick={() => {
+                                    // Find the file input and trigger a click
+                                    const fileInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
+                                    if (fileInput) {
+                                      fileInput.click();
+                                    }
+                                  }}
+                                >
+                                  {photoUploading ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                      Uploading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Plus className="h-4 w-4 mr-1" /> Add Photo
+                                    </>
+                                  )}
                                 </Button>
                               </div>
                             </div>
@@ -1478,7 +1498,9 @@ export default function AddHorse() {
                                     formData.append("file", file);
                                     
                                     try {
-                                      // Upload the file directly without loading toast
+                                      setVideoUploading(true);
+                                      
+                                      // Upload the file directly
                                       const response = await fetch("/api/upload", {
                                         method: "POST",
                                         body: formData
@@ -1500,7 +1522,10 @@ export default function AddHorse() {
                                       // Clear the input
                                       e.target.value = "";
                                       
-                                      // Success notification removed
+                                      toast({
+                                        title: "Video uploaded successfully",
+                                        description: "Your video has been uploaded and added to the listing.",
+                                      });
                                     } catch (error) {
                                       console.error("Upload error:", error);
                                       toast({
@@ -1508,18 +1533,34 @@ export default function AddHorse() {
                                         description: "There was an error uploading your video. Please try again.",
                                         variant: "destructive",
                                       });
+                                    } finally {
+                                      setVideoUploading(false);
                                     }
                                   }}
                                   className="flex-1"
                                 />
-                                <Button type="button" size="sm" onClick={() => {
-                                  // Find the file input and trigger a click
-                                  const fileInput = document.querySelector('input[type="file"][accept="video/*"]') as HTMLInputElement;
-                                  if (fileInput) {
-                                    fileInput.click();
-                                  }
-                                }}>
-                                  <Plus className="h-4 w-4 mr-1" /> Add Video
+                                <Button 
+                                  type="button" 
+                                  size="sm" 
+                                  disabled={videoUploading}
+                                  onClick={() => {
+                                    // Find the file input and trigger a click
+                                    const fileInput = document.querySelector('input[type="file"][accept="video/*"]') as HTMLInputElement;
+                                    if (fileInput) {
+                                      fileInput.click();
+                                    }
+                                  }}
+                                >
+                                  {videoUploading ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                      Uploading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Plus className="h-4 w-4 mr-1" /> Add Video
+                                    </>
+                                  )}
                                 </Button>
                               </div>
                             </div>
