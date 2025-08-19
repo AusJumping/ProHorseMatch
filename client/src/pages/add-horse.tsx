@@ -1375,14 +1375,21 @@ export default function AddHorse() {
                                     
                                     try {
                                       console.log("🔄 Starting photo upload...");
+                                      console.log("📁 File details:", { name: file.name, size: file.size, type: file.type });
+                                      
                                       // Upload the file directly without loading toast
                                       const response = await fetch("/api/upload", {
                                         method: "POST",
                                         body: formData
                                       });
                                       
+                                      console.log("📡 Response status:", response.status);
+                                      console.log("📡 Response ok:", response.ok);
+                                      
                                       if (!response.ok) {
-                                        throw new Error("Failed to upload file");
+                                        const errorText = await response.text();
+                                        console.error("❌ Response error:", errorText);
+                                        throw new Error(`Upload failed: ${response.status} - ${errorText}`);
                                       }
                                       
                                       const data = await response.json();
