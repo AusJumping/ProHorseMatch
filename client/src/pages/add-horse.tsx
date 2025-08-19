@@ -1363,7 +1363,10 @@ export default function AddHorse() {
                                   accept="image/*"
                                   onChange={async (e) => {
                                     const file = e.target.files?.[0];
-                                    if (!file) return;
+                                    if (!file) {
+                                      setPhotoUploading(false);
+                                      return;
+                                    }
                                     
                                     // Create form data
                                     const formData = new FormData();
@@ -1394,7 +1397,10 @@ export default function AddHorse() {
                                       // Clear the input
                                       e.target.value = "";
                                       
-                                      // Success notification removed
+                                      toast({
+                                        title: "Photo uploaded successfully",
+                                        description: "Your photo has been uploaded and added to the listing.",
+                                      });
                                     } catch (error) {
                                       console.error("Upload error:", error);
                                       toast({
@@ -1478,13 +1484,17 @@ export default function AddHorse() {
                                   accept="video/*"
                                   onChange={async (e) => {
                                     const file = e.target.files?.[0];
-                                    if (!file) return;
+                                    if (!file) {
+                                      setVideoUploading(false);
+                                      return;
+                                    }
                                     
                                     // Check file size (max 500MB)
                                     const maxSizeMB = 500;
                                     const fileSizeMB = file.size / (1024 * 1024);
                                     
                                     if (fileSizeMB > maxSizeMB) {
+                                      setVideoUploading(false);
                                       toast({
                                         title: "File too large",
                                         description: `Video file is ${fileSizeMB.toFixed(1)}MB. Maximum size is ${maxSizeMB}MB.`,

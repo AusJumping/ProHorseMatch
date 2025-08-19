@@ -877,7 +877,10 @@ export default function EditHorse() {
                           className="hidden"
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
-                            if (!file) return;
+                            if (!file) {
+                              setPhotoUploading(false);
+                              return;
+                            }
                             
                             const formData = new FormData();
                             formData.append('file', file);
@@ -972,13 +975,17 @@ export default function EditHorse() {
                           className="hidden"
                           onChange={async (e) => {
                             const file = e.target.files?.[0];
-                            if (!file) return;
+                            if (!file) {
+                              setVideoUploading(false);
+                              return;
+                            }
                             
                             // Check video file size (500MB limit)
                             const maxSizeMB = 500;
                             const fileSizeMB = file.size / (1024 * 1024);
                             
                             if (fileSizeMB > maxSizeMB) {
+                              setVideoUploading(false);
                               toast({
                                 title: "File too large",
                                 description: `Video file is ${fileSizeMB.toFixed(1)}MB. Maximum size is ${maxSizeMB}MB.`,
