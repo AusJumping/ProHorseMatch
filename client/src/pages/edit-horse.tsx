@@ -171,7 +171,15 @@ export default function EditHorse() {
       // Log the cleaned data for debugging
       console.log("Submitting form data:", JSON.stringify(requestData, null, 2));
       
-      // Make the API request and store the response
+      // Make the API request with proper authentication
+      console.log("Making PUT request to:", `/api/horses/${horseId}`);
+      console.log("Request data:", JSON.stringify(requestData, null, 2));
+      
+      // Check authentication token
+      const authToken = localStorage.getItem('authToken');
+      console.log("Auth token available:", authToken ? "YES" : "NO");
+      console.log("Auth token length:", authToken?.length || 0);
+      
       const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, requestData);
       console.log("Response from server:", updatedHorse);
       
