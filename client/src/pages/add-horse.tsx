@@ -1386,12 +1386,9 @@ export default function AddHorse() {
                                         formData = new FormData();
                                         formData.append("file", file);
                                         
-                                        const authToken = localStorage.getItem('auth_token');
                                         response = await fetch("/api/upload", {
                                           method: "POST",
-                                          headers: authToken ? {
-                                            'Authorization': `Bearer ${authToken}`
-                                          } : {},
+                                          credentials: 'include', // Include session cookies for auth
                                           body: formData
                                         });
                                       }
@@ -1536,12 +1533,9 @@ export default function AddHorse() {
                                         formData = new FormData();
                                         formData.append("file", file);
                                         
-                                        const authToken = localStorage.getItem('auth_token');
                                         response = await fetch("/api/upload", {
                                           method: "POST",
-                                          headers: authToken ? {
-                                            'Authorization': `Bearer ${authToken}`
-                                          } : {},
+                                          credentials: 'include', // Include session cookies for auth
                                           body: formData
                                         });
                                       }

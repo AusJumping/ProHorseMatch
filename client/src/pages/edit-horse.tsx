@@ -900,12 +900,9 @@ export default function EditHorse() {
                                 formData = new FormData();
                                 formData.append('file', file);
                                 
-                                const authToken = localStorage.getItem('auth_token');
                                 response = await fetch('/api/upload', {
                                   method: 'POST',
-                                  headers: authToken ? {
-                                    'Authorization': `Bearer ${authToken}`
-                                  } : {},
+                                  credentials: 'include', // Include session cookies for auth
                                   body: formData
                                 });
                               }
@@ -924,10 +921,11 @@ export default function EditHorse() {
                               // Reset the input
                               e.target.value = '';
                             } catch (error) {
-                              console.error('Upload error:', error);
+                              console.error('Upload error details:', error);
+                              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
                               toast({
                                 title: "Upload failed",
-                                description: "There was an error uploading your photo. Please try again.",
+                                description: `Error: ${errorMessage}. Please try again.`,
                                 variant: "destructive"
                               });
                             } finally {
@@ -1029,12 +1027,9 @@ export default function EditHorse() {
                                 formData = new FormData();
                                 formData.append('file', file);
                                 
-                                const authToken = localStorage.getItem('auth_token');
                                 response = await fetch('/api/upload', {
                                   method: 'POST',
-                                  headers: authToken ? {
-                                    'Authorization': `Bearer ${authToken}`
-                                  } : {},
+                                  credentials: 'include', // Include session cookies for auth
                                   body: formData
                                 });
                               }
@@ -1053,10 +1048,11 @@ export default function EditHorse() {
                               // Reset the input
                               e.target.value = '';
                             } catch (error) {
-                              console.error('Upload error:', error);
+                              console.error('Upload error details:', error);
+                              const errorMessage = error instanceof Error ? error.message : 'Unknown error';
                               toast({
                                 title: "Upload failed",
-                                description: "There was an error uploading your video. Please try again.",
+                                description: `Error: ${errorMessage}. Please try again.`,
                                 variant: "destructive"
                               });
                             } finally {
