@@ -1363,16 +1363,13 @@ export default function AddHorse() {
                                     
                                     // Create form data
                                     const formData = new FormData();
-                                    formData.append("image", file);
+                                    formData.append("file", file);
                                     
                                     try {
                                       // Upload the file directly without loading toast
-                                      const response = await fetch("/api/upload-image", {
+                                      const response = await fetch("/api/upload", {
                                         method: "POST",
-                                        body: formData,
-                                        headers: {
-                                          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                                        }
+                                        body: formData
                                       });
                                       
                                       if (!response.ok) {
@@ -1475,16 +1472,13 @@ export default function AddHorse() {
                                     
                                     // Create form data
                                     const formData = new FormData();
-                                    formData.append("video", file);
+                                    formData.append("file", file);
                                     
                                     try {
                                       // Upload the file directly without loading toast
-                                      const response = await fetch("/api/upload-video", {
+                                      const response = await fetch("/api/upload", {
                                         method: "POST",
-                                        body: formData,
-                                        headers: {
-                                          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                                        }
+                                        body: formData
                                       });
                                       
                                       if (!response.ok) {

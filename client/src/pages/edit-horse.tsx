@@ -868,15 +868,12 @@ export default function EditHorse() {
                             if (!file) return;
                             
                             const formData = new FormData();
-                            formData.append('image', file);
+                            formData.append('file', file);
                             
                             try {
-                              const response = await fetch('/api/upload-image', {
+                              const response = await fetch('/api/upload', {
                                 method: 'POST',
-                                body: formData,
-                                headers: {
-                                  'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                                }
+                                body: formData
                               });
                               
                               if (!response.ok) throw new Error('Upload failed');
@@ -960,15 +957,12 @@ export default function EditHorse() {
                             }
                             
                             const formData = new FormData();
-                            formData.append('video', file);
+                            formData.append('file', file);
                             
                             try {
-                              const response = await fetch('/api/upload-video', {
+                              const response = await fetch('/api/upload', {
                                 method: 'POST',
-                                body: formData,
-                                headers: {
-                                  'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-                                }
+                                body: formData
                               });
                               
                               if (!response.ok) throw new Error('Upload failed');
