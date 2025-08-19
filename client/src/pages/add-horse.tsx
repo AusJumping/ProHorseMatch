@@ -1370,13 +1370,13 @@ export default function AddHorse() {
                                     
                                     // Create form data
                                     const formData = new FormData();
-                                    formData.append("file", file);
+                                    formData.append("image", file);
                                     
                                     try {
                                       setPhotoUploading(true);
                                       
-                                      // Upload the file directly
-                                      const response = await fetch("/api/upload", {
+                                      // Upload the image to Cloudinary
+                                      const response = await fetch("/api/upload-image", {
                                         method: "POST",
                                         body: formData
                                       });
@@ -1505,13 +1505,13 @@ export default function AddHorse() {
                                     
                                     // Create form data
                                     const formData = new FormData();
-                                    formData.append("file", file);
+                                    formData.append("video", file);
                                     
                                     try {
                                       setVideoUploading(true);
                                       
-                                      // Upload the file directly
-                                      const response = await fetch("/api/upload", {
+                                      // Upload the video to Cloudinary
+                                      const response = await fetch("/api/upload-video", {
                                         method: "POST",
                                         body: formData
                                       });

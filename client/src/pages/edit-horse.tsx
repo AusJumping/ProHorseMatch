@@ -883,12 +883,12 @@ export default function EditHorse() {
                             }
                             
                             const formData = new FormData();
-                            formData.append('file', file);
+                            formData.append('image', file);
                             
                             try {
                               setPhotoUploading(true);
                               
-                              const response = await fetch('/api/upload', {
+                              const response = await fetch('/api/upload-image', {
                                 method: 'POST',
                                 body: formData
                               });
@@ -995,12 +995,12 @@ export default function EditHorse() {
                             }
                             
                             const formData = new FormData();
-                            formData.append('file', file);
+                            formData.append('video', file);
                             
                             try {
                               setVideoUploading(true);
                               
-                              const response = await fetch('/api/upload', {
+                              const response = await fetch('/api/upload-video', {
                                 method: 'POST',
                                 body: formData
                               });
