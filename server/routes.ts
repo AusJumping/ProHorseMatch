@@ -2376,8 +2376,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Legacy /api/upload route removed - use /api/upload-image or /api/upload-video instead
-  // Files now upload to Cloudinary for production reliability
+  // File upload endpoint for local storage (restored for compatibility)
+  app.post("/api/upload", upload.single("file"), (req, res) => {
+    try {
+      console.log("=== LOCAL FILE UPLOAD START ===");
+      console.log("User ID:", req.session?.userId);
+      console.log("Request headers:", {
+        contentType: req.headers['content-type'],
+        contentLength: req.headers['content-length']
+      });
+      
+      if (!req.file) {
+        console.log("Local file upload failed - No file provided");
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      console.log("File uploaded successfully:", {
+        filename: req.file.filename,
+        path: req.file.path,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
+      
+      // Verify file actually exists on disk
+      const fs = require('fs');
+      if (fs.existsSync(req.file.path)) {
+        console.log("✅ File verified to exist on disk:", req.file.path);
+      } else {
+        console.log("❌ WARNING: File not found on disk:", req.file.path);
+      }
+      
+      // Get file path relative to public directory
+      const relativePath = req.file.path.replace(/^.*[\\\/]public/, '');
+      const fileUrl = relativePath.replace(/\\/g, '/'); // Normalize path separators for URLs
+      
+      console.log("Generated file URL:", fileUrl);
+      console.log("=== LOCAL FILE UPLOAD COMPLETE ===");
+      
+      res.json({ 
+        url: fileUrl,
+        fileType: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      console.log("=== LOCAL FILE UPLOAD FAILED ===");
+      res.status(500).json({ error: "File upload failed", details: error.message });
+    }
+  });
   
   // Admin endpoint to delete all horses
   app.delete("/api/admin/horses", isAuthenticated, async (req, res) => {
