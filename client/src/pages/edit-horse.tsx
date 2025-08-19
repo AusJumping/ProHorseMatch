@@ -868,12 +868,15 @@ export default function EditHorse() {
                             if (!file) return;
                             
                             const formData = new FormData();
-                            formData.append('file', file);
+                            formData.append('image', file);
                             
                             try {
-                              const response = await fetch('/api/upload', {
+                              const response = await fetch('/api/upload-image', {
                                 method: 'POST',
                                 body: formData,
+                                headers: {
+                                  'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                                }
                               });
                               
                               if (!response.ok) throw new Error('Upload failed');
@@ -943,13 +946,29 @@ export default function EditHorse() {
                             const file = e.target.files?.[0];
                             if (!file) return;
                             
+                            // Check video file size (500MB limit)
+                            const maxSizeMB = 500;
+                            const fileSizeMB = file.size / (1024 * 1024);
+                            
+                            if (fileSizeMB > maxSizeMB) {
+                              toast({
+                                title: "File too large",
+                                description: `Video file is ${fileSizeMB.toFixed(1)}MB. Maximum size is ${maxSizeMB}MB.`,
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            
                             const formData = new FormData();
-                            formData.append('file', file);
+                            formData.append('video', file);
                             
                             try {
-                              const response = await fetch('/api/upload', {
+                              const response = await fetch('/api/upload-video', {
                                 method: 'POST',
                                 body: formData,
+                                headers: {
+                                  'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                                }
                               });
                               
                               if (!response.ok) throw new Error('Upload failed');

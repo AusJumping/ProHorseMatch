@@ -2376,56 +2376,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // File upload endpoint for local storage
-  app.post("/api/upload", upload.single("file"), (req, res) => {
-    try {
-      console.log("=== LOCAL FILE UPLOAD START ===");
-      console.log("User ID:", req.session?.userId);
-      console.log("Request headers:", {
-        contentType: req.headers['content-type'],
-        contentLength: req.headers['content-length']
-      });
-      
-      if (!req.file) {
-        console.log("Local file upload failed - No file provided");
-        return res.status(400).json({ error: "No file uploaded" });
-      }
-      
-      console.log("File uploaded successfully:", {
-        filename: req.file.filename,
-        path: req.file.path,
-        mimetype: req.file.mimetype,
-        size: req.file.size
-      });
-      
-      // Verify file actually exists on disk
-      const fs = require('fs');
-      if (fs.existsSync(req.file.path)) {
-        console.log("✅ File verified to exist on disk:", req.file.path);
-      } else {
-        console.log("❌ WARNING: File not found on disk:", req.file.path);
-      }
-      
-      // Get file path relative to public directory
-      const relativePath = req.file.path.replace(/^.*[\\\/]public/, '');
-      const fileUrl = relativePath.replace(/\\/g, '/'); // Normalize path separators for URLs
-      
-      console.log("Generated file URL:", fileUrl);
-      console.log("=== LOCAL FILE UPLOAD COMPLETE ===");
-      
-      res.json({ 
-        url: fileUrl,
-        fileType: req.file.mimetype.startsWith('image/') ? 'image' : 'video',
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        size: req.file.size
-      });
-    } catch (error) {
-      console.error("File upload error:", error);
-      console.log("=== LOCAL FILE UPLOAD FAILED ===");
-      res.status(500).json({ error: "File upload failed", details: error.message });
-    }
-  });
+  // Legacy /api/upload route removed - use /api/upload-image or /api/upload-video instead
+  // Files now upload to Cloudinary for production reliability
   
   // Admin endpoint to delete all horses
   app.delete("/api/admin/horses", isAuthenticated, async (req, res) => {
@@ -2825,7 +2777,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload image to Cloudinary
-  app.post('/api/upload-image', isAuthenticated, upload.single('image'), async (req, res) => {
+  app.post('/api/upload-image', isAuthenticated, uploadMemory.single('image'), async (req, res) => {
     try {
       console.log("=== IMAGE UPLOAD START ===");
       console.log("User ID:", req.session?.userId);
@@ -2846,9 +2798,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         buffer_length: req.file.buffer?.length
       });
 
-      // Upload to Cloudinary
-      console.log("Uploading to Cloudinary...");
-      const result = await uploadToCloudinary(req.file.buffer, 'horses');
+      // Upload to Cloudinary with 'image' resource type
+      console.log("Uploading to Cloudinary as image...");
+      const result = await uploadToCloudinary(req.file.buffer, 'horses', 'image');
       console.log("Cloudinary upload successful:", {
         url: result.secure_url,
         public_id: result.public_id,
@@ -2866,6 +2818,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("=== IMAGE UPLOAD FAILED ===");
       res.status(500).json({ 
         message: "Error uploading image",
+        error: error.message 
+      });
+    }
+  });
+
+  // Upload video to Cloudinary
+  app.post('/api/upload-video', isAuthenticated, uploadMemory.single('video'), async (req, res) => {
+    try {
+      console.log("=== VIDEO UPLOAD START ===");
+      console.log("User ID:", req.session?.userId);
+      console.log("Request headers:", {
+        contentType: req.headers['content-type'],
+        contentLength: req.headers['content-length']
+      });
+      
+      if (!req.file) {
+        console.log("Video upload failed - No file provided");
+        return res.status(400).json({ message: "No video file provided" });
+      }
+
+      console.log("Video file received:", {
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        sizeInMB: (req.file.size / (1024 * 1024)).toFixed(2),
+        buffer_length: req.file.buffer?.length
+      });
+
+      // Check file size (500MB limit already enforced by multer)
+      const maxSizeMB = 500;
+      const fileSizeMB = req.file.size / (1024 * 1024);
+      
+      if (fileSizeMB > maxSizeMB) {
+        console.log(`Video upload failed - File too large: ${fileSizeMB.toFixed(2)}MB > ${maxSizeMB}MB`);
+        return res.status(400).json({ 
+          message: `Video file is too large. Maximum size is ${maxSizeMB}MB, but received ${fileSizeMB.toFixed(2)}MB.` 
+        });
+      }
+
+      // Upload to Cloudinary with 'video' resource type
+      console.log("Uploading to Cloudinary as video...");
+      const result = await uploadToCloudinary(req.file.buffer, 'horses', 'video');
+      console.log("Cloudinary video upload successful:", {
+        url: result.secure_url,
+        public_id: result.public_id,
+        format: result.format,
+        resource_type: result.resource_type,
+        duration: result.duration,
+        width: result.width,
+        height: result.height
+      });
+      
+      console.log("=== VIDEO UPLOAD COMPLETE ===");
+      res.json({
+        url: result.secure_url,
+        public_id: result.public_id,
+        duration: result.duration,
+        width: result.width,
+        height: result.height
+      });
+    } catch (error) {
+      console.error("Error uploading video to Cloudinary:", error);
+      console.log("=== VIDEO UPLOAD FAILED ===");
+      res.status(500).json({ 
+        message: "Error uploading video",
         error: error.message 
       });
     }

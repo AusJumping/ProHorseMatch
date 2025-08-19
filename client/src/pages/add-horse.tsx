@@ -1363,13 +1363,16 @@ export default function AddHorse() {
                                     
                                     // Create form data
                                     const formData = new FormData();
-                                    formData.append("file", file);
+                                    formData.append("image", file);
                                     
                                     try {
                                       // Upload the file directly without loading toast
-                                      const response = await fetch("/api/upload", {
+                                      const response = await fetch("/api/upload-image", {
                                         method: "POST",
                                         body: formData,
+                                        headers: {
+                                          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                                        }
                                       });
                                       
                                       if (!response.ok) {
@@ -1457,11 +1460,14 @@ export default function AddHorse() {
                                     const file = e.target.files?.[0];
                                     if (!file) return;
                                     
-                                    // Check file size (max 25MB)
-                                    if (file.size > 25 * 1024 * 1024) {
+                                    // Check file size (max 500MB)
+                                    const maxSizeMB = 500;
+                                    const fileSizeMB = file.size / (1024 * 1024);
+                                    
+                                    if (fileSizeMB > maxSizeMB) {
                                       toast({
                                         title: "File too large",
-                                        description: "Video must be less than 25MB.",
+                                        description: `Video file is ${fileSizeMB.toFixed(1)}MB. Maximum size is ${maxSizeMB}MB.`,
                                         variant: "destructive",
                                       });
                                       return;
@@ -1469,13 +1475,16 @@ export default function AddHorse() {
                                     
                                     // Create form data
                                     const formData = new FormData();
-                                    formData.append("file", file);
+                                    formData.append("video", file);
                                     
                                     try {
                                       // Upload the file directly without loading toast
-                                      const response = await fetch("/api/upload", {
+                                      const response = await fetch("/api/upload-video", {
                                         method: "POST",
                                         body: formData,
+                                        headers: {
+                                          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+                                        }
                                       });
                                       
                                       if (!response.ok) {
