@@ -438,7 +438,7 @@ export default function EditHorse() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {constants && constants.countries ? (
-                                    constants.countries.map((country) => (
+                                    constants.countries.map((country: any) => (
                                       <SelectItem key={country} value={country}>
                                         {country}
                                       </SelectItem>
@@ -1116,7 +1116,19 @@ export default function EditHorse() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    onClick={(e) => {
+                      console.log("🔥 UPDATE HORSE BUTTON CLICKED 🔥");
+                      console.log("Button disabled:", isSubmitting);
+                      console.log("Form state:", {
+                        isValid: form.formState.isValid,
+                        isSubmitting: form.formState.isSubmitting,
+                        errors: form.formState.errors
+                      });
+                    }}
+                  >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Horse
                   </Button>
