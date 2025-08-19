@@ -171,16 +171,8 @@ export default function EditHorse() {
       // Log the cleaned data for debugging
       console.log("Submitting form data:", JSON.stringify(requestData, null, 2));
       
-      // Make the API request with proper authentication
-      console.log("Making PUT request to:", `/api/horses/${horseId}`);
-      console.log("Request data:", JSON.stringify(requestData, null, 2));
-      
-      // Use admin route if admin is editing any horse, otherwise use regular route
-      const isAdmin = user?.email === 'info@australianjumping.com.au';
-      const endpoint = isAdmin ? `/api/admin/horses/${horseId}` : `/api/horses/${horseId}`;
-      console.log("Using endpoint:", endpoint, "as admin:", isAdmin);
-      
-      const updatedHorse = await apiRequest("PUT", endpoint, requestData);
+      // Make the API request and store the response
+      const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, requestData);
       console.log("Response from server:", updatedHorse);
       
       // Show success message
@@ -213,20 +205,10 @@ export default function EditHorse() {
         }
       }, 1500);
     } catch (error) {
-      console.error("🔥 ERROR UPDATING HORSE 🔥", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
-      console.error("Error message:", error instanceof Error ? error.message : String(error));
-      
-      let errorMessage = "There was an error updating your horse";
-      if (error instanceof Error) {
-        errorMessage = error.message;
-      } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        errorMessage = String(error.message);
-      }
-      
+      console.error("Error updating horse:", error);
       toast({
         title: "Error",
-        description: errorMessage,
+        description: "There was an error updating your horse",
         variant: "destructive",
       });
     } finally {
@@ -456,7 +438,7 @@ export default function EditHorse() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {constants && constants.countries ? (
-                                    constants.countries.map((country: any) => (
+                                    constants.countries.map((country) => (
                                       <SelectItem key={country} value={country}>
                                         {country}
                                       </SelectItem>
@@ -1134,19 +1116,7 @@ export default function EditHorse() {
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    onClick={(e) => {
-                      console.log("🔥 UPDATE HORSE BUTTON CLICKED 🔥");
-                      console.log("Button disabled:", isSubmitting);
-                      console.log("Form state:", {
-                        isValid: form.formState.isValid,
-                        isSubmitting: form.formState.isSubmitting,
-                        errors: form.formState.errors
-                      });
-                    }}
-                  >
+                  <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Horse
                   </Button>
