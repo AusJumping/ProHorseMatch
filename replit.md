@@ -7,6 +7,13 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
+## Recent Changes (August 19, 2025)
+- Fixed production upload failures by switching from local file storage to Cloudinary cloud storage
+- Updated Add Horse and Edit Horse pages to use `/api/upload-image` and `/api/upload-video` endpoints
+- Changed form data field names from 'file' to 'image'/'video' to match Cloudinary API requirements
+- Upload system now works reliably in development with Cloudinary storage
+- **STATUS**: Changes made in development but require deployment to production to resolve spinning upload issue
+
 ## System Architecture
 
 ### Frontend
