@@ -55,12 +55,14 @@ export default function EditHorse() {
   const { toast } = useToast();
   const [_, navigate] = useLocation();
   const { id } = useParams();
-  const horseId = parseInt(id);
+  const horseId = parseInt(id || "0");
   
   const [activeTab, setActiveTab] = useState("details");
   const [photoUrl, setPhotoUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [videoUploading, setVideoUploading] = useState(false);
   const isMobile = useMobile();
 
   // Fetch user data
@@ -853,10 +855,20 @@ export default function EditHorse() {
                           type="button" 
                           variant="outline" 
                           className="flex-1"
+                          disabled={photoUploading}
                           onClick={() => document.getElementById('photo-upload-edit')?.click()}
                         >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Select Photo
+                          {photoUploading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 mr-2" />
+                              Select Photo
+                            </>
+                          )}
                         </Button>
                         <input
                           id="photo-upload-edit"
@@ -871,6 +883,8 @@ export default function EditHorse() {
                             formData.append('file', file);
                             
                             try {
+                              setPhotoUploading(true);
+                              
                               const response = await fetch('/api/upload', {
                                 method: 'POST',
                                 body: formData
@@ -882,6 +896,11 @@ export default function EditHorse() {
                               const currentPhotos = form.getValues("photos") || [];
                               form.setValue("photos", [...currentPhotos, data.url]);
                               
+                              toast({
+                                title: "Photo uploaded successfully",
+                                description: "Your photo has been uploaded and added to the listing.",
+                              });
+                              
                               // Reset the input
                               e.target.value = '';
                             } catch (error) {
@@ -891,6 +910,8 @@ export default function EditHorse() {
                                 description: "There was an error uploading your photo. Please try again.",
                                 variant: "destructive"
                               });
+                            } finally {
+                              setPhotoUploading(false);
                             }
                           }}
                         />
@@ -929,10 +950,20 @@ export default function EditHorse() {
                           type="button" 
                           variant="outline" 
                           className="flex-1"
+                          disabled={videoUploading}
                           onClick={() => document.getElementById('video-upload-edit')?.click()}
                         >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Select Video
+                          {videoUploading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="h-4 w-4 mr-2" />
+                              Select Video
+                            </>
+                          )}
                         </Button>
                         <input
                           id="video-upload-edit"
@@ -960,6 +991,8 @@ export default function EditHorse() {
                             formData.append('file', file);
                             
                             try {
+                              setVideoUploading(true);
+                              
                               const response = await fetch('/api/upload', {
                                 method: 'POST',
                                 body: formData
@@ -971,6 +1004,11 @@ export default function EditHorse() {
                               const currentVideos = form.getValues("videos") || [];
                               form.setValue("videos", [...currentVideos, data.url]);
                               
+                              toast({
+                                title: "Video uploaded successfully",
+                                description: "Your video has been uploaded and added to the listing.",
+                              });
+                              
                               // Reset the input
                               e.target.value = '';
                             } catch (error) {
@@ -980,6 +1018,8 @@ export default function EditHorse() {
                                 description: "There was an error uploading your video. Please try again.",
                                 variant: "destructive"
                               });
+                            } finally {
+                              setVideoUploading(false);
                             }
                           }}
                         />
