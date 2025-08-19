@@ -36,6 +36,8 @@ import {
   eventingLevels
 } from "@shared/schema";
 
+
+
 // Ensure we have test users available but NOT test horses
 // We remove the default horses completely from our application
 (async () => {
