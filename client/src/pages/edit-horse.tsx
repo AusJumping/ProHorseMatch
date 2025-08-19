@@ -175,21 +175,42 @@ export default function EditHorse() {
       console.log("Making PUT request to:", `/api/horses/${horseId}`);
       console.log("Request data:", JSON.stringify(requestData, null, 2));
       
-      // Check authentication token
-      const authToken = localStorage.getItem('authToken');
+      // Check authentication token and force re-fetch if needed
+      let authToken = localStorage.getItem('authToken');
       console.log("🔥 AUTH TOKEN DEBUG 🔥");
       console.log("Auth token available:", authToken ? "YES" : "NO");
       console.log("Auth token length:", authToken?.length || 0);
-      console.log("Full auth token:", authToken);
-      console.log("All localStorage keys:", Object.keys(localStorage));
       
       // If no token, try to get it from cookies as fallback
       if (!authToken) {
-        console.log("No token in localStorage, checking cookies...");
-        console.log("Document cookies:", document.cookie);
+        authToken = document.cookie
+          .split(';')
+          .find(cookie => cookie.trim().startsWith('auth_token='))
+          ?.split('=')[1] || null;
+        console.log("Fallback token from cookie:", authToken);
       }
       
-      const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, requestData);
+      if (!authToken) {
+        throw new Error("No authentication token available. Please log in again.");
+      }
+      
+      // Make direct authenticated request
+      const response = await fetch(`/api/horses/${horseId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        credentials: 'include',
+        body: JSON.stringify(requestData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const updatedHorse = await response.json();
       console.log("Response from server:", updatedHorse);
       
       // Show success message
