@@ -900,8 +900,12 @@ export default function EditHorse() {
                                 formData = new FormData();
                                 formData.append('file', file);
                                 
+                                const authToken = localStorage.getItem('auth_token');
                                 response = await fetch('/api/upload', {
                                   method: 'POST',
+                                  headers: authToken ? {
+                                    'Authorization': `Bearer ${authToken}`
+                                  } : {},
                                   body: formData
                                 });
                               }
@@ -1025,8 +1029,12 @@ export default function EditHorse() {
                                 formData = new FormData();
                                 formData.append('file', file);
                                 
+                                const authToken = localStorage.getItem('auth_token');
                                 response = await fetch('/api/upload', {
                                   method: 'POST',
+                                  headers: authToken ? {
+                                    'Authorization': `Bearer ${authToken}`
+                                  } : {},
                                   body: formData
                                 });
                               }
