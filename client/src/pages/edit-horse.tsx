@@ -68,18 +68,18 @@ export default function EditHorse() {
   // Fetch user data
   const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ['/api/auth/me'],
-  });
+  }) as { data: any, isLoading: boolean };
   
   // Fetch constants for dropdowns
   const { data: constants, isLoading: constantsLoading } = useQuery({
     queryKey: ['/api/constants'],
-  });
+  }) as { data: any, isLoading: boolean };
 
   // Fetch horse data
   const { data: horse, isLoading: horseLoading } = useQuery({
     queryKey: [`/api/horses/${horseId}`],
     enabled: !!horseId
-  });
+  }) as { data: any, isLoading: boolean };
 
   const form = useForm<HorseFormValues>({
     resolver: zodResolver(horseFormSchema),
@@ -143,7 +143,9 @@ export default function EditHorse() {
 
   // This function is called when the form is submitted
   const onSubmit = async (data: HorseFormValues) => {
-    console.log("Form submission started", data);
+    console.log("🔥 FORM SUBMISSION STARTED 🔥", data);
+    console.log("Form errors:", form.formState.errors);
+    console.log("Form is valid:", form.formState.isValid);
     try {
       setIsSubmitting(true);
       
