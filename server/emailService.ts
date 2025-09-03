@@ -44,6 +44,18 @@ interface MessageNotificationParams {
   conversationUrl: string;
 }
 
+interface HorseListingNotificationParams {
+  to: string;
+  horseName: string;
+  ownerName: string;
+  ownerEmail: string;
+  price: string;
+  currency: string;
+  location: string;
+  disciplines: string[];
+  horseUrl: string;
+}
+
 export async function sendVerificationEmail(params: EmailVerificationParams): Promise<boolean> {
   console.log('=== EMAIL VERIFICATION START ===');
   console.log('Email service called with params:', {
@@ -458,6 +470,112 @@ Stay connected and don't miss important conversations about your horse interests
     return true;
   } catch (error) {
     console.error('Message notification email service error:', error);
+    return false;
+  }
+}
+
+export async function sendHorseListingNotification(params: HorseListingNotificationParams): Promise<boolean> {
+  console.log('=== HORSE LISTING NOTIFICATION START ===');
+  console.log('Sending horse listing notification:', {
+    to: params.to,
+    horseName: params.horseName,
+    ownerEmail: params.ownerEmail
+  });
+
+  const htmlContent = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: linear-gradient(135deg, #2b2b2b 0%, #4A453E 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">🐎 New Horse Listed</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 16px; opacity: 0.95;">A new horse has been added to ProHorseMatch</p>
+      </div>
+      
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">${params.horseName}</h2>
+        
+        <div style="background: #F8F6F0; padding: 20px; border-radius: 8px; border-left: 3px solid #CDAC6E; margin: 25px 0;">
+          <p style="margin: 0 0 12px 0; font-size: 16px; color: #2D2A25;"><strong>Owner:</strong> ${params.ownerName}</p>
+          <p style="margin: 0 0 12px 0; font-size: 16px; color: #2D2A25;"><strong>Contact:</strong> ${params.ownerEmail}</p>
+          <p style="margin: 0 0 12px 0; font-size: 16px; color: #2D2A25;"><strong>Price:</strong> ${params.price} ${params.currency}</p>
+          <p style="margin: 0 0 12px 0; font-size: 16px; color: #2D2A25;"><strong>Location:</strong> ${params.location}</p>
+          <p style="margin: 0; font-size: 16px; color: #2D2A25;"><strong>Disciplines:</strong> ${params.disciplines.join(', ')}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${params.horseUrl}" 
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3);">
+            View Horse Details
+          </a>
+        </div>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #E8E3D3;">
+          <p style="font-size: 14px; color: #6B5B3D; margin: 0; line-height: 1.5;">
+            This is an automated notification from the ProHorseMatch admin system.
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
+          © 2025 ProHorseMatch • Admin Notifications
+        </p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+New Horse Listed on ProHorseMatch
+
+Horse: ${params.horseName}
+Owner: ${params.ownerName}
+Contact: ${params.ownerEmail}
+Price: ${params.price} ${params.currency}
+Location: ${params.location}
+Disciplines: ${params.disciplines.join(', ')}
+
+View details: ${params.horseUrl}
+
+This is an automated notification from the ProHorseMatch admin system.
+© 2025 ProHorseMatch
+  `;
+
+  try {
+    console.log('Attempting to send horse listing notification...');
+    
+    if (mailService) {
+      // Use SendGrid
+      console.log('Sending via SendGrid...');
+      await mailService.send({
+        from: 'notifications@prohorsematch.com',
+        to: params.to,
+        subject: `New Horse Listed: ${params.horseName}`,
+        html: htmlContent,
+        text: textContent,
+      });
+    } else if (resend) {
+      // Use Resend
+      console.log('Sending via Resend...');
+      const { data, error } = await resend.emails.send({
+        from: 'ProHorseMatch Notifications <notifications@prohorsematch.com>',
+        to: [params.to],
+        subject: `🐎 New Horse Listed: ${params.horseName}`,
+        html: htmlContent,
+        text: textContent,
+      });
+      
+      if (error) {
+        console.error('Resend email error:', error);
+        return false;
+      }
+      console.log('Horse listing notification sent successfully:', data);
+    } else {
+      console.warn('No email service configured - horse listing notification not sent');
+      return false;
+    }
+    
+    console.log('Horse listing notification sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Horse listing notification error:', error);
     return false;
   }
 }

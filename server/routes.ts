@@ -10,7 +10,7 @@ import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail } from "./emailService";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
 import { 
   insertHorseSchema, 
@@ -1694,6 +1694,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check saved searches for this new horse and send notifications
       await checkSavedSearchesForNewHorse(horse);
+      
+      // Send admin notification about new horse listing
+      try {
+        const owner = await storage.getUserById(horse.owner_id);
+        const baseUrl = req.protocol + '://' + req.get('host');
+        
+        await sendHorseListingNotification({
+          to: 'info@australianjumping.com.au',
+          horseName: horse.name,
+          ownerName: owner?.name || owner?.business_name || owner?.contact_name || owner?.username || 'Unknown',
+          ownerEmail: owner?.email || 'Unknown',
+          price: `${horse.price_min}${horse.price_max !== horse.price_min ? ` - ${horse.price_max}` : ''}`,
+          currency: horse.currency,
+          location: horse.location_country,
+          disciplines: Array.isArray(horse.disciplines) ? horse.disciplines : [],
+          horseUrl: `${baseUrl}/horses/${horse.id}`
+        });
+        console.log('Admin notification sent for new horse listing:', horse.name);
+      } catch (notificationError) {
+        console.error('Failed to send admin notification for new horse:', notificationError);
+        // Don't fail the horse creation if notification fails
+      }
       
       console.log("=== HORSE CREATION COMPLETE ===");
       return res.status(201).json(horse);
@@ -4067,6 +4089,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Admin get deletion analytics error:", error);
       return res.status(500).json({ message: "Failed to get deletion analytics" });
+    }
+  });
+
+  // Test endpoint to verify horse listing notifications
+  app.post("/api/test/horse-notification", async (req, res) => {
+    try {
+      console.log("Testing horse listing notification...");
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      const testNotification = await sendHorseListingNotification({
+        to: 'info@australianjumping.com.au',
+        horseName: 'Test Notification Horse',
+        ownerName: 'Test Owner',
+        ownerEmail: 'test@example.com',
+        price: '50000 - 60000',
+        currency: 'AUD',
+        location: 'Australia',
+        disciplines: ['Jumping', 'Eventing'],
+        horseUrl: `${baseUrl}/horses/999`
+      });
+      
+      if (testNotification) {
+        return res.json({ 
+          message: 'Horse listing notification sent successfully!',
+          recipient: 'info@australianjumping.com.au'
+        });
+      } else {
+        return res.status(500).json({ 
+          message: 'Failed to send horse listing notification'
+        });
+      }
+    } catch (error) {
+      console.error("Test horse notification error:", error);
+      return res.status(500).json({ 
+        message: "Failed to send test notification",
+        error: error.toString()
+      });
     }
   });
 

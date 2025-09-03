@@ -7,7 +7,7 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
-## Recent Changes (August 19, 2025)
+## Recent Changes (September 1-3, 2025)
 - **RESOLVED**: Fixed critical authentication mismatch in upload system
 - Removed authentication requirement from local upload fallback endpoint (`/api/upload`)
 - Enhanced error handling to show specific response codes and error messages
@@ -19,7 +19,12 @@ Focus on web app development until reliable mobile developer found.
 - Admin users properly redirected to admin panel after successful updates
 - Backend permissions allow admin override of ownership restrictions
 - Cache invalidation ensures admin panel shows updated data immediately
-- **STATUS**: Ready for deployment - all admin functionality tested and working
+- **NEW**: Email notification system for new horse listings
+- Set up automated email notifications to info@australianjumping.com.au when horses are listed
+- Created horse listing notification email template with professional branding
+- Integrated notification system into horse creation workflow
+- Sally Empringham upgraded to Beta Seller subscription (valid until November 1, 2025)
+- **STATUS**: Ready for deployment - all functionality tested and working
 
 ## System Architecture
 
