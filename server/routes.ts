@@ -532,7 +532,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send password reset email
       const baseUrl = req.protocol + '://' + req.get('host');
-      const resetUrl = `${baseUrl}/auth?reset_token=${resetToken}`;
       
       try {
         await sendPasswordResetEmail({
