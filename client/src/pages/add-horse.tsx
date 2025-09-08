@@ -51,7 +51,7 @@ const priceOptions = [
 const horseFormSchema = z.object({
   // Required fields - all dropdown selections must be completed
   location_country: z.string().min(1, "Country is required"),
-  disciplines: z.array(z.string()).min(1, "Select at least one discipline"),
+  disciplines: z.array(z.string()).min(1, "Select a discipline"),
   levels: z.array(z.string()).min(1, "Select at least one level"),
   breeds: z.array(z.string()).min(1, "Select at least one breed"),
   sex: z.string().min(1, "Sex is required"),
@@ -1109,25 +1109,18 @@ export default function AddHorse() {
                         <FormField
                           control={form.control}
                           name="disciplines"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Main Discipline *</FormLabel>
-                              <div className="grid grid-cols-1 gap-2">
+                          render={({ field }) => {
+                            // Get the selected discipline (first item in array for backwards compatibility)
+                            const selectedDiscipline = Array.isArray(field.value) && field.value.length > 0 
+                              ? field.value[0] 
+                              : undefined;
+                            
+                            return (
+                              <FormItem>
+                                <FormLabel>Main Discipline *</FormLabel>
                                 <Select 
-                                  onValueChange={(value) => {
-                                    // Get current disciplines
-                                    const currentDisciplines = field.value || [];
-                                    
-                                    // Check if the value is already selected
-                                    if (currentDisciplines.includes(value)) {
-                                      // If it is, remove it
-                                      field.onChange(currentDisciplines.filter((discipline) => discipline !== value));
-                                    } else {
-                                      // If it's not, add it
-                                      field.onChange([...currentDisciplines, value]);
-                                    }
-                                  }}
-                                  value={field.value?.length ? field.value[0] : undefined}
+                                  onValueChange={(value) => field.onChange([value])} 
+                                  value={selectedDiscipline}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -1150,30 +1143,13 @@ export default function AddHorse() {
                                     )}
                                   </SelectContent>
                                 </Select>
-                              </div>
-                              
-                              {field.value && field.value.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mt-2">
-                                  {field.value.map((discipline) => (
-                                    <div key={discipline} className="bg-primary/10 text-primary rounded-md px-2 py-1 text-sm flex items-center">
-                                      {discipline}
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          field.onChange(field.value?.filter((d) => d !== discipline));
-                                        }}
-                                        className="ml-1 text-primary hover:text-primary/80"
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                              
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                                <FormDescription>
+                                  Choose the primary discipline for this horse
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            );
+                          }}
                         />
                       </div>
                       
