@@ -56,6 +56,26 @@ interface HorseListingNotificationParams {
   horseUrl: string;
 }
 
+interface NewConversationNotificationParams {
+  to: string;
+  recipientName: string;
+  senderName: string;
+  horseName: string;
+  messageContent: string;
+  conversationUrl: string;
+  userType: 'customer' | 'owner'; // Who is receiving this notification
+}
+
+interface ConversationReminderParams {
+  to: string;
+  recipientName: string;
+  senderName: string;
+  horseName: string;
+  conversationUrl: string;
+  daysSinceLastMessage: number;
+  userType: 'customer' | 'owner'; // Who is receiving this notification
+}
+
 export async function sendVerificationEmail(params: EmailVerificationParams): Promise<boolean> {
   console.log('=== EMAIL VERIFICATION START ===');
   console.log('Email service called with params:', {
@@ -576,6 +596,258 @@ This is an automated notification from the ProHorseMatch admin system.
     return true;
   } catch (error) {
     console.error('Horse listing notification error:', error);
+    return false;
+  }
+}
+
+export async function sendNewConversationNotificationEmail(params: NewConversationNotificationParams): Promise<boolean> {
+  console.log('=== NEW CONVERSATION NOTIFICATION EMAIL START ===');
+  console.log('New conversation notification email service called with params:', {
+    to: params.to,
+    recipientName: params.recipientName,
+    senderName: params.senderName,
+    horseName: params.horseName,
+    userType: params.userType,
+    messageLength: params.messageContent?.length || 0
+  });
+
+  const roleDescription = params.userType === 'customer' ? 'potential buyer' : 'horse owner';
+  const otherRole = params.userType === 'customer' ? 'horse owner' : 'potential buyer';
+
+  const htmlContent = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">ProHorseMatch</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">🎯 New Conversation Started</p>
+      </div>
+      
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">You Have a New Inquiry!</h2>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${params.recipientName}</strong>,
+        </p>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px; color: #4A453E;">
+          Great news! <strong>${params.senderName}</strong> (${otherRole}) has started a new conversation with you about <strong>${params.horseName}</strong>:
+        </p>
+        
+        <div style="background: #F8F6F0; border-left: 4px solid #CDAC6E; padding: 20px; margin: 25px 0; border-radius: 4px;">
+          <p style="font-size: 16px; line-height: 1.6; margin: 0; color: #2D2A25; font-style: italic;">
+            "${params.messageContent}"
+          </p>
+        </div>
+        
+        <div style="background: #E8F5E8; border: 1px solid #C8E6C9; padding: 20px; margin: 25px 0; border-radius: 8px; text-align: center;">
+          <p style="margin: 0; color: #2E7D32; font-weight: 600; font-size: 16px;">💡 First Impressions Matter</p>
+          <p style="margin: 8px 0 0 0; color: #2E7D32; font-size: 14px;">
+            Respond promptly to show you're engaged and professional. This helps build trust in the equestrian community.
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${params.conversationUrl}" 
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
+            Start Conversation
+          </a>
+        </div>
+        
+        <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
+          📱 <strong>Quick Tip:</strong> You can manage all your conversations from your ProHorseMatch messages panel.
+        </p>
+        
+        <p style="font-size: 14px; color: #8B7355; margin-top: 25px; border-top: 1px solid #E8E3D3; padding-top: 20px;">
+          Best regards,<br>
+          <strong>The ProHorseMatch Team</strong><br>
+          <em>Connecting equestrian professionals worldwide</em>
+        </p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+New Conversation Started - ProHorseMatch
+
+Hi ${params.recipientName},
+
+Great news! ${params.senderName} (${otherRole}) has started a new conversation with you about ${params.horseName}:
+
+"${params.messageContent}"
+
+💡 First Impressions Matter
+Respond promptly to show you're engaged and professional. This helps build trust in the equestrian community.
+
+View and respond to this conversation: ${params.conversationUrl}
+
+📱 Quick Tip: You can manage all your conversations from your ProHorseMatch messages panel.
+
+Best regards,
+The ProHorseMatch Team
+Connecting equestrian professionals worldwide
+
+© 2025 ProHorseMatch
+  `;
+
+  try {
+    console.log('Attempting to send new conversation notification...');
+    
+    if (mailService) {
+      // Use SendGrid
+      console.log('Sending via SendGrid...');
+      await mailService.send({
+        from: 'notifications@prohorsematch.com',
+        to: params.to,
+        subject: `🎯 New Inquiry About ${params.horseName}`,
+        html: htmlContent,
+        text: textContent,
+      });
+    } else if (resend) {
+      // Use Resend
+      console.log('Sending via Resend...');
+      const { data, error } = await resend.emails.send({
+        from: 'ProHorseMatch <notifications@prohorsematch.com>',
+        to: [params.to],
+        subject: `🎯 New Inquiry About ${params.horseName}`,
+        html: htmlContent,
+        text: textContent,
+      });
+      
+      if (error) {
+        console.error('New conversation notification email error:', error);
+        return false;
+      }
+      console.log('Resend response:', data);
+    } else {
+      console.warn('No email service configured - new conversation notification not sent');
+      return false;
+    }
+    
+    console.log('New conversation notification email sent successfully');
+    return true;
+  } catch (error) {
+    console.error('New conversation notification email service error:', error);
+    return false;
+  }
+}
+
+export async function sendConversationReminderEmail(params: ConversationReminderParams): Promise<boolean> {
+  console.log('=== CONVERSATION REMINDER EMAIL START ===');
+  console.log('Conversation reminder email service called with params:', {
+    to: params.to,
+    recipientName: params.recipientName,
+    senderName: params.senderName,
+    horseName: params.horseName,
+    userType: params.userType,
+    daysSinceLastMessage: params.daysSinceLastMessage
+  });
+
+  const roleDescription = params.userType === 'customer' ? 'potential buyer' : 'horse owner';
+  const otherRole = params.userType === 'customer' ? 'horse owner' : 'potential buyer';
+
+  const htmlContent = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">ProHorseMatch</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">⏰ Conversation Reminder</p>
+      </div>
+      
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">Don't Miss This Opportunity!</h2>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${params.recipientName}</strong>,
+        </p>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px; color: #4A453E;">
+          You have an unread message from <strong>${params.senderName}</strong> about <strong>${params.horseName}</strong> that was sent ${params.daysSinceLastMessage} days ago.
+        </p>
+        
+        <div style="background: #FFF3CD; border: 1px solid #FFEAA7; padding: 20px; margin: 25px 0; border-radius: 8px; text-align: center;">
+          <p style="margin: 0; color: #856404; font-weight: 600; font-size: 16px;">⏰ Time-Sensitive Opportunity</p>
+          <p style="margin: 8px 0 0 0; color: #856404; font-size: 14px;">
+            In the equestrian market, timing is everything. Don't let this potential match slip away!
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${params.conversationUrl}" 
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
+            View Message & Respond
+          </a>
+        </div>
+        
+        <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
+          💼 <strong>Professional Reminder:</strong> Timely responses build trust and strengthen relationships in the equestrian community.
+        </p>
+        
+        <p style="font-size: 14px; color: #8B7355; margin-top: 25px; border-top: 1px solid #E8E3D3; padding-top: 20px;">
+          Best regards,<br>
+          <strong>The ProHorseMatch Team</strong><br>
+          <em>Connecting equestrian professionals worldwide</em>
+        </p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+Conversation Reminder - ProHorseMatch
+
+Hi ${params.recipientName},
+
+You have an unread message from ${params.senderName} about ${params.horseName} that was sent ${params.daysSinceLastMessage} days ago.
+
+⏰ Time-Sensitive Opportunity
+In the equestrian market, timing is everything. Don't let this potential match slip away!
+
+View and respond to this conversation: ${params.conversationUrl}
+
+💼 Professional Reminder: Timely responses build trust and strengthen relationships in the equestrian community.
+
+Best regards,
+The ProHorseMatch Team
+Connecting equestrian professionals worldwide
+
+© 2025 ProHorseMatch
+  `;
+
+  try {
+    console.log('Attempting to send conversation reminder...');
+    
+    if (mailService) {
+      // Use SendGrid
+      console.log('Sending via SendGrid...');
+      await mailService.send({
+        from: 'notifications@prohorsematch.com',
+        to: params.to,
+        subject: `⏰ Don't Miss Out: Message About ${params.horseName}`,
+        html: htmlContent,
+        text: textContent,
+      });
+    } else if (resend) {
+      // Use Resend
+      console.log('Sending via Resend...');
+      const { data, error } = await resend.emails.send({
+        from: 'ProHorseMatch <notifications@prohorsematch.com>',
+        to: [params.to],
+        subject: `⏰ Don't Miss Out: Message About ${params.horseName}`,
+        html: htmlContent,
+        text: textContent,
+      });
+      
+      if (error) {
+        console.error('Conversation reminder email error:', error);
+        return false;
+      }
+      console.log('Resend response:', data);
+    } else {
+      console.warn('No email service configured - conversation reminder not sent');
+      return false;
+    }
+    
+    console.log('Conversation reminder email sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Conversation reminder email service error:', error);
     return false;
   }
 }
