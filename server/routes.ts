@@ -10,7 +10,7 @@ import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification } from "./emailService";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
 import { 
   insertHorseSchema, 
@@ -3275,6 +3275,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           c.owner_id === parseInt(owner_id) && c.horse_id === parseInt(horse_id)
         ));
 
+      const isNewConversation = !conversation;
+      let shouldSendNewConversationEmail = false;
+
       if (!conversation) {
         console.log("Creating new conversation");
         conversation = await storage.createConversation({
@@ -3282,15 +3285,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
           owner_id: parseInt(owner_id),
           horse_id: parseInt(horse_id)
         });
+        shouldSendNewConversationEmail = true;
+      } else {
+        // Check if new conversation email was already sent
+        shouldSendNewConversationEmail = !conversation.new_conversation_email_sent;
       }
 
-      // Update conversation last message time and increment unread count
+      // Update conversation tracking fields
       const currentUnreadCount = conversation.unread_count || 0;
-      await storage.updateConversation(conversation.id, {
-        last_message_time: new Date(),
+      const now = new Date();
+      const updateData: any = {
+        last_message_time: now,
         last_message_id: newMessage.id,
         unread_count: currentUnreadCount + 1
-      });
+      };
+
+      // Update sender's last message time for tracking response patterns
+      if (sender_type === 'customer') {
+        updateData.customer_last_message_time = now;
+      } else {
+        updateData.owner_last_message_time = now;
+      }
+
+      // Mark that new conversation email will be sent
+      if (shouldSendNewConversationEmail) {
+        updateData.new_conversation_email_sent = true;
+      }
+
+      await storage.updateConversation(conversation.id, updateData);
 
       // Send email notification to the recipient
       try {
@@ -3303,29 +3325,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const horse = await storage.getHorseById(parseInt(horse_id));
         
         if (sender && recipient && horse) {
-          console.log("Sending email notification to:", recipient.email);
+          console.log(`Sending ${shouldSendNewConversationEmail ? 'NEW CONVERSATION' : 'MESSAGE'} notification to:`, recipient.email);
           const baseUrl = req.protocol + '://' + req.get('host');
           const conversationUrl = `${baseUrl}/messages`;
           
-          const emailSent = await sendMessageNotificationEmail({
-            to: recipient.email,
-            recipientName: recipient.username || recipient.name || 'User',
-            senderName: sender.username || sender.name || 'User',
-            horseName: horse.name,
-            messageContent: content.trim(),
-            conversationUrl: conversationUrl
-          });
+          let emailSent = false;
+          
+          if (shouldSendNewConversationEmail) {
+            // Send new conversation notification
+            console.log("🎯 Sending NEW CONVERSATION notification email");
+            emailSent = await sendNewConversationNotificationEmail({
+              to: recipient.email,
+              recipientName: recipient.username || recipient.name || 'User',
+              senderName: sender.username || sender.name || 'User',
+              horseName: horse.name,
+              messageContent: content.trim(),
+              conversationUrl: conversationUrl,
+              userType: recipientId === parseInt(customer_id) ? 'customer' : 'owner'
+            });
+          } else {
+            // Send regular message notification
+            console.log("💬 Sending regular MESSAGE notification email");
+            emailSent = await sendMessageNotificationEmail({
+              to: recipient.email,
+              recipientName: recipient.username || recipient.name || 'User',
+              senderName: sender.username || sender.name || 'User',
+              horseName: horse.name,
+              messageContent: content.trim(),
+              conversationUrl: conversationUrl
+            });
+          }
           
           if (emailSent) {
-            console.log("Message notification email sent successfully to:", recipient.email);
+            console.log(`${shouldSendNewConversationEmail ? 'New conversation' : 'Message'} notification email sent successfully to:`, recipient.email);
           } else {
-            console.warn("Failed to send message notification email to:", recipient.email);
+            console.warn(`Failed to send ${shouldSendNewConversationEmail ? 'new conversation' : 'message'} notification email to:`, recipient.email);
           }
         } else {
           console.warn("Could not send email notification - missing user or horse data");
         }
       } catch (emailError) {
-        console.error("Error sending message notification email:", emailError);
+        console.error("Error sending email notification:", emailError);
         // Don't fail the message creation if email fails
       }
 
