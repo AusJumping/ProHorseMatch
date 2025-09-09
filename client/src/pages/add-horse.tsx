@@ -1351,9 +1351,18 @@ export default function AddHorse() {
                                       let formData = new FormData();
                                       formData.append("image", file);
                                       
+                                      // Get auth token for authenticated request
+                                      const authToken = localStorage.getItem('authToken');
+                                      const headers: Record<string, string> = {};
+                                      if (authToken) {
+                                        headers['Authorization'] = `Bearer ${authToken}`;
+                                      }
+                                      
                                       let response = await fetch("/api/upload-image", {
                                         method: "POST",
-                                        body: formData
+                                        headers,
+                                        body: formData,
+                                        credentials: 'include'
                                       });
                                       
                                       // If Cloudinary endpoint fails, fallback to local upload
@@ -1498,9 +1507,18 @@ export default function AddHorse() {
                                       let formData = new FormData();
                                       formData.append("video", file);
                                       
+                                      // Get auth token for authenticated request
+                                      const authToken = localStorage.getItem('authToken');
+                                      const headers: Record<string, string> = {};
+                                      if (authToken) {
+                                        headers['Authorization'] = `Bearer ${authToken}`;
+                                      }
+                                      
                                       let response = await fetch("/api/upload-video", {
                                         method: "POST",
-                                        body: formData
+                                        headers,
+                                        body: formData,
+                                        credentials: 'include'
                                       });
                                       
                                       // If Cloudinary endpoint fails, fallback to local upload
