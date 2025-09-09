@@ -112,7 +112,6 @@ export default function EditHorse() {
   // Update form values when horse data is loaded
   useEffect(() => {
     if (horse) {
-      console.log("Loading horse data into form:", horse);
       form.reset({
         id: horse.id,
         name: horse.name || "",
@@ -137,17 +136,11 @@ export default function EditHorse() {
         photos: Array.isArray(horse.photos) ? horse.photos : [],
         videos: Array.isArray(horse.videos) ? horse.videos : [],
       });
-      console.log("Form values after reset:", form.getValues());
     }
   }, [horse, form]);
 
   // This function is called when the form is submitted
   const onSubmit = async (data: HorseFormValues) => {
-    console.log("🔥 FORM SUBMISSION STARTED 🔥", data);
-    console.log("Form errors:", form.formState.errors);
-    console.log("Form is valid:", form.formState.isValid);
-    console.log("Photos in form data:", data.photos);
-    console.log("Current form photos:", form.getValues("photos"));
     try {
       setIsSubmitting(true);
       
@@ -171,11 +164,9 @@ export default function EditHorse() {
       };
       
       // Log the cleaned data for debugging
-      console.log("Submitting form data:", JSON.stringify(requestData, null, 2));
       
       // Make the API request and store the response
       const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, requestData);
-      console.log("Response from server:", updatedHorse);
       
       // Show success message
       toast({
@@ -634,7 +625,6 @@ export default function EditHorse() {
                               value={selectedBreed}
                               onValueChange={(value) => {
                                 // Convert single selection to array for compatibility with schema
-                                console.log("Selected breed:", value);
                                 field.onChange([value]);
                               }}
                             >
@@ -776,7 +766,6 @@ export default function EditHorse() {
                               const characteristics = Array.isArray(field.value) ? field.value : [];
                               
                               // Debug log to see what's happening
-                              console.log(`Characteristic ${trait} checked:`, characteristics.includes(trait));
                               
                               return (
                                 <div
@@ -791,13 +780,11 @@ export default function EditHorse() {
                                         // Add the trait if it's not already in the array
                                         if (!characteristics.includes(trait)) {
                                           const newCharacteristics = [...characteristics, trait];
-                                          console.log("Adding characteristic:", newCharacteristics);
                                           field.onChange(newCharacteristics);
                                         }
                                       } else {
                                         // Remove the trait if it's in the array
                                         const newCharacteristics = characteristics.filter((value) => value !== trait);
-                                        console.log("Removing characteristic:", newCharacteristics);
                                         field.onChange(newCharacteristics);
                                       }
                                     }}
@@ -920,7 +907,6 @@ export default function EditHorse() {
                               
                               // If Cloudinary endpoint fails, fallback to local upload
                               if (!response.ok) {
-                                console.log('Cloudinary upload failed, trying local upload...');
                                 formData = new FormData();
                                 formData.append('file', file);
                                 
@@ -1060,7 +1046,6 @@ export default function EditHorse() {
                               
                               // If Cloudinary endpoint fails, fallback to local upload
                               if (!response.ok) {
-                                console.log('Cloudinary video upload failed, trying local upload...');
                                 formData = new FormData();
                                 formData.append('file', file);
                                 
@@ -1140,14 +1125,6 @@ export default function EditHorse() {
                     type="submit" 
                     disabled={isSubmitting}
                     onClick={(e) => {
-                      // Add debugging for Update button clicks
-                      console.log("Update button clicked!");
-                      console.log("Form state:", {
-                        isValid: form.formState.isValid,
-                        errors: form.formState.errors,
-                        photos: form.getValues("photos"),
-                        allValues: form.getValues()
-                      });
                       // Don't prevent default - let form submission proceed
                     }}
                   >
