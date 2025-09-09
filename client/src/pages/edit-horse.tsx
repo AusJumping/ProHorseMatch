@@ -141,6 +141,18 @@ export default function EditHorse() {
 
   // This function is called when the form is submitted
   const onSubmit = async (data: HorseFormValues) => {
+    // Debug Springvale Stalymag specifically (ID 25)
+    if (horseId === 25) {
+      console.log("🐎 SPRINGVALE STALYMAG DEBUG:", {
+        horseId,
+        formData: data,
+        formErrors: form.formState.errors,
+        formValid: form.formState.isValid,
+        levelsData: data.levels,
+        levelsType: typeof data.levels,
+        levelsArray: Array.isArray(data.levels)
+      });
+    }
     try {
       setIsSubmitting(true);
       
