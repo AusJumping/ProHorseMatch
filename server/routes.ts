@@ -4168,6 +4168,210 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Conversation reminder system endpoint
+  app.post("/api/reminders/check-conversations", async (req, res) => {
+    try {
+      console.log("=== CONVERSATION REMINDER CHECK STARTED ===");
+      
+      // Get all conversations
+      const allConversations = await storage.getConversations();
+      console.log(`Found ${allConversations.length} total conversations to check`);
+      
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      
+      let remindersSent = 0;
+      let conversationsChecked = 0;
+      const results = [];
+      
+      for (const conversation of allConversations) {
+        conversationsChecked++;
+        
+        // Skip if no last message time
+        if (!conversation.last_message_time) {
+          console.log(`Skipping conversation ${conversation.id} - no last message time`);
+          continue;
+        }
+        
+        const lastMessageTime = new Date(conversation.last_message_time);
+        const daysSinceLastMessage = Math.floor((Date.now() - lastMessageTime.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Skip if less than 2 days
+        if (daysSinceLastMessage < 2) {
+          continue;
+        }
+        
+        // Skip if reminder was already sent today
+        if (conversation.last_reminder_sent) {
+          const lastReminderTime = new Date(conversation.last_reminder_sent);
+          const daysSinceReminder = Math.floor((Date.now() - lastReminderTime.getTime()) / (1000 * 60 * 60 * 24));
+          
+          if (daysSinceReminder < 1) {
+            console.log(`Skipping conversation ${conversation.id} - reminder already sent today`);
+            continue;
+          }
+        }
+        
+        // Check if conversation has unread messages (indication that someone needs to respond)
+        if (!conversation.unread_count || conversation.unread_count === 0) {
+          console.log(`Skipping conversation ${conversation.id} - no unread messages`);
+          continue;
+        }
+        
+        try {
+          // Get conversation participants and horse details
+          const customer = await storage.getUserById(conversation.customer_id);
+          const owner = await storage.getUserById(conversation.owner_id);
+          const horse = await storage.getHorseById(conversation.horse_id);
+          
+          if (!customer || !owner || !horse) {
+            console.warn(`Missing data for conversation ${conversation.id} - skipping`);
+            continue;
+          }
+          
+          // Determine who should receive the reminder based on message pattern
+          let recipientId = null;
+          let senderId = null;
+          let recipientUserType: 'customer' | 'owner' = 'customer';
+          
+          // Logic: Send reminder to whoever didn't send the last message
+          const messages = await storage.getMessagesByConversationId(
+            conversation.customer_id, 
+            conversation.owner_id, 
+            conversation.horse_id
+          );
+          
+          if (messages.length > 0) {
+            const lastMessage = messages[messages.length - 1];
+            
+            // If customer sent last message, remind owner; if owner sent last message, remind customer
+            if (lastMessage.sender_type === 'customer') {
+              recipientId = conversation.owner_id;
+              senderId = conversation.customer_id;
+              recipientUserType = 'owner';
+            } else {
+              recipientId = conversation.customer_id;
+              senderId = conversation.owner_id;
+              recipientUserType = 'customer';
+            }
+          } else {
+            console.warn(`No messages found for conversation ${conversation.id} - skipping`);
+            continue;
+          }
+          
+          const recipient = recipientId === conversation.customer_id ? customer : owner;
+          const sender = senderId === conversation.customer_id ? customer : owner;
+          
+          console.log(`📧 Sending reminder for conversation ${conversation.id}: ${sender.username} → ${recipient.username} about ${horse.name} (${daysSinceLastMessage} days ago)`);
+          
+          const baseUrl = process.env.NODE_ENV === 'production' 
+            ? 'https://prohorsematch.com' 
+            : 'http://localhost:5000';
+          const conversationUrl = `${baseUrl}/messages`;
+          
+          // Send reminder email
+          const emailSent = await sendConversationReminderEmail({
+            to: recipient.email,
+            recipientName: recipient.username || recipient.name || 'User',
+            senderName: sender.username || sender.name || 'User',
+            horseName: horse.name,
+            conversationUrl: conversationUrl,
+            daysSinceLastMessage: daysSinceLastMessage,
+            userType: recipientUserType
+          });
+          
+          if (emailSent) {
+            // Update conversation with reminder sent time
+            await storage.updateConversation(conversation.id, {
+              last_reminder_sent: new Date()
+            });
+            
+            remindersSent++;
+            results.push({
+              conversationId: conversation.id,
+              recipient: recipient.email,
+              horseName: horse.name,
+              daysSinceLastMessage: daysSinceLastMessage,
+              status: 'sent'
+            });
+            
+            console.log(`✅ Reminder sent successfully for conversation ${conversation.id}`);
+          } else {
+            console.error(`❌ Failed to send reminder for conversation ${conversation.id}`);
+            results.push({
+              conversationId: conversation.id,
+              recipient: recipient.email,
+              horseName: horse.name,
+              daysSinceLastMessage: daysSinceLastMessage,
+              status: 'failed'
+            });
+          }
+          
+        } catch (conversationError) {
+          console.error(`Error processing conversation ${conversation.id}:`, conversationError);
+          results.push({
+            conversationId: conversation.id,
+            status: 'error',
+            error: conversationError instanceof Error ? conversationError.message : "Unknown error"
+          });
+        }
+      }
+      
+      console.log(`=== REMINDER CHECK COMPLETED ===`);
+      console.log(`Conversations checked: ${conversationsChecked}`);
+      console.log(`Reminders sent: ${remindersSent}`);
+      
+      return res.json({
+        message: 'Conversation reminder check completed',
+        conversationsChecked: conversationsChecked,
+        remindersSent: remindersSent,
+        results: results
+      });
+      
+    } catch (error) {
+      console.error("Conversation reminder check error:", error);
+      return res.status(500).json({ 
+        message: 'Error checking conversation reminders',
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Test endpoint for conversation reminders
+  app.post("/api/test/conversation-reminder", async (req, res) => {
+    try {
+      console.log("Testing conversation reminder notification...");
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      const testReminder = await sendConversationReminderEmail({
+        to: 'info@australianjumping.com.au',
+        recipientName: 'Test Recipient',
+        senderName: 'Test Sender',
+        horseName: 'Test Horse',
+        conversationUrl: `${baseUrl}/messages`,
+        daysSinceLastMessage: 3,
+        userType: 'owner'
+      });
+      
+      if (testReminder) {
+        return res.json({ 
+          message: 'Conversation reminder notification sent successfully!',
+          recipient: 'info@australianjumping.com.au'
+        });
+      } else {
+        return res.status(500).json({ 
+          message: 'Failed to send conversation reminder notification'
+        });
+      }
+    } catch (error) {
+      console.error("Test conversation reminder error:", error);
+      return res.status(500).json({ 
+        message: 'Error sending test reminder',
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 
