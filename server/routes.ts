@@ -3026,15 +3026,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all conversations for the current user
   app.get("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
     const startTime = Date.now();
-    console.log(`🔥🔥🔥 CONVERSATIONS ENDPOINT HIT - DEBUG MODE ACTIVATED 🔥🔥🔥`);
     
     try {
-      console.log(`🔥 CONVERSATIONS ROUTE START: Request received for user session`);
       
       // Set timeout to prevent hanging requests
       const timeout = setTimeout(() => {
         if (!res.headersSent) {
-          console.error('CONVERSATIONS ROUTE: Request timeout - taking too long');
+          console.error('Request timeout');
           res.status(408).json({ message: "Request timeout - server overloaded" });
         }
       }, 25000); // 25 second timeout
@@ -3045,7 +3043,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Expires', '0');
 
       const userId = req.userId;
-      console.log(`CONVERSATIONS ROUTE: Token userId: ${userId}`);
       
       if (!userId || isNaN(userId)) {
         clearTimeout(timeout);
@@ -3056,21 +3053,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user;
       try {
         user = await storage.getUserById(userId);
-        console.log(`CONVERSATIONS ROUTE: User lookup result:`, user);
       } catch (dbError) {
         clearTimeout(timeout);
-        console.error(`CONVERSATIONS ROUTE: Database error during user lookup:`, dbError);
+        console.error('Database error during user lookup:', dbError);
         return res.status(500).json({ message: "Database connection error" });
       }
       
       if (!user) {
         clearTimeout(timeout);
-        console.log(`CONVERSATIONS ROUTE: User not found for userId ${userId}`);
         return res.status(401).json({ message: "User not found" });
       }
 
       // Get conversations where user is either customer or owner
-      console.log(`CONVERSATIONS ROUTE: Fetching conversations for user ${userId}`);
       
       // Test database connection first with timeout
       try {
@@ -3081,10 +3075,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             setTimeout(() => reject(new Error('Database health check timeout')), 10000)
           )
         ]);
-        console.log(`CONVERSATIONS ROUTE: Total conversations in DB: ${(dbHealthResult as any[]).length}`);
       } catch (error) {
         clearTimeout(timeout);
-        console.error(`CONVERSATIONS ROUTE: Database health check failed:`, error);
+        console.error('Database health check failed:', error);
         return res.status(500).json({ message: "Database connectivity issue" });
       }
       
@@ -3093,7 +3086,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch customer conversations with error handling and timeout
       try {
-        console.log(`CONVERSATIONS ROUTE: About to call getConversationsByCustomerId(${userId})`);
         const customerPromise = storage.getConversationsByCustomerId(userId);
         customerConversations = await Promise.race([
           customerPromise,
@@ -3101,7 +3093,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             setTimeout(() => reject(new Error('Customer conversations query timeout')), 8000)
           )
         ]) as any[];
-        console.log(`CONVERSATIONS ROUTE: Customer conversations result:`, customerConversations);
       } catch (error) {
         console.error(`CONVERSATIONS ROUTE: Error getting customer conversations:`, error);
         customerConversations = []; // Continue with empty array
@@ -3109,7 +3100,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch owner conversations with error handling and timeout
       try {
-        console.log(`CONVERSATIONS ROUTE: About to call getConversationsByOwnerId(${userId})`);
         const ownerPromise = storage.getConversationsByOwnerId(userId);
         ownerConversations = await Promise.race([
           ownerPromise,
@@ -3117,7 +3107,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             setTimeout(() => reject(new Error('Owner conversations query timeout')), 8000)
           )
         ]) as any[];
-        console.log(`CONVERSATIONS ROUTE: Owner conversations result:`, ownerConversations);
       } catch (error) {
         console.error(`CONVERSATIONS ROUTE: Error getting owner conversations:`, error);
         ownerConversations = []; // Continue with empty array
@@ -3181,7 +3170,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         conversationsWithDetails = await Promise.all(enhancementPromises);
       } catch (error) {
-        clearTimeout(timeout);
         console.error("Error enhancing conversations:", error);
         // Return basic conversation data if all enhancements fail
         conversationsWithDetails = conversations.map(conv => ({
@@ -3190,17 +3178,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           otherUser: null
         }));
       }
-
-      if (timeout) clearTimeout(timeout);
       const duration = Date.now() - startTime;
-      console.log(`CONVERSATIONS ROUTE: Completed in ${duration}ms`);
       res.json(conversationsWithDetails);
       
     } catch (error) {
-      clearTimeout(timeout);
       console.error("Error fetching conversations:", error);
       const duration = Date.now() - startTime;
-      console.log(`CONVERSATIONS ROUTE: Failed after ${duration}ms`);
       res.status(500).json({ 
         message: "Failed to fetch conversations",
         error: error instanceof Error ? error.message : "Database connection issue"
@@ -3234,7 +3217,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Send a new message
   app.post("/api/messages", isTokenAuthenticated, async (req: any, res: Response) => {
-    console.log("=== MESSAGE ENDPOINT HIT ===");
     try {
       const userId = req.userId;
       console.log("POST /api/messages - Request body:", req.body);
