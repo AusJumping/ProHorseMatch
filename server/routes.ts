@@ -2848,10 +2848,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload image to Cloudinary
-  app.post('/api/upload-image', isAuthenticated, uploadMemory.single('image'), async (req, res) => {
+  app.post('/api/upload-image', isTokenAuthenticated, uploadMemory.single('image'), async (req, res) => {
     try {
       console.log("=== IMAGE UPLOAD START ===");
-      console.log("User ID:", req.session?.userId);
+      console.log("User ID:", req.userId);
       console.log("Request headers:", {
         contentType: req.headers['content-type'],
         contentLength: req.headers['content-length']
@@ -2895,10 +2895,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Upload video to Cloudinary
-  app.post('/api/upload-video', isAuthenticated, uploadMemory.single('video'), async (req, res) => {
+  app.post('/api/upload-video', isTokenAuthenticated, uploadMemory.single('video'), async (req, res) => {
     try {
       console.log("=== VIDEO UPLOAD START ===");
-      console.log("User ID:", req.session?.userId);
+      console.log("User ID:", req.userId);
       console.log("Request headers:", {
         contentType: req.headers['content-type'],
         contentLength: req.headers['content-length']
@@ -2960,7 +2960,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete image from Cloudinary
-  app.delete('/api/delete-image/:public_id', isAuthenticated, async (req, res) => {
+  app.delete('/api/delete-image/:public_id', isTokenAuthenticated, async (req, res) => {
     try {
       const { public_id } = req.params;
       
