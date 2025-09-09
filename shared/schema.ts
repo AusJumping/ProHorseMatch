@@ -172,6 +172,11 @@ export const conversations = pgTable("conversations", {
   last_message_id: integer("last_message_id"),
   last_message_time: timestamp("last_message_time"),
   unread_count: integer("unread_count").default(0),
+  // Email notification tracking
+  new_conversation_email_sent: boolean("new_conversation_email_sent").default(false),
+  last_reminder_sent: timestamp("last_reminder_sent"),
+  customer_last_message_time: timestamp("customer_last_message_time"),
+  owner_last_message_time: timestamp("owner_last_message_time"),
 });
 
 export const insertConversationSchema = createInsertSchema(conversations).omit({
@@ -179,6 +184,10 @@ export const insertConversationSchema = createInsertSchema(conversations).omit({
   last_message_id: true,
   last_message_time: true,
   unread_count: true,
+  new_conversation_email_sent: true,
+  last_reminder_sent: true,
+  customer_last_message_time: true,
+  owner_last_message_time: true,
 });
 
 export type InsertConversation = z.infer<typeof insertConversationSchema>;
