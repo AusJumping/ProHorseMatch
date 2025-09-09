@@ -3219,7 +3219,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.userId;
-      console.log("POST /api/messages - Request body:", req.body);
       const { customer_id, owner_id, horse_id, content } = req.body;
 
       // Validate required fields
