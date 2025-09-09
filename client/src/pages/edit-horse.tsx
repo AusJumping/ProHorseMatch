@@ -146,6 +146,8 @@ export default function EditHorse() {
     console.log("🔥 FORM SUBMISSION STARTED 🔥", data);
     console.log("Form errors:", form.formState.errors);
     console.log("Form is valid:", form.formState.isValid);
+    console.log("Photos in form data:", data.photos);
+    console.log("Current form photos:", form.getValues("photos"));
     try {
       setIsSubmitting(true);
       
@@ -1134,7 +1136,21 @@ export default function EditHorse() {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    onClick={(e) => {
+                      // Add debugging for Update button clicks
+                      console.log("Update button clicked!");
+                      console.log("Form state:", {
+                        isValid: form.formState.isValid,
+                        errors: form.formState.errors,
+                        photos: form.getValues("photos"),
+                        allValues: form.getValues()
+                      });
+                      // Don't prevent default - let form submission proceed
+                    }}
+                  >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Horse
                   </Button>
