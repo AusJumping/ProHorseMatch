@@ -898,29 +898,17 @@ export default function EditHorse() {
                                 headers['Authorization'] = `Bearer ${authToken}`;
                               }
                               
-                              let response = await fetch('/api/upload-image', {
+                              const response = await fetch('/api/upload-image', {
                                 method: 'POST',
                                 headers,
                                 body: formData,
                                 credentials: 'include'
                               });
                               
-                              // If Cloudinary endpoint fails, fallback to local upload
-                              if (!response.ok) {
-                                formData = new FormData();
-                                formData.append('file', file);
-                                
-                                response = await fetch('/api/upload', {
-                                  method: 'POST',
-                                  credentials: 'include', // Include session cookies for auth
-                                  body: formData
-                                });
-                              }
-                              
                               if (!response.ok) {
                                 const errorText = await response.text();
-                                console.error('Upload response error:', response.status, errorText);
-                                throw new Error(`Upload failed: ${response.status} - ${errorText}`);
+                                console.error('Cloudinary upload failed:', response.status, errorText);
+                                throw new Error(`Cloudinary upload failed: ${response.status} - ${errorText}. Please ensure you have proper authentication.`);
                               }
                               
                               const data = await response.json();
@@ -1037,29 +1025,17 @@ export default function EditHorse() {
                                 headers['Authorization'] = `Bearer ${authToken}`;
                               }
                               
-                              let response = await fetch('/api/upload-video', {
+                              const response = await fetch('/api/upload-video', {
                                 method: 'POST',
                                 headers,
                                 body: formData,
                                 credentials: 'include'
                               });
                               
-                              // If Cloudinary endpoint fails, fallback to local upload
-                              if (!response.ok) {
-                                formData = new FormData();
-                                formData.append('file', file);
-                                
-                                response = await fetch('/api/upload', {
-                                  method: 'POST',
-                                  credentials: 'include', // Include session cookies for auth
-                                  body: formData
-                                });
-                              }
-                              
                               if (!response.ok) {
                                 const errorText = await response.text();
-                                console.error('Video upload response error:', response.status, errorText);
-                                throw new Error(`Video upload failed: ${response.status} - ${errorText}`);
+                                console.error('Cloudinary video upload failed:', response.status, errorText);
+                                throw new Error(`Cloudinary video upload failed: ${response.status} - ${errorText}. Please ensure you have proper authentication.`);
                               }
                               
                               const data = await response.json();
