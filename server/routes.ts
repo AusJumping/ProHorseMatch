@@ -176,11 +176,16 @@ const upload = multer({
     }
   }),
   limits: {
-    fileSize: 500 * 1024 * 1024, // 500MB limit
+    fileSize: 500 * 1024 * 1024, // 500MB limit (for videos)
   },
   fileFilter: (req, file, cb) => {
-    // Accept images and videos
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+    // Accept images and videos with different size limits
+    if (file.mimetype.startsWith('image/')) {
+      // Check image size limit (5MB) - note: file.size not available in fileFilter
+      // Size will be checked after upload in route handler
+      cb(null, true);
+    } else if (file.mimetype.startsWith('video/')) {
+      // Videos can be up to 500MB (handled by multer limits)
       cb(null, true);
     } else {
       cb(new Error('Only image and video files are allowed'));
@@ -192,11 +197,15 @@ const upload = multer({
 const uploadMemory = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 500 * 1024 * 1024, // 500MB limit
+    fileSize: 500 * 1024 * 1024, // 500MB limit (for videos)
   },
   fileFilter: (req, file, cb) => {
-    // Accept images and videos
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+    // Accept images and videos with different size limits
+    if (file.mimetype.startsWith('image/')) {
+      // Image size limit (5MB) will be checked after upload in route handler
+      cb(null, true);
+    } else if (file.mimetype.startsWith('video/')) {
+      // Videos can be up to 500MB (handled by multer limits)
       cb(null, true);
     } else {
       cb(new Error('Only image and video files are allowed'));
@@ -2828,8 +2837,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         filename: req.file.originalname,
         mimetype: req.file.mimetype,
         size: req.file.size,
+        sizeInMB: (req.file.size / (1024 * 1024)).toFixed(2),
         buffer_length: req.file.buffer?.length
       });
+
+      // Check image file size (5MB limit)
+      const maxImageSizeMB = 5;
+      const fileSizeMB = req.file.size / (1024 * 1024);
+      
+      if (fileSizeMB > maxImageSizeMB) {
+        console.log(`Image upload failed - File too large: ${fileSizeMB.toFixed(2)}MB > ${maxImageSizeMB}MB`);
+        return res.status(400).json({ 
+          message: `Image file is too large. Maximum size is ${maxImageSizeMB}MB, but received ${fileSizeMB.toFixed(2)}MB.` 
+        });
+      }
 
       // Upload to Cloudinary with 'image' resource type
       console.log("Uploading to Cloudinary as image...");
