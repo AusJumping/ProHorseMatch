@@ -1051,7 +1051,7 @@ export default function EditHorse() {
                       </div>
                       
                       <div className="mt-4">
-                        {form.watch("photos")?.length > 0 ? (
+                        {(form.watch("photos")?.length || 0) > 0 ? (
                           <div className="space-y-2">
                             <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                               <GripVertical className="h-4 w-4" />
