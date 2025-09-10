@@ -1365,17 +1365,10 @@ export default function AddHorse() {
                                         credentials: 'include'
                                       });
                                       
-                                      // If Cloudinary endpoint fails, fallback to local upload
+                                      // No fallback - force Cloudinary only for persistence
                                       if (!response.ok) {
-                                        console.log('Cloudinary upload failed, trying local upload...');
-                                        formData = new FormData();
-                                        formData.append("file", file);
-                                        
-                                        response = await fetch("/api/upload", {
-                                          method: "POST",
-                                          credentials: 'include', // Include session cookies for auth
-                                          body: formData
-                                        });
+                                        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                                        throw new Error(`Cloudinary upload failed (${response.status}): ${errorData.error || 'Please try again'}`);
                                       }
                                       
                                       if (!response.ok) {
@@ -1521,17 +1514,10 @@ export default function AddHorse() {
                                         credentials: 'include'
                                       });
                                       
-                                      // If Cloudinary endpoint fails, fallback to local upload
+                                      // No fallback - force Cloudinary only for persistence
                                       if (!response.ok) {
-                                        console.log('Cloudinary video upload failed, trying local upload...');
-                                        formData = new FormData();
-                                        formData.append("file", file);
-                                        
-                                        response = await fetch("/api/upload", {
-                                          method: "POST",
-                                          credentials: 'include', // Include session cookies for auth
-                                          body: formData
-                                        });
+                                        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                                        throw new Error(`Cloudinary video upload failed (${response.status}): ${errorData.error || 'Please try again'}`);
                                       }
                                       
                                       if (!response.ok) {
