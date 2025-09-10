@@ -14,11 +14,30 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader2, Plus, X, Upload, Image, FileVideo } from "lucide-react";
+import { Loader2, Plus, X, Upload, Image, FileVideo, GripVertical } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
 import { useMobile } from "@/hooks/use-mobile";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 // Form schema for editing a horse
 const horseFormSchema = z.object({
@@ -51,6 +70,74 @@ const horseFormSchema = z.object({
 
 type HorseFormValues = z.infer<typeof horseFormSchema>;
 
+// Sortable Photo Item Component
+interface SortablePhotoItemProps {
+  photo: string;
+  index: number;
+  onRemove: (index: number) => void;
+}
+
+function SortablePhotoItem({ photo, index, onRemove }: SortablePhotoItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: `photo-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative group bg-white rounded-md border ${
+        isDragging ? 'shadow-lg z-10' : ''
+      }`}
+    >
+      <div className="flex items-center gap-2 p-2">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing flex-shrink-0 p-1 hover:bg-gray-100 rounded"
+        >
+          <GripVertical className="h-4 w-4 text-gray-400" />
+        </div>
+        <img 
+          src={photo} 
+          alt={`Horse photo ${index + 1}`} 
+          className="w-16 h-16 object-cover rounded-md flex-shrink-0"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "https://via.placeholder.com/64x64?text=Error";
+          }}
+        />
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">Photo {index + 1}</div>
+          <div className="text-xs text-gray-500">
+            {index === 0 ? "Main photo" : `Position ${index + 1}`}
+          </div>
+        </div>
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="flex-shrink-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+          onClick={() => onRemove(index)}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function EditHorse() {
   const { toast } = useToast();
   const [_, navigate] = useLocation();
@@ -64,6 +151,32 @@ export default function EditHorse() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [videoUploading, setVideoUploading] = useState(false);
   const isMobile = useMobile();
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end for photo reordering
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const currentPhotos = form.getValues("photos") || [];
+      const oldIndex = parseInt(active.id.toString().replace('photo-', ''));
+      const newIndex = parseInt(over?.id.toString().replace('photo-', '') || '0');
+
+      const reorderedPhotos = arrayMove(currentPhotos, oldIndex, newIndex);
+      form.setValue("photos", reorderedPhotos);
+      
+      toast({
+        description: `Photo moved to position ${newIndex + 1}`,
+      });
+    }
+  };
 
   // Fetch user data
   const { data: user, isLoading: userLoading } = useQuery({
@@ -937,29 +1050,38 @@ export default function EditHorse() {
                         />
                       </div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                        {form.watch("photos")?.map((photo, index) => (
-                          <div key={index} className="relative group">
-                            <img 
-                              src={photo} 
-                              alt={`Horse photo ${index + 1}`} 
-                              className="w-full h-40 object-cover rounded-md"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.src = "https://via.placeholder.com/300x200?text=Image+Error";
-                              }}
-                            />
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="destructive"
-                              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => removePhoto(index)}
+                      <div className="mt-4">
+                        {form.watch("photos")?.length > 0 ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                              <GripVertical className="h-4 w-4" />
+                              <span>Drag to reorder photos • First photo will be the main display image</span>
+                            </div>
+                            <DndContext
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={handleDragEnd}
                             >
-                              <X className="h-4 w-4" />
-                            </Button>
+                              <SortableContext 
+                                items={form.watch("photos")?.map((_, index) => `photo-${index}`) || []}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                {form.watch("photos")?.map((photo, index) => (
+                                  <SortablePhotoItem
+                                    key={`photo-${index}`}
+                                    photo={photo}
+                                    index={index}
+                                    onRemove={removePhoto}
+                                  />
+                                ))}
+                              </SortableContext>
+                            </DndContext>
                           </div>
-                        ))}
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            No photos uploaded yet. Upload your first photo to get started.
+                          </div>
+                        )}
                       </div>
                       
                       <Separator className="my-6" />
