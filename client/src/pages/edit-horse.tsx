@@ -1222,32 +1222,10 @@ export default function EditHorse() {
                   <Button 
                     type="submit" 
                     disabled={isSubmitting}
-                    onClick={() => {
-                      console.log("Update button clicked - Form state:", {
-                        isValid: form.formState.isValid,
-                        errors: form.formState.errors,
-                        values: form.getValues()
-                      });
-                      // Let the form handle submission
-                    }}
                   >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Horse
                   </Button>
-                  
-                  {/* Show validation errors if any */}
-                  {Object.keys(form.formState.errors).length > 0 && (
-                    <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-                      <h4 className="font-medium text-red-800 mb-2">Please fix these errors:</h4>
-                      <ul className="list-disc list-inside text-sm text-red-700">
-                        {Object.entries(form.formState.errors).map(([field, error]) => (
-                          <li key={field}>
-                            {field}: {error?.message}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
                 </div>
               </form>
             </Form>
