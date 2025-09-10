@@ -64,7 +64,7 @@ const horseFormSchema = z.object({
   price_max: z.number().min(1, "Maximum price must be at least 1"),
   currency: z.string().min(1, "Currency is required"),
   description: z.string().optional(),
-  photos: z.array(z.string()).min(1, "At least one photo is required"),
+  photos: z.array(z.string()).optional(),
   videos: z.array(z.string()).optional(),
 });
 
@@ -544,7 +544,7 @@ export default function EditHorse() {
                                 </SelectTrigger>
                                 <SelectContent>
                                   {constants && constants.countries ? (
-                                    constants.countries.map((country) => (
+                                    constants.countries.map((country: string) => (
                                       <SelectItem key={country} value={country}>
                                         {country}
                                       </SelectItem>
