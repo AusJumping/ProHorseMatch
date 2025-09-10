@@ -254,10 +254,6 @@ export default function EditHorse() {
 
   // This function is called when the form is submitted
   const onSubmit = async (data: HorseFormValues) => {
-    console.log("=== FORM SUBMISSION STARTED ===");
-    console.log("Form data:", data);
-    console.log("Form errors:", form.formState.errors);
-    console.log("Is form valid:", form.formState.isValid);
     try {
       setIsSubmitting(true);
       
@@ -1226,13 +1222,6 @@ export default function EditHorse() {
                   <Button 
                     type="submit" 
                     disabled={isSubmitting}
-                    onClick={(e) => {
-                      console.log("=== SUBMIT BUTTON CLICKED ===");
-                      console.log("Form state:", form.formState);
-                      console.log("Form errors:", form.formState.errors);
-                      console.log("Current form values:", form.getValues());
-                      // Don't prevent default - let form submission proceed
-                    }}
                   >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Horse
