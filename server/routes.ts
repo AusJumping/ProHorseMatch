@@ -3736,27 +3736,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin middleware - restrict access to specific email
   const isAdmin = async (req: any, res: Response, next: any) => {
     try {
-      console.log("=== ADMIN CHECK START ===");
-      console.log("Request userId:", req.userId);
-      
       if (!req.userId) {
-        console.log("Admin check failed - No userId in request");
         return res.status(401).json({ message: "Authentication required" });
       }
 
       const user = await storage.getUser(req.userId);
-      console.log("Retrieved user for admin check:", { 
-        id: user?.id, 
-        email: user?.email,
-        exists: !!user 
-      });
-
       if (!user || user.email !== 'info@australianjumping.com.au') {
-        console.log(`Admin access denied - User email: ${user?.email || 'null'}, Required: info@australianjumping.com.au`);
         return res.status(403).json({ message: "Admin access required for user deletion" });
       }
 
-      console.log("Admin check passed - Access granted");
       next();
     } catch (error) {
       console.error("Admin check error:", error);
