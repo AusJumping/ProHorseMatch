@@ -514,14 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Forgot password endpoint
   app.post("/api/auth/forgot-password", async (req, res) => {
     try {
-      console.log("=== PASSWORD RESET REQUEST START ===");
       const { email } = req.body;
-      console.log("Request details:", {
-        email: email,
-        timestamp: new Date().toISOString(),
-        ip: req.ip,
-        userAgent: req.headers['user-agent']
-      });
       
       if (!email) {
         console.log("Password reset failed - No email provided");
