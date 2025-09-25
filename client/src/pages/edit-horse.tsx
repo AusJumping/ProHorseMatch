@@ -215,7 +215,7 @@ export default function EditHorse() {
       characteristics: [],
       price_min: 0,
       price_max: 0,
-      currency: "EUR",
+      currency: "AUD",
       description: "",
       photos: [],
       videos: [],
