@@ -517,35 +517,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { email } = req.body;
       
       if (!email) {
-        console.log("Password reset failed - No email provided");
         return res.status(400).json({ message: "Email is required" });
       }
       
-      console.log("Searching for user with email:", email);
+      console.log("Forgot password request for email:", email);
       
       // Find user by email
       const user = await storage.getUserByEmail(email);
       if (!user) {
-        console.log("Password reset - User not found for email:", email);
         // Don't reveal if user exists or not for security
         return res.json({ message: "If the email exists, a reset link has been sent" });
       }
       
-      console.log("User found for password reset:", {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        emailVerified: user.email_verified
-      });
-      
       // Generate reset token
       const resetToken = generateVerificationToken();
       const tokenExpires = createTokenExpiration();
-      
-      console.log("Generated reset token:", {
-        tokenLength: resetToken.length,
-        expiresAt: tokenExpires.toISOString()
-      });
       
       // Store reset token in user record
       await storage.updateUser(user.id, {
@@ -553,36 +539,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         verification_token_expires: tokenExpires
       });
       
-      console.log("Reset token stored in database for user:", user.email);
-      
       // Send password reset email
       const baseUrl = req.protocol + '://' + req.get('host');
-      console.log("Sending password reset email with baseUrl:", baseUrl);
       
       try {
-        const emailResult = await sendPasswordResetEmail({
+        await sendPasswordResetEmail({
           to: user.email,
           username: user.username || user.name || 'User',
           resetToken: resetToken,
           baseUrl: baseUrl
         });
         
-        console.log("Password reset email send result:", emailResult);
-        
-        if (emailResult) {
-          console.log("✅ Password reset email sent successfully to:", user.email);
-        } else {
-          console.log("❌ Password reset email failed to send to:", user.email);
-        }
-        
-        console.log("=== PASSWORD RESET REQUEST COMPLETE ===");
+        console.log("Password reset email sent successfully to:", user.email);
         return res.json({ message: "If the email exists, a reset link has been sent" });
       } catch (emailError) {
-        console.error("❌ Failed to send password reset email:", emailError);
-        console.log("Email error details:", {
-          message: emailError.message,
-          stack: emailError.stack
-        });
+        console.error("Failed to send password reset email:", emailError);
         return res.status(500).json({ message: "Failed to send reset email" });
       }
     } catch (error) {
