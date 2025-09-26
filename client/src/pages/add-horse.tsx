@@ -572,7 +572,8 @@ export default function AddHorse() {
                               <FormLabel>Height (hands) *</FormLabel>
                               <Select 
                                 onValueChange={(value) => field.onChange(value === "young_horse" ? "young_horse" : parseFloat(value))} 
-                                value={field.value === "young_horse" ? "young_horse" : field.value?.toString()}
+                                value={field.value === "young_horse" ? "young_horse" : 
+                                       typeof field.value === 'number' ? field.value.toFixed(1) : field.value?.toString()}
                               >
                                 <FormControl>
                                   <SelectTrigger>

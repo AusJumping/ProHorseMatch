@@ -483,7 +483,8 @@ export default function EditHorse() {
                               <FormLabel>Height (hands)</FormLabel>
                               <FormControl>
                                 <Select 
-                                  value={currentValue === "young_horse" ? "young_horse" : currentValue?.toString()} 
+                                  value={currentValue === "young_horse" ? "young_horse" : 
+                                         typeof currentValue === 'number' ? currentValue.toFixed(1) : currentValue?.toString()} 
                                   onValueChange={(value) => {
                                     if (value === "young_horse") {
                                       field.onChange("young_horse");
