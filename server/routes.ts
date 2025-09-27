@@ -288,7 +288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const verificationToken = generateVerificationToken();
       const tokenExpires = createTokenExpiration();
       
-      // Create user with verification fields and beta subscription
+      // Create user with verification fields
       const user = await storage.createUser({
         ...validatedData,
         password: hashedPassword,
@@ -296,24 +296,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: null,  // Customer registration doesn't require a name
         email_verified: false,
         verification_token: verificationToken,
-        verification_token_expires: tokenExpires,
-        // Add beta subscription fields
-        stripe_subscription_id: `beta-${Date.now()}`,
-        subscription_status: 'active',
-        subscription_plan: 'beta-searching',
-        subscription_end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days from now
+        verification_token_expires: tokenExpires
       });
       
       // Send verification email
       const baseUrl = req.protocol + '://' + req.get('host');
-      console.log('=== BETA SEARCHER REGISTRATION EMAIL PROCESS START ===');
-      console.log('Beta searcher user created successfully:', {
+      console.log('=== REGISTRATION EMAIL PROCESS START ===');
+      console.log('User created successfully:', {
         id: user.id,
         email: user.email,
         username: user.username,
         email_verified: user.email_verified,
-        subscription_plan: user.subscription_plan,
-        subscription_status: user.subscription_status,
         verification_token: verificationToken ? 'exists' : 'missing',
         token_expires: tokenExpires
       });
@@ -334,14 +327,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       return res.status(201).json({ 
-        message: "Beta Searcher registration successful! Please check your email to verify your account.",
+        message: "Registration successful! Please check your email to verify your account.",
         email: user.email,
         username: user.username,
-        subscription_plan: 'beta-searching',
         requiresVerification: true
       });
     } catch (error) {
-      console.error("Register beta searching user error:", error);
+      console.error("Register searching user error:", error);
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
   });
