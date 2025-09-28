@@ -187,14 +187,6 @@ export default function Auth() {
       
       // Don't redirect - user needs to verify email first
       return;
-      
-      if (userData && userData.subscription_status === 'active') {
-        console.log("User has active subscription, redirecting to welcome page");
-        window.location.href = "/welcome";
-      } else {
-        console.log("User has no active subscription, redirecting to subscription page");
-        window.location.href = "/subscription";
-      }
     } catch (error: any) {
       toast({
         title: "Registration failed",
@@ -228,14 +220,6 @@ export default function Auth() {
       
       // Don't redirect - user needs to verify email first
       return;
-      
-      if (userData && userData.subscription_status === 'active') {
-        console.log("User has active subscription, redirecting to welcome page");
-        window.location.href = "/welcome";
-      } else {
-        console.log("User has no active subscription, redirecting to subscription page");
-        window.location.href = "/subscription";
-      }
     } catch (error: any) {
       toast({
         title: "Registration failed",
