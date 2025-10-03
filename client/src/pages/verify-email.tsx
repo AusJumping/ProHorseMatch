@@ -39,9 +39,9 @@ export default function VerifyEmail() {
       if (response.ok) {
         setVerificationStatus('success');
         setMessage(data.message);
-        // Redirect to login after 3 seconds
+        // Redirect to subscription page after 3 seconds
         setTimeout(() => {
-          setLocation('/auth');
+          setLocation('/subscription');
         }, 3000);
       } else {
         if (data.message.includes('expired')) {
@@ -121,7 +121,7 @@ export default function VerifyEmail() {
             {getTitle()}
           </CardTitle>
           <CardDescription>
-            {verificationStatus === 'success' && 'You will be redirected to login shortly.'}
+            {verificationStatus === 'success' && 'You will be redirected to select your subscription shortly.'}
             {verificationStatus === 'pending' && !params?.token && 'Enter your email to resend verification link.'}
             {verificationStatus === 'expired' && 'Request a new verification link below.'}
             {verificationStatus === 'error' && 'There was an issue verifying your email.'}
@@ -162,10 +162,10 @@ export default function VerifyEmail() {
           {verificationStatus === 'success' && (
             <div className="text-center">
               <Button 
-                onClick={() => setLocation('/auth')}
+                onClick={() => setLocation('/subscription')}
                 className="w-full"
               >
-                Go to Login
+                Choose Your Subscription
               </Button>
             </div>
           )}
