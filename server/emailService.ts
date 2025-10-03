@@ -318,6 +318,13 @@ export async function sendPasswordResetEmail(params: PasswordResetParams): Promi
           </a>
         </div>
         
+        <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
+          If the button doesn't work, copy and paste this link into your browser:
+        </p>
+        <p style="font-size: 14px; color: #CDAC6E; word-break: break-all; background: #F8F6F0; padding: 12px; border-radius: 4px; border-left: 3px solid #CDAC6E;">
+          ${resetUrl}
+        </p>
+        
         <div style="background: #FFF3E0; border-radius: 8px; padding: 25px; margin: 30px 0; border-left: 4px solid #FF9800;">
           <h3 style="color: #E65100; margin-top: 0; font-size: 16px; font-weight: 600;">⚠️ Important Security Notice</h3>
           <p style="color: #4A453E; margin: 10px 0 0 0; line-height: 1.6; font-size: 14px;">
