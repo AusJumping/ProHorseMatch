@@ -166,7 +166,7 @@ export default function AdminPage() {
         'Username': user.username || '',
         'Name': user.name || '',
         'Business Name': user.business_name || '',
-        'Account Type': `${user.is_selling ? 'Seller' : ''}${user.is_selling && user.is_searching && (user.email_verified || user.subscription_status === 'active') ? ' & ' : ''}${user.is_searching && (user.email_verified || user.subscription_status === 'active') ? 'Searcher' : ''}`,
+        'Account Type': `${user.is_selling && user.subscription_status === 'active' ? 'Seller' : ''}${user.is_selling && user.is_searching && user.subscription_status === 'active' ? ' & ' : ''}${user.is_searching && user.subscription_status === 'active' ? 'Searcher' : ''}`,
         'Subscription Status': user.subscription_status || 'None',
         'Subscription Plan': user.subscription_plan || 'None',
         'Email Verified': user.email_verified ? 'Yes' : 'No',
@@ -755,10 +755,10 @@ export default function AdminPage() {
                                 )}
                               </div>
                               <div className="flex space-x-1">
-                                {user.is_selling && (
+                                {user.is_selling && user.subscription_status === 'active' && (
                                   <Badge variant="secondary">Seller</Badge>
                                 )}
-                                {user.is_searching && (user.email_verified || user.subscription_status === 'active') && (
+                                {user.is_searching && user.subscription_status === 'active' && (
                                   <Badge variant="outline">Searcher</Badge>
                                 )}
                               </div>
