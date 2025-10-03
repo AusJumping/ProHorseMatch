@@ -1,0 +1,21 @@
+1. Introduction
+Welcome to Pro Horse Match ("we," "our," or "us"). By accessing or using our website, mobile application, and services (collectively, the "Services"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our Services.
+2. Definitions
+"User" refers to any individual who accesses or uses our Services, including horse owners, prospective buyers, and browsers.
+"Content" refers to all information, text, images, videos, and other material provided by Users for listing horses or interacting on our platform.
+3. Account Registration
+To access certain features of our Services, you may need to register for an account. You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete.
+4. Horse Listings
+Users who list horses for sale or lease ("Sellers") are solely responsible for the accuracy and completeness of their listings, including but not limited to the horse's description, characteristics, health status, price, and images.
+5. Transactions Between Users
+Our Services facilitate connections between Sellers and prospective buyers. We are not a party to any transaction between Users.
+6. Subscription Services
+We offer various subscription plans that provide enhanced features and services. The specific features included in each plan are described on our website or app.
+7. Prohibited Content and Conduct
+Users may not post Content or engage in conduct that is misleading, deceptive, or violates any applicable laws.
+8. Disclaimer of Warranties
+Our Services are provided on an "as is" and "as available" basis. We make no warranties regarding the reliability, accuracy, or availability of our Services.
+9. Limitation of Liability
+To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of our Services.
+10. Governing Law
+These Terms shall be governed by and construed in accordance with the laws of Australia.
