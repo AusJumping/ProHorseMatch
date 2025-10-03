@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CheckCircle, XCircle, Mail, Loader2 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function VerifyEmail() {
   const [, params] = useRoute("/verify-email/:token?");
@@ -46,6 +46,14 @@ export default function VerifyEmail() {
         if (data.user?.auth_token) {
           console.log('Storing auth token from verification');
           localStorage.setItem('auth_token', data.user.auth_token);
+          
+          // Clear all auth-related cache
+          queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/subscription'] });
+          queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+          
+          // Set user data in cache immediately
+          queryClient.setQueryData(['/api/auth/me'], data.user);
         }
         
         // Redirect to subscription page after 2 seconds
