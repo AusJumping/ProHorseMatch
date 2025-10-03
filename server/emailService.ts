@@ -220,7 +220,7 @@ export async function sendWelcomeEmail(to: string, username: string): Promise<bo
         </ul>
         
         <div style="text-align: center; margin: 40px 0;">
-          <a href="${process.env.CLIENT_URL || 'https://prohorsematch.com'}" 
+          <a href="https://pro-horse-match-info6446.replit.app" 
              style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
             Start Browsing Horses
           </a>
@@ -252,7 +252,7 @@ Congratulations! Your email has been verified and your ProHorseMatch account is 
 - Connect directly with horse owners
 - List your own horses for sale (if you're a seller)
 
-Visit: ${process.env.CLIENT_URL || 'https://prohorsematch.com'}
+Visit: https://pro-horse-match-info6446.replit.app
 
 Happy horse hunting!
 
