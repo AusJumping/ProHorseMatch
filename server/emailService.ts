@@ -308,7 +308,7 @@ export async function sendPasswordResetEmail(params: PasswordResetParams): Promi
         </p>
         
         <p style="font-size: 16px; line-height: 1.7; margin-bottom: 30px; color: #4A453E;">
-          We received a request to reset your ProHorseMatch account password. Click the button below to create a new password. This link will expire in 1 hour for security.
+          We received a request to reset your ProHorseMatch account password. Click the button below to create a new password. This link will expire in 48 hours for security.
         </p>
         
         <div style="text-align: center; margin: 40px 0;">
@@ -326,7 +326,7 @@ export async function sendPasswordResetEmail(params: PasswordResetParams): Promi
         </div>
         
         <p style="font-size: 14px; color: #8B7355; line-height: 1.6; margin-bottom: 0;">
-          This reset link will expire in 1 hour. If you need assistance, please contact our support team.
+          This reset link will expire in 48 hours. If you need assistance, please contact our support team.
         </p>
       </div>
       
@@ -348,7 +348,7 @@ We received a request to reset your ProHorseMatch account password.
 
 Reset your password: ${resetUrl}
 
-This link will expire in 1 hour for security.
+This link will expire in 48 hours for security.
 
 Important: If you didn't request this password reset, please ignore this email. Your account remains secure and no changes have been made.
 

@@ -11,7 +11,7 @@ import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail } from "./emailService";
-import { generateVerificationToken, isTokenExpired, createTokenExpiration } from "./authUtils";
+import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration } from "./authUtils";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -531,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate reset token
       const resetToken = generateVerificationToken();
-      const tokenExpires = createTokenExpiration();
+      const tokenExpires = createPasswordResetExpiration();
       
       // Store reset token in user record
       await storage.updateUser(user.id, {

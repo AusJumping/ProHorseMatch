@@ -15,3 +15,10 @@ export function createTokenExpiration(): Date {
   expires.setHours(expires.getHours() + 24);
   return expires;
 }
+
+export function createPasswordResetExpiration(): Date {
+  // Password reset token expires in 48 hours
+  const expires = new Date();
+  expires.setHours(expires.getHours() + 48);
+  return expires;
+}
