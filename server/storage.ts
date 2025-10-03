@@ -1363,7 +1363,7 @@ export class DatabaseStorage implements IStorage {
   }
   // Horse methods
   async getHorses(): Promise<Horse[]> {
-    return await db.select().from(horses);
+    return await db.select().from(horses).orderBy(desc(horses.created_at));
   }
 
   async getHorseById(id: number): Promise<Horse | undefined> {
@@ -1377,7 +1377,7 @@ export class DatabaseStorage implements IStorage {
     console.log("DatabaseStorage.getHorsesByFilters - dam_sire filter:", filters.dam_sire);
     
     // Get all horses first and filter in JavaScript for now (simpler approach)
-    const allHorses = await db.select().from(horses);
+    const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
     console.log(`DatabaseStorage.getHorsesByFilters - total horses in DB: ${allHorses.length}`);
     console.log("DatabaseStorage.getHorsesByFilters - All horses disciplines:", allHorses.map(h => ({ name: h.name, disciplines: h.disciplines })));
     
