@@ -688,11 +688,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
       
-      // Create auth token
-      const authToken = createAuthToken(user.id);
-      storeAuthToken(authToken, user.id);
+      // Create auth token (same way as login route)
+      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
       
-      console.log('User logged in automatically, session created');
+      // Store auth token mapping in memory
+      if (!global.authTokens) {
+        global.authTokens = new Map();
+      }
+      global.authTokens.set(authToken, {
+        userId: user.id,
+        timestamp: Date.now(),
+        lastActivity: Date.now()
+      });
+      
+      console.log('User logged in automatically, auth token created:', authToken);
       
       // Send welcome email
       console.log('Sending welcome email...');
