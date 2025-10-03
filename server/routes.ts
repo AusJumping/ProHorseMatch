@@ -629,7 +629,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByVerificationToken(token);
       if (!user) {
         console.log('Verification failed - Invalid token:', token.substring(0, 16) + '...');
-        return res.status(400).json({ message: "Invalid verification token" });
+        return res.status(400).json({ 
+          message: "This verification link has already been used or is invalid. If you've already verified your email, please log in with your credentials.",
+          alreadyUsed: true
+        });
       }
       
       console.log('User found for verification:', {

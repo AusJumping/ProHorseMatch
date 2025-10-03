@@ -63,6 +63,13 @@ export default function VerifyEmail() {
       } else {
         if (data.message.includes('expired')) {
           setVerificationStatus('expired');
+        } else if (data.alreadyUsed) {
+          // Token already used - redirect to login
+          setVerificationStatus('error');
+          setMessage(data.message);
+          setTimeout(() => {
+            setLocation('/');
+          }, 3000);
         } else {
           setVerificationStatus('error');
         }
