@@ -122,7 +122,7 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
         
         <div style="margin-top: 40px; padding-top: 25px; border-top: 2px solid #E8E3D3;">
           <p style="font-size: 14px; color: #6B5B3D; margin: 0; line-height: 1.5;">
-            This verification link will expire in 24 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
+            This verification link will expire in 48 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
           </p>
         </div>
       </div>
@@ -144,7 +144,7 @@ Thank you for joining ProHorseMatch! To complete your registration and start dis
 
 ${verificationUrl}
 
-This verification link will expire in 24 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
+This verification link will expire in 48 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
 
 © 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
   `;

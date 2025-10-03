@@ -856,7 +856,7 @@ export default function Auth() {
                 </div>
 
                 <p className="text-sm text-gray-500 dark:text-gray-400 italic pt-2">
-                  The verification link expires in 24 hours
+                  The verification link expires in 48 hours
                 </p>
               </DialogDescription>
             </DialogHeader>

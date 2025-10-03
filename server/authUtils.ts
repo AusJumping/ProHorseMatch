@@ -10,9 +10,9 @@ export function isTokenExpired(expiresAt: Date | null): boolean {
 }
 
 export function createTokenExpiration(): Date {
-  // Token expires in 24 hours
+  // Token expires in 48 hours
   const expires = new Date();
-  expires.setHours(expires.getHours() + 24);
+  expires.setHours(expires.getHours() + 48);
   return expires;
 }
 
