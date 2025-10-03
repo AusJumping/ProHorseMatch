@@ -22,66 +22,108 @@ const TermsDialog: React.FC = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold">Terms of Service</DialogTitle>
+          <DialogTitle className="text-xl font-bold">ProHorseMatch Terms and Conditions</DialogTitle>
           <DialogDescription>
-            Effective Date: 21 July 2025
+            Effective Date: January 2025
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[500px] mt-4 pr-4">
           <div className="text-sm space-y-4">
-            <h3 className="text-lg font-bold">Disclaimer of Liability and User Responsibility</h3>
-            
             <div>
-              <h4 className="font-semibold">1. Content Accuracy and Listings</h4>
-              <p>ProHorseMatch is a platform that facilitates connections between buyers and sellers of performance horses. All listings, including descriptions, images, health records, training history, and other horse-related content, are provided by the users (sellers). ProHorseMatch does not create, verify, or endorse the accuracy, completeness, legality, or authenticity of any listing content. Users of the platform acknowledge and agree that the responsibility for all content posted lies solely with the user who posted it.</p>
+              <h3 className="text-lg font-bold mb-2">1. Introduction</h3>
+              <p>Welcome to ProHorseMatch ("we," "our," or "us"). By accessing or using our website, mobile application, and related services (collectively, the "Services"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you may not use our Services.</p>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold">2. Buyer and Seller Due Diligence</h4>
-              <p>ProHorseMatch strongly recommends that both buyers and sellers conduct their own due diligence before entering into any transaction. This includes, but is not limited to, verifying the identity and reputation of the other party, independently assessing the suitability, training level, and health of the horse, and seeking professional advice or veterinary assessments where appropriate.</p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold">3. No Warranties or Guarantees</h4>
-              <p>ProHorseMatch makes no representations or warranties of any kind, express or implied, regarding the fitness, performance, soundness, temperament, or suitability of any horse listed on the platform for any specific purpose. All horses are sold "as-is" and "as-available" directly by the seller, and any representations made about a horse are solely the responsibility of the seller.</p>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold">4. Limitation of Liability</h4>
-              <p>To the maximum extent permitted by applicable law, ProHorseMatch disclaims all liability for any direct, indirect, incidental, special, consequential or punitive damages, including but not limited to loss of profits, loss of opportunity, personal injury, or property damage arising out of or in connection with:</p>
-              <ul className="list-disc pl-5 mt-2">
-                <li>any inaccuracies or omissions in listing content;</li>
-                <li>the condition, health, or behaviour of any horse;</li>
-                <li>any transaction entered into between users of the platform.</li>
+              <h3 className="text-lg font-bold mb-2">2. Definitions</h3>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>"User" refers to any individual or entity who accesses or uses our Services, including horse owners, prospective buyers, or browsers.</li>
+                <li>"Content" refers to all information, text, images, videos, and other materials provided by Users on the platform.</li>
+                <li>"Sellers" are Users who create horse listings for sale or lease.</li>
+                <li>"Searchers" are Users seeking to purchase horses through contact made with 'Sellers' using our Services.</li>
               </ul>
-              <p className="mt-2">By using ProHorseMatch, you agree that any legal responsibility for the quality, health, condition, or fitness for purpose of any horse lies solely between the buyer and seller, and not with ProHorseMatch.</p>
             </div>
-            
-            <h3 className="text-lg font-bold">5. Subscription Terms</h3>
-            
+
             <div>
-              <h4 className="font-semibold">5.1 Billing and Payments</h4>
-              <p>ProHorseMatch offers subscription-based services for sellers and search-only access for buyers. All subscriptions are billed on a monthly basis in advance and are non-refundable. The applicable subscription fees and tier options are clearly stated at the time of sign-up and may vary depending on the user's selected plan.</p>
+              <h3 className="text-lg font-bold mb-2">3. Eligibility</h3>
+              <p>You must be at least 18 years old, or the legal age of majority in your jurisdiction, to use our Services. By using the Services, you represent and warrant that you meet these requirements.</p>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold">5.2 Auto-Renewal</h4>
-              <p>All subscriptions automatically renew at the end of each billing cycle (monthly) unless the user cancels their subscription before the next billing date. By subscribing, you authorise ProHorseMatch (or its payment processor) to charge your selected payment method on a recurring monthly basis.</p>
+              <h3 className="text-lg font-bold mb-2">4. Account Registration</h3>
+              <p>To access certain features, you may need to create an account. You agree to provide accurate, current, and complete information, and to update it as necessary. You are responsible for safeguarding your login details and for all activities under your account.</p>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold">5.3 Cancellations</h4>
-              <p>You may cancel your subscription at any time via your account settings within the app or website. Cancellations must be made prior to the renewal date to avoid being charged for the next month. If you cancel after a charge has already been processed, access to your subscription benefits will continue until the end of the paid billing period, after which your subscription will not renew.</p>
+              <h3 className="text-lg font-bold mb-2">5. Horse Listings</h3>
+              <p>Sellers are solely responsible for the accuracy and completeness of their listings, including the horse's description, age, health, performance history, price, and images. ProHorseMatch does not verify or guarantee the accuracy of listings.</p>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold">5.4 Changes to Pricing or Subscription Terms</h4>
-              <p>ProHorseMatch reserves the right to modify subscription pricing, plans, or terms at any time. Any changes will be communicated in advance via email or app notification. Continued use of the platform after the effective date of any change constitutes acceptance of the new terms.</p>
+              <h3 className="text-lg font-bold mb-2">6. Transactions Between Users</h3>
+              <p>Our Services facilitate introductions between Sellers and Buyers. We are not a party to any transaction, agreement, or dispute between Users. All negotiations, contracts, and exchanges of funds take place directly between Users.</p>
             </div>
-            
+
             <div>
-              <h4 className="font-semibold">5.5 Free Trials and Beta Subscriptions</h4>
-              <p>From time to time, ProHorseMatch may offer free trial or beta access subscriptions. These will also auto-renew into paid subscriptions unless cancelled before the trial or beta period ends. You will be notified via email in advance before any billing begins.</p>
+              <h3 className="text-lg font-bold mb-2">7. Subscription Services</h3>
+              <p>We may offer subscription plans with enhanced features. Details of these plans, including pricing and benefits, are provided in-app or on our website. Subscriptions are non-transferable and may be subject to auto-renewal unless cancelled in accordance with our cancellation policy.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">8. Payments and Refunds</h3>
+              <p>All payments for subscription services are processed through third-party providers. By purchasing a subscription, you agree to abide by the payment terms provided at checkout. Refunds are granted only where required by law.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">9. Prohibited Content and Conduct</h3>
+              <p className="mb-2">You agree not to:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>Post false, misleading, or deceptive Content.</li>
+                <li>Infringe on any intellectual property rights.</li>
+                <li>Post Content that is unlawful, offensive, defamatory, obscene, or harmful.</li>
+                <li>Attempt to interfere with or disrupt the Services.</li>
+              </ul>
+              <p className="mt-2">We reserve the right to remove Content or suspend accounts that violate these Terms.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">10. Communication with Users</h3>
+              <p>By creating an account, you consent to receive communications from us electronically. We may contact you via email from time to time regarding issues, updates, or changes to our Services and offerings.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">11. Intellectual Property</h3>
+              <p>All trademarks, logos, and proprietary materials used in connection with the Services are owned by us or our licensors. You may not use, copy, or distribute our intellectual property without prior written consent.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">12. Disclaimer of Warranties</h3>
+              <p>The Services are provided "as is" and "as available." We make no warranties or representations about the accuracy, reliability, or availability of the Services or Content.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">13. Limitation of Liability</h3>
+              <p>To the maximum extent permitted by law, ProHorseMatch shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of the Services.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">14. Indemnity</h3>
+              <p>You agree to indemnify and hold harmless ProHorseMatch, its affiliates, and employees from any claims, damages, losses, or expenses (including legal fees) arising out of your use of the Services or violation of these Terms.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">15. Termination</h3>
+              <p>We may suspend or terminate your account or access to the Services at any time if we reasonably believe you have violated these Terms or engaged in harmful conduct.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">16. Governing Law</h3>
+              <p>These Terms are governed by the laws of Australia. Any disputes will be resolved exclusively in the courts of Australia.</p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold mb-2">17. Changes to the Terms</h3>
+              <p>We reserve the right to modify these Terms at any time. If changes are made, we will notify Users by posting the updated Terms on our website or app. Continued use of the Services after such updates constitutes acceptance of the revised Terms.</p>
             </div>
           </div>
         </ScrollArea>
