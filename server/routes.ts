@@ -657,6 +657,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('User verification updated successfully');
       
+      // Automatically log in the user after verification
+      console.log('Automatically logging in user after verification...');
+      
+      // Regenerate session to prevent fixation
+      await new Promise<void>((resolve, reject) => {
+        req.session.regenerate((err) => {
+          if (err) {
+            console.error('Session regeneration error:', err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+      
+      // Set session data
+      req.session.userId = user.id;
+      req.session.userType = user.is_selling ? 'seller' : 'customer';
+      
+      // Save session
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            reject(err);
+          } else {
+            resolve();
+          }
+        });
+      });
+      
+      // Create auth token
+      const authToken = createAuthToken(user.id);
+      storeAuthToken(authToken, user.id);
+      
+      console.log('User logged in automatically, session created');
+      
       // Send welcome email
       console.log('Sending welcome email...');
       const welcomeEmailSent = await sendWelcomeEmail(user.email, user.username);
@@ -666,10 +703,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Welcome email sent successfully to:', user.email);
       }
       
+      // Get updated user data
+      const updatedUser = await storage.getUserById(user.id);
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to retrieve user data" });
+      }
+      
+      // Set auth token in response headers and cookie
+      res.setHeader('X-Auth-Token', authToken);
+      res.setHeader('Access-Control-Expose-Headers', 'X-Auth-Token');
+      res.cookie('auth_token', authToken, {
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: false,
+        sameSite: 'lax'
+      });
+      
       console.log('=== EMAIL VERIFICATION COMPLETE ===');
       return res.status(200).json({ 
-        message: "Email verified successfully! You can now log in.",
-        verified: true
+        message: "Email verified successfully! You are now logged in.",
+        verified: true,
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          username: updatedUser.username,
+          name: updatedUser.name,
+          business_name: updatedUser.business_name,
+          contact_name: updatedUser.contact_name,
+          is_searching: updatedUser.is_searching,
+          is_selling: updatedUser.is_selling,
+          stripe_customer_id: updatedUser.stripe_customer_id,
+          stripe_subscription_id: updatedUser.stripe_subscription_id,
+          subscription_status: updatedUser.subscription_status,
+          subscription_plan: updatedUser.subscription_plan,
+          subscription_end_date: updatedUser.subscription_end_date,
+          auth_token: authToken
+        }
       });
     } catch (error) {
       console.error("=== EMAIL VERIFICATION ERROR ===");

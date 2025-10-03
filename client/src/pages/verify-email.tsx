@@ -33,16 +33,25 @@ export default function VerifyEmail() {
 
   const verifyToken = async (token: string) => {
     try {
-      const response = await fetch(`/api/auth/verify-email?token=${token}`);
+      const response = await fetch(`/api/auth/verify-email?token=${token}`, {
+        credentials: 'include'
+      });
       const data = await response.json();
       
       if (response.ok) {
         setVerificationStatus('success');
         setMessage(data.message);
-        // Redirect to subscription page after 3 seconds
+        
+        // Store auth token if provided
+        if (data.user?.auth_token) {
+          console.log('Storing auth token from verification');
+          localStorage.setItem('auth_token', data.user.auth_token);
+        }
+        
+        // Redirect to subscription page after 2 seconds
         setTimeout(() => {
           setLocation('/subscription');
-        }, 3000);
+        }, 2000);
       } else {
         if (data.message.includes('expired')) {
           setVerificationStatus('expired');
