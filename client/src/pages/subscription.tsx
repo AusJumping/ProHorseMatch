@@ -26,7 +26,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 const betaPlans = [
   {
     id: 'beta-seller',
-    name: 'SELLER',
+    name: 'BETA SELLER',
     price: 0,
     interval: 'month',
     description: 'Free for a limited time',
@@ -41,7 +41,7 @@ const betaPlans = [
   },
   {
     id: 'beta-searching',
-    name: 'SEARCHING',
+    name: 'BETA SEARCHING',
     price: 0,
     interval: 'month',
     description: 'Free for a limited time',
