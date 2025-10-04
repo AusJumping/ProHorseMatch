@@ -1378,9 +1378,6 @@ export class DatabaseStorage implements IStorage {
     
     // Get all horses first and filter in JavaScript for now (simpler approach)
     const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
-    console.log(`DatabaseStorage.getHorsesByFilters - total horses in DB: ${allHorses.length}`);
-    console.log("DatabaseStorage.getHorsesByFilters - Horses in order:", allHorses.map(h => ({ id: h.id, name: h.name, created_at: h.created_at })));
-    console.log("DatabaseStorage.getHorsesByFilters - All horses disciplines:", allHorses.map(h => ({ name: h.name, disciplines: h.disciplines })));
     
     // If no filters are provided, return all horses
     if (Object.keys(filters).length === 0) {
