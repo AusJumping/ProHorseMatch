@@ -785,7 +785,7 @@ export class MemStorage implements IStorage {
     console.log("MemStorage.getUserByEmail - all users:", JSON.stringify(allUsers, null, 2));
     console.log("MemStorage.getUserByEmail - searching for email:", email);
     
-    const found = allUsers.find(user => user.email === email);
+    const found = allUsers.find(user => user.email.toLowerCase() === email.toLowerCase());
     console.log("MemStorage.getUserByEmail - found user:", found ? "Yes" : "No");
     
     return found;
@@ -793,7 +793,11 @@ export class MemStorage implements IStorage {
   
   async createUser(user: InsertUser): Promise<User> {
     const id = this.userId++;
-    const newUser: User = { id, ...user, created_at: new Date() };
+    const normalizedUser = {
+      ...user,
+      email: user.email.toLowerCase()
+    };
+    const newUser: User = { id, ...normalizedUser, created_at: new Date() };
     this.users.set(id, newUser);
     return newUser;
   }
@@ -1268,12 +1272,16 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [result] = await db.select().from(users).where(eq(users.email, email));
+    const [result] = await db.select().from(users).where(sql`LOWER(${users.email}) = LOWER(${email})`);
     return result;
   }
   
   async createUser(user: InsertUser): Promise<User> {
-    const [result] = await db.insert(users).values(user).returning();
+    const normalizedUser = {
+      ...user,
+      email: user.email.toLowerCase()
+    };
+    const [result] = await db.insert(users).values(normalizedUser).returning();
     return result;
   }
   
