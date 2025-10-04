@@ -72,49 +72,6 @@ import {
       }
     }
     
-    // Check if the owner user exists
-    const ownerEmail = "owner@example.com";
-    let owner = await storage.getUserByEmail(ownerEmail);
-    
-    if (!owner) {
-      console.log(`Creating test owner user: ${ownerEmail}`);
-      owner = await storage.createUser({
-        email: ownerEmail,
-        password: "password123",
-        username: "elite_sporthorses",
-        business_name: "Elite Sporthorses",
-        contact_name: "John Smith",
-        is_selling: true,
-        is_searching: false,
-        name: null
-      });
-      console.log("Created owner:", owner);
-    } else {
-      console.log("Test owner already exists:", owner);
-    }
-    
-    // Check if the customer user exists
-    const customerEmail = "customer@example.com";
-    let customer = await storage.getUserByEmail(customerEmail);
-    
-    if (!customer) {
-      console.log(`Creating test customer user: ${customerEmail}`);
-      customer = await storage.createUser({
-        email: customerEmail,
-        password: "password123",
-        username: "sarah_thompson",
-        name: "Sarah Thompson",
-        is_searching: true,
-        is_selling: false,
-        location_country: "Australia",
-        preferred_disciplines: ["Jumping"],
-        currency: "AUD"
-      });
-      console.log("Created customer:", customer);
-    } else {
-      console.log("Test customer already exists:", customer);
-    }
-    
     // Check if the admin user exists
     const adminEmail = "info@australianjumping.com.au";
     let admin = await storage.getUserByEmail(adminEmail);
