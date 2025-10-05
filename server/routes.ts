@@ -3833,6 +3833,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const totalMatches = allMatches.length;
       const totalLikes = allMatches.filter(match => match.is_liked).length;
 
+      // Get saved searches statistics
+      const allSavedSearches = await storage.getSavedSearches();
+      const totalSavedSearches = allSavedSearches.filter(search => search.is_active).length;
+
       // Get recent activity (last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -3863,7 +3867,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalMessages,
           totalConversations,
           totalMatches,
-          totalLikes
+          totalLikes,
+          totalSavedSearches
         },
         growth: {
           usersLast30Days: recentUsers,

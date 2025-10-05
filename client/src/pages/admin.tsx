@@ -28,7 +28,8 @@ import {
   Trash2,
   Edit,
   Download,
-  Eye
+  Eye,
+  Bookmark
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -56,6 +57,7 @@ interface AnalyticsData {
     totalConversations: number;
     totalMatches: number;
     totalLikes: number;
+    totalSavedSearches: number;
   };
   growth: {
     usersLast30Days: number;
@@ -944,7 +946,7 @@ export default function AdminPage() {
 
           <TabsContent value="engagement" className="space-y-6">
             {analytics && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Messages</CardTitle>
@@ -993,6 +995,19 @@ export default function AdminPage() {
                     <div className="text-2xl font-bold">{analytics.engagement.totalLikes}</div>
                     <p className="text-xs text-muted-foreground">
                       Positive matches
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Saved Searches</CardTitle>
+                    <Bookmark className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{analytics.engagement.totalSavedSearches}</div>
+                    <p className="text-xs text-muted-foreground">
+                      Active saved searches
                     </p>
                   </CardContent>
                 </Card>
