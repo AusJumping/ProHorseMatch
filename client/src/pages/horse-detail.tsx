@@ -302,6 +302,16 @@ export default function HorseDetail() {
               </p>
             </div>
             
+            {/* Additional Information */}
+            {horse.additional_info && (
+              <div className="mb-6">
+                <h3 className="font-accent font-semibold mb-2">Additional Information</h3>
+                <p className="text-neutral-700 text-sm leading-relaxed">
+                  {horse.additional_info}
+                </p>
+              </div>
+            )}
+            
             {/* Characteristics */}
             {horse.characteristics && horse.characteristics.length > 0 && (
               <div className="mb-6">

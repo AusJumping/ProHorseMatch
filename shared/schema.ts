@@ -107,6 +107,7 @@ export const horses = pgTable("horses", {
   price_max: integer("price_max").notNull(),
   currency: text("currency").notNull(),
   description: text("description"),
+  additional_info: text("additional_info"),
   photos: text("photos").array().notNull(),
   videos: text("videos").array(),
   created_at: timestamp("created_at").defaultNow(),
