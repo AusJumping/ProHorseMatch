@@ -67,7 +67,10 @@ export function NotificationSettings() {
         applicationServerKey: urlBase64ToUint8Array(publicKey)
       });
 
-      await apiRequest('/api/push/subscribe', 'POST', subscription);
+      // Convert subscription to JSON-serializable format
+      const subscriptionData = subscription.toJSON();
+      
+      await apiRequest('/api/push/subscribe', 'POST', subscriptionData);
       
       return subscription;
     },
@@ -79,7 +82,9 @@ export function NotificationSettings() {
       });
     },
     onError: (error: Error) => {
-      console.error('Subscription error:', error);
+      console.error('Subscription error details:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       toast({
         title: "Could not enable notifications",
         description: error.message,
