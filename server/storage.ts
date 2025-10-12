@@ -7,7 +7,8 @@ import {
   conversations, type Conversation, type InsertConversation,
   savedSearches, type SavedSearch, type InsertSavedSearch,
   searchNotifications, type SearchNotification, type InsertSearchNotification,
-  horseDeletionResponses, type HorseDeletionResponse, type InsertHorseDeletionResponse
+  horseDeletionResponses, type HorseDeletionResponse, type InsertHorseDeletionResponse,
+  pushSubscriptions, type PushSubscription, type InsertPushSubscription
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, sql } from "drizzle-orm";
@@ -86,6 +87,12 @@ export interface IStorage {
   getSearchNotifications(): Promise<SearchNotification[]>;
   createSearchNotification(notification: InsertSearchNotification): Promise<SearchNotification>;
   getNotificationsBySearchId(savedSearchId: number): Promise<SearchNotification[]>;
+  
+  // Push Subscription methods
+  createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription>;
+  getPushSubscriptionsByUserId(userId: number): Promise<PushSubscription[]>;
+  getAllPushSubscriptions(): Promise<PushSubscription[]>;
+  deletePushSubscription(endpoint: string): Promise<boolean>;
   
   // Admin analytics methods
   getAllUsers(): Promise<User[]>;
@@ -1251,6 +1258,23 @@ export class MemStorage implements IStorage {
         return dateB.getTime() - dateA.getTime();
       });
   }
+  
+  // Push Subscription methods - stub implementations for MemStorage
+  async createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription> {
+    throw new Error("Push subscriptions not implemented in MemStorage - use DatabaseStorage");
+  }
+  
+  async getPushSubscriptionsByUserId(userId: number): Promise<PushSubscription[]> {
+    return [];
+  }
+  
+  async getAllPushSubscriptions(): Promise<PushSubscription[]> {
+    return [];
+  }
+  
+  async deletePushSubscription(endpoint: string): Promise<boolean> {
+    return false;
+  }
 }
 
 // Database-backed storage implementation
@@ -1901,6 +1925,33 @@ export class DatabaseStorage implements IStorage {
       .from(horseDeletionResponses)
       .where(eq(horseDeletionResponses.user_id, userId))
       .orderBy(desc(horseDeletionResponses.created_at));
+  }
+  
+  // Push Subscription methods
+  async createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription> {
+    const [newSubscription] = await db.insert(pushSubscriptions).values(subscription).returning();
+    return newSubscription;
+  }
+  
+  async getPushSubscriptionsByUserId(userId: number): Promise<PushSubscription[]> {
+    return await db
+      .select()
+      .from(pushSubscriptions)
+      .where(eq(pushSubscriptions.user_id, userId))
+      .orderBy(desc(pushSubscriptions.created_at));
+  }
+  
+  async getAllPushSubscriptions(): Promise<PushSubscription[]> {
+    return await db.select().from(pushSubscriptions);
+  }
+  
+  async deletePushSubscription(endpoint: string): Promise<boolean> {
+    const result = await db
+      .delete(pushSubscriptions)
+      .where(eq(pushSubscriptions.endpoint, endpoint))
+      .returning();
+    
+    return result.length > 0;
   }
 }
 

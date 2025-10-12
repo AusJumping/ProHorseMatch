@@ -21,10 +21,12 @@ import {
   insertMessageSchema,
   insertConversationSchema,
   insertSavedSearchSchema,
+  insertPushSubscriptionSchema,
   type InsertMessage,
   type InsertConversation,
   type InsertSavedSearch,
   type SavedSearch,
+  type InsertPushSubscription,
   disciplines,
   sexes,
   colours,
@@ -4373,6 +4375,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Test conversation reminder error:", error);
       return res.status(500).json({ 
         message: 'Error sending test reminder',
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // ========== WEB PUSH NOTIFICATION ROUTES ==========
+  
+  // Subscribe to push notifications
+  app.post("/api/push/subscribe", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const subscription = req.body;
+      
+      // Validate subscription object
+      const validatedSubscription = insertPushSubscriptionSchema.parse({
+        user_id: userId,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.keys.p256dh,
+        auth: subscription.keys.auth
+      });
+      
+      // Store subscription in database
+      await storage.createPushSubscription(validatedSubscription);
+      
+      console.log(`Push subscription created for user ${userId}`);
+      return res.status(201).json({ message: "Subscribed to push notifications" });
+    } catch (error) {
+      console.error("Push subscribe error:", error);
+      return res.status(500).json({ 
+        message: "Error subscribing to push notifications",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  
+  // Unsubscribe from push notifications
+  app.post("/api/push/unsubscribe", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const { endpoint } = req.body;
+      
+      if (!endpoint) {
+        return res.status(400).json({ message: "Endpoint is required" });
+      }
+      
+      await storage.deletePushSubscription(endpoint);
+      
+      console.log(`Push subscription deleted for user ${userId}`);
+      return res.json({ message: "Unsubscribed from push notifications" });
+    } catch (error) {
+      console.error("Push unsubscribe error:", error);
+      return res.status(500).json({ 
+        message: "Error unsubscribing from push notifications",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  
+  // Get user's push subscription status
+  app.get("/api/push/status", requireAuth, async (req, res) => {
+    try {
+      const userId = req.user!.id;
+      const subscriptions = await storage.getPushSubscriptionsByUserId(userId);
+      
+      return res.json({ 
+        subscribed: subscriptions.length > 0,
+        count: subscriptions.length
+      });
+    } catch (error) {
+      console.error("Push status error:", error);
+      return res.status(500).json({ 
+        message: "Error getting push subscription status",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
