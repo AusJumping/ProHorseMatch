@@ -70,7 +70,7 @@ export function NotificationSettings() {
       // Convert subscription to JSON-serializable format
       const subscriptionData = subscription.toJSON();
       
-      await apiRequest('/api/push/subscribe', 'POST', subscriptionData);
+      await apiRequest('POST', '/api/push/subscribe', subscriptionData);
       
       return subscription;
     },
@@ -101,7 +101,7 @@ export function NotificationSettings() {
       
       if (subscription) {
         await subscription.unsubscribe();
-        await apiRequest('/api/push/unsubscribe', 'POST', {
+        await apiRequest('POST', '/api/push/unsubscribe', {
           endpoint: subscription.endpoint
         });
       }
