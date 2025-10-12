@@ -9,7 +9,7 @@ import { Loader2, LogOut } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { Switch } from "@/components/ui/switch";
+import { NotificationSettings } from "@/components/NotificationSettings";
 
 
 
@@ -110,57 +110,41 @@ export default function Profile() {
           </TabsContent>
           
           <TabsContent value="settings">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account Settings</CardTitle>
-                <CardDescription>
-                  Manage your account settings and preferences
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-accent">Email Notifications</h3>
-                      <p className="text-sm text-neutral-500">Receive email notifications for new matches and messages</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-accent">Push Notifications</h3>
-                      <p className="text-sm text-neutral-500">Receive push notifications on your device</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-accent text-red-500 mb-2">Danger Zone</h3>
-                    <p className="text-sm text-neutral-500 mb-4">
-                      Once you log out, you'll need to log in again to access your account.
-                    </p>
-                    <Button 
-                      variant="destructive" 
-                      onClick={handleLogout}
-                      disabled={isLoggingOut}
-                    >
-                      {isLoggingOut ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Logging out...
-                        </>
-                      ) : (
-                        <>
-                          <LogOut className="mr-2 h-4 w-4" />
-                          Log Out
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <NotificationSettings />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-red-500">Danger Zone</CardTitle>
+                  <CardDescription>
+                    Irreversible account actions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-neutral-500 mb-4">
+                    Once you log out, you'll need to log in again to access your account.
+                  </p>
+                  <Button 
+                    variant="destructive" 
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    data-testid="button-logout"
+                  >
+                    {isLoggingOut ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Logging out...
+                      </>
+                    ) : (
+                      <>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Log Out
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
