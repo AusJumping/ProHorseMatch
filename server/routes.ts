@@ -4380,6 +4380,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ========== SERVICE WORKER ROUTE ==========
+  // Serve service worker file explicitly before Vite can catch it
+  app.get("/service-worker.js", async (_req, res) => {
+    const fs = await import("fs");
+    const path = await import("path");
+    const serviceWorkerPath = path.resolve(import.meta.dirname, "..", "public", "service-worker.js");
+    
+    try {
+      const content = await fs.promises.readFile(serviceWorkerPath, "utf-8");
+      res.setHeader("Content-Type", "application/javascript");
+      res.setHeader("Service-Worker-Allowed", "/");
+      res.send(content);
+    } catch (error) {
+      console.error("Error serving service worker:", error);
+      res.status(404).send("Service worker not found");
+    }
+  });
+
   // ========== WEB PUSH NOTIFICATION ROUTES ==========
   
   // Subscribe to push notifications
