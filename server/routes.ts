@@ -4383,9 +4383,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ========== WEB PUSH NOTIFICATION ROUTES ==========
   
   // Subscribe to push notifications
-  app.post("/api/push/subscribe", requireAuth, async (req, res) => {
+  app.post("/api/push/subscribe", isTokenAuthenticated, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.userId;
       const subscription = req.body;
       
       // Validate subscription object
@@ -4411,9 +4411,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Unsubscribe from push notifications
-  app.post("/api/push/unsubscribe", requireAuth, async (req, res) => {
+  app.post("/api/push/unsubscribe", isTokenAuthenticated, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.userId;
       const { endpoint } = req.body;
       
       if (!endpoint) {
@@ -4434,9 +4434,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Get user's push subscription status
-  app.get("/api/push/status", requireAuth, async (req, res) => {
+  app.get("/api/push/status", isTokenAuthenticated, async (req, res) => {
     try {
-      const userId = req.user!.id;
+      const userId = req.userId;
       const subscriptions = await storage.getPushSubscriptionsByUserId(userId);
       
       return res.json({ 
