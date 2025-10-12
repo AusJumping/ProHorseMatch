@@ -1,0 +1,135 @@
+Option 1: Web Push via PWA (recommended)
+Works on:
+Android Chrome and most modern browsers.
+iOS/iPadOS 16.4+ when the site is added to Home Screen and the user opts in.
+What you need
+HTTPS (Replit gives you this)
+A web app manifest
+A service worker
+VAPID keys for Web Push
+A tiny backend to store push subscriptions and send notifications
+Minimal setup
+1) manifest.webmanifest
+{
+  "name": "ProHorseMatch",
+  "short_name": "PHM",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
+Include in <head>:
+<link rel="manifest" href="/manifest.webmanifest">
+2) service-worker.js
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+
+self.addEventListener("push", (event) => {
+  const data = event.data ? event.data.json() : { title: "Update", body: "" };
+  event.waitUntil(
+    self.registration.showNotification(data.title || "ProHorseMatch", {
+      body: data.body || "New matches waiting",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: data.url || "/"
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data || "/";
+  event.waitUntil(clients.openWindow(url));
+});
+Register it in your app:
+<script>
+(async function() {
+  if ("serviceWorker" in navigator) {
+    await navigator.serviceWorker.register("/service-worker.js");
+  }
+})();
+</script>
+3) Client subscription code (run after a user gesture like clicking “Enable alerts”)
+async function enablePush() {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
+
+  const permission = await Notification.requestPermission();
+  if (permission !== "granted") return;
+
+  const reg = await navigator.serviceWorker.ready;
+
+  // Replace with your Base64 public VAPID key
+  const applicationServerKey = urlBase64ToUint8Array("<PUBLIC_VAPID_KEY>");
+
+  const sub = await reg.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey
+  });
+
+  // Send to your backend to store
+  await fetch("/api/push/subscribe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(sub)
+  });
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+4) Backend (Node/Express on Replit)
+// server.js
+import express from "express";
+import webpush from "web-push";
+
+const app = express();
+app.use(express.json());
+
+// Generate once (locally) then store in env vars:
+webpush.setVapidDetails(
+  "mailto:admin@yourdomain.com",
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
+);
+
+// In-memory store for demo; replace with a DB
+const subs = new Set();
+
+app.post("/api/push/subscribe", (req, res) => {
+  subs.add(req.body); // store JSON subscription
+  res.sendStatus(201);
+});
+
+app.post("/api/push/broadcast", async (req, res) => {
+  const payload = JSON.stringify({
+    title: req.body.title || "ProHorseMatch",
+    body: req.body.body || "New saved-search matches are ready",
+    url: req.body.url || "/"
+  });
+
+  await Promise.all([...subs].map(s => webpush.sendNotification(s, payload).catch(() => subs.delete(s))));
+  res.sendStatus(200);
+});
+
+app.listen(3000, () => console.log("Server running"));
+Generate VAPID keys once on your machine:
+npx web-push generate-vapid-keys
+# Set VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in your Replit Secrets
+iOS specifics to know
+iOS/iPadOS supports Web Push when the PWA is added to Home Screen.
+The permission prompt must be triggered by a user action.
+Badging is limited. Focus on clear titles, bodies, and links.
+Good use cases for ProHorseMatch
+New matches for a saved search
+Replies in in-app chat
+Listing performance updates
+Weekly digests for watched horses
