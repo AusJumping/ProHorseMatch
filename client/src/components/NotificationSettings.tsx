@@ -69,6 +69,9 @@ export function NotificationSettings() {
 
       // Convert subscription to JSON-serializable format
       const subscriptionData = subscription.toJSON();
+      console.log('Subscription data:', subscriptionData);
+      console.log('Subscription endpoint:', subscription.endpoint);
+      console.log('Subscription keys:', subscription.toJSON().keys);
       
       await apiRequest('POST', '/api/push/subscribe', subscriptionData);
       
