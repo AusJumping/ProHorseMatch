@@ -4400,6 +4400,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ========== WEB PUSH NOTIFICATION ROUTES ==========
   
+  // Get VAPID public key (public endpoint, no auth required)
+  app.get("/api/push/vapid-public-key", async (_req, res) => {
+    const publicKey = process.env.VAPID_PUBLIC_KEY;
+    if (!publicKey) {
+      return res.status(500).json({ error: "VAPID public key not configured" });
+    }
+    res.json({ publicKey });
+  });
+  
   // Subscribe to push notifications
   app.post("/api/push/subscribe", isTokenAuthenticated, async (req, res) => {
     try {

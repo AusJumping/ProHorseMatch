@@ -55,11 +55,16 @@ export function NotificationSettings() {
 
       const registration = await navigator.serviceWorker.ready;
       
-      const VAPID_PUBLIC_KEY = 'BMC3l9YJqMDYM7PuvCyC_UECfzPxqEzzEUNmG3BgLmJbW3_JNDSPgvOTYvQRgKjfYd_K1P5TE0PaFOgfqcPHgTc';
+      // Fetch the public VAPID key from the server
+      const response = await fetch('/api/push/vapid-public-key');
+      if (!response.ok) {
+        throw new Error('Failed to get VAPID public key');
+      }
+      const { publicKey } = await response.json();
       
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
       });
 
       await apiRequest('/api/push/subscribe', 'POST', subscription);
