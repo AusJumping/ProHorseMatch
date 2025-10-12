@@ -266,6 +266,24 @@ export const insertHorseDeletionResponseSchema = createInsertSchema(horseDeletio
 export type InsertHorseDeletionResponse = z.infer<typeof insertHorseDeletionResponseSchema>;
 export type HorseDeletionResponse = typeof horseDeletionResponses.$inferSelect;
 
+// Push Subscriptions for Web Push Notifications
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull(),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({
+  id: true,
+  created_at: true,
+});
+
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+
 // Constants for app
 export const disciplines = ["Jumping", "Dressage", "Eventing"];
 export const sexes = ["Mare", "Gelding", "Stallion"];
