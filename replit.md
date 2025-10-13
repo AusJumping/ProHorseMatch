@@ -7,8 +7,21 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
-## Recent Changes (October 12, 2025)
-- **NEW**: Web Push Notification System via PWA
+## Recent Changes (October 13, 2025)
+- **NEW**: PWA App Icons with Custom Branding
+- Generated 192x192 and 512x512 app icons with ProHorseMatch logo on #2b2b2b background
+- Updated PWA manifest with custom background and theme colors (#2b2b2b)
+- Icons optimized for home screen installation on iOS and Android
+- Added maskable icon support for better cross-platform appearance
+- **NEW**: Push Notification Sending System
+- Implemented complete push notification delivery using web-push library
+- Push notifications for new matches when horses match saved searches
+- Push notifications for new messages in conversations
+- Push notifications for horse listing updates (price changes, photo updates, details)
+- Notifications respect user preferences (notify_matches, notify_messages, notify_updates)
+- Invalid subscriptions automatically removed on 404/410 errors
+- iOS installation instructions added to notification settings with step-by-step PWA setup guide
+- **NEW**: Web Push Notification System via PWA (October 12, 2025)
 - Implemented full PWA (Progressive Web App) infrastructure for push notifications
 - Created push_subscriptions database table to store user notification preferences
 - Added backend API routes: /api/push/subscribe, /api/push/unsubscribe, /api/push/status
@@ -17,8 +30,7 @@ Focus on web app development until reliable mobile developer found.
 - Service worker configured to handle push notification events
 - VAPID keys securely stored in Replit Secrets for authentication
 - Platform support: Android Chrome, desktop browsers (requires PWA install for iOS 16.4+)
-- Notification triggers ready for: new matches, message replies, listing updates, weekly digests
-- **STATUS**: Push notification infrastructure complete and ready for integration
+- **STATUS**: Push notification system fully functional and actively sending notifications
 
 ## Previous Changes (September 1-3, 2025)
 - **RESOLVED**: Fixed critical authentication mismatch in upload system
