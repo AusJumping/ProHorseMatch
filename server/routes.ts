@@ -12,6 +12,7 @@ import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration } from "./authUtils";
+import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
   insertHorseSchema, 
   insertUserSchema,
@@ -1829,6 +1830,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Horse updated successfully with ID:", updatedHorse.id);
       console.log("Updated horse photos:", updatedHorse.photos);
+      
+      // Send push notifications to users who have favorited this horse
+      try {
+        const favorites = await storage.getMatchesByHorseId(id);
+        const usersToNotify = favorites
+          .filter(fav => fav.type === 'like')
+          .map(fav => fav.user_id);
+        
+        // Determine what changed to create a meaningful notification
+        let updateType = 'details';
+        if (JSON.stringify(horse.photos) !== JSON.stringify(updatedHorse.photos)) {
+          updateType = 'new photos added';
+        } else if (horse.price_min !== updatedHorse.price_min || horse.price_max !== updatedHorse.price_max) {
+          updateType = 'price updated';
+        }
+        
+        // Send notification to each user who favorited this horse
+        for (const userId of usersToNotify) {
+          await sendHorseUpdateNotification(userId, updatedHorse.name, updatedHorse.id, updateType);
+        }
+        
+        console.log(`Sent update notifications to ${usersToNotify.length} users who favorited ${updatedHorse.name}`);
+      } catch (notifError) {
+        console.error("Error sending update notifications:", notifError);
+        // Don't fail the update if notifications fail
+      }
+      
       console.log("=== HORSE UPDATE COMPLETE ===");
       return res.json(updatedHorse);
     } catch (error) {
@@ -3364,6 +3392,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else {
             console.warn(`Failed to send ${shouldSendNewConversationEmail ? 'new conversation' : 'message'} notification email to:`, recipient.email);
           }
+          
+          // Send push notification to recipient
+          await sendNewMessageNotification(recipientId, sender.username || sender.name || 'Someone', conversation.id);
         } else {
           console.warn("Could not send email notification - missing user or horse data");
         }
@@ -3615,6 +3646,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const user = await storage.getUserById(search.user_id);
             if (user && user.email_verified) {
               await sendSearchMatchEmail(user, search, newHorse);
+              
+              // Send push notification for new match
+              await sendNewMatchNotification(user.id, newHorse.name, newHorse.id);
               
               // Record the notification
               await storage.createSearchNotification({

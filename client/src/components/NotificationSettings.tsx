@@ -29,14 +29,16 @@ export function NotificationSettings() {
     typeof Notification !== 'undefined' ? Notification.permission : 'denied'
   );
   const [isPWAInstalled, setIsPWAInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
   
-  // Check if PWA is installed
+  // Check if PWA is installed and detect iOS
   useEffect(() => {
     const checkPWAInstalled = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isIOSStandalone = (window.navigator as any).standalone === true;
-      setIsPWAInstalled(isStandalone || (isIOS && isIOSStandalone));
+      setIsPWAInstalled(isStandalone || (isIOSDevice && isIOSStandalone));
+      setIsIOS(isIOSDevice);
     };
     
     checkPWAInstalled();
@@ -255,12 +257,38 @@ export function NotificationSettings() {
         )}
         
         {supportsNotifications && permission !== 'denied' && !isPWAInstalled && (
-          <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950 p-3 rounded-md border border-blue-200 dark:border-blue-800">
-            <p className="font-medium text-blue-900 dark:text-blue-100">💡 Pro Tip: Install as App</p>
-            <p className="mt-1 text-blue-800 dark:text-blue-200">
-              For the best notification experience, install ProHorseMatch as an app on your device. 
-              Look for the install button in your browser menu.
+          <div className="text-sm bg-blue-50 dark:bg-blue-950 p-4 rounded-md border border-blue-200 dark:border-blue-800">
+            <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+              📱 {isIOS ? 'iOS Installation Required' : 'Install as App for Best Experience'}
             </p>
+            {isIOS ? (
+              <div className="text-blue-800 dark:text-blue-200 space-y-2">
+                <p className="font-medium">
+                  On iOS/Safari, push notifications only work when the app is installed to your home screen:
+                </p>
+                <ol className="list-decimal ml-5 space-y-1">
+                  <li>Open this site in <strong>Safari</strong> (not Chrome or other browsers)</li>
+                  <li>Tap the <strong>Share</strong> button (square with arrow pointing up)</li>
+                  <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
+                  <li>Tap <strong>"Add"</strong> in the top right</li>
+                  <li>Open the app from your home screen</li>
+                  <li>Return here and enable notifications</li>
+                </ol>
+                <p className="mt-2 text-sm">
+                  💡 This is required for iOS 16.4+ to receive push notifications
+                </p>
+              </div>
+            ) : (
+              <div className="text-blue-800 dark:text-blue-200">
+                <p>
+                  For the best notification experience, install ProHorseMatch as an app:
+                </p>
+                <ul className="list-disc ml-5 mt-2 space-y-1">
+                  <li><strong>Chrome/Edge:</strong> Look for the install icon in the address bar or browser menu</li>
+                  <li><strong>Android:</strong> Tap "Add to Home Screen" when prompted</li>
+                </ul>
+              </div>
+            )}
           </div>
         )}
 
