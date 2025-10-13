@@ -67,11 +67,25 @@ export function NotificationSettings() {
         applicationServerKey: urlBase64ToUint8Array(publicKey)
       });
 
-      // Convert subscription to JSON-serializable format
-      const subscriptionData = subscription.toJSON();
-      console.log('Subscription data:', subscriptionData);
+      // Log subscription details for debugging
+      console.log('Full subscription object:', subscription);
       console.log('Subscription endpoint:', subscription.endpoint);
-      console.log('Subscription keys:', subscription.toJSON().keys);
+      console.log('Subscription getKey p256dh:', subscription.getKey('p256dh'));
+      console.log('Subscription getKey auth:', subscription.getKey('auth'));
+      
+      // Manually construct the subscription data
+      const p256dhKey = subscription.getKey('p256dh');
+      const authKey = subscription.getKey('auth');
+      
+      const subscriptionData = {
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: p256dhKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(p256dhKey)))) : '',
+          auth: authKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(authKey)))) : ''
+        }
+      };
+      
+      console.log('Constructed subscription data:', subscriptionData);
       
       await apiRequest('POST', '/api/push/subscribe', subscriptionData);
       
