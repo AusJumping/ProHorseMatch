@@ -93,6 +93,12 @@ export interface IStorage {
   getPushSubscriptionsByUserId(userId: number): Promise<PushSubscription[]>;
   getAllPushSubscriptions(): Promise<PushSubscription[]>;
   deletePushSubscription(endpoint: string): Promise<boolean>;
+  updatePushPreferences(userId: number, preferences: {
+    notify_matches?: boolean;
+    notify_messages?: boolean;
+    notify_updates?: boolean;
+    notify_digest?: boolean;
+  }): Promise<void>;
   
   // Admin analytics methods
   getAllUsers(): Promise<User[]>;
@@ -1275,6 +1281,15 @@ export class MemStorage implements IStorage {
   async deletePushSubscription(endpoint: string): Promise<boolean> {
     return false;
   }
+  
+  async updatePushPreferences(userId: number, preferences: {
+    notify_matches?: boolean;
+    notify_messages?: boolean;
+    notify_updates?: boolean;
+    notify_digest?: boolean;
+  }): Promise<void> {
+    throw new Error("Push preferences not implemented in MemStorage - use DatabaseStorage");
+  }
 }
 
 // Database-backed storage implementation
@@ -1952,6 +1967,18 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return result.length > 0;
+  }
+  
+  async updatePushPreferences(userId: number, preferences: {
+    notify_matches?: boolean;
+    notify_messages?: boolean;
+    notify_updates?: boolean;
+    notify_digest?: boolean;
+  }): Promise<void> {
+    await db
+      .update(pushSubscriptions)
+      .set(preferences)
+      .where(eq(pushSubscriptions.user_id, userId));
   }
 }
 

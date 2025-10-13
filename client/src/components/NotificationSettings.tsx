@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff } from "lucide-react";
+import { Bell, BellOff, Heart, MessageSquare, RefreshCw, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -40,10 +42,45 @@ export function NotificationSettings() {
     checkPWAInstalled();
   }, []);
 
-  // Get subscription status
-  const { data: status } = useQuery<{ subscribed: boolean; count: number }>({
+  // Get subscription status and preferences
+  const { data: status } = useQuery<{ 
+    subscribed: boolean; 
+    count: number;
+    preferences?: {
+      notify_matches: boolean;
+      notify_messages: boolean;
+      notify_updates: boolean;
+      notify_digest: boolean;
+    };
+  }>({
     queryKey: ['/api/push/status'],
     enabled: permission === 'granted'
+  });
+
+  // Update notification preferences
+  const updatePreferencesMutation = useMutation({
+    mutationFn: async (preferences: {
+      notify_matches?: boolean;
+      notify_messages?: boolean;
+      notify_updates?: boolean;
+      notify_digest?: boolean;
+    }) => {
+      await apiRequest('POST', '/api/push/preferences', preferences);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
+      toast({
+        title: "Preferences updated",
+        description: "Your notification preferences have been saved"
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   });
 
   // Subscribe mutation
@@ -61,10 +98,16 @@ export function NotificationSettings() {
         throw new Error('Failed to get VAPID public key');
       }
       const { publicKey } = await response.json();
+      console.log('VAPID public key from server:', publicKey);
+      console.log('VAPID key length:', publicKey?.length);
+      
+      const applicationServerKey = urlBase64ToUint8Array(publicKey);
+      console.log('Converted VAPID key (Uint8Array):', applicationServerKey);
+      console.log('Converted key length:', applicationServerKey?.length);
       
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(publicKey)
+        applicationServerKey: applicationServerKey
       });
 
       // Log subscription details for debugging
@@ -258,15 +301,99 @@ export function NotificationSettings() {
           )}
         </div>
 
-        {isSubscribed && (
-          <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
-            You'll receive notifications for:
-            <ul className="list-disc ml-5 mt-1 space-y-0.5">
-              <li>New matches on horses you've liked</li>
-              <li>Message replies from buyers/sellers</li>
-              <li>Updates on horses you're watching</li>
-              <li>Weekly digest of new listings</li>
-            </ul>
+        {isSubscribed && status?.preferences && (
+          <div className="space-y-4 pt-4 border-t">
+            <p className="text-sm font-medium">Choose which notifications you want to receive:</p>
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between space-x-2">
+                <div className="flex items-center space-x-3">
+                  <Heart className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <Label htmlFor="notify-matches" className="text-sm font-normal cursor-pointer">
+                      New matches
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      When horses you've liked get updated or sellers respond
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="notify-matches"
+                  checked={status.preferences.notify_matches}
+                  onCheckedChange={(checked) => 
+                    updatePreferencesMutation.mutate({ notify_matches: checked })
+                  }
+                  data-testid="toggle-notify-matches"
+                />
+              </div>
+
+              <div className="flex items-center justify-between space-x-2">
+                <div className="flex items-center space-x-3">
+                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <Label htmlFor="notify-messages" className="text-sm font-normal cursor-pointer">
+                      Message replies
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      When buyers or sellers send you messages
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="notify-messages"
+                  checked={status.preferences.notify_messages}
+                  onCheckedChange={(checked) => 
+                    updatePreferencesMutation.mutate({ notify_messages: checked })
+                  }
+                  data-testid="toggle-notify-messages"
+                />
+              </div>
+
+              <div className="flex items-center justify-between space-x-2">
+                <div className="flex items-center space-x-3">
+                  <RefreshCw className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <Label htmlFor="notify-updates" className="text-sm font-normal cursor-pointer">
+                      Horse updates
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Price changes, new photos, or status updates on saved horses
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="notify-updates"
+                  checked={status.preferences.notify_updates}
+                  onCheckedChange={(checked) => 
+                    updatePreferencesMutation.mutate({ notify_updates: checked })
+                  }
+                  data-testid="toggle-notify-updates"
+                />
+              </div>
+
+              <div className="flex items-center justify-between space-x-2">
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex-1">
+                    <Label htmlFor="notify-digest" className="text-sm font-normal cursor-pointer">
+                      Weekly digest
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Summary of new listings matching your preferences
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="notify-digest"
+                  checked={status.preferences.notify_digest}
+                  onCheckedChange={(checked) => 
+                    updatePreferencesMutation.mutate({ notify_digest: checked })
+                  }
+                  data-testid="toggle-notify-digest"
+                />
+              </div>
+            </div>
           </div>
         )}
       </CardContent>

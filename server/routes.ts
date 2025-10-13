@@ -4466,14 +4466,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.userId;
       const subscriptions = await storage.getPushSubscriptionsByUserId(userId);
       
+      const preferences = subscriptions[0] ? {
+        notify_matches: subscriptions[0].notify_matches ?? true,
+        notify_messages: subscriptions[0].notify_messages ?? true,
+        notify_updates: subscriptions[0].notify_updates ?? true,
+        notify_digest: subscriptions[0].notify_digest ?? true
+      } : undefined;
+      
       return res.json({ 
         subscribed: subscriptions.length > 0,
-        count: subscriptions.length
+        count: subscriptions.length,
+        preferences
       });
     } catch (error) {
       console.error("Push status error:", error);
       return res.status(500).json({ 
         message: "Error getting push subscription status",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+  
+  // Update notification preferences
+  app.post("/api/push/preferences", isTokenAuthenticated, async (req, res) => {
+    try {
+      const userId = req.userId;
+      const preferences = req.body;
+      
+      await storage.updatePushPreferences(userId, preferences);
+      
+      return res.json({ message: "Preferences updated successfully" });
+    } catch (error) {
+      console.error("Push preferences error:", error);
+      return res.status(500).json({ 
+        message: "Error updating notification preferences",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }

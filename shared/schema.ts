@@ -273,6 +273,13 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   endpoint: text("endpoint").notNull().unique(),
   p256dh: text("p256dh").notNull(),
   auth: text("auth").notNull(),
+  
+  // Notification preferences
+  notify_matches: boolean("notify_matches").default(true),
+  notify_messages: boolean("notify_messages").default(true),
+  notify_updates: boolean("notify_updates").default(true),
+  notify_digest: boolean("notify_digest").default(true),
+  
   created_at: timestamp("created_at").defaultNow(),
 });
 
