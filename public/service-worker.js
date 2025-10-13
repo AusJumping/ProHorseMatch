@@ -1,3 +1,5 @@
+const CACHE_VERSION = 'v2'; // Updated for new icons
+
 self.addEventListener("install", () => {
   console.log("Service Worker installed");
   self.skipWaiting();
@@ -5,7 +7,19 @@ self.addEventListener("install", () => {
 
 self.addEventListener("activate", (event) => {
   console.log("Service Worker activated");
-  event.waitUntil(self.clients.claim());
+  // Clear all old caches when activating
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_VERSION) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener("push", (event) => {
