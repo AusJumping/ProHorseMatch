@@ -224,7 +224,21 @@ export function NotificationSettings() {
   const isLoading = subscribeMutation.isPending || unsubscribeMutation.isPending;
   
   // Check if browser supports notifications
-  const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+  const hasNotification = 'Notification' in window;
+  const hasServiceWorker = 'serviceWorker' in navigator;
+  const hasPushManager = 'PushManager' in window;
+  const supportsNotifications = hasNotification && hasServiceWorker && hasPushManager;
+  
+  // Debug logging for troubleshooting
+  console.log('Notification support check:', {
+    hasNotification,
+    hasServiceWorker,
+    hasPushManager,
+    supportsNotifications,
+    permission,
+    isPWAInstalled,
+    isIOS
+  });
 
   return (
     <Card>
