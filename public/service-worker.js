@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3'; // Updated for iOS icon fix
+const CACHE_VERSION = 'v4'; // Solid background icons
 
 self.addEventListener("install", () => {
   console.log("Service Worker installed");
