@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2'; // Updated for new icons
+const CACHE_VERSION = 'v3'; // Updated for iOS icon fix
 
 self.addEventListener("install", () => {
   console.log("Service Worker installed");
