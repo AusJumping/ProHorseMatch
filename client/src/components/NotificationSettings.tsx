@@ -252,6 +252,17 @@ export function NotificationSettings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Debug info - remove after troubleshooting */}
+        <div className="text-xs bg-yellow-50 dark:bg-yellow-950 p-2 rounded border border-yellow-300 dark:border-yellow-700">
+          <p><strong>Debug Info:</strong></p>
+          <p>Notification API: {hasNotification ? '✅' : '❌'}</p>
+          <p>Service Worker: {hasServiceWorker ? '✅' : '❌'}</p>
+          <p>PushManager: {hasPushManager ? '✅' : '❌'}</p>
+          <p>Permission: {permission}</p>
+          <p>PWA Installed: {isPWAInstalled ? 'Yes' : 'No'}</p>
+          <p>iOS Device: {isIOS ? 'Yes' : 'No'}</p>
+        </div>
+        
         {!supportsNotifications && (
           <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
             <p>Push notifications are not supported in your current browser.</p>
