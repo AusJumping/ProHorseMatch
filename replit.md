@@ -7,7 +7,19 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
-## Recent Changes (October 13, 2025)
+## Recent Changes (October 14, 2025)
+- **FIXED**: PWA Deployment Issue - Production Static File Serving
+- Fixed critical production deployment bug where PWA files (manifest, service worker, icons) weren't loading on published site
+- Updated server/index.ts to serve public folder static files in both development and production
+- Push notifications now work correctly on Chrome mobile after deployment
+- Manifest file correctly serves as JSON instead of HTML on published site
+- **COMPLETE**: Push Notification System Fully Deployed and Working
+- Push notifications confirmed working on Chrome mobile (Android)
+- Service worker, manifest, and VAPID authentication all functioning correctly
+- Users can enable/disable notifications with customizable preferences
+- Platform support verified: Android Chrome (working), desktop browsers (working), iOS requires PWA install
+
+## Previous Changes (October 13, 2025)
 - **NEW**: PWA App Icons with Custom Branding
 - Generated 192x192 and 512x512 app icons with ProHorseMatch logo on #2b2b2b background
 - Updated PWA manifest with custom background and theme colors (#2b2b2b)
@@ -29,8 +41,6 @@ Focus on web app development until reliable mobile developer found.
 - Integrated notification settings into user profile page under "Account Settings" tab
 - Service worker configured to handle push notification events
 - VAPID keys securely stored in Replit Secrets for authentication
-- Platform support: Android Chrome, desktop browsers (requires PWA install for iOS 16.4+)
-- **STATUS**: Push notification system fully functional and actively sending notifications
 
 ## Previous Changes (September 1-3, 2025)
 - **RESOLVED**: Fixed critical authentication mismatch in upload system
