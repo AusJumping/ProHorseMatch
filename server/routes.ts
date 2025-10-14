@@ -3772,7 +3772,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               <p><strong>Levels:</strong> ${horse.levels?.join(', ') || 'Not specified'}</p>
               <p><strong>Breeds:</strong> ${horse.breeds?.join(', ') || 'Not specified'}</p>
               <p><strong>Height:</strong> ${horse.height_hands ? `${horse.height_hands}hh` : 'Not specified'}</p>
-              <p><strong>Price:</strong> ${horse.currency} ${horse.price_min}${horse.price_max !== horse.price_min ? ` - ${horse.price_max}` : ''}</p>
               <p><strong>Location:</strong> ${horse.location_country}</p>
             </div>
             
