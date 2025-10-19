@@ -1410,7 +1410,13 @@ export class DatabaseStorage implements IStorage {
   }
   // Horse methods
   async getHorses(): Promise<Horse[]> {
-    return await db.select().from(horses).orderBy(desc(horses.created_at));
+    // TEMPORARY: Show "Jazdan Fascination" first (to be reverted later)
+    const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
+    return allHorses.sort((a, b) => {
+      if (a.name === 'Jazdan Fascination') return -1;
+      if (b.name === 'Jazdan Fascination') return 1;
+      return 0; // Keep original order (created_at desc) for others
+    });
   }
 
   async getHorseById(id: number): Promise<Horse | undefined> {
@@ -1542,7 +1548,13 @@ export class DatabaseStorage implements IStorage {
     });
     
     console.log(`DatabaseStorage.getHorsesByFilters - found ${filteredHorses.length} horses after filtering`);
-    return filteredHorses;
+    
+    // TEMPORARY: Show "Jazdan Fascination" first (to be reverted later)
+    return filteredHorses.sort((a, b) => {
+      if (a.name === 'Jazdan Fascination') return -1;
+      if (b.name === 'Jazdan Fascination') return 1;
+      return 0; // Keep original order (created_at desc) for others
+    });
   }
 
   async createHorse(horse: InsertHorse): Promise<Horse> {

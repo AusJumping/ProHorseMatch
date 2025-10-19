@@ -7,7 +7,14 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
-## Recent Changes (October 14, 2025)
+## Recent Changes (October 19, 2025)
+- **TEMPORARY**: "Jazdan Fascination" Featured First in Browse View
+- Modified `server/storage.ts` methods `getHorses()` (line 1415-1423) and `getHorsesByFilters()` (line 1555-1560)
+- Added sorting logic to show "Jazdan Fascination" as first horse in all views
+- TO REVERT: Remove the `.sort()` logic and return to default `created_at DESC` ordering
+- Revert instructions: Remove lines 1416-1422 and 1555-1560, restore simple `return` statements
+
+## Previous Changes (October 14, 2025)
 - **FIXED**: PWA Deployment Issue - Production Static File Serving
 - Fixed critical production deployment bug where PWA files (manifest, service worker, icons) weren't loading on published site
 - Updated server/index.ts to serve public folder static files in both development and production
@@ -18,6 +25,15 @@ Focus on web app development until reliable mobile developer found.
 - Service worker, manifest, and VAPID authentication all functioning correctly
 - Users can enable/disable notifications with customizable preferences
 - Platform support verified: Android Chrome (working), desktop browsers (working), iOS requires PWA install
+
+- **UPDATED**: Match Notification Emails - Price Information Removed
+- Removed price and price range from match notification emails (line 3770-3779 in `server/routes.ts`)
+- Price still included in admin notification emails for internal use
+- Push notifications already compliant (never included price info)
+- **UPDATED**: PWA Icons Changed to Square Format Logo
+- Replaced landscape logo with square "PRO HORSE MATCH" text logo from landing page
+- Updated all three icon files: icon-192.png, icon-512.png, apple-touch-icon.png
+- Matches landing page branding with cream text on #2b2b2b background
 
 ## Previous Changes (October 13, 2025)
 - **NEW**: PWA App Icons with Custom Branding
