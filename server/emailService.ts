@@ -281,6 +281,137 @@ Happy horse hunting!
   }
 }
 
+export async function sendSubscriptionReminderEmail(to: string, username: string, subscriptionUrl: string): Promise<boolean> {
+  const htmlContent = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Don't Forget to Complete Your Setup!</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">One quick step to get started</p>
+      </div>
+      
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">Select Your Subscription</h2>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${username}</strong>,
+        </p>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px; color: #4A453E;">
+          Your email has been verified successfully! To complete your setup and start exploring ProHorseMatch, you just need to select your subscription plan.
+        </p>
+        
+        <div style="background: #E8F4F8; border-left: 4px solid #4A90E2; padding: 20px; margin: 25px 0; border-radius: 4px;">
+          <p style="font-size: 18px; line-height: 1.6; margin: 0; color: #2D2A25; font-weight: 600;">
+            🎉 We're in Beta Phase - No Payment Details Needed!
+          </p>
+          <p style="font-size: 16px; line-height: 1.7; margin: 10px 0 0 0; color: #4A453E;">
+            During our beta period, all subscriptions are completely free. Select your plan and start browsing immediately - no credit card required!
+          </p>
+        </div>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 30px; color: #4A453E;">
+          Once you've selected your subscription, you'll be able to:
+        </p>
+        
+        <ul style="font-size: 16px; line-height: 1.8; margin-bottom: 30px; padding-left: 25px; color: #4A453E;">
+          <li style="margin-bottom: 8px;">Browse our exclusive collection of performance horses</li>
+          <li style="margin-bottom: 8px;">Use advanced filters to find your perfect match</li>
+          <li style="margin-bottom: 8px;">Save horses to your favorites</li>
+          <li style="margin-bottom: 8px;">Connect directly with horse owners</li>
+          <li style="margin-bottom: 8px;">List your own horses for sale (seller plans)</li>
+        </ul>
+        
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${subscriptionUrl}" 
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
+            Select Your Free Subscription
+          </a>
+        </div>
+        
+        <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
+          If the button doesn't work, copy and paste this link into your browser:
+        </p>
+        <p style="font-size: 14px; color: #CDAC6E; word-break: break-all; background: #F8F6F0; padding: 12px; border-radius: 4px; border-left: 3px solid #CDAC6E;">
+          ${subscriptionUrl}
+        </p>
+        
+        <div style="margin-top: 40px; padding-top: 25px; border-top: 2px solid #E8E3D3;">
+          <p style="font-size: 14px; color: #6B5B3D; margin: 0; line-height: 1.5;">
+            Questions? We're here to help! Simply reply to this email and we'll get back to you as soon as possible.
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
+          © 2025 ProHorseMatch • Connecting Performance Horses with new owners
+        </p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+Don't Forget to Complete Your Setup!
+
+Hi ${username},
+
+Your email has been verified successfully! To complete your setup and start exploring ProHorseMatch, you just need to select your subscription plan.
+
+🎉 WE'RE IN BETA PHASE - NO PAYMENT DETAILS NEEDED!
+
+During our beta period, all subscriptions are completely free. Select your plan and start browsing immediately - no credit card required!
+
+Once you've selected your subscription, you'll be able to:
+
+- Browse our exclusive collection of performance horses
+- Use advanced filters to find your perfect match  
+- Save horses to your favorites
+- Connect directly with horse owners
+- List your own horses for sale (seller plans)
+
+Select your free subscription here:
+${subscriptionUrl}
+
+Questions? We're here to help! Simply reply to this email and we'll get back to you as soon as possible.
+
+© 2025 ProHorseMatch. Connecting Performance Horses with new owners.
+  `;
+
+  try {
+    if (mailService) {
+      await mailService.send({
+        from: 'noreply@prohorsematch.com',
+        to: to,
+        subject: 'Complete Your ProHorseMatch Setup - Free Beta Access',
+        html: htmlContent,
+        text: textContent,
+      });
+    } else if (resend) {
+      const { data, error } = await resend.emails.send({
+        from: 'ProHorseMatch <noreply@prohorsematch.com>',
+        to: [to],
+        subject: 'Complete Your ProHorseMatch Setup - Free Beta Access',
+        html: htmlContent,
+        text: textContent,
+      });
+
+      if (error) {
+        console.error('Resend subscription reminder email error:', error);
+        return false;
+      }
+      console.log('Subscription reminder email sent successfully:', data);
+    } else {
+      console.warn('No email service configured - subscription reminder email not sent');
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Subscription reminder email error:', error);
+    return false;
+  }
+}
+
 export async function sendPasswordResetEmail(params: PasswordResetParams): Promise<boolean> {
   console.log('=== PASSWORD RESET EMAIL START ===');
   console.log('Password reset email service called with params:', {

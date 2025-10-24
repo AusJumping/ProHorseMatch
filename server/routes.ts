@@ -10,7 +10,7 @@ import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail } from "./emailService";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
@@ -666,13 +666,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('User logged in automatically, auth token created:', authToken);
       
-      // Send welcome email
-      console.log('Sending welcome email...');
-      const welcomeEmailSent = await sendWelcomeEmail(user.email, user.username);
-      if (!welcomeEmailSent) {
-        console.warn('Failed to send welcome email to:', user.email);
+      // NOTE: Welcome email is now sent AFTER subscription selection, not at verification
+      // Send subscription reminder email instead
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const subscriptionUrl = `${baseUrl}/subscription`;
+      console.log('Sending subscription reminder email...');
+      const reminderEmailSent = await sendSubscriptionReminderEmail(user.email, user.username, subscriptionUrl);
+      if (!reminderEmailSent) {
+        console.warn('Failed to send subscription reminder email to:', user.email);
       } else {
-        console.log('Welcome email sent successfully to:', user.email);
+        console.log('Subscription reminder email sent successfully to:', user.email);
       }
       
       // Get updated user data
@@ -2306,6 +2309,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update user with beta subscription info
       await storage.updateUserSubscription(userId, updatedUserData);
+      
+      // Send welcome email now that subscription is complete
+      console.log('Sending welcome email after subscription selection...');
+      const welcomeEmailSent = await sendWelcomeEmail(user.email, user.username);
+      if (!welcomeEmailSent) {
+        console.warn('Failed to send welcome email to:', user.email);
+      } else {
+        console.log('Welcome email sent successfully to:', user.email);
+      }
       
       res.json({
         success: true,
