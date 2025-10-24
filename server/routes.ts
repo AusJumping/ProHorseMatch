@@ -2151,11 +2151,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter for users who:
       // 1. Have verified their email
       // 2. Don't have a subscription yet
-      const usersWithoutSubscription = allUsers.filter(user => 
-        user.email_verified && !user.stripe_subscription_id
-      );
+      // 3. Haven't received a reminder in the last 24 hours (to prevent duplicates)
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       
-      console.log(`Found ${usersWithoutSubscription.length} users without subscriptions`);
+      const usersWithoutSubscription = allUsers.filter(user => {
+        // Must have verified email and no subscription
+        if (!user.email_verified || user.stripe_subscription_id) {
+          return false;
+        }
+        
+        // Skip if they received a reminder within the last 24 hours
+        if (user.subscription_reminder_sent_at) {
+          const lastSent = new Date(user.subscription_reminder_sent_at);
+          if (lastSent > twentyFourHoursAgo) {
+            return false; // Already sent recently
+          }
+        }
+        
+        return true;
+      });
+      
+      console.log(`Found ${usersWithoutSubscription.length} users without subscriptions (excluding those who received reminders in last 24h)`);
       
       const results = {
         total: usersWithoutSubscription.length,
@@ -2192,6 +2209,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const emailSent = await sendSubscriptionReminderEmail(user.email, user.username, subscriptionUrl);
           
           if (emailSent) {
+            // Update the timestamp to track when this user received the reminder
+            await storage.updateUser(user.id, {
+              subscription_reminder_sent_at: new Date()
+            });
+            
             results.sent++;
             console.log(`✓ Sent reminder to ${user.email}`);
           } else {

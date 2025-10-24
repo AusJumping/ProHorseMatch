@@ -44,6 +44,7 @@ export const users = pgTable("users", {
   subscription_status: text("subscription_status"),
   subscription_plan: text("subscription_plan"),
   subscription_end_date: timestamp("subscription_end_date"),
+  subscription_reminder_sent_at: timestamp("subscription_reminder_sent_at"),
   
   created_at: timestamp("created_at").defaultNow(),
 });
