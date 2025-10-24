@@ -8,10 +8,17 @@ Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
 ## Recent Changes (October 24, 2025)
+- **NEW**: Magic Link Authentication for Subscription Reminder Emails
+- Implemented single-use reminder tokens for seamless auto-login from email
+- Users clicking "Select Your Free Subscription" button in reminder email are automatically logged in
+- Token system uses cryptographic hashing, 24-hour expiration, and one-time use for security
+- Added POST /api/auth/reminder-login endpoint for token validation and session establishment
+- Subscription page detects reminderToken query parameter and performs auto-login via mutation
+- Eliminates friction of re-login requirement when accessing subscription page from email
 - **UPDATED**: Email Flow Redesign for Better User Onboarding
 - Removed welcome email from email verification endpoint
 - Created new subscription reminder email template emphasizing beta phase and free access
-- Verification email now sends subscription reminder with direct link to subscription page
+- Verification email now sends subscription reminder with direct link to subscription page (with magic link)
 - Welcome email now sent after user selects their subscription plan (completing setup)
 - Updated email branding to "Connecting Performance Horses with new owners"
 - **REVERTED**: Removed temporary horse prioritization logic
