@@ -92,7 +92,7 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
     <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
       <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
         <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Welcome to ProHorseMatch</h1>
-        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">Connecting equestrian professionals worldwide</p>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">Connecting Performance Horses with new owners</p>
       </div>
       
       <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
@@ -129,7 +129,7 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
       
       <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
         <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
-          © 2025 ProHorseMatch • Connecting equestrian professionals worldwide
+          © 2025 ProHorseMatch • Connecting Performance Horses with new owners
         </p>
       </div>
     </div>
@@ -146,7 +146,7 @@ ${verificationUrl}
 
 This verification link will expire in 48 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
 
-© 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+© 2025 ProHorseMatch. Connecting Performance Horses with new owners.
   `;
 
   try {
@@ -233,7 +233,7 @@ export async function sendWelcomeEmail(to: string, username: string): Promise<bo
       
       <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
         <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
-          © 2025 ProHorseMatch • Connecting equestrian professionals worldwide
+          © 2025 ProHorseMatch • Connecting Performance Horses with new owners
         </p>
       </div>
     </div>
@@ -256,7 +256,7 @@ Visit: https://pro-horse-match-info6446.replit.app
 
 Happy horse hunting!
 
-© 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+© 2025 ProHorseMatch. Connecting Performance Horses with new owners.
   `;
 
   try {
@@ -362,7 +362,7 @@ Important: If you didn't request this password reset, please ignore this email. 
 Stay secure,
 The ProHorseMatch Team
 
-© 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+© 2025 ProHorseMatch. Connecting Performance Horses with new owners.
   `;
 
   try {
@@ -437,7 +437,7 @@ export async function sendMessageNotificationEmail(params: MessageNotificationPa
       
       <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
         <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
-          © 2025 ProHorseMatch • Connecting equestrian professionals worldwide
+          © 2025 ProHorseMatch • Connecting Performance Horses with new owners
         </p>
       </div>
     </div>
@@ -456,7 +456,7 @@ Reply to this message: ${params.conversationUrl}
 
 Stay connected and don't miss important conversations about your horse interests.
 
-© 2025 ProHorseMatch. Connecting equestrian professionals worldwide.
+© 2025 ProHorseMatch. Connecting Performance Horses with new owners.
   `;
 
   try {
