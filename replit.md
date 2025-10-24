@@ -8,6 +8,12 @@ Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
 ## Recent Changes (October 24, 2025)
+- **UPDATED**: Email Flow Redesign for Better User Onboarding
+- Removed welcome email from email verification endpoint
+- Created new subscription reminder email template emphasizing beta phase and free access
+- Verification email now sends subscription reminder with direct link to subscription page
+- Welcome email now sent after user selects their subscription plan (completing setup)
+- Updated email branding to "Connecting Performance Horses with new owners"
 - **REVERTED**: Removed temporary horse prioritization logic
 - Horse listings now display in default order: most recent additions first (created_at DESC)
 - All app functionality preserved and tested
