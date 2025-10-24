@@ -41,6 +41,11 @@ export interface IStorage {
   getUserByVerificationToken(token: string): Promise<User | undefined>;
   updateUserVerification(id: number, verified: boolean, token?: string | null, expires?: Date | null): Promise<User>;
   
+  // Reminder token methods (for subscription magic links)
+  setReminderToken(userId: number, hashedToken: string, expiresAt: Date): Promise<void>;
+  getUserByReminderToken(hashedToken: string): Promise<User | undefined>;
+  deleteReminderToken(hashedToken: string): Promise<void>;
+  
   // Legacy methods for backward compatibility
   getOwnerById(id: number): Promise<Owner | undefined>;
   getOwnerByEmail(email: string): Promise<Owner | undefined>;
@@ -926,6 +931,36 @@ export class MemStorage implements IStorage {
     return updatedUser;
   }
   
+  // Reminder token methods (for subscription magic links)
+  async setReminderToken(userId: number, hashedToken: string, expiresAt: Date): Promise<void> {
+    if (!global.reminderTokens) {
+      global.reminderTokens = new Map();
+    }
+    global.reminderTokens.set(hashedToken, { userId, expiresAt });
+  }
+  
+  async getUserByReminderToken(hashedToken: string): Promise<User | undefined> {
+    if (!global.reminderTokens) {
+      return undefined;
+    }
+    const tokenData = global.reminderTokens.get(hashedToken);
+    if (!tokenData) {
+      return undefined;
+    }
+    // Check if token expired
+    if (new Date() > tokenData.expiresAt) {
+      global.reminderTokens.delete(hashedToken);
+      return undefined;
+    }
+    return this.getUserById(tokenData.userId);
+  }
+  
+  async deleteReminderToken(hashedToken: string): Promise<void> {
+    if (global.reminderTokens) {
+      global.reminderTokens.delete(hashedToken);
+    }
+  }
+  
   // Legacy Owner methods
   async getOwners(): Promise<Owner[]> {
     return Array.from(this.users.values()).filter(user => user.is_selling);
@@ -1408,6 +1443,37 @@ export class DatabaseStorage implements IStorage {
     
     return result;
   }
+  
+  // Reminder token methods (for subscription magic links)
+  async setReminderToken(userId: number, hashedToken: string, expiresAt: Date): Promise<void> {
+    if (!global.reminderTokens) {
+      global.reminderTokens = new Map();
+    }
+    global.reminderTokens.set(hashedToken, { userId, expiresAt });
+  }
+  
+  async getUserByReminderToken(hashedToken: string): Promise<User | undefined> {
+    if (!global.reminderTokens) {
+      return undefined;
+    }
+    const tokenData = global.reminderTokens.get(hashedToken);
+    if (!tokenData) {
+      return undefined;
+    }
+    // Check if token expired
+    if (new Date() > tokenData.expiresAt) {
+      global.reminderTokens.delete(hashedToken);
+      return undefined;
+    }
+    return this.getUserById(tokenData.userId);
+  }
+  
+  async deleteReminderToken(hashedToken: string): Promise<void> {
+    if (global.reminderTokens) {
+      global.reminderTokens.delete(hashedToken);
+    }
+  }
+  
   // Horse methods
   async getHorses(): Promise<Horse[]> {
     return await db.select().from(horses).orderBy(desc(horses.created_at));

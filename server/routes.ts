@@ -109,6 +109,12 @@ declare module "express-session" {
   }
 }
 
+// Declare global types for auth and reminder tokens
+declare global {
+  var authTokens: Map<string, { userId: number; timestamp: number; lastActivity: number; expires?: number }> | undefined;
+  var reminderTokens: Map<string, { userId: number; expiresAt: Date }> | undefined;
+}
+
 const SessionStore = MemoryStore(session);
 
 // Configure multer for memory storage (we'll upload to Cloudinary)
