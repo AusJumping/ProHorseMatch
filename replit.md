@@ -8,6 +8,13 @@ Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
 ## Recent Changes (October 24, 2025)
+- **NEW**: Batch Subscription Reminder Sending
+- Created `/api/admin/send-subscription-reminders` endpoint for mass email sends
+- Successfully sent 22 subscription reminder emails with magic links to users without subscriptions
+- Rate limiting (550ms delay) respects Resend's 2 requests/second limit
+- Each email includes unique magic link token for automatic login
+- Email format validation and error handling for failed sends
+- Admin-only endpoint with authentication check
 - **NEW**: Magic Link Authentication for Subscription Reminder Emails
 - Implemented single-use reminder tokens for seamless auto-login from email
 - Users clicking "Select Your Free Subscription" button in reminder email are automatically logged in

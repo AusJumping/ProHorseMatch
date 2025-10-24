@@ -378,18 +378,16 @@ Questions? We're here to help! Simply reply to this email and we'll get back to 
   `;
 
   try {
-    if (mailService) {
-      await mailService.send({
-        from: 'noreply@prohorsematch.com',
-        to: to,
-        subject: 'Complete Your ProHorseMatch Setup - Free Beta Access',
-        html: htmlContent,
-        text: textContent,
-      });
-    } else if (resend) {
-      const { data, error } = await resend.emails.send({
+    // Ensure the email address is a valid string
+    if (!to || typeof to !== 'string') {
+      console.error('Invalid email address provided:', to);
+      return false;
+    }
+
+    if (resend) {
+      const { data, error} = await resend.emails.send({
         from: 'ProHorseMatch <noreply@prohorsematch.com>',
-        to: [to],
+        to: [to], // Resend requires array format
         subject: 'Complete Your ProHorseMatch Setup - Free Beta Access',
         html: htmlContent,
         text: textContent,
@@ -400,6 +398,14 @@ Questions? We're here to help! Simply reply to this email and we'll get back to 
         return false;
       }
       console.log('Subscription reminder email sent successfully:', data);
+    } else if (mailService) {
+      await mailService.send({
+        from: 'noreply@prohorsematch.com',
+        to: to,
+        subject: 'Complete Your ProHorseMatch Setup - Free Beta Access',
+        html: htmlContent,
+        text: textContent,
+      });
     } else {
       console.warn('No email service configured - subscription reminder email not sent');
       return false;

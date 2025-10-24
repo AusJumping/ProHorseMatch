@@ -2134,6 +2134,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send subscription reminder emails to all users without subscriptions (admin only)
+  app.post("/api/admin/send-subscription-reminders", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      console.log('=== BATCH SEND SUBSCRIPTION REMINDERS ===');
+      
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Get all users
+      const allUsers = await storage.getUsers();
+      
+      // Filter for users who:
+      // 1. Have verified their email
+      // 2. Don't have a subscription yet
+      const usersWithoutSubscription = allUsers.filter(user => 
+        user.email_verified && !user.stripe_subscription_id
+      );
+      
+      console.log(`Found ${usersWithoutSubscription.length} users without subscriptions`);
+      
+      const results = {
+        total: usersWithoutSubscription.length,
+        sent: 0,
+        failed: 0,
+        errors: [] as string[]
+      };
+      
+      // Send reminder email to each user
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      for (const user of usersWithoutSubscription) {
+        try {
+          // Skip if email is invalid
+          if (!user.email || typeof user.email !== 'string') {
+            results.failed++;
+            results.errors.push(`Invalid email for user ${user.id}`);
+            console.log(`✗ Skipped user ${user.id} - invalid email`);
+            continue;
+          }
+          
+          // Generate reminder token
+          const reminderToken = generateReminderToken();
+          const hashedToken = hashReminderToken(reminderToken);
+          const expiresAt = createReminderTokenExpiration();
+          
+          // Store the token
+          await storage.setReminderToken(user.id, hashedToken, expiresAt);
+          
+          // Build subscription URL with reminder token for magic link
+          const subscriptionUrl = `${baseUrl}/subscription?reminderToken=${reminderToken}`;
+          
+          // Send the email
+          const emailSent = await sendSubscriptionReminderEmail(user.email, user.username, subscriptionUrl);
+          
+          if (emailSent) {
+            results.sent++;
+            console.log(`✓ Sent reminder to ${user.email}`);
+          } else {
+            results.failed++;
+            results.errors.push(`Failed to send email to ${user.email}`);
+            console.log(`✗ Failed to send reminder to ${user.email}`);
+          }
+          
+          // Add delay to respect rate limits (2 requests per second = 500ms delay)
+          await new Promise(resolve => setTimeout(resolve, 550));
+        } catch (error) {
+          results.failed++;
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          results.errors.push(`Error sending to ${user.email}: ${errorMsg}`);
+          console.error(`Error sending reminder to ${user.email}:`, error);
+          
+          // Add delay even on error to prevent rate limiting
+          await new Promise(resolve => setTimeout(resolve, 550));
+        }
+      }
+      
+      console.log('=== BATCH SEND COMPLETE ===');
+      console.log(`Total: ${results.total}, Sent: ${results.sent}, Failed: ${results.failed}`);
+      
+      return res.status(200).json({
+        message: `Sent ${results.sent} of ${results.total} reminder emails`,
+        ...results
+      });
+    } catch (error) {
+      console.error("Batch reminder email error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Match routes
   app.post("/api/matches", isTokenAuthenticated, async (req, res) => {
     try {
