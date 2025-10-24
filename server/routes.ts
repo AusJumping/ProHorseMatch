@@ -11,7 +11,7 @@ import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail } from "./emailService";
-import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration } from "./authUtils";
+import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
   insertHorseSchema, 
@@ -673,10 +673,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('User logged in automatically, auth token created:', authToken);
       
       // NOTE: Welcome email is now sent AFTER subscription selection, not at verification
-      // Send subscription reminder email instead
+      // Generate reminder token for magic link to subscription page
+      const reminderToken = generateReminderToken();
+      const hashedReminderToken = hashReminderToken(reminderToken);
+      const reminderTokenExpires = createReminderTokenExpiration();
+      
+      // Store hashed reminder token
+      await storage.setReminderToken(user.id, hashedReminderToken, reminderTokenExpires);
+      console.log('Generated reminder token for subscription page magic link');
+      
+      // Send subscription reminder email with tokenized URL
       const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const subscriptionUrl = `${baseUrl}/subscription`;
-      console.log('Sending subscription reminder email...');
+      const subscriptionUrl = `${baseUrl}/subscription?reminderToken=${reminderToken}`;
+      console.log('Sending subscription reminder email with magic link...');
       const reminderEmailSent = await sendSubscriptionReminderEmail(user.email, user.username, subscriptionUrl);
       if (!reminderEmailSent) {
         console.warn('Failed to send subscription reminder email to:', user.email);
@@ -771,6 +780,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Resend verification error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Reminder token login endpoint (magic link for subscription page)
+  app.post("/api/auth/reminder-login", async (req, res) => {
+    try {
+      console.log('=== REMINDER TOKEN LOGIN REQUEST ===');
+      const { reminderToken } = req.body;
+      
+      if (!reminderToken) {
+        console.log('No reminder token provided');
+        return res.status(400).json({ message: "Reminder token is required" });
+      }
+      
+      // Hash the token to look it up
+      const hashedToken = hashReminderToken(reminderToken);
+      console.log('Looking up hashed reminder token');
+      
+      // Find user by reminder token
+      const user = await storage.getUserByReminderToken(hashedToken);
+      if (!user) {
+        console.log('Invalid or expired reminder token');
+        return res.status(401).json({ message: "Invalid or expired link" });
+      }
+      
+      // Validate user is verified
+      if (!user.email_verified) {
+        console.log('User email not verified');
+        return res.status(401).json({ message: "Email not verified" });
+      }
+      
+      // Delete the token (one-time use)
+      await storage.deleteReminderToken(hashedToken);
+      console.log('Reminder token deleted (one-time use)');
+      
+      // Create auth token
+      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+      
+      // Store auth token mapping in memory
+      if (!global.authTokens) {
+        global.authTokens = new Map();
+      }
+      global.authTokens.set(authToken, {
+        userId: user.id,
+        timestamp: Date.now(),
+        lastActivity: Date.now()
+      });
+      
+      console.log('User logged in via reminder token, auth token created');
+      
+      // Set auth token in response headers and cookie
+      res.setHeader('X-Auth-Token', authToken);
+      res.setHeader('Access-Control-Expose-Headers', 'X-Auth-Token');
+      res.cookie('auth_token', authToken, {
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: false,
+        sameSite: 'lax'
+      });
+      
+      console.log('=== REMINDER TOKEN LOGIN COMPLETE ===');
+      return res.status(200).json({ 
+        message: "Logged in successfully!",
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          name: user.name,
+          business_name: user.business_name,
+          contact_name: user.contact_name,
+          is_searching: user.is_searching,
+          is_selling: user.is_selling,
+          stripe_customer_id: user.stripe_customer_id,
+          stripe_subscription_id: user.stripe_subscription_id,
+          subscription_status: user.subscription_status,
+          subscription_plan: user.subscription_plan,
+          subscription_end_date: user.subscription_end_date,
+          auth_token: authToken
+        }
+      });
+    } catch (error) {
+      console.error("=== REMINDER TOKEN LOGIN ERROR ===");
+      console.error("Reminder login error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
