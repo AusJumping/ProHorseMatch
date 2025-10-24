@@ -337,6 +337,55 @@ export default function SubscriptionPage() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   
+  // Handle reminder token auto-login from email
+  const reminderLoginMutation = useMutation({
+    mutationFn: async (reminderToken: string) => {
+      const response = await apiRequest('POST', '/api/auth/reminder-login', { reminderToken });
+      return response;
+    },
+    onSuccess: (data) => {
+      console.log('Reminder token login successful:', data);
+      
+      // Store auth token
+      if (data.user?.auth_token) {
+        localStorage.setItem('auth_token', data.user.auth_token);
+      }
+      
+      // Update auth cache with user data
+      queryClient.setQueryData(['/api/auth/me'], data.user);
+      
+      // Show success toast
+      toast({
+        title: "Welcome back!",
+        description: "You've been logged in automatically.",
+      });
+      
+      // Remove the token from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    },
+    onError: (error: any) => {
+      console.error('Reminder token login failed:', error);
+      toast({
+        title: "Link Expired",
+        description: "This login link has expired or already been used. Please login manually.",
+        variant: "destructive",
+      });
+      // Remove the token from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  });
+  
+  // Check for reminder token in URL on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const reminderToken = urlParams.get('reminderToken');
+    
+    if (reminderToken && !user) {
+      console.log('Found reminder token in URL, attempting auto-login...');
+      reminderLoginMutation.mutate(reminderToken);
+    }
+  }, []); // Only run on mount
+  
   // Convert subscription prices to user's preferred currency
   useEffect(() => {
     const convertPrices = async () => {
