@@ -933,7 +933,7 @@ export default function SubscriptionPage() {
       <div className="w-full py-10" style={{ backgroundColor: "#e4e2dd" }}>
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-accent font-bold mb-2">Beta Access</h1>
+            <h1 className="text-3xl font-accent font-bold mb-2">Beta Access - No Payment Details Needed</h1>
             <p className="text-muted-foreground">Enjoy full access during our Beta Launch Period. This subscription is free and is for a limited time only. Enjoy exploring the features of this app. We hope you find your perfect match!</p>
           </div>
           
