@@ -7,12 +7,10 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
-## Recent Changes (October 19, 2025)
-- **TEMPORARY**: "Jazdan Fascination" Featured First in Browse View
-- Modified `server/storage.ts` methods `getHorses()` (line 1415-1423) and `getHorsesByFilters()` (line 1555-1560)
-- Added sorting logic to show "Jazdan Fascination" as first horse in all views
-- TO REVERT: Remove the `.sort()` logic and return to default `created_at DESC` ordering
-- Revert instructions: Remove lines 1416-1422 and 1555-1560, restore simple `return` statements
+## Recent Changes (October 24, 2025)
+- **REVERTED**: Removed temporary horse prioritization logic
+- Horse listings now display in default order: most recent additions first (created_at DESC)
+- All app functionality preserved and tested
 
 ## Previous Changes (October 14, 2025)
 - **FIXED**: PWA Deployment Issue - Production Static File Serving

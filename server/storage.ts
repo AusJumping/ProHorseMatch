@@ -1410,13 +1410,7 @@ export class DatabaseStorage implements IStorage {
   }
   // Horse methods
   async getHorses(): Promise<Horse[]> {
-    // TEMPORARY: Show "Jazdan Fascination" first (to be reverted later)
-    const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
-    return allHorses.sort((a, b) => {
-      if (a.name === 'Jazdan Fascination') return -1;
-      if (b.name === 'Jazdan Fascination') return 1;
-      return 0; // Keep original order (created_at desc) for others
-    });
+    return await db.select().from(horses).orderBy(desc(horses.created_at));
   }
 
   async getHorseById(id: number): Promise<Horse | undefined> {
@@ -1432,17 +1426,10 @@ export class DatabaseStorage implements IStorage {
     // Get all horses first and filter in JavaScript for now (simpler approach)
     const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
     
-    // If no filters are provided, return all horses with custom sort
+    // If no filters are provided, return all horses
     if (Object.keys(filters).length === 0) {
       console.log("DatabaseStorage.getHorsesByFilters - no filters provided, returning all horses");
-      // TEMPORARY: Show "Jazdan Fascination" first (to be reverted later)
-      const sorted = allHorses.sort((a, b) => {
-        if (a.name === 'Jazdan Fascination') return -1;
-        if (b.name === 'Jazdan Fascination') return 1;
-        return 0; // Keep original order (created_at desc) for others
-      });
-      console.log("First horse after sorting:", sorted[0]?.name);
-      return sorted;
+      return allHorses;
     }
     
     // Filter horses in JavaScript (same logic as MemStorage)
