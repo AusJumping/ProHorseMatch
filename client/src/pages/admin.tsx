@@ -150,9 +150,7 @@ function EmailAnnouncementPanel() {
   
   const previewMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/admin/preview-push-notification-announcement', {
-        method: 'POST'
-      });
+      const response = await apiRequest('POST', '/api/admin/preview-push-notification-announcement');
       return response;
     },
     onSuccess: () => {
@@ -173,9 +171,7 @@ function EmailAnnouncementPanel() {
   
   const batchMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/admin/send-push-notification-announcement', {
-        method: 'POST'
-      });
+      const response = await apiRequest('POST', '/api/admin/send-push-notification-announcement');
       return response;
     },
     onSuccess: (data: any) => {
