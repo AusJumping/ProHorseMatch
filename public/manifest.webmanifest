@@ -1,6 +1,6 @@
 {
   "name": "ProHorseMatch",
-  "short_name": "PHM",
+  "short_name": "ProHorseMatch",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
