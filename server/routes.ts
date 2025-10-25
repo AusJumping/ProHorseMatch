@@ -4762,6 +4762,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Send test notification to specific user
+  app.post("/api/admin/test-notification", isTokenAuthenticated, async (req, res) => {
+    try {
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { userId, title, body } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ message: "User ID is required" });
+      }
+
+      // Get user's push subscriptions
+      const subscriptions = await storage.getPushSubscriptionsByUserId(userId);
+      
+      if (subscriptions.length === 0) {
+        return res.status(404).json({ 
+          message: "No push subscriptions found for this user",
+          hint: "User needs to enable notifications first"
+        });
+      }
+
+      // Send test notification using the push notification system
+      const { sendPushNotification } = await import('./pushNotifications');
+      await sendPushNotification(userId, {
+        title: title || '🔔 Test Notification',
+        body: body || 'This is a test notification from ProHorseMatch admin panel. Your push notifications are working correctly!',
+        url: '/',
+        tag: 'test-notification'
+      }, 'messages'); // Use 'messages' type to ensure it's sent
+
+      return res.json({ 
+        message: "Test notification sent successfully",
+        subscriptions: subscriptions.length,
+        userId: userId
+      });
+    } catch (error) {
+      console.error("Test notification error:", error);
+      return res.status(500).json({ 
+        message: "Error sending test notification",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Admin: Get push subscription status for all users
+  app.get("/api/admin/push-subscriptions", isTokenAuthenticated, async (req, res) => {
+    try {
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const allUsers = await storage.getUsers();
+      const userSubscriptionStatus = await Promise.all(
+        allUsers.map(async (user) => {
+          const subscriptions = await storage.getPushSubscriptionsByUserId(user.id);
+          return {
+            userId: user.id,
+            email: user.email,
+            username: user.username,
+            subscriptionCount: subscriptions.length,
+            hasNotifications: subscriptions.length > 0,
+            preferences: subscriptions[0] ? {
+              notify_matches: subscriptions[0].notify_matches,
+              notify_messages: subscriptions[0].notify_messages,
+              notify_updates: subscriptions[0].notify_updates,
+              notify_digest: subscriptions[0].notify_digest
+            } : null
+          };
+        })
+      );
+
+      // Sort by subscription status (users with subscriptions first)
+      userSubscriptionStatus.sort((a, b) => {
+        if (a.hasNotifications === b.hasNotifications) return 0;
+        return a.hasNotifications ? -1 : 1;
+      });
+
+      return res.json({ 
+        users: userSubscriptionStatus,
+        totalUsers: allUsers.length,
+        usersWithNotifications: userSubscriptionStatus.filter(u => u.hasNotifications).length
+      });
+    } catch (error) {
+      console.error("Get push subscriptions error:", error);
+      return res.status(500).json({ 
+        message: "Error getting push subscriptions",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Create HTTP server
   const httpServer = createServer(app);
 

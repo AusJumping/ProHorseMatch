@@ -29,7 +29,9 @@ import {
   Edit,
   Download,
   Eye,
-  Bookmark
+  Bookmark,
+  Bell,
+  Send
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +39,7 @@ import { isUnauthorizedError } from '@/lib/authUtils';
 import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/Sidebar';
 import MobileNavbar from '@/components/MobileNavbar';
+import { PushNotificationTestPanel } from '@/components/PushNotificationTestPanel';
 
 interface AnalyticsData {
   users: {
@@ -540,13 +543,14 @@ export default function AdminPage() {
             </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="horses">Horses</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
             <TabsTrigger value="deletions">Deletions</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -1182,6 +1186,24 @@ export default function AdminPage() {
                 ) : (
                   <p className="text-center text-gray-500 py-4">No deletion analytics available</p>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Push Notification Testing
+                </CardTitle>
+                <CardDescription>
+                  Test push notifications and view user subscription status
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PushNotificationTestPanel />
               </CardContent>
             </Card>
           </TabsContent>
