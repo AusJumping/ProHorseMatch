@@ -7,7 +7,22 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
-## Recent Changes (October 24, 2025)
+## Recent Changes (October 25, 2025)
+- **NEW**: Enhanced PWA Manifest for Better Mobile Experience
+- Added maskable icon support for adaptive icons on Android/iOS
+- Set portrait-primary orientation for mobile-first experience
+- Enhanced metadata with description and app categories
+- Improved theme colors and background for professional appearance
+- **NEW**: Admin Notification Testing Panel
+- Created dedicated Notifications tab in admin dashboard
+- Real-time view of push notification subscription status across all users
+- One-click test notification sending to individual users
+- Visual breakdown showing which notification types each user has enabled
+- Summary statistics: total users, users with notifications, adoption rate
+- Separate lists for users with and without notifications enabled
+- Backend endpoints: `/api/admin/push-subscriptions`, `/api/admin/test-notification`
+
+## Previous Changes (October 24, 2025)
 - **NEW**: Batch Subscription Reminder Sending
 - Created `/api/admin/send-subscription-reminders` endpoint for mass email sends
 - Successfully sent 22 subscription reminder emails with magic links to users without subscriptions
