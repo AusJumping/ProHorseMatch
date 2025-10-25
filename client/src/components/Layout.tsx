@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { useLocation } from "wouter";
 import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
+import { ContextualNotificationPrompt } from "./ContextualNotificationPrompt";
 import { ArrowLeft, Filter, PlusCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
@@ -136,6 +137,9 @@ const Layout = ({
           {children}
         </main>
       </div>
+
+      {/* Contextual Notification Prompt */}
+      {isAuthenticated && <ContextualNotificationPrompt />}
     </div>
   );
 };
