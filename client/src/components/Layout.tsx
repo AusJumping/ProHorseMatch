@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
 import { ContextualNotificationPrompt } from "./ContextualNotificationPrompt";
+import { PWAInstallBanner } from "./PWAInstallBanner";
 import { ArrowLeft, Filter, PlusCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
@@ -140,6 +141,9 @@ const Layout = ({
 
       {/* Contextual Notification Prompt */}
       {isAuthenticated && <ContextualNotificationPrompt />}
+      
+      {/* PWA Install Banner */}
+      {isAuthenticated && <PWAInstallBanner />}
     </div>
   );
 };
