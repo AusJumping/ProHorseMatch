@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v4'; // Solid background icons
+const CACHE_VERSION = 'v5'; // Fix mobile input interaction - viewport and replit banner fixes
 
 self.addEventListener("install", () => {
   console.log("Service Worker installed");
