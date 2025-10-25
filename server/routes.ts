@@ -10,7 +10,7 @@ import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail } from "./emailService";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
@@ -2244,6 +2244,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Batch reminder email error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Send push notification announcement preview email to admin (admin only)
+  app.post("/api/admin/preview-push-notification-announcement", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      console.log('=== PREVIEW PUSH NOTIFICATION ANNOUNCEMENT ===');
+      
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      // Send preview email to admin
+      const emailSent = await sendPushNotificationAnnouncementEmail({
+        to: 'info@australianjumping.com.au',
+        username: adminUser.username,
+        helpUrl: `${baseUrl}/help`,
+        profileUrl: `${baseUrl}/profile`
+      });
+      
+      if (emailSent) {
+        console.log('✓ Preview email sent to admin');
+        return res.status(200).json({
+          message: 'Preview email sent to info@australianjumping.com.au',
+          success: true
+        });
+      } else {
+        console.log('✗ Failed to send preview email');
+        return res.status(500).json({
+          message: 'Failed to send preview email',
+          success: false
+        });
+      }
+    } catch (error) {
+      console.error("Preview announcement email error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Send push notification announcement to all verified users (admin only)
+  app.post("/api/admin/send-push-notification-announcement", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      console.log('=== BATCH SEND PUSH NOTIFICATION ANNOUNCEMENT ===');
+      
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Get all users
+      const allUsers = await storage.getUsers();
+      
+      // Filter for users who have verified their email
+      const verifiedUsers = allUsers.filter(user => user.email_verified);
+      
+      console.log(`Found ${verifiedUsers.length} verified users to send announcements to`);
+      
+      const results = {
+        total: verifiedUsers.length,
+        sent: 0,
+        failed: 0,
+        errors: [] as string[]
+      };
+      
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      // Send announcement email to each verified user
+      for (const user of verifiedUsers) {
+        try {
+          // Skip if email is invalid
+          if (!user.email || typeof user.email !== 'string') {
+            results.failed++;
+            results.errors.push(`Invalid email for user ${user.id}`);
+            console.log(`✗ Skipped user ${user.id} - invalid email`);
+            continue;
+          }
+          
+          // Send the announcement email
+          const emailSent = await sendPushNotificationAnnouncementEmail({
+            to: user.email,
+            username: user.username,
+            helpUrl: `${baseUrl}/help`,
+            profileUrl: `${baseUrl}/profile`
+          });
+          
+          if (emailSent) {
+            results.sent++;
+            console.log(`✓ Sent announcement to ${user.email}`);
+          } else {
+            results.failed++;
+            results.errors.push(`Failed to send email to ${user.email}`);
+            console.log(`✗ Failed to send announcement to ${user.email}`);
+          }
+          
+          // Add delay to respect rate limits (2 requests per second = 500ms delay)
+          await new Promise(resolve => setTimeout(resolve, 550));
+        } catch (error) {
+          results.failed++;
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          results.errors.push(`Error sending to ${user.email}: ${errorMsg}`);
+          console.error(`Error sending announcement to ${user.email}:`, error);
+          
+          // Add delay even on error to prevent rate limiting
+          await new Promise(resolve => setTimeout(resolve, 550));
+        }
+      }
+      
+      console.log('=== BATCH SEND COMPLETE ===');
+      console.log(`Total: ${results.total}, Sent: ${results.sent}, Failed: ${results.failed}`);
+      
+      return res.status(200).json({
+        message: `Sent ${results.sent} of ${results.total} push notification announcements`,
+        ...results
+      });
+    } catch (error) {
+      console.error("Batch announcement email error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });

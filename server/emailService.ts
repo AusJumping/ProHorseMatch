@@ -76,6 +76,13 @@ interface ConversationReminderParams {
   userType: 'customer' | 'owner'; // Who is receiving this notification
 }
 
+interface PushNotificationAnnouncementParams {
+  to: string;
+  username: string;
+  helpUrl: string;
+  profileUrl: string;
+}
+
 export async function sendVerificationEmail(params: EmailVerificationParams): Promise<boolean> {
   console.log('=== EMAIL VERIFICATION START ===');
   console.log('Email service called with params:', {
@@ -992,6 +999,183 @@ Connecting equestrian professionals worldwide
     return true;
   } catch (error) {
     console.error('Conversation reminder email service error:', error);
+    return false;
+  }
+}
+
+export async function sendPushNotificationAnnouncementEmail(params: PushNotificationAnnouncementParams): Promise<boolean> {
+  console.log('=== PUSH NOTIFICATION ANNOUNCEMENT EMAIL START ===');
+  console.log('Push notification announcement email service called with params:', {
+    to: params.to,
+    username: params.username
+  });
+
+  const htmlContent = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">ProHorseMatch</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">📱 Platform Update</p>
+      </div>
+      
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">Never Miss a Match Again! 🔔</h2>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${params.username}</strong>,
+        </p>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px; color: #4A453E;">
+          We're excited to announce a major new feature: <strong>Push Notifications</strong> are now available on ProHorseMatch!
+        </p>
+        
+        <div style="background: #E8F5E8; border: 1px solid #C8E6C9; padding: 25px; margin: 30px 0; border-radius: 8px;">
+          <p style="margin: 0 0 15px 0; color: #2E7D32; font-weight: 600; font-size: 18px;">✨ Get Instant Updates For:</p>
+          <ul style="margin: 0; padding-left: 20px; color: #2E7D32; font-size: 16px; line-height: 1.8;">
+            <li><strong>New Matches:</strong> When horses matching your saved searches become available</li>
+            <li><strong>New Messages:</strong> When someone contacts you about a horse</li>
+            <li><strong>Listing Updates:</strong> When horses you're interested in have updates</li>
+          </ul>
+        </div>
+        
+        <div style="background: #FFF9E6; border-left: 4px solid #CDAC6E; padding: 20px; margin: 25px 0; border-radius: 4px;">
+          <p style="font-size: 16px; line-height: 1.6; margin: 0; color: #6B5B3D;">
+            💡 <strong>Stay Ahead of the Competition:</strong> In the fast-moving equestrian market, being first to respond can make all the difference. Enable notifications to never miss an opportunity!
+          </p>
+        </div>
+        
+        <h3 style="color: #2D2A25; font-size: 20px; font-weight: 600; margin: 30px 0 15px 0;">How to Enable Notifications:</h3>
+        
+        <div style="background: #F8F6F0; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #E8E3D3;">
+          <p style="font-size: 16px; margin: 0 0 15px 0; color: #2D2A25; font-weight: 600;">📱 On Mobile (iOS/Android):</p>
+          <ol style="margin: 0; padding-left: 20px; color: #4A453E; font-size: 15px; line-height: 1.8;">
+            <li>Install ProHorseMatch as an app on your home screen</li>
+            <li>Open the app and go to your Profile</li>
+            <li>Navigate to Account Settings → Notifications</li>
+            <li>Enable the notifications you want to receive</li>
+          </ol>
+        </div>
+        
+        <div style="background: #F8F6F0; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #E8E3D3;">
+          <p style="font-size: 16px; margin: 0 0 15px 0; color: #2D2A25; font-weight: 600;">💻 On Desktop:</p>
+          <ol style="margin: 0; padding-left: 20px; color: #4A453E; font-size: 15px; line-height: 1.8;">
+            <li>Visit ProHorseMatch in Chrome, Edge, or Firefox</li>
+            <li>Go to your Profile → Account Settings → Notifications</li>
+            <li>Click "Enable Notifications" and allow when prompted</li>
+          </ol>
+        </div>
+        
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${params.profileUrl}" 
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s; margin-bottom: 15px;">
+            Enable Notifications Now
+          </a>
+          <br>
+          <a href="${params.helpUrl}" 
+             style="color: #CDAC6E; text-decoration: none; font-size: 14px; display: inline-block; margin-top: 10px;">
+            📖 View Detailed Installation Guide
+          </a>
+        </div>
+        
+        <div style="background: #F0F7FF; border: 1px solid #B8D8FF; padding: 20px; margin: 30px 0; border-radius: 8px;">
+          <p style="margin: 0; color: #1565C0; font-size: 14px; line-height: 1.7;">
+            <strong>🔒 Privacy First:</strong> You're in complete control. Choose which notifications you want to receive, and disable them anytime from your settings. We respect your privacy and will never spam you.
+          </p>
+        </div>
+        
+        <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
+          Need help? Our comprehensive installation guide walks you through the entire process step-by-step for iOS, Android, and Desktop.
+        </p>
+        
+        <p style="font-size: 14px; color: #8B7355; margin-top: 25px; border-top: 1px solid #E8E3D3; padding-top: 20px;">
+          Best regards,<br>
+          <strong>The ProHorseMatch Team</strong><br>
+          <em>Connecting Performance Horses with new owners</em>
+        </p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+ProHorseMatch - Push Notifications Now Available! 📱
+
+Hi ${params.username},
+
+We're excited to announce a major new feature: Push Notifications are now available on ProHorseMatch!
+
+✨ GET INSTANT UPDATES FOR:
+• New Matches: When horses matching your saved searches become available
+• New Messages: When someone contacts you about a horse  
+• Listing Updates: When horses you're interested in have updates
+
+💡 Stay Ahead of the Competition
+In the fast-moving equestrian market, being first to respond can make all the difference. Enable notifications to never miss an opportunity!
+
+HOW TO ENABLE NOTIFICATIONS:
+
+📱 On Mobile (iOS/Android):
+1. Install ProHorseMatch as an app on your home screen
+2. Open the app and go to your Profile
+3. Navigate to Account Settings → Notifications
+4. Enable the notifications you want to receive
+
+💻 On Desktop:
+1. Visit ProHorseMatch in Chrome, Edge, or Firefox
+2. Go to your Profile → Account Settings → Notifications
+3. Click "Enable Notifications" and allow when prompted
+
+Enable notifications now: ${params.profileUrl}
+
+View detailed installation guide: ${params.helpUrl}
+
+🔒 Privacy First: You're in complete control. Choose which notifications you want to receive, and disable them anytime from your settings.
+
+Need help? Our comprehensive installation guide walks you through the entire process step-by-step.
+
+Best regards,
+The ProHorseMatch Team
+Connecting Performance Horses with new owners
+
+© 2025 ProHorseMatch
+  `;
+
+  try {
+    console.log('Attempting to send push notification announcement...');
+    
+    if (mailService) {
+      // Use SendGrid
+      console.log('Sending via SendGrid...');
+      await mailService.send({
+        from: 'notifications@prohorsematch.com',
+        to: params.to,
+        subject: '📱 Never Miss a Match! Push Notifications Now Available',
+        html: htmlContent,
+        text: textContent,
+      });
+    } else if (resend) {
+      // Use Resend
+      console.log('Sending via Resend...');
+      const { data, error } = await resend.emails.send({
+        from: 'ProHorseMatch <notifications@prohorsematch.com>',
+        to: [params.to],
+        subject: '📱 Never Miss a Match! Push Notifications Now Available',
+        html: htmlContent,
+        text: textContent,
+      });
+      
+      if (error) {
+        console.error('Push notification announcement email error:', error);
+        return false;
+      }
+      console.log('Resend response:', data);
+    } else {
+      console.warn('No email service configured - push notification announcement not sent');
+      return false;
+    }
+    
+    console.log('Push notification announcement email sent successfully');
+    return true;
+  } catch (error) {
+    console.error('Push notification announcement email service error:', error);
     return false;
   }
 }
