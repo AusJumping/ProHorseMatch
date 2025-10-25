@@ -46,15 +46,16 @@ export function ContextualNotificationPrompt() {
     const lastPromptTime = parseInt(localStorage.getItem('last-prompt-time') || '0');
     const now = Date.now();
     
-    // Increment page views
-    localStorage.setItem('page-views', (pageViews + 1).toString());
+    // Increment page views BEFORE checking eligibility
+    const updatedPageViews = pageViews + 1;
+    localStorage.setItem('page-views', updatedPageViews.toString());
 
     // Show prompt if:
     // 1. User has viewed 3+ pages
     // 2. At least 1 minute since last prompt (avoid spam)
     // 3. Not on auth or help pages
     const shouldShow = 
-      pageViews >= 3 && 
+      updatedPageViews >= 3 && 
       (now - lastPromptTime) > 60000 &&
       !window.location.pathname.includes('/auth') &&
       !window.location.pathname.includes('/help');

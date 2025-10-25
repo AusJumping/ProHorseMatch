@@ -41,6 +41,7 @@ export function PWAInstallBanner() {
       const lastInstallPromptTime = parseInt(localStorage.getItem('last-install-prompt-time') || '0');
       const now = Date.now();
 
+      // Note: page-views is incremented by ContextualNotificationPrompt, so we use the current value
       // Show if:
       // 1. User has viewed 2+ pages
       // 2. At least 2 minutes since last prompt
