@@ -27,6 +27,7 @@ import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import WelcomePage from "@/pages/welcome";
 import VerifyEmail from "@/pages/verify-email";
+import HelpPage from "@/pages/help";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
@@ -70,6 +71,7 @@ function Router() {
         <Route path="/donation-checkout" component={DonationCheckout} />
         <Route path="/donation-success" component={DonationSuccess} />
         <Route path="/welcome" component={WelcomePage} />
+        <Route path="/help" component={HelpPage} />
         <Route component={NotFound} />
       </Switch>
     </AutoLogoutWrapper>
