@@ -143,6 +143,172 @@ interface HorseDeletionAnalytics {
   }>;
 }
 
+function EmailAnnouncementPanel() {
+  const { toast } = useToast();
+  const [previewSent, setPreviewSent] = useState(false);
+  const [batchSent, setBatchSent] = useState(false);
+  
+  const previewMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/preview-push-notification-announcement', {
+        method: 'POST'
+      });
+      return response;
+    },
+    onSuccess: () => {
+      setPreviewSent(true);
+      toast({
+        title: "Preview Email Sent",
+        description: "Check info@australianjumping.com.au for the preview email.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Preview",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  const batchMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/send-push-notification-announcement', {
+        method: 'POST'
+      });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      setBatchSent(true);
+      toast({
+        title: "Announcement Emails Sent",
+        description: `Successfully sent ${data.sent} of ${data.total} emails to verified users.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Emails",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="h-5 w-5" />
+          Push Notification Feature Announcement
+        </CardTitle>
+        <CardDescription>
+          Send announcement email to all verified users about the new push notifications feature
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Info Section */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-semibold text-blue-900 mb-2">📧 Email Details</h3>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• <strong>Subject:</strong> Never Miss a Match! Push Notifications Now Available</li>
+            <li>• <strong>Recipients:</strong> All verified users (92 users)</li>
+            <li>• <strong>Content:</strong> Feature announcement with installation instructions</li>
+            <li>• <strong>Send Time:</strong> ~45-50 seconds (rate limited for deliverability)</li>
+          </ul>
+        </div>
+        
+        {/* Preview Section */}
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-2">Step 1: Preview Email</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Send a test email to <strong>info@australianjumping.com.au</strong> to review before sending to all users.
+            </p>
+            <Button
+              onClick={() => previewMutation.mutate()}
+              disabled={previewMutation.isPending || previewSent}
+              className="bg-blue-600 hover:bg-blue-700"
+              data-testid="button-send-preview-email"
+            >
+              {previewMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Sending Preview...
+                </>
+              ) : previewSent ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Preview Sent
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Preview to Admin
+                </>
+              )}
+            </Button>
+            {previewSent && (
+              <p className="text-sm text-green-600 mt-2">
+                ✓ Preview email sent! Check your inbox at info@australianjumping.com.au
+              </p>
+            )}
+          </div>
+        </div>
+        
+        <Separator />
+        
+        {/* Batch Send Section */}
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-2">Step 2: Send to All Users</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              After reviewing the preview, send the announcement to all 92 verified users.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+              <p className="text-sm text-yellow-800">
+                ⚠️ <strong>Important:</strong> This will send 92 emails. Make sure you've reviewed the preview first!
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                if (confirm('Are you sure you want to send the push notification announcement to all 92 verified users?')) {
+                  batchMutation.mutate();
+                }
+              }}
+              disabled={batchMutation.isPending || batchSent || !previewSent}
+              variant={batchSent ? "outline" : "default"}
+              className={batchSent ? "" : "bg-green-600 hover:bg-green-700"}
+              data-testid="button-send-batch-emails"
+            >
+              {batchMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Sending to {92} users...
+                </>
+              ) : batchSent ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Emails Sent Successfully
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send to All {92} Users
+                </>
+              )}
+            </Button>
+            {batchSent && (
+              <p className="text-sm text-green-600 mt-2">
+                ✓ Announcement emails sent successfully to all verified users!
+              </p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -543,7 +709,7 @@ export default function AdminPage() {
             </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="horses">Horses</TabsTrigger>
@@ -551,6 +717,7 @@ export default function AdminPage() {
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
             <TabsTrigger value="deletions">Deletions</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
+            <TabsTrigger value="email">Email</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -1206,6 +1373,11 @@ export default function AdminPage() {
                 <PushNotificationTestPanel />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Email Tab */}
+          <TabsContent value="email" className="space-y-6">
+            <EmailAnnouncementPanel />
           </TabsContent>
             </Tabs>
           </div>
