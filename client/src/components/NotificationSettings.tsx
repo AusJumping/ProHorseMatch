@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Heart, MessageSquare, RefreshCw, Mail } from "lucide-react";
+import { Bell, BellOff, Heart, MessageSquare, RefreshCw, Mail, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -277,6 +278,14 @@ export function NotificationSettings() {
                 <p className="mt-2 text-sm">
                   💡 This is required for iOS 16.4+ to receive push notifications
                 </p>
+                <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                  <Link href="/help#ios-section">
+                    <Button variant="outline" size="sm" className="w-full bg-white dark:bg-blue-900 hover:bg-blue-50 dark:hover:bg-blue-800">
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      View Detailed iOS Installation Guide
+                    </Button>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="text-blue-800 dark:text-blue-200">
@@ -287,6 +296,14 @@ export function NotificationSettings() {
                   <li><strong>Chrome/Edge:</strong> Look for the install icon in the address bar or browser menu</li>
                   <li><strong>Android:</strong> Tap "Add to Home Screen" when prompted</li>
                 </ul>
+                <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                  <Link href="/help">
+                    <Button variant="outline" size="sm" className="w-full bg-white dark:bg-blue-900 hover:bg-blue-50 dark:hover:bg-blue-800">
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      View Full Installation Guide
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </div>

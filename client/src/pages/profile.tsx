@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, HelpCircle, Smartphone } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
@@ -112,6 +112,43 @@ export default function Profile() {
           <TabsContent value="settings">
             <div className="space-y-6">
               <NotificationSettings />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <HelpCircle className="w-5 h-5 text-[#8B7355]" />
+                    Help & Installation
+                  </CardTitle>
+                  <CardDescription>
+                    Learn how to install the app and enable push notifications
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-neutral-700">
+                    Get the best ProHorseMatch experience by installing our app on your device. Installation enables push notifications, faster access, and works offline.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/help')}
+                      className="flex-1"
+                      data-testid="button-installation-guide"
+                    >
+                      <Smartphone className="w-4 h-4 mr-2" />
+                      View Installation Guide
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/help#faq-section')}
+                      className="flex-1"
+                      data-testid="button-faq"
+                    >
+                      <HelpCircle className="w-4 h-4 mr-2" />
+                      FAQs
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
               
               <Card>
                 <CardHeader>
