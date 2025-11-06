@@ -162,7 +162,7 @@ export function PushNotificationTestPanel() {
                       <div className="font-medium text-sm">{user.username}</div>
                       <div className="text-xs text-gray-600">{user.email}</div>
                     </div>
-                    <Badge variant="secondary" className="text-xs">No subscription</Badge>
+                    <Badge variant="secondary" className="text-xs">Notifications disabled</Badge>
                   </div>
                 ))}
               </div>
