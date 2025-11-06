@@ -2248,6 +2248,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get count of users who would receive subscription reminders (admin only)
+  app.get("/api/admin/subscription-reminder-count", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Get all users
+      const allUsers = await storage.getUsers();
+      
+      // Filter for users who would receive the reminder
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      
+      const usersWithoutSubscription = allUsers.filter(user => {
+        if (!user.email_verified || user.stripe_subscription_id) {
+          return false;
+        }
+        
+        if (user.subscription_reminder_sent_at) {
+          const lastSent = new Date(user.subscription_reminder_sent_at);
+          if (lastSent > twentyFourHoursAgo) {
+            return false;
+          }
+        }
+        
+        return true;
+      });
+      
+      return res.status(200).json({
+        count: usersWithoutSubscription.length,
+        message: `${usersWithoutSubscription.length} verified users without subscriptions (excluding those who received reminders in last 24h)`
+      });
+    } catch (error) {
+      console.error("Count subscription reminder error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Send subscription reminder preview email to admin (admin only)
+  app.post("/api/admin/preview-subscription-reminder", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      console.log('=== PREVIEW SUBSCRIPTION REMINDER ===');
+      
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      // Generate a test reminder token for preview
+      const reminderToken = generateReminderToken();
+      const subscriptionUrl = `${baseUrl}/subscription?reminderToken=${reminderToken}`;
+      
+      // Send preview email to admin
+      const emailSent = await sendSubscriptionReminderEmail(
+        'info@australianjumping.com.au',
+        adminUser.username,
+        subscriptionUrl
+      );
+      
+      if (emailSent) {
+        console.log('✓ Preview subscription reminder sent to admin');
+        return res.status(200).json({
+          message: 'Preview email sent to info@australianjumping.com.au',
+          success: true
+        });
+      } else {
+        console.log('✗ Failed to send preview subscription reminder');
+        return res.status(500).json({
+          message: 'Failed to send preview email',
+          success: false
+        });
+      }
+    } catch (error) {
+      console.error("Preview subscription reminder error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Send push notification announcement preview email to admin (admin only)
   app.post("/api/admin/preview-push-notification-announcement", isTokenAuthenticated, async (req: any, res) => {
     try {

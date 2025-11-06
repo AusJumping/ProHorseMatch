@@ -143,6 +143,175 @@ interface HorseDeletionAnalytics {
   }>;
 }
 
+function SubscriptionReminderPanel() {
+  const { toast } = useToast();
+  const [previewSent, setPreviewSent] = useState(false);
+  const [batchSent, setBatchSent] = useState(false);
+  
+  const { data: countData, isLoading: countLoading } = useQuery({
+    queryKey: ['/api/admin/subscription-reminder-count'],
+  });
+  
+  const recipientCount = countData?.count || 0;
+  
+  const previewMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/preview-subscription-reminder');
+      return response;
+    },
+    onSuccess: () => {
+      setPreviewSent(true);
+      toast({
+        title: "Preview Email Sent",
+        description: "Check info@australianjumping.com.au for the preview email.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Preview",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  const batchMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/send-subscription-reminders');
+      return response;
+    },
+    onSuccess: (data: any) => {
+      setBatchSent(true);
+      toast({
+        title: "Subscription Reminder Emails Sent",
+        description: `Successfully sent ${data.sent} of ${data.total} emails to users without subscriptions.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Emails",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="h-5 w-5" />
+          Subscription Reminder
+        </CardTitle>
+        <CardDescription>
+          Remind users without subscriptions to select their free plan and start browsing horses
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Info Section */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <h3 className="font-semibold text-green-900 mb-2">📧 Email Details</h3>
+          <ul className="text-sm text-green-800 space-y-1">
+            <li>• <strong>Subject:</strong> Complete Your ProHorseMatch Setup - Free Beta Access</li>
+            <li>• <strong>Recipients:</strong> {countLoading ? 'Loading...' : `${recipientCount} verified users without subscriptions`}</li>
+            <li>• <strong>Content:</strong> Free beta access reminder, no payment required, browse lovely horses</li>
+            <li>• <strong>Link:</strong> Direct link to subscription selection page with auto-login</li>
+            <li>• <strong>Send Time:</strong> ~{Math.ceil(recipientCount * 0.55)} seconds (rate limited for deliverability)</li>
+          </ul>
+        </div>
+        
+        {/* Preview Section */}
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-2">Step 1: Preview Email</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Send a test email to <strong>info@australianjumping.com.au</strong> to review before sending to all users.
+            </p>
+            <Button
+              onClick={() => previewMutation.mutate()}
+              disabled={previewMutation.isPending || previewSent}
+              className="bg-blue-600 hover:bg-blue-700"
+              data-testid="button-send-subscription-preview"
+            >
+              {previewMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Sending Preview...
+                </>
+              ) : previewSent ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Preview Sent
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Preview to Admin
+                </>
+              )}
+            </Button>
+            {previewSent && (
+              <p className="text-sm text-green-600 mt-2">
+                ✓ Preview email sent! Check your inbox at info@australianjumping.com.au
+              </p>
+            )}
+          </div>
+        </div>
+        
+        <Separator />
+        
+        {/* Batch Send Section */}
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-2">Step 2: Send to All Users</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              After reviewing the preview, send the reminder to all {recipientCount} users without subscriptions.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+              <p className="text-sm text-yellow-800">
+                ⚠️ <strong>Important:</strong> This will send {recipientCount} emails. Make sure you've reviewed the preview first!
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                if (confirm(`Are you sure you want to send subscription reminders to ${recipientCount} users without subscriptions?`)) {
+                  batchMutation.mutate();
+                }
+              }}
+              disabled={batchMutation.isPending || batchSent || !previewSent || recipientCount === 0}
+              variant={batchSent ? "outline" : "default"}
+              className={batchSent ? "" : "bg-green-600 hover:bg-green-700"}
+              data-testid="button-send-subscription-batch"
+            >
+              {batchMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Sending to {recipientCount} users...
+                </>
+              ) : batchSent ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Emails Sent Successfully
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send to All {recipientCount} Users
+                </>
+              )}
+            </Button>
+            {batchSent && (
+              <p className="text-sm text-green-600 mt-2">
+                ✓ Subscription reminder emails sent successfully to all users without subscriptions!
+              </p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function EmailAnnouncementPanel() {
   const { toast } = useToast();
   const [previewSent, setPreviewSent] = useState(false);
@@ -1373,6 +1542,7 @@ export default function AdminPage() {
 
           {/* Email Tab */}
           <TabsContent value="email" className="space-y-6">
+            <SubscriptionReminderPanel />
             <EmailAnnouncementPanel />
           </TabsContent>
             </Tabs>
