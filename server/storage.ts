@@ -1476,7 +1476,16 @@ export class DatabaseStorage implements IStorage {
   
   // Horse methods
   async getHorses(): Promise<Horse[]> {
-    return await db.select().from(horses).orderBy(desc(horses.created_at));
+    const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
+    
+    // TEMPORARY: Prioritize "Greengrove Caspian" to appear first
+    const greengroveIndex = allHorses.findIndex(h => h.name === 'Greengrove Caspian');
+    if (greengroveIndex > 0) {
+      const greengrove = allHorses.splice(greengroveIndex, 1)[0];
+      allHorses.unshift(greengrove);
+    }
+    
+    return allHorses;
   }
 
   async getHorseById(id: number): Promise<Horse | undefined> {
@@ -1609,12 +1618,14 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`DatabaseStorage.getHorsesByFilters - found ${filteredHorses.length} horses after filtering`);
     
-    // TEMPORARY: Show "Jazdan Fascination" first (to be reverted later)
-    return filteredHorses.sort((a, b) => {
-      if (a.name === 'Jazdan Fascination') return -1;
-      if (b.name === 'Jazdan Fascination') return 1;
-      return 0; // Keep original order (created_at desc) for others
-    });
+    // TEMPORARY: Prioritize "Greengrove Caspian" to appear first
+    const greengroveIndex = filteredHorses.findIndex(h => h.name === 'Greengrove Caspian');
+    if (greengroveIndex > 0) {
+      const greengrove = filteredHorses.splice(greengroveIndex, 1)[0];
+      filteredHorses.unshift(greengrove);
+    }
+    
+    return filteredHorses;
   }
 
   async createHorse(horse: InsertHorse): Promise<Horse> {
