@@ -422,7 +422,7 @@ export default function Auth() {
                     <div>
                       <CardTitle>Registration Details</CardTitle>
                       <CardDescription>
-                        Create your account to find your perfect horse
+                        Create your free account to search or list performance horses (no payment details needed)
                       </CardDescription>
                     </div>
                   </div>
