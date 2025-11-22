@@ -475,6 +475,139 @@ function EmailAnnouncementPanel() {
   );
 }
 
+function LoginAnalyticsPanel() {
+  const { data: analyticsData, isLoading } = useQuery({
+    queryKey: ['/api/admin/login-analytics'],
+  });
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Login Analytics
+          </CardTitle>
+          <CardDescription>
+            Track user engagement with daily, weekly, and monthly active users
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const { dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend } = analyticsData || {};
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Login Analytics
+          </CardTitle>
+          <CardDescription>
+            Track user engagement with daily, weekly, and monthly active users
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Daily Active Users */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Daily Active Users</CardTitle>
+                <Activity className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-amber-600" data-testid="text-dau">
+                  {dailyActiveUsers || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Users who logged in today
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Weekly Active Users */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Weekly Active Users</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-green-600" data-testid="text-wau">
+                  {weeklyActiveUsers || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Users who logged in this week
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Monthly Active Users */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Monthly Active Users</CardTitle>
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-blue-600" data-testid="text-mau">
+                  {monthlyActiveUsers || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Users who logged in this month
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Login Trend Chart */}
+      {loginTrend && loginTrend.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">30-Day Login Trend</CardTitle>
+            <CardDescription>
+              Daily unique logins over the past 30 days
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-64 w-full">
+              <div className="space-y-2">
+                {loginTrend.map((item: { date: string; count: number }) => (
+                  <div key={item.date} className="flex items-center gap-4">
+                    <div className="text-sm text-muted-foreground w-24">
+                      {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                    <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+                      <div
+                        className="bg-amber-600 h-full rounded-full flex items-center justify-end pr-2"
+                        style={{ 
+                          width: `${Math.max(5, (item.count / Math.max(...loginTrend.map((t: { count: number }) => t.count))) * 100)}%` 
+                        }}
+                      >
+                        <span className="text-xs font-medium text-white">
+                          {item.count}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -887,6 +1020,7 @@ export default function AdminPage() {
                 <SelectItem value="horses">Horses</SelectItem>
                 <SelectItem value="revenue">Revenue</SelectItem>
                 <SelectItem value="engagement">Engagement</SelectItem>
+                <SelectItem value="analytics">Analytics</SelectItem>
                 <SelectItem value="deletions">Deletions</SelectItem>
                 <SelectItem value="notifications">Notifications</SelectItem>
                 <SelectItem value="email">Email</SelectItem>
@@ -895,12 +1029,13 @@ export default function AdminPage() {
           </div>
 
           {/* Desktop Tabs */}
-          <TabsList className="hidden md:grid w-full grid-cols-8">
+          <TabsList className="hidden md:grid w-full grid-cols-9">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="horses">Horses</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="deletions">Deletions</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
             <TabsTrigger value="email">Email</TabsTrigger>
@@ -1559,6 +1694,11 @@ export default function AdminPage() {
                 <PushNotificationTestPanel />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics" className="space-y-6">
+            <LoginAnalyticsPanel />
           </TabsContent>
 
           {/* Email Tab */}

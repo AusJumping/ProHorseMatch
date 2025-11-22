@@ -2479,6 +2479,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Login Analytics endpoint
+  app.get("/api/admin/login-analytics", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const currentUser = await storage.getUserById(req.userId);
+      if (!currentUser || currentUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+
+      // Fetch analytics data
+      const dau = await storage.getDailyActiveUsers();
+      const wau = await storage.getWeeklyActiveUsers();
+      const mau = await storage.getMonthlyActiveUsers();
+      const trend = await storage.getLoginTrend(30);
+
+      return res.status(200).json({
+        dailyActiveUsers: dau,
+        weeklyActiveUsers: wau,
+        monthlyActiveUsers: mau,
+        loginTrend: trend
+      });
+    } catch (error) {
+      console.error("Login analytics error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Match routes
   app.post("/api/matches", isTokenAuthenticated, async (req, res) => {
     try {
