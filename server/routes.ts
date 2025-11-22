@@ -2488,17 +2488,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Unauthorized" });
       }
 
-      // Fetch analytics data
+      // Fetch login analytics data
       const dau = await storage.getDailyActiveUsers();
       const wau = await storage.getWeeklyActiveUsers();
       const mau = await storage.getMonthlyActiveUsers();
-      const trend = await storage.getLoginTrend(30);
+      const loginTrend = await storage.getLoginTrend(30);
+      
+      // Fetch message analytics data
+      const dailyMessages = await storage.getDailyMessages();
+      const weeklyMessages = await storage.getWeeklyMessages();
+      const monthlyMessages = await storage.getMonthlyMessages();
+      const messageTrend = await storage.getMessageTrend(30);
+      
+      // Fetch conversation analytics data
+      const dailyConversations = await storage.getDailyConversations();
+      const weeklyConversations = await storage.getWeeklyConversations();
+      const monthlyConversations = await storage.getMonthlyConversations();
+      const conversationTrend = await storage.getConversationTrend(30);
 
       return res.status(200).json({
         dailyActiveUsers: dau,
         weeklyActiveUsers: wau,
         monthlyActiveUsers: mau,
-        loginTrend: trend
+        loginTrend,
+        dailyMessages,
+        weeklyMessages,
+        monthlyMessages,
+        messageTrend,
+        dailyConversations,
+        weeklyConversations,
+        monthlyConversations,
+        conversationTrend
       });
     } catch (error) {
       console.error("Login analytics error:", error);

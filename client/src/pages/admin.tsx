@@ -119,6 +119,14 @@ interface LoginAnalyticsData {
   weeklyActiveUsers: number;
   monthlyActiveUsers: number;
   loginTrend: Array<{ date: string; count: number }>;
+  dailyMessages: number;
+  weeklyMessages: number;
+  monthlyMessages: number;
+  messageTrend: Array<{ date: string; count: number }>;
+  dailyConversations: number;
+  weeklyConversations: number;
+  monthlyConversations: number;
+  conversationTrend: Array<{ date: string; count: number }>;
 }
 
 interface HorseDeletionResponse {
@@ -508,10 +516,15 @@ function LoginAnalyticsPanel() {
     );
   }
 
-  const { dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend } = analyticsData || {};
+  const { 
+    dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend,
+    dailyMessages, weeklyMessages, monthlyMessages, messageTrend,
+    dailyConversations, weeklyConversations, monthlyConversations, conversationTrend
+  } = analyticsData || {};
 
   return (
     <div className="space-y-6">
+      {/* Login Analytics */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -568,6 +581,134 @@ function LoginAnalyticsPanel() {
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Users who logged in this month
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Message Analytics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageCircle className="h-5 w-5" />
+            Message Analytics
+          </CardTitle>
+          <CardDescription>
+            Track messaging activity across the platform
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Daily Messages */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Messages Today</CardTitle>
+                <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-purple-600" data-testid="text-daily-messages">
+                  {dailyMessages || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Messages sent today
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Weekly Messages */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Messages This Week</CardTitle>
+                <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-indigo-600" data-testid="text-weekly-messages">
+                  {weeklyMessages || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Messages in past 7 days
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Monthly Messages */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Messages This Month</CardTitle>
+                <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-pink-600" data-testid="text-monthly-messages">
+                  {monthlyMessages || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Messages in past 30 days
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Conversation Analytics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Conversation Analytics
+          </CardTitle>
+          <CardDescription>
+            Track new conversations started on the platform
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Daily Conversations */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Conversations Today</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-teal-600" data-testid="text-daily-conversations">
+                  {dailyConversations || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  New conversations started today
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Weekly Conversations */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Conversations This Week</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-cyan-600" data-testid="text-weekly-conversations">
+                  {weeklyConversations || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  New conversations in past 7 days
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Monthly Conversations */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Conversations This Month</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-sky-600" data-testid="text-monthly-conversations">
+                  {monthlyConversations || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  New conversations in past 30 days
                 </p>
               </CardContent>
             </Card>
