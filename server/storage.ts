@@ -2444,11 +2444,11 @@ export class DatabaseStorage implements IStorage {
     // Get all login events grouped by month, no time limit
     const result = await db
       .select({
-        month: sql<string>`TO_CHAR(${loginEvents.created_at}, 'YYYY-MM')`,
+        month: sql<string>`TO_CHAR(${loginEvents.logged_in_at}, 'YYYY-MM')`,
         count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})`
       })
       .from(loginEvents)
-      .groupBy(sql`TO_CHAR(${loginEvents.created_at}, 'YYYY-MM')`);
+      .groupBy(sql`TO_CHAR(${loginEvents.logged_in_at}, 'YYYY-MM')`);
     
     return result
       .map(r => ({ month: r.month, count: r.count }))
