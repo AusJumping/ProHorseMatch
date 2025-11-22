@@ -124,6 +124,16 @@ export interface IStorage {
   getWeeklyActiveUsers(date?: Date): Promise<number>;
   getMonthlyActiveUsers(date?: Date): Promise<number>;
   getLoginTrend(days: number): Promise<Array<{ date: string; count: number }>>;
+  
+  // Message and conversation analytics methods
+  getDailyMessages(date?: Date): Promise<number>;
+  getWeeklyMessages(date?: Date): Promise<number>;
+  getMonthlyMessages(date?: Date): Promise<number>;
+  getMessageTrend(days: number): Promise<Array<{ date: string; count: number }>>;
+  getDailyConversations(date?: Date): Promise<number>;
+  getWeeklyConversations(date?: Date): Promise<number>;
+  getMonthlyConversations(date?: Date): Promise<number>;
+  getConversationTrend(days: number): Promise<Array<{ date: string; count: number }>>;
 }
 
 import * as fs from 'fs';
