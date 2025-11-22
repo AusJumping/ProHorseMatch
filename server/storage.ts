@@ -8,7 +8,8 @@ import {
   savedSearches, type SavedSearch, type InsertSavedSearch,
   searchNotifications, type SearchNotification, type InsertSearchNotification,
   horseDeletionResponses, type HorseDeletionResponse, type InsertHorseDeletionResponse,
-  pushSubscriptions, type PushSubscription, type InsertPushSubscription
+  pushSubscriptions, type PushSubscription, type InsertPushSubscription,
+  loginEvents, type LoginEvent, type InsertLoginEvent
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, sql } from "drizzle-orm";
@@ -116,6 +117,13 @@ export interface IStorage {
   createHorseDeletionResponse(response: InsertHorseDeletionResponse): Promise<HorseDeletionResponse>;
   getHorseDeletionResponses(): Promise<HorseDeletionResponse[]>;
   getHorseDeletionResponsesByUserId(userId: number): Promise<HorseDeletionResponse[]>;
+  
+  // Login tracking and analytics methods
+  trackLoginEvent(userId: number): Promise<void>;
+  getDailyActiveUsers(date?: Date): Promise<number>;
+  getWeeklyActiveUsers(date?: Date): Promise<number>;
+  getMonthlyActiveUsers(date?: Date): Promise<number>;
+  getLoginTrend(days: number): Promise<Array<{ date: string; count: number }>>;
 }
 
 import * as fs from 'fs';
@@ -1325,6 +1333,27 @@ export class MemStorage implements IStorage {
   }): Promise<void> {
     throw new Error("Push preferences not implemented in MemStorage - use DatabaseStorage");
   }
+  
+  // Login tracking and analytics methods - stub implementations for MemStorage
+  async trackLoginEvent(userId: number): Promise<void> {
+    // No-op for MemStorage - tracking only works with DatabaseStorage
+  }
+  
+  async getDailyActiveUsers(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getWeeklyActiveUsers(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getMonthlyActiveUsers(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getLoginTrend(days: number): Promise<Array<{ date: string; count: number }>> {
+    return [];
+  }
 }
 
 // Database-backed storage implementation
@@ -2070,6 +2099,78 @@ export class DatabaseStorage implements IStorage {
       .update(pushSubscriptions)
       .set(preferences)
       .where(eq(pushSubscriptions.user_id, userId));
+  }
+  
+  // Login tracking and analytics methods
+  async trackLoginEvent(userId: number): Promise<void> {
+    await db.insert(loginEvents).values({ user_id: userId });
+  }
+  
+  async getDailyActiveUsers(date: Date = new Date()): Promise<number> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const result = await db
+      .select({ count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})` })
+      .from(loginEvents)
+      .where(
+        and(
+          sql`${loginEvents.logged_in_at} >= ${startOfDay}`,
+          sql`${loginEvents.logged_in_at} <= ${endOfDay}`
+        )
+      );
+    
+    return Number(result[0]?.count || 0);
+  }
+  
+  async getWeeklyActiveUsers(date: Date = new Date()): Promise<number> {
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const result = await db
+      .select({ count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})` })
+      .from(loginEvents)
+      .where(sql`${loginEvents.logged_in_at} >= ${startOfWeek}`);
+    
+    return Number(result[0]?.count || 0);
+  }
+  
+  async getMonthlyActiveUsers(date: Date = new Date()): Promise<number> {
+    const startOfMonth = new Date(date);
+    startOfMonth.setDate(startOfMonth.getDate() - 30);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    const result = await db
+      .select({ count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})` })
+      .from(loginEvents)
+      .where(sql`${loginEvents.logged_in_at} >= ${startOfMonth}`);
+    
+    return Number(result[0]?.count || 0);
+  }
+  
+  async getLoginTrend(days: number): Promise<Array<{ date: string; count: number }>> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const result = await db
+      .select({
+        date: sql<string>`DATE(${loginEvents.logged_in_at})`,
+        count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})`
+      })
+      .from(loginEvents)
+      .where(sql`${loginEvents.logged_in_at} >= ${startDate}`)
+      .groupBy(sql`DATE(${loginEvents.logged_in_at})`)
+      .orderBy(sql`DATE(${loginEvents.logged_in_at})`);
+    
+    return result.map(r => ({
+      date: r.date,
+      count: Number(r.count)
+    }));
   }
 }
 
