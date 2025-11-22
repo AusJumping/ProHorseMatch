@@ -292,6 +292,21 @@ export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions
 export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 
+// Login Events (for analytics tracking)
+export const loginEvents = pgTable("login_events", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull(),
+  logged_in_at: timestamp("logged_in_at").defaultNow(),
+});
+
+export const insertLoginEventSchema = createInsertSchema(loginEvents).omit({
+  id: true,
+  logged_in_at: true,
+});
+
+export type InsertLoginEvent = z.infer<typeof insertLoginEventSchema>;
+export type LoginEvent = typeof loginEvents.$inferSelect;
+
 // Constants for app
 export const disciplines = ["Jumping", "Dressage", "Eventing"];
 export const sexes = ["Mare", "Gelding", "Stallion"];
