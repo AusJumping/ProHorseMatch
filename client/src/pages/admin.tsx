@@ -114,6 +114,13 @@ interface RevenueData {
   averageRevenuePerUser: number;
 }
 
+interface LoginAnalyticsData {
+  dailyActiveUsers: number;
+  weeklyActiveUsers: number;
+  monthlyActiveUsers: number;
+  loginTrend: Array<{ date: string; count: number }>;
+}
+
 interface HorseDeletionResponse {
   id: number;
   horse_id: number;
@@ -476,7 +483,7 @@ function EmailAnnouncementPanel() {
 }
 
 function LoginAnalyticsPanel() {
-  const { data: analyticsData, isLoading } = useQuery({
+  const { data: analyticsData, isLoading } = useQuery<LoginAnalyticsData>({
     queryKey: ['/api/admin/login-analytics'],
   });
 
