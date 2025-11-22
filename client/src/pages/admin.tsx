@@ -41,6 +41,7 @@ import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/Sidebar';
 import MobileNavbar from '@/components/MobileNavbar';
 import { PushNotificationTestPanel } from '@/components/PushNotificationTestPanel';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface AnalyticsData {
   users: {
@@ -769,37 +770,47 @@ function LoginAnalyticsPanel() {
             </div>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-64 w-full">
-              <div className="space-y-2">
-                {(loginTimeRange === 'daily' ? loginTrend : loginTimeRange === 'monthly' ? loginTrendMonthly : loginTrendAllTime)?.map((item: { date?: string; month?: string; count: number }) => {
-                  const dateKey = loginTimeRange === 'daily' ? item.date! : item.month!;
-                  const displayDate = loginTimeRange === 'daily' 
-                    ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                    : item.month;
-                  const maxCount = Math.max(...(loginTimeRange === 'daily' ? loginTrend : loginTrendMonthly)!.map((t: { count: number }) => t.count));
-                  
-                  return (
-                    <div key={dateKey} className="flex items-center gap-4">
-                      <div className="text-sm text-muted-foreground w-24">
-                        {displayDate}
-                      </div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
-                        <div
-                          className="bg-amber-600 h-full rounded-full flex items-center justify-end pr-2"
-                          style={{ 
-                            width: `${Math.max(5, (item.count / maxCount) * 100)}%` 
-                          }}
-                        >
-                          <span className="text-xs font-medium text-white">
-                            {item.count}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={(loginTimeRange === 'daily' ? loginTrend : loginTimeRange === 'monthly' ? loginTrendMonthly : loginTrendAllTime)?.map(item => ({
+                    name: loginTimeRange === 'daily' 
+                      ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      : item.month,
+                    logins: item.count
+                  }))}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #ccc',
+                      borderRadius: '4px'
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="logins" 
+                    stroke="#d97706" 
+                    strokeWidth={2}
+                    dot={{ fill: '#d97706', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -850,37 +861,47 @@ function LoginAnalyticsPanel() {
             </div>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-64 w-full">
-              <div className="space-y-2">
-                {(conversationTimeRange === 'daily' ? conversationTrend : conversationTimeRange === 'monthly' ? conversationTrendMonthly : conversationTrendAllTime)?.map((item: { date?: string; month?: string; count: number }) => {
-                  const dateKey = conversationTimeRange === 'daily' ? item.date! : item.month!;
-                  const displayDate = conversationTimeRange === 'daily' 
-                    ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                    : item.month;
-                  const maxCount = Math.max(...(conversationTimeRange === 'daily' ? conversationTrend : conversationTrendMonthly)!.map((t: { count: number }) => t.count));
-                  
-                  return (
-                    <div key={dateKey} className="flex items-center gap-4">
-                      <div className="text-sm text-muted-foreground w-24">
-                        {displayDate}
-                      </div>
-                      <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
-                        <div
-                          className="bg-teal-600 h-full rounded-full flex items-center justify-end pr-2"
-                          style={{ 
-                            width: `${Math.max(5, (item.count / maxCount) * 100)}%` 
-                          }}
-                        >
-                          <span className="text-xs font-medium text-white">
-                            {item.count}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={(conversationTimeRange === 'daily' ? conversationTrend : conversationTimeRange === 'monthly' ? conversationTrendMonthly : conversationTrendAllTime)?.map(item => ({
+                    name: conversationTimeRange === 'daily' 
+                      ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                      : item.month,
+                    conversations: item.count
+                  }))}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    allowDecimals={false}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #ccc',
+                      borderRadius: '4px'
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="conversations" 
+                    stroke="#0d9488" 
+                    strokeWidth={2}
+                    dot={{ fill: '#0d9488', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       )}
