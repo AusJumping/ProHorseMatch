@@ -2493,6 +2493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const wau = await storage.getWeeklyActiveUsers();
       const mau = await storage.getMonthlyActiveUsers();
       const loginTrend = await storage.getLoginTrend(30);
+      const loginTrendMonthly = await storage.getLoginTrendMonthly(24); // Last 2 years
       
       // Fetch message analytics data
       const dailyMessages = await storage.getDailyMessages();
@@ -2505,12 +2506,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const weeklyConversations = await storage.getWeeklyConversations();
       const monthlyConversations = await storage.getMonthlyConversations();
       const conversationTrend = await storage.getConversationTrend(30);
+      const conversationTrendMonthly = await storage.getConversationTrendMonthly(24); // Last 2 years
 
       return res.status(200).json({
         dailyActiveUsers: dau,
         weeklyActiveUsers: wau,
         monthlyActiveUsers: mau,
         loginTrend,
+        loginTrendMonthly,
         dailyMessages,
         weeklyMessages,
         monthlyMessages,
@@ -2518,7 +2521,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dailyConversations,
         weeklyConversations,
         monthlyConversations,
-        conversationTrend
+        conversationTrend,
+        conversationTrendMonthly
       });
     } catch (error) {
       console.error("Login analytics error:", error);

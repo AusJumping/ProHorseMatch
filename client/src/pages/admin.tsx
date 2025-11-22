@@ -119,6 +119,7 @@ interface LoginAnalyticsData {
   weeklyActiveUsers: number;
   monthlyActiveUsers: number;
   loginTrend: Array<{ date: string; count: number }>;
+  loginTrendMonthly: Array<{ month: string; count: number }>;
   dailyMessages: number;
   weeklyMessages: number;
   monthlyMessages: number;
@@ -127,6 +128,7 @@ interface LoginAnalyticsData {
   weeklyConversations: number;
   monthlyConversations: number;
   conversationTrend: Array<{ date: string; count: number }>;
+  conversationTrendMonthly: Array<{ month: string; count: number }>;
 }
 
 interface HorseDeletionResponse {
@@ -517,10 +519,13 @@ function LoginAnalyticsPanel() {
   }
 
   const { 
-    dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend,
+    dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend, loginTrendMonthly,
     dailyMessages, weeklyMessages, monthlyMessages, messageTrend,
-    dailyConversations, weeklyConversations, monthlyConversations, conversationTrend
+    dailyConversations, weeklyConversations, monthlyConversations, conversationTrend, conversationTrendMonthly
   } = analyticsData || {};
+  
+  const [loginTimeRange, setLoginTimeRange] = useState<'daily' | 'monthly'>('daily');
+  const [conversationTimeRange, setConversationTimeRange] = useState<'daily' | 'monthly'>('daily');
 
   return (
     <div className="space-y-6">
@@ -717,36 +722,69 @@ function LoginAnalyticsPanel() {
       </Card>
 
       {/* Login Trend Chart */}
-      {loginTrend && loginTrend.length > 0 && (
+      {((loginTimeRange === 'daily' && loginTrend && loginTrend.length > 0) || 
+        (loginTimeRange === 'monthly' && loginTrendMonthly && loginTrendMonthly.length > 0)) && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">30-Day Login Trend</CardTitle>
-            <CardDescription>
-              Daily unique logins over the past 30 days
-            </CardDescription>
+            <div className="flex justify-between items-start flex-wrap gap-4">
+              <div>
+                <CardTitle className="text-sm font-medium">Login Trend</CardTitle>
+                <CardDescription>
+                  {loginTimeRange === 'daily' 
+                    ? 'Daily unique logins over the past 30 days' 
+                    : 'Monthly active users over the past 2 years'}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={loginTimeRange === 'daily' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setLoginTimeRange('daily')}
+                  data-testid="button-login-daily"
+                >
+                  Daily (30d)
+                </Button>
+                <Button
+                  variant={loginTimeRange === 'monthly' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setLoginTimeRange('monthly')}
+                  data-testid="button-login-monthly"
+                >
+                  Monthly (2y)
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-64 w-full">
               <div className="space-y-2">
-                {loginTrend.map((item: { date: string; count: number }) => (
-                  <div key={item.date} className="flex items-center gap-4">
-                    <div className="text-sm text-muted-foreground w-24">
-                      {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </div>
-                    <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
-                      <div
-                        className="bg-amber-600 h-full rounded-full flex items-center justify-end pr-2"
-                        style={{ 
-                          width: `${Math.max(5, (item.count / Math.max(...loginTrend.map((t: { count: number }) => t.count))) * 100)}%` 
-                        }}
-                      >
-                        <span className="text-xs font-medium text-white">
-                          {item.count}
-                        </span>
+                {(loginTimeRange === 'daily' ? loginTrend : loginTrendMonthly)?.map((item: { date?: string; month?: string; count: number }) => {
+                  const dateKey = loginTimeRange === 'daily' ? item.date! : item.month!;
+                  const displayDate = loginTimeRange === 'daily' 
+                    ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : item.month;
+                  const maxCount = Math.max(...(loginTimeRange === 'daily' ? loginTrend : loginTrendMonthly)!.map((t: { count: number }) => t.count));
+                  
+                  return (
+                    <div key={dateKey} className="flex items-center gap-4">
+                      <div className="text-sm text-muted-foreground w-24">
+                        {displayDate}
+                      </div>
+                      <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+                        <div
+                          className="bg-amber-600 h-full rounded-full flex items-center justify-end pr-2"
+                          style={{ 
+                            width: `${Math.max(5, (item.count / maxCount) * 100)}%` 
+                          }}
+                        >
+                          <span className="text-xs font-medium text-white">
+                            {item.count}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollArea>
           </CardContent>
