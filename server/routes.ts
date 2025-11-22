@@ -23,6 +23,7 @@ import {
   insertConversationSchema,
   insertSavedSearchSchema,
   insertPushSubscriptionSchema,
+  insertLoginEventSchema,
   type InsertMessage,
   type InsertConversation,
   type InsertSavedSearch,
@@ -444,6 +445,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Setting auth token header:", authToken);
       console.log("Response headers:", res.getHeaders());
       
+      // Track login event (non-blocking, safe)
+      try {
+        await storage.trackLoginEvent(user.id);
+      } catch (trackingError) {
+        console.warn("Login tracking failed (non-critical):", trackingError);
+        // Login still succeeds even if tracking fails
+      }
+      
       // Return full user data including subscription info AND auth token
       return res.json({
         id: user.id,
@@ -708,6 +717,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         sameSite: 'lax'
       });
       
+      // Track login event (non-blocking, safe)
+      try {
+        await storage.trackLoginEvent(updatedUser.id);
+      } catch (trackingError) {
+        console.warn("Login tracking failed (non-critical):", trackingError);
+        // Verification still succeeds even if tracking fails
+      }
+      
       console.log('=== EMAIL VERIFICATION COMPLETE ===');
       return res.status(200).json({ 
         message: "Email verified successfully! You are now logged in.",
@@ -839,6 +856,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         httpOnly: false,
         sameSite: 'lax'
       });
+      
+      // Track login event (non-blocking, safe)
+      try {
+        await storage.trackLoginEvent(user.id);
+      } catch (trackingError) {
+        console.warn("Login tracking failed (non-critical):", trackingError);
+        // Login still succeeds even if tracking fails
+      }
       
       console.log('=== REMINDER TOKEN LOGIN COMPLETE ===');
       return res.status(200).json({ 
