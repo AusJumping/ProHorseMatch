@@ -790,6 +790,76 @@ function LoginAnalyticsPanel() {
           </CardContent>
         </Card>
       )}
+
+      {/* Conversation Trend Chart */}
+      {((conversationTimeRange === 'daily' && conversationTrend && conversationTrend.length > 0) || 
+        (conversationTimeRange === 'monthly' && conversationTrendMonthly && conversationTrendMonthly.length > 0)) && (
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start flex-wrap gap-4">
+              <div>
+                <CardTitle className="text-sm font-medium">Conversation Trend</CardTitle>
+                <CardDescription>
+                  {conversationTimeRange === 'daily' 
+                    ? 'New conversations started over the past 30 days' 
+                    : 'New conversations started over the past 2 years'}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={conversationTimeRange === 'daily' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConversationTimeRange('daily')}
+                  data-testid="button-conversation-daily"
+                >
+                  Daily (30d)
+                </Button>
+                <Button
+                  variant={conversationTimeRange === 'monthly' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConversationTimeRange('monthly')}
+                  data-testid="button-conversation-monthly"
+                >
+                  Monthly (2y)
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-64 w-full">
+              <div className="space-y-2">
+                {(conversationTimeRange === 'daily' ? conversationTrend : conversationTrendMonthly)?.map((item: { date?: string; month?: string; count: number }) => {
+                  const dateKey = conversationTimeRange === 'daily' ? item.date! : item.month!;
+                  const displayDate = conversationTimeRange === 'daily' 
+                    ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                    : item.month;
+                  const maxCount = Math.max(...(conversationTimeRange === 'daily' ? conversationTrend : conversationTrendMonthly)!.map((t: { count: number }) => t.count));
+                  
+                  return (
+                    <div key={dateKey} className="flex items-center gap-4">
+                      <div className="text-sm text-muted-foreground w-24">
+                        {displayDate}
+                      </div>
+                      <div className="flex-1 bg-gray-200 rounded-full h-6 overflow-hidden">
+                        <div
+                          className="bg-teal-600 h-full rounded-full flex items-center justify-end pr-2"
+                          style={{ 
+                            width: `${Math.max(5, (item.count / maxCount) * 100)}%` 
+                          }}
+                        >
+                          <span className="text-xs font-medium text-white">
+                            {item.count}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
