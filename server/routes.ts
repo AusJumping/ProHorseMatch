@@ -2494,6 +2494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mau = await storage.getMonthlyActiveUsers();
       const loginTrend = await storage.getLoginTrend(30);
       const loginTrendMonthly = await storage.getLoginTrendMonthly(24); // Last 2 years
+      const loginTrendAllTime = await storage.getLoginTrendAllTime(); // All historical data
       
       // Fetch message analytics data
       const dailyMessages = await storage.getDailyMessages();
@@ -2507,6 +2508,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const monthlyConversations = await storage.getMonthlyConversations();
       const conversationTrend = await storage.getConversationTrend(30);
       const conversationTrendMonthly = await storage.getConversationTrendMonthly(24); // Last 2 years
+      const conversationTrendAllTime = await storage.getConversationTrendAllTime(); // All historical data
 
       return res.status(200).json({
         dailyActiveUsers: dau,
@@ -2514,6 +2516,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         monthlyActiveUsers: mau,
         loginTrend,
         loginTrendMonthly,
+        loginTrendAllTime,
         dailyMessages,
         weeklyMessages,
         monthlyMessages,
@@ -2522,7 +2525,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         weeklyConversations,
         monthlyConversations,
         conversationTrend,
-        conversationTrendMonthly
+        conversationTrendMonthly,
+        conversationTrendAllTime
       });
     } catch (error) {
       console.error("Login analytics error:", error);

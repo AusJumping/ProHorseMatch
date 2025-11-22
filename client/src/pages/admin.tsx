@@ -120,6 +120,7 @@ interface LoginAnalyticsData {
   monthlyActiveUsers: number;
   loginTrend: Array<{ date: string; count: number }>;
   loginTrendMonthly: Array<{ month: string; count: number }>;
+  loginTrendAllTime: Array<{ month: string; count: number }>;
   dailyMessages: number;
   weeklyMessages: number;
   monthlyMessages: number;
@@ -129,6 +130,7 @@ interface LoginAnalyticsData {
   monthlyConversations: number;
   conversationTrend: Array<{ date: string; count: number }>;
   conversationTrendMonthly: Array<{ month: string; count: number }>;
+  conversationTrendAllTime: Array<{ month: string; count: number }>;
 }
 
 interface HorseDeletionResponse {
@@ -497,8 +499,8 @@ function LoginAnalyticsPanel() {
     queryKey: ['/api/admin/login-analytics'],
   });
   
-  const [loginTimeRange, setLoginTimeRange] = useState<'daily' | 'monthly'>('daily');
-  const [conversationTimeRange, setConversationTimeRange] = useState<'daily' | 'monthly'>('daily');
+  const [loginTimeRange, setLoginTimeRange] = useState<'daily' | 'monthly' | 'alltime'>('daily');
+  const [conversationTimeRange, setConversationTimeRange] = useState<'daily' | 'monthly' | 'alltime'>('daily');
 
   if (isLoading) {
     return (
@@ -522,9 +524,9 @@ function LoginAnalyticsPanel() {
   }
 
   const { 
-    dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend, loginTrendMonthly,
+    dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend, loginTrendMonthly, loginTrendAllTime,
     dailyMessages, weeklyMessages, monthlyMessages, messageTrend,
-    dailyConversations, weeklyConversations, monthlyConversations, conversationTrend, conversationTrendMonthly
+    dailyConversations, weeklyConversations, monthlyConversations, conversationTrend, conversationTrendMonthly, conversationTrendAllTime
   } = analyticsData || {};
 
   return (
@@ -723,7 +725,8 @@ function LoginAnalyticsPanel() {
 
       {/* Login Trend Chart */}
       {((loginTimeRange === 'daily' && loginTrend && loginTrend.length > 0) || 
-        (loginTimeRange === 'monthly' && loginTrendMonthly && loginTrendMonthly.length > 0)) && (
+        (loginTimeRange === 'monthly' && loginTrendMonthly && loginTrendMonthly.length > 0) ||
+        (loginTimeRange === 'alltime' && loginTrendAllTime && loginTrendAllTime.length > 0)) && (
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start flex-wrap gap-4">
@@ -732,7 +735,9 @@ function LoginAnalyticsPanel() {
                 <CardDescription>
                   {loginTimeRange === 'daily' 
                     ? 'Daily unique logins over the past 30 days' 
-                    : 'Monthly active users over the past 2 years'}
+                    : loginTimeRange === 'monthly'
+                    ? 'Monthly active users over the past 2 years'
+                    : 'All historical login data by month'}
                 </CardDescription>
               </div>
               <div className="flex gap-2">
@@ -752,13 +757,21 @@ function LoginAnalyticsPanel() {
                 >
                   Monthly (2y)
                 </Button>
+                <Button
+                  variant={loginTimeRange === 'alltime' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setLoginTimeRange('alltime')}
+                  data-testid="button-login-alltime"
+                >
+                  All Time
+                </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-64 w-full">
               <div className="space-y-2">
-                {(loginTimeRange === 'daily' ? loginTrend : loginTrendMonthly)?.map((item: { date?: string; month?: string; count: number }) => {
+                {(loginTimeRange === 'daily' ? loginTrend : loginTimeRange === 'monthly' ? loginTrendMonthly : loginTrendAllTime)?.map((item: { date?: string; month?: string; count: number }) => {
                   const dateKey = loginTimeRange === 'daily' ? item.date! : item.month!;
                   const displayDate = loginTimeRange === 'daily' 
                     ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -793,7 +806,8 @@ function LoginAnalyticsPanel() {
 
       {/* Conversation Trend Chart */}
       {((conversationTimeRange === 'daily' && conversationTrend && conversationTrend.length > 0) || 
-        (conversationTimeRange === 'monthly' && conversationTrendMonthly && conversationTrendMonthly.length > 0)) && (
+        (conversationTimeRange === 'monthly' && conversationTrendMonthly && conversationTrendMonthly.length > 0) ||
+        (conversationTimeRange === 'alltime' && conversationTrendAllTime && conversationTrendAllTime.length > 0)) && (
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start flex-wrap gap-4">
@@ -802,7 +816,9 @@ function LoginAnalyticsPanel() {
                 <CardDescription>
                   {conversationTimeRange === 'daily' 
                     ? 'New conversations started over the past 30 days' 
-                    : 'New conversations started over the past 2 years'}
+                    : conversationTimeRange === 'monthly'
+                    ? 'New conversations started over the past 2 years'
+                    : 'All historical conversation data by month'}
                 </CardDescription>
               </div>
               <div className="flex gap-2">
@@ -822,13 +838,21 @@ function LoginAnalyticsPanel() {
                 >
                   Monthly (2y)
                 </Button>
+                <Button
+                  variant={conversationTimeRange === 'alltime' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConversationTimeRange('alltime')}
+                  data-testid="button-conversation-alltime"
+                >
+                  All Time
+                </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-64 w-full">
               <div className="space-y-2">
-                {(conversationTimeRange === 'daily' ? conversationTrend : conversationTrendMonthly)?.map((item: { date?: string; month?: string; count: number }) => {
+                {(conversationTimeRange === 'daily' ? conversationTrend : conversationTimeRange === 'monthly' ? conversationTrendMonthly : conversationTrendAllTime)?.map((item: { date?: string; month?: string; count: number }) => {
                   const dateKey = conversationTimeRange === 'daily' ? item.date! : item.month!;
                   const displayDate = conversationTimeRange === 'daily' 
                     ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })

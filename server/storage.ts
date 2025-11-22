@@ -125,6 +125,7 @@ export interface IStorage {
   getMonthlyActiveUsers(date?: Date): Promise<number>;
   getLoginTrend(days: number): Promise<Array<{ date: string; count: number }>>;
   getLoginTrendMonthly(months: number): Promise<Array<{ month: string; count: number }>>;
+  getLoginTrendAllTime(): Promise<Array<{ month: string; count: number }>>;
   
   // Message and conversation analytics methods
   getDailyMessages(date?: Date): Promise<number>;
@@ -136,6 +137,7 @@ export interface IStorage {
   getMonthlyConversations(date?: Date): Promise<number>;
   getConversationTrend(days: number): Promise<Array<{ date: string; count: number }>>;
   getConversationTrendMonthly(months: number): Promise<Array<{ month: string; count: number }>>;
+  getConversationTrendAllTime(): Promise<Array<{ month: string; count: number }>>;
 }
 
 import * as fs from 'fs';
@@ -1407,6 +1409,14 @@ export class MemStorage implements IStorage {
   async getConversationTrendMonthly(months: number): Promise<Array<{ month: string; count: number }>> {
     return [];
   }
+  
+  async getLoginTrendAllTime(): Promise<Array<{ month: string; count: number }>> {
+    return [];
+  }
+  
+  async getConversationTrendAllTime(): Promise<Array<{ month: string; count: number }>> {
+    return [];
+  }
 }
 
 // Database-backed storage implementation
@@ -2417,6 +2427,43 @@ export class DatabaseStorage implements IStorage {
       .from(messages)
       .groupBy(sql`${messages.customer_id}, ${messages.owner_id}, ${messages.horse_id}`)
       .having(sql`MIN(${messages.created_at}) >= ${startDate}`);
+    
+    // Group by month and sum the counts
+    const monthMap = new Map<string, number>();
+    result.forEach(r => {
+      const count = monthMap.get(r.month) || 0;
+      monthMap.set(r.month, count + 1);
+    });
+    
+    return Array.from(monthMap.entries())
+      .map(([month, count]) => ({ month, count }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+  }
+  
+  async getLoginTrendAllTime(): Promise<Array<{ month: string; count: number }>> {
+    // Get all login events grouped by month, no time limit
+    const result = await db
+      .select({
+        month: sql<string>`strftime('%Y-%m', ${loginEvents.created_at})`,
+        count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})`
+      })
+      .from(loginEvents)
+      .groupBy(sql`strftime('%Y-%m', ${loginEvents.created_at})`);
+    
+    return result
+      .map(r => ({ month: r.month, count: r.count }))
+      .sort((a, b) => a.month.localeCompare(b.month));
+  }
+  
+  async getConversationTrendAllTime(): Promise<Array<{ month: string; count: number }>> {
+    // Count conversations by their first message month, no time limit
+    const result = await db
+      .select({
+        month: sql<string>`TO_CHAR(MIN(${messages.created_at}), 'YYYY-MM')`,
+        count: sql<number>`COUNT(DISTINCT ${messages.customer_id} || '-' || ${messages.owner_id} || '-' || ${messages.horse_id})`
+      })
+      .from(messages)
+      .groupBy(sql`${messages.customer_id}, ${messages.owner_id}, ${messages.horse_id}`);
     
     // Group by month and sum the counts
     const monthMap = new Map<string, number>();
