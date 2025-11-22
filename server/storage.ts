@@ -1364,6 +1364,39 @@ export class MemStorage implements IStorage {
   async getLoginTrend(days: number): Promise<Array<{ date: string; count: number }>> {
     return [];
   }
+  
+  // Message and conversation analytics methods - stub implementations for MemStorage
+  async getDailyMessages(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getWeeklyMessages(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getMonthlyMessages(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getMessageTrend(days: number): Promise<Array<{ date: string; count: number }>> {
+    return [];
+  }
+  
+  async getDailyConversations(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getWeeklyConversations(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getMonthlyConversations(date?: Date): Promise<number> {
+    return 0;
+  }
+  
+  async getConversationTrend(days: number): Promise<Array<{ date: string; count: number }>> {
+    return [];
+  }
 }
 
 // Database-backed storage implementation
@@ -2181,6 +2214,162 @@ export class DatabaseStorage implements IStorage {
       date: r.date,
       count: Number(r.count)
     }));
+  }
+  
+  // Message and conversation analytics methods
+  async getDailyMessages(date: Date = new Date()): Promise<number> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const result = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(messages)
+      .where(
+        and(
+          sql`${messages.created_at} >= ${startOfDay}`,
+          sql`${messages.created_at} <= ${endOfDay}`
+        )
+      );
+    
+    return Number(result[0]?.count || 0);
+  }
+  
+  async getWeeklyMessages(date: Date = new Date()): Promise<number> {
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    const result = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(messages)
+      .where(sql`${messages.created_at} >= ${startOfWeek}`);
+    
+    return Number(result[0]?.count || 0);
+  }
+  
+  async getMonthlyMessages(date: Date = new Date()): Promise<number> {
+    const startOfMonth = new Date(date);
+    startOfMonth.setDate(startOfMonth.getDate() - 30);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    const result = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(messages)
+      .where(sql`${messages.created_at} >= ${startOfMonth}`);
+    
+    return Number(result[0]?.count || 0);
+  }
+  
+  async getMessageTrend(days: number): Promise<Array<{ date: string; count: number }>> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const result = await db
+      .select({
+        date: sql<string>`DATE(${messages.created_at})`,
+        count: sql<number>`COUNT(*)`
+      })
+      .from(messages)
+      .where(sql`${messages.created_at} >= ${startDate}`)
+      .groupBy(sql`DATE(${messages.created_at})`)
+      .orderBy(sql`DATE(${messages.created_at})`);
+    
+    return result.map(r => ({
+      date: r.date,
+      count: Number(r.count)
+    }));
+  }
+  
+  async getDailyConversations(date: Date = new Date()): Promise<number> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    // Count conversations by their first message time
+    const result = await db
+      .select({ 
+        conversationId: sql<number>`DISTINCT ${messages.customer_id} || '-' || ${messages.owner_id} || '-' || ${messages.horse_id}`,
+        firstMessage: sql<Date>`MIN(${messages.created_at})`
+      })
+      .from(messages)
+      .groupBy(sql`${messages.customer_id}, ${messages.owner_id}, ${messages.horse_id}`)
+      .having(
+        and(
+          sql`MIN(${messages.created_at}) >= ${startOfDay}`,
+          sql`MIN(${messages.created_at}) <= ${endOfDay}`
+        )
+      );
+    
+    return result.length;
+  }
+  
+  async getWeeklyConversations(date: Date = new Date()): Promise<number> {
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(startOfWeek.getDate() - 7);
+    startOfWeek.setHours(0, 0, 0, 0);
+    
+    // Count conversations by their first message time
+    const result = await db
+      .select({ 
+        conversationId: sql<number>`DISTINCT ${messages.customer_id} || '-' || ${messages.owner_id} || '-' || ${messages.horse_id}`,
+        firstMessage: sql<Date>`MIN(${messages.created_at})`
+      })
+      .from(messages)
+      .groupBy(sql`${messages.customer_id}, ${messages.owner_id}, ${messages.horse_id}`)
+      .having(sql`MIN(${messages.created_at}) >= ${startOfWeek}`);
+    
+    return result.length;
+  }
+  
+  async getMonthlyConversations(date: Date = new Date()): Promise<number> {
+    const startOfMonth = new Date(date);
+    startOfMonth.setDate(startOfMonth.getDate() - 30);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    // Count conversations by their first message time
+    const result = await db
+      .select({ 
+        conversationId: sql<number>`DISTINCT ${messages.customer_id} || '-' || ${messages.owner_id} || '-' || ${messages.horse_id}`,
+        firstMessage: sql<Date>`MIN(${messages.created_at})`
+      })
+      .from(messages)
+      .groupBy(sql`${messages.customer_id}, ${messages.owner_id}, ${messages.horse_id}`)
+      .having(sql`MIN(${messages.created_at}) >= ${startOfMonth}`);
+    
+    return result.length;
+  }
+  
+  async getConversationTrend(days: number): Promise<Array<{ date: string; count: number }>> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+    
+    // Count conversations by their first message date
+    const result = await db
+      .select({
+        date: sql<string>`DATE(MIN(${messages.created_at}))`,
+        count: sql<number>`COUNT(DISTINCT ${messages.customer_id} || '-' || ${messages.owner_id} || '-' || ${messages.horse_id})`
+      })
+      .from(messages)
+      .groupBy(sql`${messages.customer_id}, ${messages.owner_id}, ${messages.horse_id}`)
+      .having(sql`MIN(${messages.created_at}) >= ${startDate}`);
+    
+    // Group by date and sum the counts
+    const dateMap = new Map<string, number>();
+    result.forEach(r => {
+      const count = dateMap.get(r.date) || 0;
+      dateMap.set(r.date, count + 1);
+    });
+    
+    return Array.from(dateMap.entries())
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 }
 
