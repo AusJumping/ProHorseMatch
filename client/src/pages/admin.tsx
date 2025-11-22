@@ -496,6 +496,9 @@ function LoginAnalyticsPanel() {
   const { data: analyticsData, isLoading } = useQuery<LoginAnalyticsData>({
     queryKey: ['/api/admin/login-analytics'],
   });
+  
+  const [loginTimeRange, setLoginTimeRange] = useState<'daily' | 'monthly'>('daily');
+  const [conversationTimeRange, setConversationTimeRange] = useState<'daily' | 'monthly'>('daily');
 
   if (isLoading) {
     return (
@@ -523,9 +526,6 @@ function LoginAnalyticsPanel() {
     dailyMessages, weeklyMessages, monthlyMessages, messageTrend,
     dailyConversations, weeklyConversations, monthlyConversations, conversationTrend, conversationTrendMonthly
   } = analyticsData || {};
-  
-  const [loginTimeRange, setLoginTimeRange] = useState<'daily' | 'monthly'>('daily');
-  const [conversationTimeRange, setConversationTimeRange] = useState<'daily' | 'monthly'>('daily');
 
   return (
     <div className="space-y-6">
