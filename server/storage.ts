@@ -2176,13 +2176,17 @@ export class DatabaseStorage implements IStorage {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
     
+    // Admin user ID to exclude from analytics
+    const ADMIN_USER_ID = 31;
+    
     const result = await db
       .select({ count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})` })
       .from(loginEvents)
       .where(
         and(
           sql`${loginEvents.logged_in_at} >= ${startOfDay}`,
-          sql`${loginEvents.logged_in_at} <= ${endOfDay}`
+          sql`${loginEvents.logged_in_at} <= ${endOfDay}`,
+          sql`${loginEvents.user_id} != ${ADMIN_USER_ID}`
         )
       );
     
@@ -2194,10 +2198,18 @@ export class DatabaseStorage implements IStorage {
     startOfWeek.setDate(startOfWeek.getDate() - 7);
     startOfWeek.setHours(0, 0, 0, 0);
     
+    // Admin user ID to exclude from analytics
+    const ADMIN_USER_ID = 31;
+    
     const result = await db
       .select({ count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})` })
       .from(loginEvents)
-      .where(sql`${loginEvents.logged_in_at} >= ${startOfWeek}`);
+      .where(
+        and(
+          sql`${loginEvents.logged_in_at} >= ${startOfWeek}`,
+          sql`${loginEvents.user_id} != ${ADMIN_USER_ID}`
+        )
+      );
     
     return Number(result[0]?.count || 0);
   }
@@ -2207,10 +2219,18 @@ export class DatabaseStorage implements IStorage {
     startOfMonth.setDate(startOfMonth.getDate() - 30);
     startOfMonth.setHours(0, 0, 0, 0);
     
+    // Admin user ID to exclude from analytics
+    const ADMIN_USER_ID = 31;
+    
     const result = await db
       .select({ count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})` })
       .from(loginEvents)
-      .where(sql`${loginEvents.logged_in_at} >= ${startOfMonth}`);
+      .where(
+        and(
+          sql`${loginEvents.logged_in_at} >= ${startOfMonth}`,
+          sql`${loginEvents.user_id} != ${ADMIN_USER_ID}`
+        )
+      );
     
     return Number(result[0]?.count || 0);
   }
@@ -2220,13 +2240,21 @@ export class DatabaseStorage implements IStorage {
     startDate.setDate(startDate.getDate() - days);
     startDate.setHours(0, 0, 0, 0);
     
+    // Admin user ID to exclude from analytics
+    const ADMIN_USER_ID = 31;
+    
     const result = await db
       .select({
         date: sql<string>`DATE(${loginEvents.logged_in_at})`,
         count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})`
       })
       .from(loginEvents)
-      .where(sql`${loginEvents.logged_in_at} >= ${startDate}`)
+      .where(
+        and(
+          sql`${loginEvents.logged_in_at} >= ${startDate}`,
+          sql`${loginEvents.user_id} != ${ADMIN_USER_ID}`
+        )
+      )
       .groupBy(sql`DATE(${loginEvents.logged_in_at})`)
       .orderBy(sql`DATE(${loginEvents.logged_in_at})`);
     
@@ -2241,13 +2269,21 @@ export class DatabaseStorage implements IStorage {
     startDate.setMonth(startDate.getMonth() - months);
     startDate.setHours(0, 0, 0, 0);
     
+    // Admin user ID to exclude from analytics
+    const ADMIN_USER_ID = 31;
+    
     const result = await db
       .select({
         month: sql<string>`TO_CHAR(${loginEvents.logged_in_at}, 'YYYY-MM')`,
         count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})`
       })
       .from(loginEvents)
-      .where(sql`${loginEvents.logged_in_at} >= ${startDate}`)
+      .where(
+        and(
+          sql`${loginEvents.logged_in_at} >= ${startDate}`,
+          sql`${loginEvents.user_id} != ${ADMIN_USER_ID}`
+        )
+      )
       .groupBy(sql`TO_CHAR(${loginEvents.logged_in_at}, 'YYYY-MM')`)
       .orderBy(sql`TO_CHAR(${loginEvents.logged_in_at}, 'YYYY-MM')`);
     
@@ -2441,6 +2477,9 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getLoginTrendAllTime(): Promise<Array<{ month: string; count: number }>> {
+    // Admin user ID to exclude from analytics
+    const ADMIN_USER_ID = 31;
+    
     // Get all login events grouped by month, no time limit
     const result = await db
       .select({
@@ -2448,6 +2487,7 @@ export class DatabaseStorage implements IStorage {
         count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})`
       })
       .from(loginEvents)
+      .where(sql`${loginEvents.user_id} != ${ADMIN_USER_ID}`)
       .groupBy(sql`TO_CHAR(${loginEvents.logged_in_at}, 'YYYY-MM')`);
     
     return result
