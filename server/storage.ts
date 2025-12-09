@@ -1568,16 +1568,7 @@ export class DatabaseStorage implements IStorage {
   
   // Horse methods
   async getHorses(): Promise<Horse[]> {
-    const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
-    
-    // TEMPORARY: Prioritize "Greengrove Caspian" to appear first
-    const greengroveIndex = allHorses.findIndex(h => h.name === 'Greengrove Caspian');
-    if (greengroveIndex > 0) {
-      const greengrove = allHorses.splice(greengroveIndex, 1)[0];
-      allHorses.unshift(greengrove);
-    }
-    
-    return allHorses;
+    return await db.select().from(horses).orderBy(desc(horses.created_at));
   }
 
   async getHorseById(id: number): Promise<Horse | undefined> {
@@ -1593,17 +1584,9 @@ export class DatabaseStorage implements IStorage {
     // Get all horses first and filter in JavaScript for now (simpler approach)
     const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
     
-    // If no filters are provided, apply prioritization and return all horses
+    // If no filters are provided, return all horses (most recent first)
     if (Object.keys(filters).length === 0) {
       console.log("DatabaseStorage.getHorsesByFilters - no filters provided, returning all horses");
-      
-      // TEMPORARY: Prioritize "Greengrove Caspian" to appear first
-      const greengroveIndex = allHorses.findIndex(h => h.name === 'Greengrove Caspian');
-      if (greengroveIndex > 0) {
-        const greengrove = allHorses.splice(greengroveIndex, 1)[0];
-        allHorses.unshift(greengrove);
-      }
-      
       return allHorses;
     }
     
