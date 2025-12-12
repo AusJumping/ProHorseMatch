@@ -15,46 +15,6 @@ run = ["npm", "run", "start"]
 localPort = 5000
 externalPort = 80
 
-[[ports]]
-localPort = 36887
-externalPort = 8000
-
-[[ports]]
-localPort = 39183
-externalPort = 5173
-
-[[ports]]
-localPort = 41087
-externalPort = 6800
-
-[[ports]]
-localPort = 42663
-externalPort = 6000
-
-[[ports]]
-localPort = 43455
-externalPort = 3003
-
-[[ports]]
-localPort = 43561
-externalPort = 3002
-
-[[ports]]
-localPort = 44453
-externalPort = 5000
-
-[[ports]]
-localPort = 45733
-externalPort = 3001
-
-[[ports]]
-localPort = 46235
-externalPort = 3000
-
-[[ports]]
-localPort = 46519
-externalPort = 4200
-
 [workflows]
 
 [[workflows.workflow]]

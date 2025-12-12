@@ -21,6 +21,9 @@ import { Separator } from "@/components/ui/separator";
 import { useMobile } from "@/hooks/use-mobile";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 // Helper function to format price with currency symbol
 const formatPriceWithCurrency = (amount: number, currency: string): string => {
@@ -115,6 +118,9 @@ export default function AddHorse() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [videoUploading, setVideoUploading] = useState(false);
   const [activeTab, setActiveTab] = useState("basic");
+  const [showPromotionDialog, setShowPromotionDialog] = useState(false);
+  const [socialMediaPromotion, setSocialMediaPromotion] = useState<boolean | null>(null);
+  const [pendingFormData, setPendingFormData] = useState<HorseFormValues | null>(null);
   
   // Mobile navigation functions
   const nextTab = () => {
@@ -176,7 +182,6 @@ export default function AddHorse() {
     console.log("Form submission started", data);
     
     // Always include the photo and video URLs in the form data from state
-    // This solves the issue of the URLs not being passed to the form
     data.photos = photoUrls;
     data.videos = videoUrls;
     
@@ -187,7 +192,6 @@ export default function AddHorse() {
     if (!isValid || Object.keys(errors).length > 0) {
       console.log("Form validation errors:", errors);
       
-      // Find the first error message to display
       const errorFields = Object.keys(errors);
       const firstErrorField = errorFields[0];
       const firstError = errors[firstErrorField];
@@ -201,7 +205,24 @@ export default function AddHorse() {
       return;
     }
     
-    // Add debug toast to confirm the form submission was triggered
+    // Store form data and show promotion dialog
+    setPendingFormData(data);
+    setSocialMediaPromotion(null);
+    setShowPromotionDialog(true);
+  };
+
+  const handleFinalSubmit = async () => {
+    if (!pendingFormData || socialMediaPromotion === null) {
+      toast({
+        title: "Please select an option",
+        description: "Please select whether you want your horse promoted on social media.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setShowPromotionDialog(false);
+    
     toast({
       title: "Submitting form...",
       description: "Processing your horse listing submission",
@@ -210,40 +231,34 @@ export default function AddHorse() {
     try {
       setIsSubmitting(true);
       
-      // Photos and videos already updated above before validation
-      
       const submissionData = {
-        ...data,
+        ...pendingFormData,
         owner_id: ownerID,
+        social_media_promotion: socialMediaPromotion,
       };
       
       console.log("Submitting data with photos:", { 
         ...submissionData, 
-        photoCount: photoUrls.length 
+        photoCount: photoUrls.length,
+        socialMediaPromotion: socialMediaPromotion
       });
       
       // Convert height from hands to cm if needed
-      if (submissionData.height_hands && !submissionData.height_cm) {
+      if (submissionData.height_hands && typeof submissionData.height_hands === 'number' && !submissionData.height_cm) {
         submissionData.height_cm = Math.round(submissionData.height_hands * 10.16);
       }
       
-      // Get the auth token from localStorage for the header
       const authToken = localStorage.getItem('authToken');
-      console.log("Auth token for request:", authToken);
       
-      // Make the API request with the complete data using fetch directly with credentials
       const response = await fetch("/api/horses", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           ...(authToken && { "Authorization": `Bearer ${authToken}` }),
         },
-        credentials: "include", // Important! This ensures cookies are sent with the request
+        credentials: "include",
         body: JSON.stringify(submissionData),
       });
-      
-      console.log("Response status:", response.status);
-      console.log("Response headers:", [...response.headers.entries()]);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
@@ -256,13 +271,10 @@ export default function AddHorse() {
         description: "Your horse has been listed for sale.",
       });
       
-      // Invalidate horses query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['/api/horses'] });
       queryClient.invalidateQueries({ queryKey: ['/api/horses/owner'] });
       
-      // Use client-side navigation with a delay to allow the toast to display
       setTimeout(() => {
-        // Redirect to My Horses page instead of home
         navigate("/my-horses");
       }, 1500);
     } catch (error) {
@@ -274,6 +286,7 @@ export default function AddHorse() {
       });
     } finally {
       setIsSubmitting(false);
+      setPendingFormData(null);
     }
   };
 
@@ -1377,6 +1390,59 @@ export default function AddHorse() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={showPromotionDialog} onOpenChange={setShowPromotionDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Social Media Promotion</DialogTitle>
+            <DialogDescription>
+              I am happy to have my horse promoted on Social Media
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <RadioGroup
+              value={socialMediaPromotion === null ? undefined : socialMediaPromotion ? "yes" : "no"}
+              onValueChange={(value) => setSocialMediaPromotion(value === "yes")}
+              className="space-y-3"
+            >
+              <div className="flex items-center space-x-3">
+                <RadioGroupItem value="yes" id="promotion-yes" data-testid="radio-promotion-yes" />
+                <Label htmlFor="promotion-yes" className="text-base cursor-pointer">Yes</Label>
+              </div>
+              <div className="flex items-center space-x-3">
+                <RadioGroupItem value="no" id="promotion-no" data-testid="radio-promotion-no" />
+                <Label htmlFor="promotion-no" className="text-base cursor-pointer">No</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowPromotionDialog(false);
+                setPendingFormData(null);
+              }}
+              data-testid="button-cancel-promotion"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleFinalSubmit}
+              disabled={socialMediaPromotion === null || isSubmitting}
+              data-testid="button-confirm-listing"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                "Confirm Listing"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

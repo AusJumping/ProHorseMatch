@@ -1622,6 +1622,9 @@ export default function AdminPage() {
                                 <div className="text-sm text-muted-foreground">
                                   {horse.location_country || 'Location not set'}
                                 </div>
+                                <div className={`text-sm font-medium mt-1 ${horse.social_media_promotion ? 'text-green-600' : 'text-red-500'}`}>
+                                  Social Media: {horse.social_media_promotion ? '✓ Yes' : '✗ No'}
+                                </div>
                               </div>
                             </div>
                           </div>
