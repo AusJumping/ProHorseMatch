@@ -4286,7 +4286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             </div>
             
             <p style="text-align: center;">
-              <a href="${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://prohorsematch.com'}/horses/${horse.id}" 
+              <a href="${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://pro-horse-match-info6446.replit.app'}/horses/${horse.id}" 
                  style="background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
                 View Horse Details
               </a>
@@ -4816,7 +4816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`📧 Sending reminder for conversation ${conversation.id}: ${sender.username} → ${recipient.username} about ${horse.name} (${daysSinceLastMessage} days ago)`);
           
           const baseUrl = process.env.NODE_ENV === 'production' 
-            ? 'https://prohorsematch.com' 
+            ? 'https://pro-horse-match-info6446.replit.app' 
             : 'http://localhost:5000';
           const conversationUrl = `${baseUrl}/messages`;
           
