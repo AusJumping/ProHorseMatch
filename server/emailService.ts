@@ -288,6 +288,128 @@ Happy horse hunting!
   }
 }
 
+export async function sendVerificationReminderEmail(to: string, username: string, verificationUrl: string): Promise<boolean> {
+  console.log('=== VERIFICATION REMINDER EMAIL START ===');
+  
+  const htmlContent = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
+      <div style="background: #2b2b2b; padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Verify Your Email to Get Started!</h1>
+        <p style="color: #F5E6D3; margin: 15px 0 0 0; font-size: 18px; opacity: 0.95;">One quick step to access ProHorseMatch</p>
+      </div>
+      
+      <div style="background: #FEFCF7; padding: 40px 30px; border-left: 4px solid #CDAC6E; border-right: 1px solid #E8E3D3; border-bottom: 1px solid #E8E3D3;">
+        <h2 style="color: #2D2A25; margin-top: 0; font-size: 24px; font-weight: 600;">Complete Your Registration</h2>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25;">
+          Hi <strong>${username}</strong>,
+        </p>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px; color: #4A453E;">
+          We noticed you haven't verified your email address yet. To start using ProHorseMatch and discover amazing performance horses, please verify your email by clicking the button below.
+        </p>
+        
+        <div style="background: #E8F4F8; border-left: 4px solid #4A90E2; padding: 20px; margin: 25px 0; border-radius: 4px;">
+          <p style="font-size: 18px; line-height: 1.6; margin: 0; color: #2D2A25; font-weight: 600;">
+            🎉 We're in Beta Phase - Free Access!
+          </p>
+          <p style="font-size: 16px; line-height: 1.7; margin: 10px 0 0 0; color: #4A453E;">
+            During our beta period, all features are completely free. Verify your email now and start browsing immediately - no credit card required!
+          </p>
+        </div>
+        
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 30px; color: #4A453E;">
+          Once verified, you'll be able to:
+        </p>
+        
+        <ul style="font-size: 16px; line-height: 1.8; margin-bottom: 30px; padding-left: 25px; color: #4A453E;">
+          <li style="margin-bottom: 8px;">Browse our exclusive collection of performance horses</li>
+          <li style="margin-bottom: 8px;">Use advanced filters to find your perfect match</li>
+          <li style="margin-bottom: 8px;">Save horses to your favorites</li>
+          <li style="margin-bottom: 8px;">Connect directly with horse owners</li>
+        </ul>
+        
+        <div style="text-align: center; margin: 40px 0;">
+          <a href="${verificationUrl}" 
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3);">
+            Verify Email Address
+          </a>
+        </div>
+        
+        <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
+          If the button doesn't work, copy and paste this link into your browser:
+        </p>
+        <p style="font-size: 14px; color: #CDAC6E; word-break: break-all; background: #F8F6F0; padding: 12px; border-radius: 4px; border-left: 3px solid #CDAC6E;">
+          ${verificationUrl}
+        </p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
+        <p style="font-size: 13px; color: #6B5B3D; margin: 0; font-weight: 500;">
+          © 2025 ProHorseMatch • Connecting Performance Horses with new owners
+        </p>
+      </div>
+    </div>
+  `;
+
+  const textContent = `
+Verify Your Email to Get Started!
+
+Hi ${username},
+
+We noticed you haven't verified your email address yet. To start using ProHorseMatch and discover amazing performance horses, please verify your email by clicking the link below:
+
+${verificationUrl}
+
+We're in Beta Phase - Free Access!
+During our beta period, all features are completely free. Verify your email now and start browsing immediately.
+
+Once verified, you'll be able to:
+- Browse our exclusive collection of performance horses
+- Use advanced filters to find your perfect match
+- Save horses to your favorites
+- Connect directly with horse owners
+
+© 2025 ProHorseMatch. Connecting Performance Horses with new owners.
+  `;
+
+  try {
+    if (resend) {
+      const { data, error } = await resend.emails.send({
+        from: 'ProHorseMatch <noreply@prohorsematch.com>',
+        to: [to],
+        subject: 'Verify Your Email - Start Using ProHorseMatch',
+        html: htmlContent,
+        text: textContent,
+      });
+
+      if (error) {
+        console.error('Verification reminder email error:', error);
+        return false;
+      }
+
+      console.log('Verification reminder email sent successfully:', data);
+      return true;
+    } else if (mailService) {
+      await mailService.send({
+        from: 'noreply@prohorsematch.com',
+        to: to,
+        subject: 'Verify Your Email - Start Using ProHorseMatch',
+        html: htmlContent,
+        text: textContent,
+      });
+      console.log('Verification reminder email sent successfully via SendGrid');
+      return true;
+    } else {
+      console.warn('No email service configured - verification reminder not sent');
+      return false;
+    }
+  } catch (error) {
+    console.error('Verification reminder email error:', error);
+    return false;
+  }
+}
+
 export async function sendSubscriptionReminderEmail(to: string, username: string, subscriptionUrl: string): Promise<boolean> {
   const htmlContent = `
     <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">

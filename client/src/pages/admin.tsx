@@ -169,6 +169,174 @@ interface HorseDeletionAnalytics {
   }>;
 }
 
+function EmailVerificationReminderPanel() {
+  const { toast } = useToast();
+  const [previewSent, setPreviewSent] = useState(false);
+  const [batchSent, setBatchSent] = useState(false);
+  
+  const { data: countData, isLoading: countLoading } = useQuery({
+    queryKey: ['/api/admin/verification-reminder-count'],
+  });
+  
+  const recipientCount = countData?.count || 0;
+  
+  const previewMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/preview-verification-reminder');
+      return response;
+    },
+    onSuccess: () => {
+      setPreviewSent(true);
+      toast({
+        title: "Preview Email Sent",
+        description: "Check info@australianjumping.com.au for the preview email.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Preview",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  const batchMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/send-verification-reminders');
+      return response;
+    },
+    onSuccess: (data: any) => {
+      setBatchSent(true);
+      toast({
+        title: "Verification Reminder Emails Sent",
+        description: `Successfully sent ${data.sent} of ${data.total} emails to unverified users.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Emails",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    }
+  });
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="h-5 w-5" />
+          Email Verification Reminder
+        </CardTitle>
+        <CardDescription>
+          Remind users who haven't verified their email to complete verification and start using the app
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Info Section */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="font-semibold text-blue-900 mb-2">📧 Email Details</h3>
+          <ul className="text-sm text-blue-800 space-y-1">
+            <li>• <strong>Subject:</strong> Verify Your Email - Start Using ProHorseMatch</li>
+            <li>• <strong>Recipients:</strong> {countLoading ? 'Loading...' : `${recipientCount} users who haven't verified their email`}</li>
+            <li>• <strong>Content:</strong> Verification reminder with link to verify email and start browsing</li>
+            <li>• <strong>Send Time:</strong> ~{Math.ceil(recipientCount * 0.55)} seconds (rate limited for deliverability)</li>
+          </ul>
+        </div>
+        
+        {/* Preview Section */}
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-2">Step 1: Preview Email</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Send a test email to <strong>info@australianjumping.com.au</strong> to review before sending to all users.
+            </p>
+            <Button
+              onClick={() => previewMutation.mutate()}
+              disabled={previewMutation.isPending || previewSent}
+              className="bg-blue-600 hover:bg-blue-700"
+              data-testid="button-send-verification-preview"
+            >
+              {previewMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Sending Preview...
+                </>
+              ) : previewSent ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Preview Sent
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Preview to Admin
+                </>
+              )}
+            </Button>
+            {previewSent && (
+              <p className="text-sm text-green-600 mt-2">
+                ✓ Preview email sent! Check your inbox at info@australianjumping.com.au
+              </p>
+            )}
+          </div>
+        </div>
+        
+        <Separator />
+        
+        {/* Batch Send Section */}
+        <div className="space-y-3">
+          <div>
+            <h3 className="font-semibold text-gray-900 mb-2">Step 2: Send to All Unverified Users</h3>
+            <p className="text-sm text-gray-600 mb-3">
+              After reviewing the preview, send the verification reminder to all {recipientCount} unverified users.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+              <p className="text-sm text-yellow-800">
+                ⚠️ <strong>Important:</strong> This will send {recipientCount} emails. Make sure you've reviewed the preview first!
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                if (confirm(`Are you sure you want to send verification reminders to ${recipientCount} unverified users?`)) {
+                  batchMutation.mutate();
+                }
+              }}
+              disabled={batchMutation.isPending || batchSent || !previewSent || recipientCount === 0}
+              variant={batchSent ? "outline" : "default"}
+              className={batchSent ? "" : "bg-green-600 hover:bg-green-700"}
+              data-testid="button-send-verification-batch"
+            >
+              {batchMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Sending to {recipientCount} users...
+                </>
+              ) : batchSent ? (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Emails Sent Successfully
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  Send to All {recipientCount} Users
+                </>
+              )}
+            </Button>
+            {batchSent && (
+              <p className="text-sm text-green-600 mt-2">
+                ✓ Verification reminder emails sent successfully to all unverified users!
+              </p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function SubscriptionReminderPanel() {
   const { toast } = useToast();
   const [previewSent, setPreviewSent] = useState(false);
@@ -2107,6 +2275,7 @@ export default function AdminPage() {
 
           {/* Email Tab */}
           <TabsContent value="email" className="space-y-6">
+            <EmailVerificationReminderPanel />
             <SubscriptionReminderPanel />
             <EmailAnnouncementPanel />
           </TabsContent>

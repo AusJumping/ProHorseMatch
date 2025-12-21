@@ -10,7 +10,7 @@ import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
 import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
-import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail } from "./emailService";
+import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail, sendVerificationReminderEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
@@ -2353,6 +2353,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     } catch (error) {
       console.error("Preview subscription reminder error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Get count of users who would receive verification reminders (admin only)
+  app.get("/api/admin/verification-reminder-count", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Get all users
+      const allUsers = await storage.getUsers();
+      
+      // Filter for users who haven't verified their email
+      const unverifiedUsers = allUsers.filter(user => !user.email_verified);
+      
+      return res.status(200).json({
+        count: unverifiedUsers.length,
+        message: `${unverifiedUsers.length} users have not verified their email`
+      });
+    } catch (error) {
+      console.error("Count verification reminder error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Send verification reminder preview email to admin (admin only)
+  app.post("/api/admin/preview-verification-reminder", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      console.log('=== PREVIEW VERIFICATION REMINDER ===');
+      
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      // Generate a test verification token for preview
+      const verificationToken = generateVerificationToken();
+      const verificationUrl = `${baseUrl}/verify-email?token=${verificationToken}`;
+      
+      // Send preview email to admin
+      const emailSent = await sendVerificationReminderEmail(
+        'info@australianjumping.com.au',
+        adminUser.username,
+        verificationUrl
+      );
+      
+      if (emailSent) {
+        console.log('✓ Preview verification reminder sent to admin');
+        return res.status(200).json({
+          message: 'Preview email sent to info@australianjumping.com.au',
+          success: true
+        });
+      } else {
+        console.log('✗ Failed to send preview verification reminder');
+        return res.status(500).json({
+          message: 'Failed to send preview email',
+          success: false
+        });
+      }
+    } catch (error) {
+      console.error("Preview verification reminder error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Send verification reminders to all unverified users (admin only)
+  app.post("/api/admin/send-verification-reminders", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      console.log('=== BATCH SEND VERIFICATION REMINDERS ===');
+      
+      // Check if user is admin
+      const adminUser = await storage.getUserById(req.userId!);
+      if (!adminUser || adminUser.email !== 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Get all users
+      const allUsers = await storage.getUsers();
+      
+      // Filter for users who haven't verified their email
+      const unverifiedUsers = allUsers.filter(user => !user.email_verified);
+      
+      console.log(`Found ${unverifiedUsers.length} unverified users`);
+      
+      const results = {
+        total: unverifiedUsers.length,
+        sent: 0,
+        failed: 0,
+        errors: [] as string[]
+      };
+      
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      for (const user of unverifiedUsers) {
+        try {
+          // Skip if email is invalid
+          if (!user.email || typeof user.email !== 'string') {
+            results.failed++;
+            results.errors.push(`Invalid email for user ${user.id}`);
+            console.log(`✗ Skipped user ${user.id} - invalid email`);
+            continue;
+          }
+          
+          // Use the user's existing verification token if available, or generate a new one
+          let verificationToken = user.email_verification_token;
+          if (!verificationToken) {
+            verificationToken = generateVerificationToken();
+            const expiresAt = createTokenExpiration();
+            await storage.updateUser(user.id, {
+              email_verification_token: verificationToken,
+              email_verification_expires: expiresAt
+            });
+          }
+          
+          const verificationUrl = `${baseUrl}/verify-email?token=${verificationToken}`;
+          
+          const emailSent = await sendVerificationReminderEmail(
+            user.email,
+            user.username,
+            verificationUrl
+          );
+          
+          if (emailSent) {
+            results.sent++;
+            console.log(`✓ Sent verification reminder to ${user.email}`);
+          } else {
+            results.failed++;
+            results.errors.push(`Failed to send email to ${user.email}`);
+            console.log(`✗ Failed to send to ${user.email}`);
+          }
+          
+          // Add delay to respect rate limits (2 requests per second = 500ms delay)
+          await new Promise(resolve => setTimeout(resolve, 550));
+        } catch (error) {
+          results.failed++;
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          results.errors.push(`Error sending to ${user.email}: ${errorMsg}`);
+          console.error(`Error sending verification reminder to ${user.email}:`, error);
+          
+          // Add delay even on error to prevent rate limiting
+          await new Promise(resolve => setTimeout(resolve, 550));
+        }
+      }
+      
+      console.log('=== BATCH SEND COMPLETE ===');
+      console.log(`Total: ${results.total}, Sent: ${results.sent}, Failed: ${results.failed}`);
+      
+      return res.status(200).json({
+        message: `Sent ${results.sent} of ${results.total} verification reminder emails`,
+        ...results
+      });
+    } catch (error) {
+      console.error("Batch send verification reminders error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });
