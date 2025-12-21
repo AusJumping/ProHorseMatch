@@ -505,6 +505,10 @@ function LoginAnalyticsPanel() {
     queryKey: ['/api/admin/login-analytics'],
   });
   
+  const { data: analytics } = useQuery<AnalyticsData>({
+    queryKey: ['/api/admin/analytics'],
+  });
+  
   const [loginTimeRange, setLoginTimeRange] = useState<'daily' | 'monthly' | 'alltime'>('daily');
   const [conversationTimeRange, setConversationTimeRange] = useState<'daily' | 'monthly' | 'alltime'>('daily');
 
