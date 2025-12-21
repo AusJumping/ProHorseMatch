@@ -41,12 +41,13 @@ import { apiRequest } from '@/lib/queryClient';
 import Sidebar from '@/components/Sidebar';
 import MobileNavbar from '@/components/MobileNavbar';
 import { PushNotificationTestPanel } from '@/components/PushNotificationTestPanel';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface AnalyticsData {
   users: {
     total: number;
     activeSubscribers: number;
+    nonSubscribers: number;
     sellers: number;
     searchers: number;
     recentRegistrations: number;
@@ -67,6 +68,10 @@ interface AnalyticsData {
   growth: {
     usersLast30Days: number;
     horsesLast30Days: number;
+  };
+  notifications: {
+    usersWithPushEnabled: number;
+    usersWithoutPushEnabled: number;
   };
 }
 
@@ -723,6 +728,97 @@ function LoginAnalyticsPanel() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Subscription and Push Notification Charts */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Subscribers vs Non-Subscribers Pie Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Subscription Status</CardTitle>
+            <CardDescription>Active subscribers vs non-subscribers</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Subscribers', value: analytics?.users.activeSubscribers || 0, color: '#22c55e' },
+                      { name: 'Non-Subscribers', value: analytics?.users.nonSubscribers || 0, color: '#ef4444' }
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    <Cell fill="#22c55e" />
+                    <Cell fill="#ef4444" />
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-8 mt-2 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                <span>Subscribers: {analytics?.users.activeSubscribers || 0}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                <span>Non-Subscribers: {analytics?.users.nonSubscribers || 0}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Push Notifications Pie Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Push Notifications</CardTitle>
+            <CardDescription>Users with push notifications enabled vs disabled</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={[
+                      { name: 'Enabled', value: analytics?.notifications?.usersWithPushEnabled || 0, color: '#3b82f6' },
+                      { name: 'Disabled', value: analytics?.notifications?.usersWithoutPushEnabled || 0, color: '#9ca3af' }
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    <Cell fill="#3b82f6" />
+                    <Cell fill="#9ca3af" />
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex justify-center gap-8 mt-2 text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                <span>Enabled: {analytics?.notifications?.usersWithPushEnabled || 0}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-gray-400"></div>
+                <span>Disabled: {analytics?.notifications?.usersWithoutPushEnabled || 0}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Login Trend Chart */}
       {((loginTimeRange === 'daily' && loginTrend && loginTrend.length > 0) || 

@@ -4394,10 +4394,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         horse.created_at && new Date(horse.created_at) > thirtyDaysAgo
       ).length;
 
+      // Get push notification statistics
+      const allPushSubscriptions = await storage.getAllPushSubscriptions();
+      const usersWithPushEnabled = new Set(allPushSubscriptions.map(sub => sub.user_id)).size;
+      const usersWithoutPushEnabled = totalUsers - usersWithPushEnabled;
+
+      // Subscription breakdown
+      const nonSubscribers = totalUsers - activeSubscribers;
+
       res.json({
         users: {
           total: totalUsers,
           activeSubscribers,
+          nonSubscribers,
           sellers,
           searchers,
           recentRegistrations: recentUsers
@@ -4418,6 +4427,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         growth: {
           usersLast30Days: recentUsers,
           horsesLast30Days: recentHorses
+        },
+        notifications: {
+          usersWithPushEnabled,
+          usersWithoutPushEnabled
         }
       });
     } catch (error) {
