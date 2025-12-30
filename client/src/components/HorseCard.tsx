@@ -8,7 +8,7 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { useState, useEffect } from "react";
 import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth";
 
 interface HorseCardProps {
@@ -81,6 +81,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
     // First try to get a current user from localStorage if React Query hasn't loaded it yet
     // This helps with mobile browsers that might have session issues
     let isUserAuthenticated = isAuthenticated;
+    let currentUserId: number | null = null;
     if (!isUserAuthenticated) {
       try {
         const storedUser = localStorage.getItem('user');
@@ -88,6 +89,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
           const user = JSON.parse(storedUser);
           console.log("Using cached user from localStorage for like button:", user);
           isUserAuthenticated = true;
+          currentUserId = user.id;
         }
       } catch (e) {
         console.error("Error parsing stored user:", e);
@@ -103,12 +105,47 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
       return;
     }
     
-    // Optimistically update the UI immediately
-    setOptimisticLiked(true);
+    // Toggle behavior: if already liked, unlike; otherwise like
+    const newLikedState = !hasBeenLiked;
+    setOptimisticLiked(newLikedState);
     
-    // User is authenticated, proceed with like operation
-    if (onLike) {
-      onLike(horse.id);
+    // User is authenticated, proceed with like/unlike operation
+    if (newLikedState) {
+      // Like the horse
+      if (onLike) {
+        onLike(horse.id);
+      }
+    } else {
+      // Unlike the horse - call API directly
+      try {
+        const storedUser = localStorage.getItem('user');
+        const userId = currentUserId || (storedUser ? JSON.parse(storedUser).id : null);
+        if (userId) {
+          const authToken = localStorage.getItem('authToken');
+          const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+          if (authToken) {
+            headers['Authorization'] = `Bearer ${authToken}`;
+          }
+          
+          await fetch('/api/matches', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              customer_id: userId,
+              horse_id: horse.id,
+              is_liked: false
+            }),
+            credentials: 'include'
+          });
+          
+          // Invalidate matches cache
+          queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
+        }
+      } catch (error) {
+        console.error("Error unliking horse:", error);
+        // Revert optimistic update on error
+        setOptimisticLiked(true);
+      }
     }
   };
 
