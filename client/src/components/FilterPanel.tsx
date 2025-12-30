@@ -246,7 +246,13 @@ const FilterPanel = ({
           : 'h-full'}
       `}>
         <div className="flex justify-between items-center mb-5">
-          <h2 className="font-accent font-bold text-xl">Find Horses</h2>
+          <Button
+            className="flex-1 mr-3"
+            onClick={handleApply}
+            data-testid="button-apply-filters-top"
+          >
+            Apply Filters
+          </Button>
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
