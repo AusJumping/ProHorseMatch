@@ -28,19 +28,32 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
   const [convertedMinPrice, setConvertedMinPrice] = useState<number | null>(null);
   const [convertedMaxPrice, setConvertedMaxPrice] = useState<number | null>(null);
   
+  // Local optimistic state for immediate UI feedback
+  const [optimisticLiked, setOptimisticLiked] = useState<boolean | null>(null);
+  
   // Fetch match status if not directly provided
-  const { data: matches = [] } = useQuery({
+  const { data: matchesData = [] } = useQuery({
     queryKey: ['/api/matches'],
     enabled: isAuthenticated && !matchStatus, // Only fetch if we're authenticated and don't have status passed in
   });
   
+  // Ensure matches is always an array
+  const matches = Array.isArray(matchesData) ? matchesData : [];
+  
   // Determine if this horse has been liked or dismissed
-  const matchInfo = matchStatus || (Array.isArray(matches) ? 
-    matches.find((match: any) => match.horse_id === horse.id) : 
-    null
-  );
-  const hasBeenLiked = matchInfo?.is_liked === true;
+  const matchInfo = matchStatus || matches.find((match: any) => match.horse_id === horse.id) || null;
+  const serverLiked = matchInfo?.is_liked === true;
   const hasBeenDismissed = matchInfo?.is_liked === false;
+  
+  // Use optimistic state if set, otherwise use server state
+  const hasBeenLiked = optimisticLiked !== null ? optimisticLiked : serverLiked;
+  
+  // Reset optimistic state when server state updates
+  useEffect(() => {
+    if (optimisticLiked !== null && serverLiked === optimisticLiked) {
+      setOptimisticLiked(null);
+    }
+  }, [serverLiked, optimisticLiked]);
   
   // Convert price range when currency or horse changes
   useEffect(() => {
@@ -89,6 +102,9 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
       }
       return;
     }
+    
+    // Optimistically update the UI immediately
+    setOptimisticLiked(true);
     
     // User is authenticated, proceed with like operation
     if (onLike) {
