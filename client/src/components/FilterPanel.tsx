@@ -272,9 +272,9 @@ const FilterPanel = ({
               value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"} 
               onValueChange={(value) => {
                 if (value === "all_disciplines") {
-                  handleChange('disciplines', [], true);
+                  handleChange('disciplines', [], false);
                 } else {
-                  handleChange('disciplines', [value], true);
+                  handleChange('disciplines', [value], false);
                 }
               }}
             >
@@ -296,7 +296,7 @@ const FilterPanel = ({
               <Label className="block font-accent font-semibold mb-2 text-neutral-800">Level</Label>
               <Select 
                 value={filters.levels?.[0] || ""} 
-                onValueChange={(value) => handleChange('levels', [value], true)}
+                onValueChange={(value) => handleChange('levels', [value], false)}
               >
                 <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                   <SelectValue placeholder="Any Level" />
@@ -543,9 +543,9 @@ const FilterPanel = ({
               value={filters.breeds && filters.breeds.length > 0 ? filters.breeds[0] : "all_breeds"} 
               onValueChange={(value) => {
                 if (value === "all_breeds") {
-                  handleChange('breeds', [], true);
+                  handleChange('breeds', [], false);
                 } else {
-                  handleChange('breeds', [value], true);
+                  handleChange('breeds', [value], false);
                 }
               }}
             >
@@ -568,9 +568,9 @@ const FilterPanel = ({
               value={filters.sexes && filters.sexes.length > 0 ? filters.sexes[0] : "any_sex"} 
               onValueChange={(value) => {
                 if (value === "any_sex") {
-                  handleChange('sexes', [], true);
+                  handleChange('sexes', [], false);
                 } else {
-                  handleChange('sexes', [value], true);
+                  handleChange('sexes', [value], false);
                 }
               }}
             >
@@ -620,7 +620,7 @@ const FilterPanel = ({
             <Label className="block font-accent font-semibold mb-2 text-neutral-800">Location</Label>
             <Select 
               value={filters.location_country || ""} 
-              onValueChange={(value) => handleChange('location_country', value, true)}
+              onValueChange={(value) => handleChange('location_country', value, false)}
             >
               <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
                 <SelectValue placeholder="Any Location" />
