@@ -193,10 +193,18 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
             <Button
               variant="outline"
               size="icon"
-              className="w-10 h-10 flex items-center justify-center like-button bg-[#cdac6e] hover:bg-[#b8965c] border-[#cdac6e]"
+              className={`w-10 h-10 flex items-center justify-center like-button ${
+                hasBeenLiked 
+                  ? "bg-[#cdac6e] hover:bg-[#b8965c] border-[#cdac6e]" 
+                  : "bg-white hover:bg-[#cdac6e] border-[#cdac6e] border-2"
+              }`}
               onClick={handleLike}
             >
-              <Heart size={18} className="text-white" fill="white" />
+              <Heart 
+                size={18} 
+                className={hasBeenLiked ? "text-white" : "text-[#cdac6e]"} 
+                fill={hasBeenLiked ? "white" : "none"} 
+              />
             </Button>
           )}
           
