@@ -2110,6 +2110,29 @@ export class DatabaseStorage implements IStorage {
   
   // Push Subscription methods
   async createPushSubscription(subscription: InsertPushSubscription): Promise<PushSubscription> {
+    // Check if this endpoint already exists (same device, different user)
+    const existing = await db
+      .select()
+      .from(pushSubscriptions)
+      .where(eq(pushSubscriptions.endpoint, subscription.endpoint))
+      .limit(1);
+    
+    if (existing.length > 0) {
+      // Update the existing subscription to the new user
+      const [updated] = await db
+        .update(pushSubscriptions)
+        .set({
+          user_id: subscription.user_id,
+          p256dh: subscription.p256dh,
+          auth: subscription.auth,
+          created_at: new Date()
+        })
+        .where(eq(pushSubscriptions.endpoint, subscription.endpoint))
+        .returning();
+      return updated;
+    }
+    
+    // Create new subscription
     const [newSubscription] = await db.insert(pushSubscriptions).values(subscription).returning();
     return newSubscription;
   }
