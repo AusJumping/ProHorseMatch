@@ -1228,19 +1228,21 @@ export default function EditHorse() {
                     type="button"
                     disabled={isSubmitting}
                     onClick={async () => {
-                      console.log("=== UPDATE BUTTON CLICKED ===");
-                      console.log("Form values:", form.getValues());
-                      console.log("Form errors:", form.formState.errors);
+                      alert("Button clicked! Submitting form...");
                       
                       const isValid = await form.trigger();
-                      console.log("Form is valid:", isValid);
-                      
                       if (!isValid) {
-                        console.log("Form validation failed:", form.formState.errors);
+                        const errors = form.formState.errors;
+                        const errorMessages = Object.entries(errors).map(([key, val]: [string, any]) => `${key}: ${val?.message || 'invalid'}`).join('\n');
+                        alert("Form validation failed:\n" + errorMessages);
                         return;
                       }
                       
-                      form.handleSubmit(onSubmit)();
+                      try {
+                        await onSubmit(form.getValues());
+                      } catch (error: any) {
+                        alert("Error: " + (error?.message || "Unknown error"));
+                      }
                     }}
                   >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
