@@ -1225,9 +1225,23 @@ export default function EditHorse() {
                     Cancel
                   </Button>
                   <Button 
-                    type="submit" 
+                    type="button"
                     disabled={isSubmitting}
-                    onClick={() => console.log("=== UPDATE BUTTON CLICKED ===", { formState: form.formState, errors: form.formState.errors })}
+                    onClick={async () => {
+                      console.log("=== UPDATE BUTTON CLICKED ===");
+                      console.log("Form values:", form.getValues());
+                      console.log("Form errors:", form.formState.errors);
+                      
+                      const isValid = await form.trigger();
+                      console.log("Form is valid:", isValid);
+                      
+                      if (!isValid) {
+                        console.log("Form validation failed:", form.formState.errors);
+                        return;
+                      }
+                      
+                      form.handleSubmit(onSubmit)();
+                    }}
                   >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Horse
