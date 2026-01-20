@@ -41,9 +41,8 @@ import { CSS } from '@dnd-kit/utilities';
 
 // Form schema for editing a horse
 const horseFormSchema = z.object({
-  id: z.number(),
   name: z.string().min(2, "Name must be at least 2 characters").max(50, "Name must be less than 50 characters"),
-  owner_id: z.number(),
+  owner_id: z.number().optional(),
   location_country: z.string().min(1, "Country is required"),
   location_radius_km: z.number().optional(),
   disciplines: z.array(z.string()).min(1, "Select at least one discipline"),
@@ -197,9 +196,7 @@ export default function EditHorse() {
   const form = useForm<HorseFormValues>({
     resolver: zodResolver(horseFormSchema),
     defaultValues: {
-      id: 0,
       name: "",
-      owner_id: 0,
       location_country: "",
       location_radius_km: 0,
       disciplines: [],
@@ -226,9 +223,7 @@ export default function EditHorse() {
   useEffect(() => {
     if (horse) {
       form.reset({
-        id: horse.id,
         name: horse.name || "",
-        owner_id: horse.owner_id,
         location_country: horse.location_country || "",
         location_radius_km: Number(horse.location_radius_km) || 0,
         disciplines: Array.isArray(horse.disciplines) ? horse.disciplines : [],
