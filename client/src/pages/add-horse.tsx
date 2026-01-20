@@ -172,6 +172,10 @@ export default function AddHorse() {
     }
   });
 
+  // Watch disciplines to reactively update levels dropdown
+  const watchedDisciplines = form.watch("disciplines");
+  const selectedDiscipline = watchedDisciplines && watchedDisciplines.length > 0 ? watchedDisciplines[0] : "Jumping";
+
   // This function is called when the form is submitted
   // Function to check if price range is valid
   const isPriceRangeValid = (min: number, max: number) => {
@@ -801,8 +805,12 @@ export default function AddHorse() {
                               <FormItem>
                                 <FormLabel>Main Discipline *</FormLabel>
                                 <Select 
-                                  onValueChange={(value) => field.onChange([value])} 
-                                  value={selectedDiscipline}
+                                  onValueChange={(value) => {
+                                    field.onChange([value]);
+                                    // Clear levels when discipline changes since they're discipline-specific
+                                    form.setValue("levels", []);
+                                  }} 
+                                  value={selectedDiscipline !== "Jumping" || field.value?.length > 0 ? selectedDiscipline : undefined}
                                 >
                                   <FormControl>
                                     <SelectTrigger>
@@ -866,13 +874,10 @@ export default function AddHorse() {
                                   </FormControl>
                                   <SelectContent>
                                     {constants && constants.levels ? (
-                                      // Get discipline from form value
+                                      // Use watched discipline value for reactive updates
                                       (() => {
-                                        const disciplineValue = form.getValues("disciplines");
-                                        const discipline = disciplineValue && disciplineValue.length > 0 ? disciplineValue[0] : "Jumping";
-                                        
-                                        // Get levels for this discipline
-                                        const disciplineLevels = constants.levels[discipline] || [];
+                                        // Get levels for the currently selected discipline
+                                        const disciplineLevels = constants.levels[selectedDiscipline] || [];
                                         
                                         // Create combined array with special options at the top
                                         const allLevels = ["Not Applicable", "Young Horse", ...disciplineLevels];
