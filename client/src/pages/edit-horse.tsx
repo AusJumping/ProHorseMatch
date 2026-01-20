@@ -254,6 +254,10 @@ export default function EditHorse() {
 
   // This function is called when the form is submitted
   const onSubmit = async (data: HorseFormValues) => {
+    console.log("=== HORSE UPDATE SUBMIT START ===");
+    console.log("Form data received:", data);
+    console.log("Horse ID:", horseId);
+    
     try {
       setIsSubmitting(true);
       
@@ -276,10 +280,12 @@ export default function EditHorse() {
         videos: Array.isArray(data.videos) ? data.videos : [],
       };
       
-      // Log the cleaned data for debugging
+      console.log("Request data to send:", requestData);
       
       // Make the API request and store the response
+      console.log("Making PUT request to:", `/api/horses/${horseId}`);
       const updatedHorse = await apiRequest("PUT", `/api/horses/${horseId}`, requestData);
+      console.log("Update response:", updatedHorse);
       
       // Show success message
       toast({
@@ -376,7 +382,10 @@ export default function EditHorse() {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                console.log("=== FORM VALIDATION ERRORS ===");
+                console.log("Form errors:", errors);
+              })} className="space-y-6">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="w-full justify-start">
                     <TabsTrigger value="details">Basic Details</TabsTrigger>
@@ -1223,6 +1232,7 @@ export default function EditHorse() {
                   <Button 
                     type="submit" 
                     disabled={isSubmitting}
+                    onClick={() => console.log("=== UPDATE BUTTON CLICKED ===", { formState: form.formState, errors: form.formState.errors })}
                   >
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Horse
