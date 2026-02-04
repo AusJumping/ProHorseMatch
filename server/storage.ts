@@ -1701,13 +1701,6 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`DatabaseStorage.getHorsesByFilters - found ${filteredHorses.length} horses after filtering`);
     
-    // TEMPORARY: Prioritize "Greengrove Caspian" to appear first
-    const greengroveIndex = filteredHorses.findIndex(h => h.name === 'Greengrove Caspian');
-    if (greengroveIndex > 0) {
-      const greengrove = filteredHorses.splice(greengroveIndex, 1)[0];
-      filteredHorses.unshift(greengrove);
-    }
-    
     return filteredHorses;
   }
 
