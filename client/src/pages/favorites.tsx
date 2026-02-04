@@ -172,7 +172,7 @@ export default function Favorites() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {favoriteHorses.map(horse => (
               <Card key={horse.id} className="overflow-hidden horse-card-grid">
-                <div className="relative h-48 bg-gray-100">
+                <div className="relative aspect-[4/3] md:aspect-[16/9] bg-gray-100">
                   <MediaCarousel media={horse.photos || []} />
                 </div>
                 <CardContent className="p-4">
