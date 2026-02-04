@@ -131,75 +131,101 @@ export function NotificationReminder() {
   }
 
   return (
-    <Card className="border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50 shadow-lg mb-6">
-      <CardContent className="p-5">
-        <div className="flex items-start gap-4">
-          <div className="bg-amber-500 p-3 rounded-full flex-shrink-0">
-            <AlertTriangle className="w-6 h-6 text-white" />
-          </div>
-          
-          <div className="flex-1 min-w-0">
-            <h3 className="font-bold text-lg text-amber-900 mb-1">
-              Don't Miss Out on New Matches!
-            </h3>
-            <p className="text-amber-800 mb-4">
-              You're not receiving push notifications. Enable them now to get <strong>instant alerts</strong> when:
-            </p>
-            <ul className="text-amber-800 mb-4 space-y-1 ml-4">
-              <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span> A new horse matches your saved search
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-blue-600">✓</span> Someone sends you a message
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-purple-600">✓</span> A horse you like gets updated
-              </li>
-            </ul>
-            
-            <div className="bg-white/60 rounded-lg p-3 mb-4 border border-amber-200">
-              <p className="text-amber-900 font-semibold text-sm mb-2 flex items-center gap-2">
-                <span>📱</span> Install as App for Best Experience
-              </p>
-              <p className="text-amber-800 text-sm mb-2">
-                For the best notification experience, install ProHorseMatch as an app:
-              </p>
-              <ul className="text-amber-700 text-sm space-y-1 ml-4">
-                <li><strong>Chrome/Edge:</strong> Look for the install icon in the address bar or browser menu</li>
-                <li><strong>Android:</strong> Tap "Add to Home Screen" when prompted</li>
-                <li><strong>iPhone/iPad:</strong> Open in <strong>Safari</strong>, tap the Share button, then "Add to Home Screen"</li>
-              </ul>
+    <div className="mb-6 rounded-2xl overflow-hidden shadow-2xl border-4 border-[#8B7355] animate-pulse-subtle">
+      {/* Bold Header */}
+      <div className="bg-gradient-to-r from-[#8B7355] via-[#9D8B6E] to-[#8B7355] p-5 text-white relative">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIiBjeD0iMjAiIGN5PSIyMCIgcj0iMiIvPjwvZz48L3N2Zz4=')] opacity-30" />
+        
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm animate-bounce">
+              <Bell className="w-8 h-8" />
             </div>
-            
-            <Button 
-              onClick={handleEnableNotifications}
-              disabled={isEnabling}
-              className="bg-amber-600 hover:bg-amber-700 text-white h-11 px-6 text-base font-semibold shadow-md"
-            >
-              {isEnabling ? (
-                "Enabling..."
-              ) : (
-                <>
-                  <Bell className="w-5 h-5 mr-2" />
-                  Enable Notifications Now
-                </>
-              )}
-            </Button>
+            <div>
+              <h3 className="font-bold text-2xl flex items-center gap-2">
+                🔔 Enable Notifications
+              </h3>
+              <p className="text-white/90 text-lg">Never miss a horse match or message!</p>
+            </div>
           </div>
           
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 flex-shrink-0 text-amber-600 hover:text-amber-800"
+            className="h-10 w-10 text-white/70 hover:text-white hover:bg-white/20"
             onClick={() => {
               localStorage.setItem('notification-reminder-dismissed', 'true');
               setIsDismissed(true);
             }}
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6" />
           </Button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      
+      {/* Content */}
+      <div className="bg-gradient-to-b from-amber-50 to-orange-50 p-6">
+        <div className="grid sm:grid-cols-3 gap-4 mb-5">
+          <div className="bg-white rounded-xl p-4 shadow-md border border-green-200 text-center">
+            <div className="bg-green-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+              <span className="text-white text-xl">🐴</span>
+            </div>
+            <p className="font-semibold text-green-800">New Matches</p>
+            <p className="text-sm text-green-600">Instant alerts for matching horses</p>
+          </div>
+          
+          <div className="bg-white rounded-xl p-4 shadow-md border border-blue-200 text-center">
+            <div className="bg-blue-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+              <span className="text-white text-xl">💬</span>
+            </div>
+            <p className="font-semibold text-blue-800">Messages</p>
+            <p className="text-sm text-blue-600">Know when sellers respond</p>
+          </div>
+          
+          <div className="bg-white rounded-xl p-4 shadow-md border border-purple-200 text-center">
+            <div className="bg-purple-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2">
+              <span className="text-white text-xl">📢</span>
+            </div>
+            <p className="font-semibold text-purple-800">Updates</p>
+            <p className="text-sm text-purple-600">Price drops & new photos</p>
+          </div>
+        </div>
+        
+        <div className="bg-white/80 rounded-xl p-4 mb-5 border border-slate-200">
+          <p className="font-semibold text-slate-800 mb-2 flex items-center gap-2">
+            📱 Install as App for Best Experience
+          </p>
+          <div className="grid sm:grid-cols-3 gap-2 text-sm text-slate-600">
+            <div className="flex items-center gap-2">
+              <span className="text-green-500">✓</span>
+              <span><strong>Desktop:</strong> Install icon in address bar</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-green-500">✓</span>
+              <span><strong>iPhone:</strong> Safari → Share → Add to Home</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-green-500">✓</span>
+              <span><strong>Android:</strong> "Add to Home Screen"</span>
+            </div>
+          </div>
+        </div>
+        
+        <Button 
+          onClick={handleEnableNotifications}
+          disabled={isEnabling}
+          className="w-full bg-gradient-to-r from-[#8B7355] to-[#6B5344] hover:from-[#7a6348] hover:to-[#5a4539] text-white h-14 text-lg font-bold rounded-xl shadow-lg shadow-[#8B7355]/30 transition-all hover:shadow-xl hover:scale-[1.02]"
+        >
+          {isEnabling ? (
+            "Enabling..."
+          ) : (
+            <>
+              <Bell className="w-6 h-6 mr-3" />
+              Enable Notifications Now
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }
