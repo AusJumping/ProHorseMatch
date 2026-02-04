@@ -507,17 +507,9 @@ export default function SubscriptionPage() {
         duration: isMobile ? 2000 : 4000,
       });
       
-      // Check if push notifications are supported and not already enabled
-      const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
-      const notificationPermission = typeof Notification !== 'undefined' ? Notification.permission : 'denied';
-      
-      if (supportsNotifications && notificationPermission !== 'denied') {
-        // Show notification prompt modal after a short delay
-        setTimeout(() => setShowNotificationPrompt(true), 500);
-      } else {
-        // If notifications not supported, just navigate to filter page
-        setTimeout(() => navigate('/filter'), 2000);
-      }
+      // Always show the notification prompt modal after subscription
+      // Even if push isn't fully supported, we want to encourage PWA installation
+      setTimeout(() => setShowNotificationPrompt(true), 500);
     },
     onError: (error: Error) => {
       toast({
@@ -575,17 +567,9 @@ export default function SubscriptionPage() {
       duration: 4000,
     });
     
-    // Check if push notifications are supported and not already enabled
-    const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
-    const notificationPermission = typeof Notification !== 'undefined' ? Notification.permission : 'denied';
-    
-    if (supportsNotifications && notificationPermission !== 'denied') {
-      // Show notification prompt modal after a short delay
-      setTimeout(() => setShowNotificationPrompt(true), 500);
-    } else {
-      // If notifications not supported, just navigate to filter page
-      setTimeout(() => navigate('/filter'), 2000);
-    }
+    // Always show the notification prompt modal after subscription
+    // Even if push isn't fully supported, we want to encourage PWA installation
+    setTimeout(() => setShowNotificationPrompt(true), 500);
   };
   
   // Handle donation

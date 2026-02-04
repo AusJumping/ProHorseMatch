@@ -157,10 +157,24 @@ export function NotificationPromptModal({ isOpen, onClose, onComplete }: Notific
             </div>
           </div>
           
+          <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
+            <p className="font-semibold text-slate-800 text-sm mb-2 flex items-center gap-2">
+              <span>📱</span> Install as App for Best Experience
+            </p>
+            <p className="text-slate-700 text-sm mb-2">
+              For the best notification experience, install ProHorseMatch as an app:
+            </p>
+            <ul className="text-slate-600 text-sm space-y-1 ml-4 list-disc">
+              <li><strong>Chrome/Edge:</strong> Look for the install icon in the address bar or browser menu</li>
+              <li><strong>Android:</strong> Tap "Add to Home Screen" when prompted</li>
+              <li><strong>iPhone/iPad:</strong> Open in <strong>Safari</strong>, tap the Share button, then "Add to Home Screen"</li>
+            </ul>
+          </div>
+          
           {!supportsNotifications && (
             <div className="text-sm text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-200">
-              <p className="font-medium">Browser not supported</p>
-              <p>Try Chrome, Edge, or Firefox for the best experience.</p>
+              <p className="font-medium">Install Required for Notifications</p>
+              <p>Install the app first using the instructions above to enable push notifications.</p>
             </div>
           )}
         </div>
