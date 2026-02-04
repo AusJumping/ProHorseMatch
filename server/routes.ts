@@ -4338,12 +4338,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Function to check if a horse matches a saved search
   async function doesHorseMatchSearch(horse: any, search: SavedSearch): Promise<boolean> {
+    console.log(`=== MATCHING HORSE ${horse.name} vs SEARCH ${search.name} (ID: ${search.id}) ===`);
+    
     // Check disciplines
     if (search.disciplines && search.disciplines.length > 0) {
       const hasMatchingDiscipline = search.disciplines.some(d => 
         horse.disciplines && horse.disciplines.includes(d)
       );
-      if (!hasMatchingDiscipline) return false;
+      if (!hasMatchingDiscipline) {
+        console.log(`  FAIL: Discipline mismatch - search: ${search.disciplines}, horse: ${horse.disciplines}`);
+        return false;
+      }
     }
 
     // Check levels
@@ -4384,8 +4389,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     // Check price range
-    if (search.price_min && horse.price_min < search.price_min) return false;
-    if (search.price_max && horse.price_min > search.price_max) return false;
+    console.log(`  Price check - search: ${search.price_min}-${search.price_max}, horse: ${horse.price_min}-${horse.price_max}`);
+    if (search.price_min && horse.price_min < search.price_min) {
+      console.log(`  FAIL: Horse price ${horse.price_min} below search min ${search.price_min}`);
+      return false;
+    }
+    if (search.price_max && horse.price_min > search.price_max) {
+      console.log(`  FAIL: Horse price ${horse.price_min} above search max ${search.price_max}`);
+      return false;
+    }
 
     // Check currency
     if (search.currency && horse.currency !== search.currency) return false;
@@ -4407,6 +4419,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!horseDamSire.includes(searchDamSire)) return false;
     }
 
+    console.log(`  SUCCESS: Horse ${horse.name} matches search ${search.name}`);
     return true;
   }
 
