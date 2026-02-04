@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TermsDialog from '@/components/TermsDialog';
+import { NotificationPromptModal } from '@/components/NotificationPromptModal';
 
 // Ensure we have the public key
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
@@ -326,6 +327,7 @@ export default function SubscriptionPage() {
   const [convertedFuturePlans, setConvertedFuturePlans] = useState(futurePlans);
   const [tosAgreed, setTosAgreed] = useState(false);
   const [isPendingSubscribe, setIsPendingSubscribe] = useState(false);
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
   const { toast } = useToast();
   const { currentCurrency, convertPrice, formatPrice } = useCurrency();
   
@@ -501,12 +503,21 @@ export default function SubscriptionPage() {
       // Show toast with auto-dismiss on mobile
       toast({
         title: 'Beta Subscription Activated',
-        description: 'You are now subscribed to the Beta version of this site. This subscription is free and is for a limited time only. Enjoy exploring the features of this app. We hope you find your perfect match!',
-        duration: isMobile ? 2000 : 6000, // 2 seconds on mobile, 6 seconds on desktop
+        description: 'You are now subscribed to the Beta version of this site. This subscription is free and is for a limited time only.',
+        duration: isMobile ? 2000 : 4000,
       });
       
-      // Always redirect to filter page regardless of subscription type
-      setTimeout(() => navigate('/filter'), 2000);
+      // Check if push notifications are supported and not already enabled
+      const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+      const notificationPermission = typeof Notification !== 'undefined' ? Notification.permission : 'denied';
+      
+      if (supportsNotifications && notificationPermission !== 'denied') {
+        // Show notification prompt modal after a short delay
+        setTimeout(() => setShowNotificationPrompt(true), 500);
+      } else {
+        // If notifications not supported, just navigate to filter page
+        setTimeout(() => navigate('/filter'), 2000);
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -561,11 +572,20 @@ export default function SubscriptionPage() {
     toast({
       title: 'Subscription Active',
       description: 'Your subscription has been successfully activated!',
-      duration: 5000,
+      duration: 4000,
     });
     
-    // Redirect to filter page after successful payment
-    setTimeout(() => navigate('/filter'), 2000);
+    // Check if push notifications are supported and not already enabled
+    const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+    const notificationPermission = typeof Notification !== 'undefined' ? Notification.permission : 'denied';
+    
+    if (supportsNotifications && notificationPermission !== 'denied') {
+      // Show notification prompt modal after a short delay
+      setTimeout(() => setShowNotificationPrompt(true), 500);
+    } else {
+      // If notifications not supported, just navigate to filter page
+      setTimeout(() => navigate('/filter'), 2000);
+    }
   };
   
   // Handle donation
@@ -1308,6 +1328,18 @@ export default function SubscriptionPage() {
           </div>
         </div>
       </div>
+      
+      {/* Notification Prompt Modal - shown after subscription activation */}
+      <NotificationPromptModal
+        isOpen={showNotificationPrompt}
+        onClose={() => {
+          setShowNotificationPrompt(false);
+          navigate('/filter');
+        }}
+        onComplete={() => {
+          navigate('/filter');
+        }}
+      />
     </Layout>
   );
 }

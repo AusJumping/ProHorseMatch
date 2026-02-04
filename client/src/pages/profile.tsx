@@ -10,6 +10,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { NotificationSettings } from "@/components/NotificationSettings";
+import { NotificationReminder } from "@/components/NotificationReminder";
 
 
 
@@ -111,6 +112,9 @@ export default function Profile() {
           
           <TabsContent value="settings">
             <div className="space-y-6">
+              {/* Prominent notification reminder - shows if notifications not enabled */}
+              <NotificationReminder />
+              
               <NotificationSettings />
               
               <Card>

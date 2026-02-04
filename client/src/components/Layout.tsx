@@ -4,6 +4,8 @@ import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
 import { ContextualNotificationPrompt } from "./ContextualNotificationPrompt";
 import { PWAInstallBanner } from "./PWAInstallBanner";
+import { NotificationBell } from "./NotificationBell";
+import { UnreadNotificationBanner } from "./UnreadNotificationBanner";
 import { ArrowLeft, Filter, PlusCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
@@ -123,6 +125,11 @@ const Layout = ({
                 </Button>
               )}
               
+              {/* Notification Bell - shows for authenticated users */}
+              {isAuthenticated && (
+                <NotificationBell />
+              )}
+              
               {/* Mobile Menu Button */}
               {isMobile && (
                 <MobileNavbar />
@@ -138,6 +145,9 @@ const Layout = ({
           {children}
         </main>
       </div>
+
+      {/* Unread Notification Banner - shows on login if user has unread messages */}
+      {isAuthenticated && <UnreadNotificationBanner />}
 
       {/* Contextual Notification Prompt */}
       {isAuthenticated && <ContextualNotificationPrompt />}

@@ -7,7 +7,16 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
-## Recent Changes (October 25, 2025)
+## Recent Changes (February 4, 2026)
+- **NEW**: Notification Adoption Improvement System
+- NotificationPromptModal: Shows after subscription activation (both beta and paid) asking users to enable push notifications for horse matches and messages
+- NotificationBell: In-app bell icon in header with red badge showing unread message count; amber pulse dot if notifications not enabled
+- UnreadNotificationBanner: One-time-per-session banner on login if user has unread messages, prompting to view and enable notifications
+- NotificationReminder: Prominent amber/orange card at top of profile settings encouraging notification enablement (persists dismissal in localStorage)
+- All components properly integrated into Layout, subscription page, and profile page
+- **UPDATED**: Horse card photo aspect ratios changed from 16:9 to 4:3 for both mobile and desktop to show more of each photo
+
+## Previous Changes (October 25, 2025)
 - **NEW**: Enhanced PWA Manifest for Better Mobile Experience
 - Added maskable icon support for adaptive icons on Android/iOS
 - Set portrait-primary orientation for mobile-first experience
