@@ -32,7 +32,7 @@ const HorseGrid = ({ horses, onShowMore }: HorseGridProps) => {
       <div className="flex flex-wrap justify-center lg:justify-start gap-6 mb-8">
         {horses.map((horse) => (
           <Card key={horse.id} className="overflow-hidden flex flex-col w-[320px] flex-shrink-0">
-            <div className="relative aspect-[4/3] md:aspect-[16/9] overflow-hidden">
+            <div className="relative aspect-[4/3] overflow-hidden">
               <MediaCarousel 
                 media={horse.photos || []} 
                 videos={horse.videos || []} 
