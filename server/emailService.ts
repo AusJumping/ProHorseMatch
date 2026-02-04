@@ -229,13 +229,9 @@ export async function sendWelcomeEmail(to: string, username: string): Promise<bo
         <div style="text-align: center; margin: 40px 0;">
           <a href="https://pro-horse-match-info6446.replit.app" 
              style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
-            Start Browsing Horses
+            Start using ProHorseMatch now
           </a>
         </div>
-        
-        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #2D2A25; text-align: center; font-weight: 500;">
-          Happy horse hunting!
-        </p>
       </div>
       
       <div style="background: linear-gradient(135deg, #F8F6F0 0%, #E8E3D3 100%); padding: 25px 30px; text-align: center; border-radius: 0 0 8px 8px;">
@@ -260,8 +256,6 @@ Congratulations! Your email has been verified and your ProHorseMatch account is 
 - List your own horses for sale (if you're a seller)
 
 Visit: https://pro-horse-match-info6446.replit.app
-
-Happy horse hunting!
 
 © 2025 ProHorseMatch. Connecting Performance Horses with new owners.
   `;
