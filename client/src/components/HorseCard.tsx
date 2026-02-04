@@ -151,8 +151,8 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
 
   return (
     <Card className="horse-card bg-white overflow-hidden shadow-md relative cursor-grab active:cursor-grabbing h-full">
-      {/* Media Section - Using MediaCarousel component with 16:9 aspect ratio */}
-      <div className="relative w-full aspect-[16/9]">
+      {/* Media Section - Using MediaCarousel component with taller ratio on mobile to show more of the photo */}
+      <div className="relative w-full aspect-[4/3] md:aspect-[16/9]">
         <MediaCarousel 
           media={horse.photos || []} 
           videos={horse.videos || []} 
