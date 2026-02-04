@@ -157,6 +157,20 @@ export function NotificationReminder() {
               </li>
             </ul>
             
+            <div className="bg-white/60 rounded-lg p-3 mb-4 border border-amber-200">
+              <p className="text-amber-900 font-semibold text-sm mb-2 flex items-center gap-2">
+                <span>📱</span> Install as App for Best Experience
+              </p>
+              <p className="text-amber-800 text-sm mb-2">
+                For the best notification experience, install ProHorseMatch as an app:
+              </p>
+              <ul className="text-amber-700 text-sm space-y-1 ml-4">
+                <li><strong>Chrome/Edge:</strong> Look for the install icon in the address bar or browser menu</li>
+                <li><strong>Android:</strong> Tap "Add to Home Screen" when prompted</li>
+                <li><strong>iPhone/iPad:</strong> Open in <strong>Safari</strong>, tap the Share button, then "Add to Home Screen"</li>
+              </ul>
+            </div>
+            
             <Button 
               onClick={handleEnableNotifications}
               disabled={isEnabling}

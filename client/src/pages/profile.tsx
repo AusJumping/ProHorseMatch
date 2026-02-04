@@ -70,6 +70,9 @@ export default function Profile() {
           </TabsList>
           
           <TabsContent value="profile">
+            {/* Prominent notification reminder - shows if notifications not enabled */}
+            <NotificationReminder />
+            
             <Card>
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
@@ -112,9 +115,6 @@ export default function Profile() {
           
           <TabsContent value="settings">
             <div className="space-y-6">
-              {/* Prominent notification reminder - shows if notifications not enabled */}
-              <NotificationReminder />
-              
               <NotificationSettings />
               
               <Card>
