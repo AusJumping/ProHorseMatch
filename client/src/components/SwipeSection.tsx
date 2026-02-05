@@ -143,7 +143,7 @@ const SwipeSection = ({
               ? "cursor-not-allowed opacity-50" 
               : "hover:scale-105 active:scale-95",
             isMobile 
-              ? "text-white px-6 py-3 rounded-lg font-medium shadow-lg" 
+              ? "text-white w-28 py-4 rounded-xl font-semibold text-base shadow-lg" 
               : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
           )}
           style={isMobile ? { backgroundColor: '#cdac6e' } : undefined}
@@ -175,7 +175,7 @@ const SwipeSection = ({
               ? "cursor-not-allowed opacity-50" 
               : "hover:scale-105 active:scale-95",
             isMobile 
-              ? "text-white px-6 py-3 rounded-lg font-medium shadow-lg" 
+              ? "text-white w-28 py-4 rounded-xl font-semibold text-base shadow-lg" 
               : "rounded-full bg-white hover:bg-white/90 shadow-xl border-2 border-gray-300 w-10 h-10"
           )}
           style={isMobile ? { backgroundColor: '#cdac6e' } : undefined}
