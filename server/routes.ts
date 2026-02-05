@@ -682,25 +682,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('User logged in automatically, auth token created:', authToken);
       
       // NOTE: Welcome email is now sent AFTER subscription selection, not at verification
-      // Generate reminder token for magic link to subscription page
-      const reminderToken = generateReminderToken();
-      const hashedReminderToken = hashReminderToken(reminderToken);
-      const reminderTokenExpires = createReminderTokenExpiration();
-      
-      // Store hashed reminder token
-      await storage.setReminderToken(user.id, hashedReminderToken, reminderTokenExpires);
-      console.log('Generated reminder token for subscription page magic link');
-      
-      // Send subscription reminder email with tokenized URL
-      const baseUrl = `${req.protocol}://${req.get('host')}`;
-      const subscriptionUrl = `${baseUrl}/subscription?reminderToken=${reminderToken}`;
-      console.log('Sending subscription reminder email with magic link...');
-      const reminderEmailSent = await sendSubscriptionReminderEmail(user.email, user.username, subscriptionUrl);
-      if (!reminderEmailSent) {
-        console.warn('Failed to send subscription reminder email to:', user.email);
-      } else {
-        console.log('Subscription reminder email sent successfully to:', user.email);
-      }
+      // NOTE: Subscription reminder email is now sent 24 hours after verification if user hasn't subscribed
+      // The admin batch send endpoint handles this timing check
       
       // Get updated user data
       const updatedUser = await storage.getUserById(user.id);
@@ -2176,7 +2159,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Filter for users who:
       // 1. Have verified their email
       // 2. Don't have a subscription yet
-      // 3. Haven't received a reminder in the last 24 hours (to prevent duplicates)
+      // 3. Account was created at least 24 hours ago (give them time to subscribe on their own)
+      // 4. Haven't received a reminder in the last 24 hours (to prevent duplicates)
       const now = new Date();
       const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       
@@ -2184,6 +2168,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Must have verified email and no subscription
         if (!user.email_verified || user.stripe_subscription_id) {
           return false;
+        }
+        
+        // Skip if account was created less than 24 hours ago (give them time to subscribe)
+        if (user.created_at) {
+          const createdAt = new Date(user.created_at);
+          if (createdAt > twentyFourHoursAgo) {
+            return false; // Account too new, give them time
+          }
         }
         
         // Skip if they received a reminder within the last 24 hours
@@ -2294,6 +2286,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return false;
         }
         
+        // Skip if account was created less than 24 hours ago (give them time to subscribe)
+        if (user.created_at) {
+          const createdAt = new Date(user.created_at);
+          if (createdAt > twentyFourHoursAgo) {
+            return false;
+          }
+        }
+        
         if (user.subscription_reminder_sent_at) {
           const lastSent = new Date(user.subscription_reminder_sent_at);
           if (lastSent > twentyFourHoursAgo) {
@@ -2306,7 +2306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       return res.status(200).json({
         count: usersWithoutSubscription.length,
-        message: `${usersWithoutSubscription.length} verified users without subscriptions (excluding those who received reminders in last 24h)`
+        message: `${usersWithoutSubscription.length} verified users (24h+ old) without subscriptions`
       });
     } catch (error) {
       console.error("Count subscription reminder error:", error);
