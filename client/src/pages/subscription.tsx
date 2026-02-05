@@ -509,7 +509,11 @@ export default function SubscriptionPage() {
       
       // Always show the notification prompt modal after subscription
       // Even if push isn't fully supported, we want to encourage PWA installation
-      setTimeout(() => setShowNotificationPrompt(true), 500);
+      console.log('About to show notification prompt modal');
+      setTimeout(() => {
+        console.log('Setting showNotificationPrompt to true');
+        setShowNotificationPrompt(true);
+      }, 500);
     },
     onError: (error: Error) => {
       toast({
@@ -706,6 +710,17 @@ export default function SubscriptionPage() {
                         You're using our free beta plan. Enjoy full access to all features during our beta period.
                       </p>
                     </div>
+                  )}
+                  
+                  {/* Admin test button - temporarily for testing notification modal */}
+                  {user?.email === 'info@australianjumping.com.au' && (
+                    <Button 
+                      onClick={() => setShowNotificationPrompt(true)}
+                      variant="outline"
+                      className="mt-4"
+                    >
+                      Test Notification Modal
+                    </Button>
                   )}
                 </div>
                 
@@ -976,6 +991,18 @@ export default function SubscriptionPage() {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Notification Prompt Modal - for existing subscriber testing */}
+        <NotificationPromptModal
+          isOpen={showNotificationPrompt}
+          onClose={() => {
+            setShowNotificationPrompt(false);
+            navigate('/filter');
+          }}
+          onComplete={() => {
+            navigate('/filter');
+          }}
+        />
       </Layout>
     );
   }
