@@ -3865,6 +3865,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
               )
             ]);
             
+            // Calculate per-user unread count
+            // Only count messages that the CURRENT user has not read and did not send
+            let userUnreadCount = 0;
+            try {
+              const messages = await storage.getMessagesByConversationId(
+                conversation.customer_id, 
+                conversation.owner_id, 
+                conversation.horse_id
+              );
+              userUnreadCount = messages.filter(msg => {
+                if (msg.is_read) return false;
+                // Don't count messages the user sent themselves
+                const userSentMessage = 
+                  (msg.customer_id === userId && msg.sender_type === "customer") ||
+                  (msg.owner_id === userId && msg.sender_type === "owner");
+                return !userSentMessage;
+              }).length;
+            } catch (err) {
+              console.error('Error calculating per-user unread count:', err);
+              userUnreadCount = 0;
+            }
+            
             return {
               ...conversation,
               horse: horse || null,
@@ -3875,7 +3897,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 business_name: otherUser.business_name,
                 contact_name: otherUser.contact_name,
                 is_selling: otherUser.is_selling
-              } : null
+              } : null,
+              unread_count: userUnreadCount // Override with per-user count
             };
           } catch (enhancementError) {
             console.error(`Error enhancing conversation ${conversation.id}:`, enhancementError);
@@ -4197,12 +4220,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get all messages for this user and count unread ones
+      // Only count messages where the current user is the RECIPIENT, not the sender
       const allMessages = await storage.getMessages();
-      const userMessages = allMessages.filter(msg => 
-        (msg.customer_id === userId || msg.owner_id === userId) && 
-        !msg.is_read &&
-        msg.sender_type !== (user.is_selling ? "owner" : "customer") // Don't count own messages
-      );
+      const userMessages = allMessages.filter(msg => {
+        // User must be part of this conversation
+        const isInConversation = msg.customer_id === userId || msg.owner_id === userId;
+        if (!isInConversation) return false;
+        
+        // Message must be unread
+        if (msg.is_read) return false;
+        
+        // Don't count messages the user sent themselves
+        // If user is the customer and sender_type is "customer", they sent it
+        // If user is the owner and sender_type is "owner", they sent it
+        const userSentMessage = 
+          (msg.customer_id === userId && msg.sender_type === "customer") ||
+          (msg.owner_id === userId && msg.sender_type === "owner");
+        
+        return !userSentMessage;
+      });
 
       res.json({ count: userMessages.length });
     } catch (error) {
