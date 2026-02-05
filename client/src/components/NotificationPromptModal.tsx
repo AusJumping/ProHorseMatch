@@ -173,7 +173,7 @@ export function NotificationPromptModal({ isOpen, onClose, onComplete }: Notific
               </div>
               <div>
                 <p className="font-semibold text-green-800">New Horse Matches</p>
-                <p className="text-sm text-green-700">Be first to see matching horses</p>
+                <p className="text-sm text-green-700">Never miss a match</p>
               </div>
             </div>
             
@@ -183,7 +183,7 @@ export function NotificationPromptModal({ isOpen, onClose, onComplete }: Notific
               </div>
               <div>
                 <p className="font-semibold text-blue-800">New Messages</p>
-                <p className="text-sm text-blue-700">Never miss seller replies</p>
+                <p className="text-sm text-blue-700">Never miss messages</p>
               </div>
             </div>
           </div>
