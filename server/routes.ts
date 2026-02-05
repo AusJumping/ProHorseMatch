@@ -4170,7 +4170,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied to this conversation" });
       }
 
-      // Reset unread count when user views conversation
+      // Mark all messages in this conversation as read (only those sent TO this user, not BY this user)
+      const messages = await storage.getMessagesByConversationId(
+        conversation.customer_id,
+        conversation.owner_id,
+        conversation.horse_id
+      );
+      
+      for (const msg of messages) {
+        if (!msg.is_read) {
+          // Only mark as read if this user is the recipient (not the sender)
+          const userSentMessage = 
+            (msg.customer_id === userId && msg.sender_type === "customer") ||
+            (msg.owner_id === userId && msg.sender_type === "owner");
+          
+          if (!userSentMessage) {
+            await storage.updateMessage(msg.id, { is_read: true });
+          }
+        }
+      }
+
+      // Also reset the conversation's unread_count field
       const updatedConversation = await storage.updateConversation(conversationId, { unread_count: 0 });
       res.json(updatedConversation);
     } catch (error) {
