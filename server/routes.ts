@@ -1866,7 +1866,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           currency: horse.currency,
           location: horse.location_country,
           disciplines: Array.isArray(horse.disciplines) ? horse.disciplines : [],
-          horseUrl: `${baseUrl}/horses/${horse.id}`
+          horseUrl: `${baseUrl}/horse/${horse.id}`
         });
         console.log('Admin notification sent for new horse listing:', horse.name);
       } catch (notificationError) {
@@ -4939,7 +4939,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currency: 'AUD',
         location: 'Australia',
         disciplines: ['Jumping', 'Eventing'],
-        horseUrl: `${baseUrl}/horses/999`
+        horseUrl: `${baseUrl}/horse/999`
       });
       
       if (testNotification) {
