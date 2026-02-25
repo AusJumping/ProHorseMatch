@@ -4515,7 +4515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             </div>
             
             <p style="text-align: center;">
-              <a href="${process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://pro-horse-match-info6446.replit.app'}/horses/${horse.id}" 
+              <a href="https://pro-horse-match-info6446.replit.app/horse/${horse.id}" 
                  style="background-color: #8B4513; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
                 View Horse Details
               </a>
