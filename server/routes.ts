@@ -1855,7 +1855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send admin notification about new horse listing
       try {
         const owner = await storage.getUserById(horse.owner_id);
-        const baseUrl = req.protocol + '://' + req.get('host');
+        const baseUrl = 'https://pro-horse-match-info6446.replit.app';
         
         await sendHorseListingNotification({
           to: 'info@australianjumping.com.au',
@@ -4928,7 +4928,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/test/horse-notification", async (req, res) => {
     try {
       console.log("Testing horse listing notification...");
-      const baseUrl = req.protocol + '://' + req.get('host');
+      const baseUrl = 'https://pro-horse-match-info6446.replit.app';
       
       const testNotification = await sendHorseListingNotification({
         to: 'info@australianjumping.com.au',
