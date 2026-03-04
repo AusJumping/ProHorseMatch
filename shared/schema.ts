@@ -340,5 +340,5 @@ export const countries = [
   "United Kingdom and Ireland"
 ];
 export const jumpingLevels = ["Futurity", "Children", "Junior", "Amateur", "Young Rider", "Mini Prix", "Grand Prix"];
-export const dressageLevels = ["Preliminary", "Novice", "Elementary", "Medium", "Advanced", "Prix St. Georges", "Intermediate I", "Intermediate II", "Grand Prix"];
+export const dressageLevels = ["Pony Dressage", "Preliminary", "Novice", "Elementary", "Medium", "Advanced", "Young Rider", "Prix St. Georges", "Intermediate I", "Intermediate II", "Grand Prix", "Para-Dressage"];
 export const eventingLevels = ["EvA60", "EvA80", "EvA95", "1*", "2*", "3*", "4*", "5*"];
