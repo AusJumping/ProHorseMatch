@@ -734,9 +734,9 @@ export default function AddHorse() {
                                   ) : (
                                     <>
                                       <SelectItem value="Warmblood">Warmblood</SelectItem>
-                                      <SelectItem value="Warmblood X">Warmblood X</SelectItem>
+                                      <SelectItem value="Warmblood Cross">Warmblood Cross</SelectItem>
                                       <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
-                                      <SelectItem value="Thoroughbred X">Thoroughbred X</SelectItem>
+                                      <SelectItem value="Thoroughbred Cross">Thoroughbred Cross</SelectItem>
                                       <SelectItem value="Arabian">Arabian</SelectItem>
                                       <SelectItem value="Quarter Horse">Quarter Horse</SelectItem>
                                       <SelectItem value="Hanoverian">Hanoverian</SelectItem>
@@ -746,7 +746,7 @@ export default function AddHorse() {
                                       <SelectItem value="Selle Français">Selle Français</SelectItem>
                                       <SelectItem value="Irish Sport Horse">Irish Sport Horse</SelectItem>
                                       <SelectItem value="Stock Horse">Stock Horse</SelectItem>
-                                      <SelectItem value="Stock Horse X">Stock Horse X</SelectItem>
+                                      <SelectItem value="Stock Horse Cross">Stock Horse Cross</SelectItem>
                                       <SelectItem value="Riding Pony">Riding Pony</SelectItem>
                                     </>
                                   )}

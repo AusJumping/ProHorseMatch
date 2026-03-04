@@ -315,11 +315,11 @@ export const sexes = ["Mare", "Gelding", "Stallion"];
 export const colours = ["Bay", "Brown", "Black", "Grey", "Chestnut", "Palomino", "Tobiano", "Buckskin", "Other"];
 export const breeds = [
   "Warmblood",
-  "Warmblood X",
+  "Warmblood Cross",
   "Thoroughbred",
-  "Thoroughbred X",
+  "Thoroughbred Cross",
   "Stock Horse",
-  "Stock Horse X",
+  "Stock Horse Cross",
   "Riding Pony",
   "Other"
 ];
