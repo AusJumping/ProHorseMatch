@@ -19,10 +19,29 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+async function subscribeUserToPush() {
+  const registration = await navigator.serviceWorker.ready;
+  const response = await fetch('/api/push/vapid-public-key');
+  if (!response.ok) throw new Error('Failed to get VAPID public key');
+  const { publicKey } = await response.json();
+  const applicationServerKey = urlBase64ToUint8Array(publicKey);
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey,
+  });
+  const p256dhKey = subscription.getKey('p256dh');
+  const authKey = subscription.getKey('auth');
+  await apiRequest('POST', '/api/push/subscribe', {
+    endpoint: subscription.endpoint,
+    keys: {
+      p256dh: p256dhKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(p256dhKey)))) : '',
+      auth: authKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(authKey)))) : '',
+    },
+  });
+}
+
 export function ContextualNotificationPrompt() {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
-  const [isEnabling, setIsEnabling] = useState(false);
+  const [showIOSPrompt, setShowIOSPrompt] = useState(false);
   const { toast } = useToast();
 
   const supportsNotifications =
@@ -30,112 +49,51 @@ export function ContextualNotificationPrompt() {
     'serviceWorker' in navigator &&
     'PushManager' in window;
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isIOSStandalone = (window.navigator as any).standalone === true;
+  const isIOSReady = !isIOS || isIOSStandalone;
+
   const { data: notificationStatus } = useQuery<{ subscribed: boolean }>({
     queryKey: ['/api/push/status'],
     retry: false,
-    enabled: supportsNotifications && typeof Notification !== 'undefined' && Notification.permission === 'granted'
+    enabled: supportsNotifications && typeof Notification !== 'undefined' && Notification.permission === 'granted',
   });
-
-  const subscribeMutation = useMutation({
-    mutationFn: async () => {
-      const registration = await navigator.serviceWorker.ready;
-      const response = await fetch('/api/push/vapid-public-key');
-      if (!response.ok) throw new Error('Failed to get VAPID public key');
-      const { publicKey } = await response.json();
-      const applicationServerKey = urlBase64ToUint8Array(publicKey);
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey,
-      });
-      const p256dhKey = subscription.getKey('p256dh');
-      const authKey = subscription.getKey('auth');
-      await apiRequest('POST', '/api/push/subscribe', {
-        endpoint: subscription.endpoint,
-        keys: {
-          p256dh: p256dhKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(p256dhKey)))) : '',
-          auth: authKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(authKey)))) : '',
-        },
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
-      toast({ title: "Notifications enabled!", description: "You'll get instant alerts for matches and messages." });
-      setIsVisible(false);
-      setIsDismissed(true);
-    },
-    onError: () => {
-      setIsEnabling(false);
-    },
-  });
-
-  const handleEnable = async () => {
-    if (!supportsNotifications) {
-      toast({
-        title: "Not supported",
-        description: "Try installing the app to your home screen first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsEnabling(true);
-
-    if (Notification.permission === 'denied') {
-      toast({
-        title: "Notifications blocked",
-        description: "Please enable notifications in your browser settings and try again.",
-        variant: "destructive",
-      });
-      setIsEnabling(false);
-      return;
-    }
-
-    if (Notification.permission === 'default') {
-      const result = await Notification.requestPermission();
-      if (result !== 'granted') {
-        toast({
-          title: "Notifications not enabled",
-          description: "You can enable them anytime in Profile → Account Settings.",
-        });
-        setIsEnabling(false);
-        setIsVisible(false);
-        setIsDismissed(true);
-        return;
-      }
-    }
-
-    subscribeMutation.mutate();
-  };
-
-  const handleDismiss = () => {
-    setIsVisible(false);
-    setIsDismissed(true);
-    sessionStorage.setItem('notification-prompt-dismissed-session', 'true');
-  };
-
-  const handlePermanentDismiss = () => {
-    localStorage.setItem('notification-prompt-dismissed', 'true');
-    setIsVisible(false);
-    setIsDismissed(true);
-  };
 
   useEffect(() => {
-    if (isDismissed) return;
     if (!supportsNotifications) return;
-    if (Notification.permission === 'denied') return;
-    if (Notification.permission === 'granted' && notificationStatus?.subscribed) return;
+    if (sessionStorage.getItem('notification-auto-triggered') === 'true') return;
 
-    if (localStorage.getItem('notification-prompt-dismissed') === 'true') return;
-    if (sessionStorage.getItem('notification-prompt-dismissed-session') === 'true') return;
+    const alreadySubscribed = notificationStatus?.subscribed;
+    if (alreadySubscribed) return;
 
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 4000);
+    sessionStorage.setItem('notification-auto-triggered', 'true');
+
+    if (isIOS && !isIOSStandalone) {
+      setTimeout(() => setShowIOSPrompt(true), 3000);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        if (Notification.permission === 'default') {
+          const result = await Notification.requestPermission();
+          if (result === 'granted') {
+            await subscribeUserToPush();
+            queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
+            toast({ title: "Notifications enabled!", description: "You'll get instant alerts for matches and messages." });
+          }
+        } else if (Notification.permission === 'granted') {
+          await subscribeUserToPush();
+          queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
+        }
+      } catch {
+      }
+    }, 2000);
 
     return () => clearTimeout(timer);
-  }, [isDismissed, notificationStatus, supportsNotifications]);
+  }, [notificationStatus, supportsNotifications]);
 
-  if (!isVisible) return null;
+  if (!showIOSPrompt) return null;
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-4">
@@ -146,40 +104,21 @@ export function ContextualNotificationPrompt() {
               <Bell className="w-5 h-5 text-[#8B7355]" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-sm mb-1">Enable Notifications?</h4>
-              <p className="text-sm text-neutral-600 mb-3">
-                Get instant alerts when horses match your search or you receive messages.
+              <h4 className="font-semibold text-sm mb-1">Get Notifications on iPhone</h4>
+              <p className="text-sm text-neutral-600 mb-2">
+                To receive alerts for matches and messages, add this app to your home screen first:
               </p>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  className="bg-[#8B7355] hover:bg-[#6B5344]"
-                  onClick={handleEnable}
-                  disabled={isEnabling || subscribeMutation.isPending}
-                >
-                  <Bell className="w-3 h-3 mr-1" />
-                  {isEnabling || subscribeMutation.isPending ? "Enabling..." : "Enable"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleDismiss}
-                >
-                  Maybe Later
-                </Button>
-              </div>
-              <button
-                onClick={handlePermanentDismiss}
-                className="text-xs text-neutral-400 hover:text-neutral-600 mt-2 block"
-              >
-                Don't ask again
-              </button>
+              <ol className="text-xs text-neutral-500 space-y-1 list-decimal list-inside mb-3">
+                <li>Tap the <strong>Share</strong> button in Safari</li>
+                <li>Tap <strong>"Add to Home Screen"</strong></li>
+                <li>Open the app from your home screen</li>
+              </ol>
             </div>
             <Button
               variant="ghost"
               size="icon"
               className="h-6 w-6 flex-shrink-0"
-              onClick={handleDismiss}
+              onClick={() => setShowIOSPrompt(false)}
             >
               <X className="h-4 w-4" />
             </Button>
