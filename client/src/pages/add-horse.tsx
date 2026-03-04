@@ -898,7 +898,7 @@ export default function AddHorse() {
                                       <>
                                         <SelectItem value="Unbroken">Unbroken</SelectItem>
                                         <SelectItem value="Young Horse">Young Horse</SelectItem>
-                                        <SelectItem value="1.00m">1.00m</SelectItem>
+                                        <SelectItem value="Under 1m">Under 1m</SelectItem>
                                         <SelectItem value="1.10m">1.10m</SelectItem>
                                         <SelectItem value="1.20m">1.20m</SelectItem>
                                         <SelectItem value="1.30m">1.30m</SelectItem>
