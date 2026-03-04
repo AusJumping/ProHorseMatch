@@ -1062,7 +1062,7 @@ export default function AddHorse() {
                     
                     <TabsContent value="media" className="space-y-4 pt-4">
                       <div>
-                        <h3 className="text-lg font-medium mb-4">Photos *</h3>
+                        <h3 className="text-lg font-medium mb-4">Photos * <span className="text-sm font-normal text-gray-500">(up to 4)</span></h3>
                         <div className="space-y-4 mb-6">
                           <div className="border rounded-md p-4">
                             <div className="flex flex-col gap-3">
@@ -1070,69 +1070,76 @@ export default function AddHorse() {
                                 <Input
                                   type="file"
                                   accept="image/*"
+                                  multiple
+                                  disabled={photoUrls.length >= 4}
                                   onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) {
-                                      setPhotoUploading(false);
-                                      return;
-                                    }
-                                    
-                                    try {
-                                      setPhotoUploading(true);
-                                      
-                                      // Try Cloudinary endpoint first
-                                      let formData = new FormData();
-                                      formData.append("image", file);
-                                      
-                                      // Get auth token for authenticated request
-                                      const authToken = localStorage.getItem('authToken');
-                                      const headers: Record<string, string> = {};
-                                      if (authToken) {
-                                        headers['Authorization'] = `Bearer ${authToken}`;
-                                      }
-                                      
-                                      let response = await fetch("/api/upload-image", {
-                                        method: "POST",
-                                        headers,
-                                        body: formData,
-                                        credentials: 'include'
-                                      });
-                                      
-                                      // No fallback - force Cloudinary only for persistence
-                                      if (!response.ok) {
-                                        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                                        throw new Error(`Cloudinary upload failed (${response.status}): ${errorData.error || 'Please try again'}`);
-                                      }
-                                      
-                                      if (!response.ok) {
-                                        throw new Error("Failed to upload file");
-                                      }
-                                      
-                                      const data = await response.json();
-                                      
-                                      // Add the URL to the list
-                                      const updatedPhotoUrls = [...photoUrls, data.url];
-                                      setPhotoUrls(updatedPhotoUrls);
-                                      
-                                      // Update the form field value for validation
-                                      form.setValue("photos", updatedPhotoUrls);
-                                      
-                                      // Clear the input
-                                      e.target.value = "";
-                                      
+                                    const files = Array.from(e.target.files || []);
+                                    if (!files.length) return;
+
+                                    const MAX_PHOTOS = 4;
+                                    const available = MAX_PHOTOS - photoUrls.length;
+                                    if (available <= 0) {
                                       toast({
-                                        title: "Photo uploaded successfully",
-                                        description: "Your photo has been uploaded and added to the listing.",
-                                      });
-                                    } catch (error) {
-                                      console.error("Upload error:", error);
-                                      toast({
-                                        title: "Upload failed",
-                                        description: "There was an error uploading your image. Please try again.",
+                                        title: "Maximum photos reached",
+                                        description: "You can upload a maximum of 4 photos per listing.",
                                         variant: "destructive",
                                       });
-                                    } finally {
-                                      setPhotoUploading(false);
+                                      e.target.value = "";
+                                      return;
+                                    }
+
+                                    const filesToUpload = files.slice(0, available);
+                                    if (files.length > available) {
+                                      toast({
+                                        title: `Only ${available} photo${available > 1 ? 's' : ''} added`,
+                                        description: `Maximum of 4 photos allowed. Only the first ${available} were uploaded.`,
+                                      });
+                                    }
+
+                                    setPhotoUploading(true);
+                                    let currentUrls = [...photoUrls];
+
+                                    for (const file of filesToUpload) {
+                                      try {
+                                        const authToken = localStorage.getItem('authToken');
+                                        const headers: Record<string, string> = {};
+                                        if (authToken) {
+                                          headers['Authorization'] = `Bearer ${authToken}`;
+                                        }
+                                        const formData = new FormData();
+                                        formData.append("image", file);
+                                        const response = await fetch("/api/upload-image", {
+                                          method: "POST",
+                                          headers,
+                                          body: formData,
+                                          credentials: 'include'
+                                        });
+                                        if (!response.ok) {
+                                          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                                          throw new Error(`Upload failed (${response.status}): ${errorData.error || 'Please try again'}`);
+                                        }
+                                        const data = await response.json();
+                                        currentUrls = [...currentUrls, data.url];
+                                        setPhotoUrls(currentUrls);
+                                        form.setValue("photos", currentUrls);
+                                      } catch (error) {
+                                        console.error("Upload error:", error);
+                                        toast({
+                                          title: "Upload failed",
+                                          description: `Could not upload ${file.name}. Please try again.`,
+                                          variant: "destructive",
+                                        });
+                                      }
+                                    }
+
+                                    setPhotoUploading(false);
+                                    e.target.value = "";
+
+                                    if (filesToUpload.length > 0) {
+                                      toast({
+                                        title: filesToUpload.length === 1 ? "Photo uploaded" : `${filesToUpload.length} photos uploaded`,
+                                        description: "Your photos have been added to the listing.",
+                                      });
                                     }
                                   }}
                                   className="flex-1"
@@ -1140,13 +1147,10 @@ export default function AddHorse() {
                                 <Button 
                                   type="button" 
                                   size="sm" 
-                                  disabled={photoUploading}
+                                  disabled={photoUploading || photoUrls.length >= 4}
                                   onClick={() => {
-                                    // Find the file input and trigger a click
                                     const fileInput = document.querySelector('input[type="file"][accept="image/*"]') as HTMLInputElement;
-                                    if (fileInput) {
-                                      fileInput.click();
-                                    }
+                                    if (fileInput) fileInput.click();
                                   }}
                                 >
                                   {photoUploading ? (
@@ -1154,13 +1158,18 @@ export default function AddHorse() {
                                       <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                                       Uploading...
                                     </>
+                                  ) : photoUrls.length >= 4 ? (
+                                    "Max reached"
                                   ) : (
                                     <>
-                                      <Plus className="h-4 w-4 mr-1" /> Add Photo
+                                      <Plus className="h-4 w-4 mr-1" /> Add Photos
                                     </>
                                   )}
                                 </Button>
                               </div>
+                              {photoUrls.length < 4 && (
+                                <p className="text-xs text-gray-500">{4 - photoUrls.length} photo{4 - photoUrls.length !== 1 ? 's' : ''} remaining. You can select multiple at once.</p>
+                              )}
                             </div>
                           </div>
                           
