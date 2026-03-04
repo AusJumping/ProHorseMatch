@@ -240,9 +240,9 @@ export function NotificationSettings() {
       </CardHeader>
       <CardContent className="space-y-4">
         {!supportsNotifications && (
-          <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-            <p>Push notifications are not supported in your current browser.</p>
-            <p className="mt-1">Try using Chrome, Edge, or Firefox for the best experience.</p>
+          <div className="text-sm bg-amber-50 border border-amber-200 p-3 rounded-md">
+            <p className="font-semibold text-amber-800 mb-1">📱 Open in Chrome or Firefox to enable notifications</p>
+            <p className="text-amber-700">Your current browser doesn't support push notifications. For instant alerts on matches and messages, open this app in Chrome or Firefox — or on iPhone, add it to your home screen first.</p>
           </div>
         )}
         

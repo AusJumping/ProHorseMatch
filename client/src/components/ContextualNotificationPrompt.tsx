@@ -51,90 +51,29 @@ export function ContextualNotificationPrompt() {
   const isIOSStandalone = (window.navigator as any).standalone === true;
   const isIOSNotReady = isIOS && !isIOSStandalone;
 
-  const { data: notificationStatus } = useQuery<{ subscribed: boolean }>({
+  const { data: notificationStatus, isLoading } = useQuery<{ subscribed: boolean }>({
     queryKey: ['/api/push/status'],
     retry: false,
     enabled: hasPushSupport && hasNotificationAPI && Notification.permission === 'granted',
   });
 
   useEffect(() => {
-    if (sessionStorage.getItem('notification-prompt-shown') === 'true') return;
+    if (isLoading) return;
     if (localStorage.getItem('notification-prompt-dismissed') === 'true') return;
     if (notificationStatus?.subscribed) return;
+    if (hasNotificationAPI && Notification.permission === 'denied') return;
 
-    sessionStorage.setItem('notification-prompt-shown', 'true');
-
-    const timer = setTimeout(async () => {
-      if (!hasNotificationAPI) {
-        setShowCard(true);
-        return;
-      }
-
-      if (Notification.permission === 'denied') {
-        return;
-      }
-
-      if (isIOSNotReady) {
-        setShowCard(true);
-        return;
-      }
-
-      if (!hasPushSupport) {
-        setShowCard(true);
-        return;
-      }
-
-      if (Notification.permission === 'granted' && !notificationStatus?.subscribed) {
-        try {
-          await subscribeUserToPush();
-          queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
-          toast({ title: "Notifications enabled!", description: "You'll get instant alerts for matches and messages." });
-        } catch (err) {
-          console.error('Auto-subscribe failed:', err);
-          setShowCard(true);
-        }
-        return;
-      }
-
-      if (Notification.permission === 'default') {
-        try {
-          const result = await Notification.requestPermission();
-          if (result === 'granted') {
-            await subscribeUserToPush();
-            queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
-            toast({ title: "Notifications enabled!", description: "You'll get instant alerts for matches and messages." });
-          }
-        } catch (err) {
-          console.error('Permission request failed:', err);
-          setShowCard(true);
-        }
-      }
+    const timer = setTimeout(() => {
+      setShowCard(true);
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [notificationStatus]);
+  }, [isLoading, notificationStatus]);
 
   const handleEnableClick = async () => {
-    if (isIOSNotReady) return;
-
     setIsEnabling(true);
     try {
-      if (!hasPushSupport) {
-        toast({
-          title: "Not supported",
-          description: "Please use Chrome or Firefox, or install this app to your home screen.",
-          variant: "destructive",
-        });
-        setIsEnabling(false);
-        return;
-      }
-
-      if (Notification.permission === 'denied') {
-        toast({
-          title: "Notifications blocked",
-          description: "Please enable notifications in your browser settings.",
-          variant: "destructive",
-        });
+      if (!hasPushSupport || isIOSNotReady) {
         setIsEnabling(false);
         return;
       }
@@ -149,8 +88,8 @@ export function ContextualNotificationPrompt() {
         queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
         toast({ title: "Notifications enabled!", description: "You'll get instant alerts for matches and messages." });
         setShowCard(false);
-      } else {
-        toast({ title: "Notifications not enabled", description: "You can enable them anytime in Profile → Account Settings." });
+      } else if (permission === 'denied') {
+        toast({ title: "Notifications blocked", description: "Please enable notifications in your browser settings.", variant: "destructive" });
         setShowCard(false);
       }
     } catch (err) {
@@ -160,10 +99,7 @@ export function ContextualNotificationPrompt() {
     setIsEnabling(false);
   };
 
-  const handleDismiss = () => {
-    setShowCard(false);
-    sessionStorage.setItem('notification-prompt-dismissed-session', 'true');
-  };
+  const handleDismiss = () => setShowCard(false);
 
   const handlePermanentDismiss = () => {
     localStorage.setItem('notification-prompt-dismissed', 'true');
@@ -171,6 +107,8 @@ export function ContextualNotificationPrompt() {
   };
 
   if (!showCard) return null;
+
+  const isUnsupportedBrowser = !hasPushSupport && !isIOSNotReady;
 
   return (
     <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-4">
@@ -184,14 +122,19 @@ export function ContextualNotificationPrompt() {
               {isIOSNotReady ? (
                 <>
                   <h4 className="font-semibold text-sm mb-1">Get Notifications on iPhone</h4>
-                  <p className="text-sm text-neutral-600 mb-2">
-                    Add this app to your home screen to receive match and message alerts:
-                  </p>
+                  <p className="text-sm text-neutral-600 mb-2">Add this app to your home screen to receive match and message alerts:</p>
                   <ol className="text-xs text-neutral-500 space-y-1 list-decimal list-inside mb-3">
                     <li>Tap the <strong>Share</strong> button in Safari</li>
                     <li>Tap <strong>"Add to Home Screen"</strong></li>
                     <li>Open the app from your home screen</li>
                   </ol>
+                </>
+              ) : isUnsupportedBrowser ? (
+                <>
+                  <h4 className="font-semibold text-sm mb-1">Enable Notifications</h4>
+                  <p className="text-sm text-neutral-600 mb-3">
+                    For instant match and message alerts, open this app in <strong>Chrome</strong> or <strong>Firefox</strong> on your phone or computer.
+                  </p>
                 </>
               ) : (
                 <>
@@ -207,18 +150,15 @@ export function ContextualNotificationPrompt() {
                       disabled={isEnabling}
                     >
                       <Bell className="w-3 h-3 mr-1" />
-                      {isEnabling ? "Enabling..." : "Enable"}
+                      {isEnabling ? "Enabling..." : "Enable Now"}
                     </Button>
                     <Button size="sm" variant="ghost" onClick={handleDismiss}>
-                      Maybe Later
+                      Later
                     </Button>
                   </div>
                 </>
               )}
-              <button
-                onClick={handlePermanentDismiss}
-                className="text-xs text-neutral-400 hover:text-neutral-600 block"
-              >
+              <button onClick={handlePermanentDismiss} className="text-xs text-neutral-400 hover:text-neutral-600 block mt-1">
                 Don't ask again
               </button>
             </div>
