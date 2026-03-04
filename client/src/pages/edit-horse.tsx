@@ -55,9 +55,9 @@ const horseFormSchema = z.object({
   ]),
   height_cm: z.number().optional(),
   sex: z.string().min(1, "Sex is required"),
-  sire: z.string().optional(),
-  dam: z.string().optional(),
-  dam_sire: z.string().optional(),
+  sire: z.string().min(1, "Sire information is required"),
+  dam: z.string().optional().default(""),
+  dam_sire: z.string().optional().default(""),
   characteristics: z.array(z.string()).optional(),
   price_min: z.preprocess((val) => val === '' || val === null || val === undefined ? 0 : Number(val), z.number().min(0, "Minimum price must be 0 or greater")),
   price_max: z.preprocess((val) => val === '' || val === null || val === undefined ? 0 : Number(val), z.number().min(0, "Maximum price must be 0 or greater")),
@@ -943,7 +943,7 @@ export default function EditHorse() {
                       name="sire"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sire (Father)</FormLabel>
+                          <FormLabel>Sire (Father) *</FormLabel>
                           <FormControl>
                             <Input placeholder="Enter sire's name" {...field} />
                           </FormControl>

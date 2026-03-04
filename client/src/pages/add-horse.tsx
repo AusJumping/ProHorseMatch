@@ -89,8 +89,8 @@ const horseFormSchema = z.object({
   // Required text/input fields
   height_cm: z.number().optional(),
   sire: z.string().min(1, "Sire information is required"),
-  dam: z.string().min(1, "Dam information is required"),
-  dam_sire: z.string().min(1, "Dam Sire information is required"),
+  dam: z.string().optional().default(""),
+  dam_sire: z.string().optional().default(""),
   characteristics: z.array(z.string()).optional(),
   description: z.string().min(1, "Description is required"),
   additional_info: z.string().optional(),
@@ -787,7 +787,7 @@ export default function AddHorse() {
                           name="dam_sire"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Dam Sire *</FormLabel>
+                              <FormLabel>Dam Sire</FormLabel>
                               <FormControl>
                                 <Input placeholder="Dam Sire" {...field} />
                               </FormControl>
