@@ -745,6 +745,9 @@ export default function AddHorse() {
                                       <SelectItem value="Holsteiner">Holsteiner</SelectItem>
                                       <SelectItem value="Selle Français">Selle Français</SelectItem>
                                       <SelectItem value="Irish Sport Horse">Irish Sport Horse</SelectItem>
+                                      <SelectItem value="Stock Horse">Stock Horse</SelectItem>
+                                      <SelectItem value="Stock Horse X">Stock Horse X</SelectItem>
+                                      <SelectItem value="Riding Pony">Riding Pony</SelectItem>
                                     </>
                                   )}
                                 </SelectContent>

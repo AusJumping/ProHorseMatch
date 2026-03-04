@@ -318,6 +318,9 @@ export const breeds = [
   "Warmblood X",
   "Thoroughbred",
   "Thoroughbred X",
+  "Stock Horse",
+  "Stock Horse X",
+  "Riding Pony",
   "Other"
 ];
 export const characteristics = [
