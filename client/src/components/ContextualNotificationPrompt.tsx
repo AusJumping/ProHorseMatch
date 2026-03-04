@@ -1,79 +1,116 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, X } from "lucide-react";
-import { Link } from "wouter";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
 
 export function ContextualNotificationPrompt() {
   const [isVisible, setIsVisible] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+  const [isEnabling, setIsEnabling] = useState(false);
+  const { toast } = useToast();
 
-  // Check if user has notifications enabled
+  const supportsNotifications =
+    typeof Notification !== 'undefined' &&
+    'serviceWorker' in navigator &&
+    'PushManager' in window;
+
   const { data: notificationStatus } = useQuery<{ subscribed: boolean }>({
     queryKey: ['/api/push/status'],
     retry: false,
-    enabled: typeof Notification !== 'undefined' && Notification.permission === 'granted'
+    enabled: supportsNotifications && typeof Notification !== 'undefined' && Notification.permission === 'granted'
   });
 
-  useEffect(() => {
-    // Don't show if already dismissed in this session
-    if (isDismissed) return;
+  const subscribeMutation = useMutation({
+    mutationFn: async () => {
+      const registration = await navigator.serviceWorker.ready;
+      const response = await fetch('/api/push/vapid-public-key');
+      if (!response.ok) throw new Error('Failed to get VAPID public key');
+      const { publicKey } = await response.json();
+      const applicationServerKey = urlBase64ToUint8Array(publicKey);
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey,
+      });
+      const p256dhKey = subscription.getKey('p256dh');
+      const authKey = subscription.getKey('auth');
+      await apiRequest('POST', '/api/push/subscribe', {
+        endpoint: subscription.endpoint,
+        keys: {
+          p256dh: p256dhKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(p256dhKey)))) : '',
+          auth: authKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(authKey)))) : '',
+        },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
+      toast({ title: "Notifications enabled!", description: "You'll get instant alerts for matches and messages." });
+      setIsVisible(false);
+      setIsDismissed(true);
+    },
+    onError: () => {
+      setIsEnabling(false);
+    },
+  });
 
-    // Don't show if notifications aren't supported
-    if (typeof Notification === 'undefined' || !('serviceWorker' in navigator)) {
+  const handleEnable = async () => {
+    if (!supportsNotifications) {
+      toast({
+        title: "Not supported",
+        description: "Try installing the app to your home screen first.",
+        variant: "destructive",
+      });
       return;
     }
 
-    // Don't show if permission is denied
+    setIsEnabling(true);
+
     if (Notification.permission === 'denied') {
+      toast({
+        title: "Notifications blocked",
+        description: "Please enable notifications in your browser settings and try again.",
+        variant: "destructive",
+      });
+      setIsEnabling(false);
       return;
     }
 
-    // Don't show if already subscribed
-    if (notificationStatus?.subscribed) {
-      return;
+    if (Notification.permission === 'default') {
+      const result = await Notification.requestPermission();
+      if (result !== 'granted') {
+        toast({
+          title: "Notifications not enabled",
+          description: "You can enable them anytime in Profile → Account Settings.",
+        });
+        setIsEnabling(false);
+        setIsVisible(false);
+        setIsDismissed(true);
+        return;
+      }
     }
 
-    // Check if user has already dismissed this permanently
-    const permanentlyDismissed = localStorage.getItem('notification-prompt-dismissed');
-    if (permanentlyDismissed === 'true') {
-      return;
-    }
-
-    // Check engagement signals
-    const pageViews = parseInt(localStorage.getItem('page-views') || '0');
-    const lastPromptTime = parseInt(localStorage.getItem('last-prompt-time') || '0');
-    const now = Date.now();
-    
-    // Increment page views BEFORE checking eligibility
-    const updatedPageViews = pageViews + 1;
-    localStorage.setItem('page-views', updatedPageViews.toString());
-
-    // Show prompt if:
-    // 1. User has viewed 3+ pages
-    // 2. At least 1 minute since last prompt (avoid spam)
-    // 3. Not on auth or help pages
-    const shouldShow = 
-      updatedPageViews >= 3 && 
-      (now - lastPromptTime) > 60000 &&
-      !window.location.pathname.includes('/auth') &&
-      !window.location.pathname.includes('/help');
-
-    if (shouldShow) {
-      // Wait a few seconds before showing (don't interrupt immediately)
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-        localStorage.setItem('last-prompt-time', now.toString());
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [isDismissed, notificationStatus]);
+    subscribeMutation.mutate();
+  };
 
   const handleDismiss = () => {
     setIsVisible(false);
     setIsDismissed(true);
+    sessionStorage.setItem('notification-prompt-dismissed-session', 'true');
   };
 
   const handlePermanentDismiss = () => {
@@ -82,48 +119,60 @@ export function ContextualNotificationPrompt() {
     setIsDismissed(true);
   };
 
+  useEffect(() => {
+    if (isDismissed) return;
+    if (!supportsNotifications) return;
+    if (Notification.permission === 'denied') return;
+    if (Notification.permission === 'granted' && notificationStatus?.subscribed) return;
+
+    if (localStorage.getItem('notification-prompt-dismissed') === 'true') return;
+    if (sessionStorage.getItem('notification-prompt-dismissed-session') === 'true') return;
+
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, [isDismissed, notificationStatus, supportsNotifications]);
+
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-md animate-in slide-in-from-bottom-4">
-      <Card className="shadow-lg border-[#8B7355]">
+    <div className="fixed bottom-4 right-4 z-50 max-w-sm animate-in slide-in-from-bottom-4">
+      <Card className="shadow-xl border-[#8B7355]">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
-            <div className="bg-[#8B7355]/10 p-2 rounded-full flex-shrink-0">
+            <div className="bg-[#8B7355]/10 p-2 rounded-full flex-shrink-0 mt-0.5">
               <Bell className="w-5 h-5 text-[#8B7355]" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-sm mb-1">
-                Stay Updated on New Matches
-              </h4>
+              <h4 className="font-semibold text-sm mb-1">Enable Notifications?</h4>
               <p className="text-sm text-neutral-600 mb-3">
-                Get instant notifications when horses match your search criteria or when you receive new messages.
+                Get instant alerts when horses match your search or you receive messages.
               </p>
               <div className="flex gap-2">
-                <Link href="/profile">
-                  <Button 
-                    size="sm" 
-                    className="bg-[#8B7355] hover:bg-[#6B5344]"
-                    data-testid="button-enable-notifications-prompt"
-                  >
-                    <Bell className="w-3 h-3 mr-1" />
-                    Enable
-                  </Button>
-                </Link>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
+                  className="bg-[#8B7355] hover:bg-[#6B5344]"
+                  onClick={handleEnable}
+                  disabled={isEnabling || subscribeMutation.isPending}
+                >
+                  <Bell className="w-3 h-3 mr-1" />
+                  {isEnabling || subscribeMutation.isPending ? "Enabling..." : "Enable"}
+                </Button>
+                <Button
+                  size="sm"
                   variant="ghost"
                   onClick={handleDismiss}
-                  data-testid="button-dismiss-notification-prompt"
                 >
                   Maybe Later
                 </Button>
               </div>
               <button
                 onClick={handlePermanentDismiss}
-                className="text-xs text-neutral-500 hover:text-neutral-700 mt-2"
+                className="text-xs text-neutral-400 hover:text-neutral-600 mt-2 block"
               >
-                Don't show again
+                Don't ask again
               </button>
             </div>
             <Button
