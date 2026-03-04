@@ -309,7 +309,7 @@ const FilterPanel = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="any_level">Any Level</SelectItem>
-                  <SelectItem value="Not Applicable">Not Applicable</SelectItem>
+                  <SelectItem value="Unbroken">Unbroken</SelectItem>
                   <SelectItem value="Young Horse">Young Horse</SelectItem>
                   {constants?.levels && constants.levels[filters.disciplines[0]]?.map((level: string) => (
                     <SelectItem key={level} value={level}>{level}</SelectItem>

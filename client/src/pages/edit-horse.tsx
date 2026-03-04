@@ -846,7 +846,7 @@ export default function EditHorse() {
                         
                         // Get available levels for the selected discipline
                         const disciplineLevels = selectedDiscipline && constants?.levels?.[selectedDiscipline] || [];
-                        const availableLevels = ["Not Applicable", "Young Horse", ...disciplineLevels];
+                        const availableLevels = ["Unbroken", "Young Horse", ...disciplineLevels];
                         
                         // Get the current selected level (if any)
                         const selectedLevel = Array.isArray(field.value) && field.value.length > 0 
