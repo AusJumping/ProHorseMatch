@@ -62,7 +62,7 @@ const futurePlans = [
   {
     id: 'searching',
     name: 'SEARCHING',
-    price: 9.95,
+    price: 4.95,
     interval: 'month',
     currency: 'AUD',
     description: '',
@@ -79,7 +79,7 @@ const futurePlans = [
   },
   {
     id: 'professional',
-    name: 'PROFESSIONAL',
+    name: 'SELLING',
     price: 39.95,
     interval: 'month',
     currency: 'AUD',
@@ -98,7 +98,7 @@ const futurePlans = [
   },
   {
     id: 'elite',
-    name: 'ELITE',
+    name: 'UNLIMITED',
     price: 99.95,
     interval: 'month',
     currency: 'AUD',
