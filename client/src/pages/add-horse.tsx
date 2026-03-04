@@ -732,7 +732,9 @@ export default function AddHorse() {
                                   ) : (
                                     <>
                                       <SelectItem value="Warmblood">Warmblood</SelectItem>
+                                      <SelectItem value="Warmblood X">Warmblood X</SelectItem>
                                       <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
+                                      <SelectItem value="Thoroughbred X">Thoroughbred X</SelectItem>
                                       <SelectItem value="Arabian">Arabian</SelectItem>
                                       <SelectItem value="Quarter Horse">Quarter Horse</SelectItem>
                                       <SelectItem value="Hanoverian">Hanoverian</SelectItem>

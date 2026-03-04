@@ -569,7 +569,9 @@ const FilterPanel = ({
               <SelectContent>
                 <SelectItem value="all_breeds">All Breeds</SelectItem>
                 <SelectItem value="Warmblood">Warmblood</SelectItem>
+                <SelectItem value="Warmblood X">Warmblood X</SelectItem>
                 <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
+                <SelectItem value="Thoroughbred X">Thoroughbred X</SelectItem>
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>

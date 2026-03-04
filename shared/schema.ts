@@ -313,8 +313,10 @@ export const disciplines = ["Jumping", "Dressage", "Eventing"];
 export const sexes = ["Mare", "Gelding", "Stallion"];
 export const colours = ["Bay", "Brown", "Black", "Grey", "Chestnut", "Palomino", "Tobiano", "Buckskin", "Other"];
 export const breeds = [
-  "Warmblood", 
-  "Thoroughbred", 
+  "Warmblood",
+  "Warmblood X",
+  "Thoroughbred",
+  "Thoroughbred X",
   "Other"
 ];
 export const characteristics = [
