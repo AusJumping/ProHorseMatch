@@ -91,6 +91,7 @@ const horseFormSchema = z.object({
   sire: z.string().min(1, "Sire information is required"),
   dam: z.string().optional().default(""),
   dam_sire: z.string().optional().default(""),
+  education_level: z.string().min(1, "Level of Education is required"),
   characteristics: z.array(z.string()).optional(),
   description: z.string().min(1, "Description is required"),
   additional_info: z.string().optional(),
@@ -162,6 +163,7 @@ export default function AddHorse() {
       sire: "",
       dam: "",
       dam_sire: "",
+      education_level: "",
       characteristics: [],
       price_min: undefined,
       price_max: undefined,
@@ -937,6 +939,41 @@ export default function AddHorse() {
                       </div>
                       
                       <div className="border-t border-gray-100 pt-6">
+                        <FormField
+                          control={form.control}
+                          name="education_level"
+                          render={({ field }) => (
+                            <FormItem className="mb-6">
+                              <FormLabel>Level of Education <span className="text-red-500">*</span></FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select level of education" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {constants?.educationLevels ? (
+                                    constants.educationLevels.map((level: string) => (
+                                      <SelectItem key={level} value={level}>{level}</SelectItem>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <SelectItem value="Schoolmaster">Schoolmaster</SelectItem>
+                                      <SelectItem value="High level of education">High level of education</SelectItem>
+                                      <SelectItem value="Well educated">Well educated</SelectItem>
+                                      <SelectItem value="Basic education">Basic education</SelectItem>
+                                      <SelectItem value="Started under saddle">Started under saddle</SelectItem>
+                                      <SelectItem value="Handled only">Handled only</SelectItem>
+                                      <SelectItem value="Unhandled">Unhandled</SelectItem>
+                                    </>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
                         <FormField
                           control={form.control}
                           name="characteristics"

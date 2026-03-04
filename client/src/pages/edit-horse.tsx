@@ -58,6 +58,7 @@ const horseFormSchema = z.object({
   sire: z.string().min(1, "Sire information is required"),
   dam: z.string().optional().default(""),
   dam_sire: z.string().optional().default(""),
+  education_level: z.string().optional(),
   characteristics: z.array(z.string()).optional(),
   price_min: z.preprocess((val) => val === '' || val === null || val === undefined ? 0 : Number(val), z.number().min(0, "Minimum price must be 0 or greater")),
   price_max: z.preprocess((val) => val === '' || val === null || val === undefined ? 0 : Number(val), z.number().min(0, "Maximum price must be 0 or greater")),
@@ -209,6 +210,7 @@ export default function EditHorse() {
       sire: "",
       dam: "",
       dam_sire: "",
+      education_level: "",
       characteristics: [],
       price_min: 0,
       price_max: 0,
@@ -236,6 +238,7 @@ export default function EditHorse() {
         sire: horse.sire || "",
         dam: horse.dam || "",
         dam_sire: horse.dam_sire || "",
+        education_level: horse.education_level || "",
         characteristics: Array.isArray(horse.characteristics) ? horse.characteristics : [],
         price_min: Number(horse.price_min) || 0,
         price_max: Number(horse.price_max) || 0,
@@ -881,6 +884,41 @@ export default function EditHorse() {
                           </FormItem>
                         );
                       }}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="education_level"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Level of Education</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value || ""}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select level of education" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {constants?.educationLevels ? (
+                                constants.educationLevels.map((level: string) => (
+                                  <SelectItem key={level} value={level}>{level}</SelectItem>
+                                ))
+                              ) : (
+                                <>
+                                  <SelectItem value="Schoolmaster">Schoolmaster</SelectItem>
+                                  <SelectItem value="High level of education">High level of education</SelectItem>
+                                  <SelectItem value="Well educated">Well educated</SelectItem>
+                                  <SelectItem value="Basic education">Basic education</SelectItem>
+                                  <SelectItem value="Started under saddle">Started under saddle</SelectItem>
+                                  <SelectItem value="Handled only">Handled only</SelectItem>
+                                  <SelectItem value="Unhandled">Unhandled</SelectItem>
+                                </>
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                     
                     <FormField

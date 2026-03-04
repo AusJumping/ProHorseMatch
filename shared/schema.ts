@@ -104,6 +104,7 @@ export const horses = pgTable("horses", {
   dam: text("dam"),
   dam_sire: text("dam_sire"),
   characteristics: text("characteristics").array(),
+  education_level: text("education_level"),
   price_min: integer("price_min").notNull(),
   price_max: integer("price_max").notNull(),
   currency: text("currency").notNull(),
@@ -338,6 +339,15 @@ export const countries = [
   "Central Europe", 
   "Southern Europe",
   "United Kingdom and Ireland"
+];
+export const educationLevels = [
+  "Schoolmaster",
+  "High level of education",
+  "Well educated",
+  "Basic education",
+  "Started under saddle",
+  "Handled only",
+  "Unhandled"
 ];
 export const jumpingLevels = ["Futurity", "Children", "Under 1m", "1.10m", "1.20m", "1.30m", "Junior", "Amateur", "Young Rider", "Mini Prix", "Grand Prix"];
 export const dressageLevels = ["Pony Dressage", "Preliminary", "Novice", "Elementary", "Medium", "Advanced", "Young Rider", "Prix St. Georges", "Intermediate I", "Intermediate II", "Grand Prix", "Para-Dressage"];

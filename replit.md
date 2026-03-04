@@ -7,6 +7,15 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
+## Recent Changes (March 4, 2026)
+- **NEW**: Level of Education field added to horse listings
+- New `education_level` column added to horses database table
+- Options: Schoolmaster, High level of education, Well educated, Basic education, Started under saddle, Handled only, Unhandled
+- Appears as a required dropdown above Characteristics in the Add Horse form
+- Appears as an optional dropdown above Characteristics in the Edit Horse form
+- Displayed as a badge on the Horse Detail page above Characteristics
+- Served via /api/constants as `educationLevels` array
+
 ## Recent Changes (February 4, 2026)
 - **NEW**: Notification Adoption Improvement System
 - NotificationPromptModal: Shows after subscription activation (both beta and paid) asking users to enable push notifications for horse matches and messages

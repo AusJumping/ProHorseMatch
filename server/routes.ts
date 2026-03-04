@@ -35,6 +35,7 @@ import {
   breeds,
   characteristics,
   countries,
+  educationLevels,
   jumpingLevels,
   dressageLevels,
   eventingLevels
@@ -3130,6 +3131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         colours,
         breeds,
         characteristics,
+        educationLevels,
         countries,
         jumpingLevels,
         dressageLevels,

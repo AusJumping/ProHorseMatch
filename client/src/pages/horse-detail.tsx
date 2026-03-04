@@ -312,6 +312,16 @@ export default function HorseDetail() {
               </div>
             )}
             
+            {/* Level of Education */}
+            {horse.education_level && (
+              <div className="mb-6">
+                <h3 className="font-accent font-semibold mb-2">Level of Education</h3>
+                <Badge variant="outline" className="bg-primary text-white border-transparent">
+                  {horse.education_level}
+                </Badge>
+              </div>
+            )}
+
             {/* Characteristics */}
             {horse.characteristics && horse.characteristics.length > 0 && (
               <div className="mb-6">
