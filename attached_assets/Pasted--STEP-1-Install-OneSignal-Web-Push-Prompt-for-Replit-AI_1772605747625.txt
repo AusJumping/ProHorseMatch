@@ -1,0 +1,118 @@
+✅ STEP 1 — Install OneSignal Web Push
+Prompt for Replit AI:
+I want to add web push notifications to my React + Vite frontend using OneSignal.
+
+Please:
+
+1. Install the OneSignal Web SDK.
+2. Add the required initialization code to my React app.
+3. Configure it so notifications are NOT requested immediately on page load.
+4. Instead, create a reusable function called requestPushPermission() that triggers the OneSignal permission prompt manually.
+5. Ensure it works in a Vite environment.
+
+Do not use deprecated OneSignal syntax.
+Use the current v16+ Web SDK setup.
+✅ STEP 2 — Create a Custom Branded Permission Prompt Component
+This avoids the ugly default browser auto-popup.
+Prompt:
+Create a React component called EnableNotificationsCard.
+
+Requirements:
+- Clean, modern styling using Tailwind CSS.
+- Headline: “Never Miss a Match”
+- Short description: “Get instant alerts when a horse matches your criteria.”
+- Primary button: “Enable Alerts”
+- On click, call requestPushPermission().
+- The component should only show if the user has not already granted notification permission.
+
+Make it mobile friendly.
+✅ STEP 3 — Store OneSignal Player ID in PostgreSQL
+You want to link users to devices so you can send targeted alerts.
+Prompt:
+When a user grants push notification permission via OneSignal:
+
+1. Capture the OneSignal Player ID (subscription ID).
+2. Send it to the backend via a POST request.
+3. Store it in PostgreSQL linked to the logged-in user's ID.
+
+Backend:
+- Create a route POST /api/users/push-subscription
+- Save fields:
+    userId
+    onesignalPlayerId
+    createdAt
+
+If the user already has a record, update it instead of creating a duplicate.
+Use Drizzle ORM.
+✅ STEP 4 — Send Push When a Horse Matches Saved Search
+Now we make it powerful.
+Prompt:
+Create a backend function that triggers a OneSignal push notification when:
+
+- A new horse is listed
+- It matches a user's saved search criteria
+
+Steps:
+1. Query matching users.
+2. Retrieve their stored onesignalPlayerId.
+3. Call the OneSignal REST API to send a push notification.
+
+Notification content:
+Title: “New Match Found”
+Message: “A horse matching your criteria has just been listed.”
+Include:
+- Horse name
+- Discipline
+- Price
+- Direct URL to listing
+
+Secure the OneSignal API key using environment variables.
+✅ STEP 5 — Add Fallback Email Trigger
+Very important for reliability.
+Prompt:
+Modify the horse match notification logic:
+
+If a user does not have a push subscription:
+- Send an email instead.
+
+Use my existing email service.
+Subject: “New Horse Match”
+Include:
+- Horse details
+- Direct listing link
+
+Ensure push and email are not duplicated.
+Push takes priority.
+✅ STEP 6 — Make It Feel Like a Native App (PWA Mode)
+This increases notification reliability.
+Prompt:
+Convert the app into a Progressive Web App (PWA):
+
+1. Add a manifest.json file.
+2. Register a service worker.
+3. Enable install prompt (Add to Home Screen).
+4. Ensure compatibility with push notifications.
+
+The app should:
+- Work in standalone mode
+- Show proper app icon
+- Be installable on iOS and Android
+
+Use Vite PWA plugin.
+🔥 Advanced Option (If You Want Even Better Opt-In Rates)
+Instead of triggering the real browser permission immediately:
+Prompt:
+Implement a two-step push permission flow:
+
+Step 1:
+Show a custom in-app modal explaining benefits.
+
+Step 2:
+If user clicks "Enable Alerts", then trigger OneSignal's permission prompt.
+
+Track:
+- Who dismissed the modal
+- Who accepted
+- Who blocked notifications
+
+Store this in PostgreSQL for analytics.
