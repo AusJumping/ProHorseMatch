@@ -127,16 +127,19 @@ interface LoginAnalyticsData {
   loginTrend: Array<{ date: string; count: number }>;
   loginTrendMonthly: Array<{ month: string; count: number }>;
   loginTrendAllTime: Array<{ month: string; count: number }>;
+  loginTrendAllTimeDaily: Array<{ date: string; count: number }>;
   dailyMessages: number;
   weeklyMessages: number;
   monthlyMessages: number;
   messageTrend: Array<{ date: string; count: number }>;
+  messageTrendAllTime: Array<{ date: string; count: number }>;
   dailyConversations: number;
   weeklyConversations: number;
   monthlyConversations: number;
   conversationTrend: Array<{ date: string; count: number }>;
   conversationTrendMonthly: Array<{ month: string; count: number }>;
   conversationTrendAllTime: Array<{ month: string; count: number }>;
+  conversationTrendAllTimeDaily: Array<{ date: string; count: number }>;
 }
 
 interface HorseDeletionResponse {
@@ -677,8 +680,9 @@ function LoginAnalyticsPanel() {
     queryKey: ['/api/admin/analytics'],
   });
   
-  const [loginTimeRange, setLoginTimeRange] = useState<'daily' | 'monthly' | 'alltime'>('daily');
-  const [conversationTimeRange, setConversationTimeRange] = useState<'daily' | 'monthly' | 'alltime'>('daily');
+  const [loginTimeRange, setLoginTimeRange] = useState<'daily' | 'monthly' | 'alltime' | 'alltimeDaily'>('daily');
+  const [messageTimeRange, setMessageTimeRange] = useState<'daily' | 'alltimeDaily'>('daily');
+  const [conversationTimeRange, setConversationTimeRange] = useState<'daily' | 'monthly' | 'alltime' | 'alltimeDaily'>('daily');
 
   if (isLoading) {
     return (
@@ -702,9 +706,9 @@ function LoginAnalyticsPanel() {
   }
 
   const { 
-    dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend, loginTrendMonthly, loginTrendAllTime,
-    dailyMessages, weeklyMessages, monthlyMessages, messageTrend,
-    dailyConversations, weeklyConversations, monthlyConversations, conversationTrend, conversationTrendMonthly, conversationTrendAllTime
+    dailyActiveUsers, weeklyActiveUsers, monthlyActiveUsers, loginTrend, loginTrendMonthly, loginTrendAllTime, loginTrendAllTimeDaily,
+    dailyMessages, weeklyMessages, monthlyMessages, messageTrend, messageTrendAllTime,
+    dailyConversations, weeklyConversations, monthlyConversations, conversationTrend, conversationTrendMonthly, conversationTrendAllTime, conversationTrendAllTimeDaily
   } = analyticsData || {};
 
   return (
@@ -995,7 +999,8 @@ function LoginAnalyticsPanel() {
       {/* Login Trend Chart */}
       {((loginTimeRange === 'daily' && loginTrend && loginTrend.length > 0) || 
         (loginTimeRange === 'monthly' && loginTrendMonthly && loginTrendMonthly.length > 0) ||
-        (loginTimeRange === 'alltime' && loginTrendAllTime && loginTrendAllTime.length > 0)) && (
+        (loginTimeRange === 'alltime' && loginTrendAllTime && loginTrendAllTime.length > 0) ||
+        (loginTimeRange === 'alltimeDaily' && loginTrendAllTimeDaily && loginTrendAllTimeDaily.length > 0)) && (
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start flex-wrap gap-4">
@@ -1006,10 +1011,12 @@ function LoginAnalyticsPanel() {
                     ? 'Daily unique logins over the past 30 days' 
                     : loginTimeRange === 'monthly'
                     ? 'Monthly active users over the past 2 years'
+                    : loginTimeRange === 'alltimeDaily'
+                    ? 'Daily unique logins — all time'
                     : 'All historical login data by month'}
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant={loginTimeRange === 'daily' ? 'default' : 'outline'}
                   size="sm"
@@ -1032,7 +1039,15 @@ function LoginAnalyticsPanel() {
                   onClick={() => setLoginTimeRange('alltime')}
                   data-testid="button-login-alltime"
                 >
-                  All Time
+                  Monthly (All)
+                </Button>
+                <Button
+                  variant={loginTimeRange === 'alltimeDaily' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setLoginTimeRange('alltimeDaily')}
+                  data-testid="button-login-alltimeDaily"
+                >
+                  Daily (All)
                 </Button>
               </div>
             </div>
@@ -1041,21 +1056,22 @@ function LoginAnalyticsPanel() {
             <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={(loginTimeRange === 'daily' ? loginTrend : loginTimeRange === 'monthly' ? loginTrendMonthly : loginTrendAllTime)?.map(item => ({
-                    name: loginTimeRange === 'daily' 
-                      ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                      : item.month,
-                    logins: item.count
-                  }))}
+                  data={
+                    loginTimeRange === 'daily' ? loginTrend?.map(item => ({ name: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), logins: item.count }))
+                    : loginTimeRange === 'monthly' ? loginTrendMonthly?.map(item => ({ name: item.month, logins: item.count }))
+                    : loginTimeRange === 'alltimeDaily' ? loginTrendAllTimeDaily?.map(item => ({ name: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }), logins: item.count }))
+                    : loginTrendAllTime?.map(item => ({ name: item.month, logins: item.count }))
+                  }
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis 
                     dataKey="name" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11 }}
                     angle={-45}
                     textAnchor="end"
                     height={80}
+                    interval={loginTimeRange === 'alltimeDaily' ? Math.floor((loginTrendAllTimeDaily?.length || 0) / 20) : 0}
                   />
                   <YAxis 
                     tick={{ fontSize: 12 }}
@@ -1073,7 +1089,76 @@ function LoginAnalyticsPanel() {
                     dataKey="logins" 
                     stroke="#d97706" 
                     strokeWidth={2}
-                    dot={{ fill: '#d97706', r: 4 }}
+                    dot={loginTimeRange === 'alltimeDaily' ? false : { fill: '#d97706', r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Messages Trend Chart */}
+      {((messageTimeRange === 'daily' && messageTrend && messageTrend.length > 0) ||
+        (messageTimeRange === 'alltimeDaily' && messageTrendAllTime && messageTrendAllTime.length > 0)) && (
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start flex-wrap gap-4">
+              <div>
+                <CardTitle className="text-sm font-medium">Messages Trend</CardTitle>
+                <CardDescription>
+                  {messageTimeRange === 'daily'
+                    ? 'Messages sent over the past 30 days'
+                    : 'Messages sent daily — all time'}
+                </CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={messageTimeRange === 'daily' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setMessageTimeRange('daily')}
+                >
+                  Daily (30d)
+                </Button>
+                <Button
+                  variant={messageTimeRange === 'alltimeDaily' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setMessageTimeRange('alltimeDaily')}
+                >
+                  Daily (All)
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="h-80 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={
+                    messageTimeRange === 'daily'
+                      ? messageTrend?.map(item => ({ name: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), messages: item.count }))
+                      : messageTrendAllTime?.map(item => ({ name: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }), messages: item.count }))
+                  }
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                    interval={messageTimeRange === 'alltimeDaily' ? Math.floor((messageTrendAllTime?.length || 0) / 20) : 0}
+                  />
+                  <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                  <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '4px' }} />
+                  <Line
+                    type="monotone"
+                    dataKey="messages"
+                    stroke="#7c3aed"
+                    strokeWidth={2}
+                    dot={messageTimeRange === 'alltimeDaily' ? false : { fill: '#7c3aed', r: 4 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
@@ -1086,21 +1171,24 @@ function LoginAnalyticsPanel() {
       {/* Conversation Trend Chart */}
       {((conversationTimeRange === 'daily' && conversationTrend && conversationTrend.length > 0) || 
         (conversationTimeRange === 'monthly' && conversationTrendMonthly && conversationTrendMonthly.length > 0) ||
-        (conversationTimeRange === 'alltime' && conversationTrendAllTime && conversationTrendAllTime.length > 0)) && (
+        (conversationTimeRange === 'alltime' && conversationTrendAllTime && conversationTrendAllTime.length > 0) ||
+        (conversationTimeRange === 'alltimeDaily' && conversationTrendAllTimeDaily && conversationTrendAllTimeDaily.length > 0)) && (
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start flex-wrap gap-4">
               <div>
-                <CardTitle className="text-sm font-medium">Conversation Trend</CardTitle>
+                <CardTitle className="text-sm font-medium">New Conversations Trend</CardTitle>
                 <CardDescription>
                   {conversationTimeRange === 'daily' 
                     ? 'New conversations started over the past 30 days' 
                     : conversationTimeRange === 'monthly'
                     ? 'New conversations started over the past 2 years'
+                    : conversationTimeRange === 'alltimeDaily'
+                    ? 'New conversations started daily — all time'
                     : 'All historical conversation data by month'}
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant={conversationTimeRange === 'daily' ? 'default' : 'outline'}
                   size="sm"
@@ -1123,7 +1211,15 @@ function LoginAnalyticsPanel() {
                   onClick={() => setConversationTimeRange('alltime')}
                   data-testid="button-conversation-alltime"
                 >
-                  All Time
+                  Monthly (All)
+                </Button>
+                <Button
+                  variant={conversationTimeRange === 'alltimeDaily' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setConversationTimeRange('alltimeDaily')}
+                  data-testid="button-conversation-alltimeDaily"
+                >
+                  Daily (All)
                 </Button>
               </div>
             </div>
@@ -1132,21 +1228,22 @@ function LoginAnalyticsPanel() {
             <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
-                  data={(conversationTimeRange === 'daily' ? conversationTrend : conversationTimeRange === 'monthly' ? conversationTrendMonthly : conversationTrendAllTime)?.map(item => ({
-                    name: conversationTimeRange === 'daily' 
-                      ? new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                      : item.month,
-                    conversations: item.count
-                  }))}
+                  data={
+                    conversationTimeRange === 'daily' ? conversationTrend?.map(item => ({ name: new Date(item.date!).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), conversations: item.count }))
+                    : conversationTimeRange === 'monthly' ? conversationTrendMonthly?.map(item => ({ name: item.month, conversations: item.count }))
+                    : conversationTimeRange === 'alltimeDaily' ? conversationTrendAllTimeDaily?.map(item => ({ name: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' }), conversations: item.count }))
+                    : conversationTrendAllTime?.map(item => ({ name: item.month, conversations: item.count }))
+                  }
                   margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis 
                     dataKey="name" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 11 }}
                     angle={-45}
                     textAnchor="end"
                     height={80}
+                    interval={conversationTimeRange === 'alltimeDaily' ? Math.floor((conversationTrendAllTimeDaily?.length || 0) / 20) : 0}
                   />
                   <YAxis 
                     tick={{ fontSize: 12 }}
@@ -1164,7 +1261,7 @@ function LoginAnalyticsPanel() {
                     dataKey="conversations" 
                     stroke="#0d9488" 
                     strokeWidth={2}
-                    dot={{ fill: '#0d9488', r: 4 }}
+                    dot={conversationTimeRange === 'alltimeDaily' ? false : { fill: '#0d9488', r: 4 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>

@@ -7,6 +7,14 @@ ProHorseMatch is a Tinder-style matching application designed to connect profess
 Preferred communication style: Simple, everyday language.
 Focus on web app development until reliable mobile developer found.
 
+## Recent Changes (March 5, 2026)
+- **NEW**: Analytics — Daily All-Time datasets added for Login Trend, Messages, and New Conversations
+- Login Trend chart now has 4 options: Daily (30d), Monthly (2y), Monthly (All), Daily (All)
+- Messages Trend chart added (was KPIs only) with Daily (30d) and Daily (All) options
+- New Conversations Trend chart now has 4 options: Daily (30d), Monthly (2y), Monthly (All), Daily (All)
+- New storage methods: `getLoginTrendAllTimeDaily()`, `getMessageTrendAllTime()`, `getConversationTrendAllTimeDaily()`
+- All-time daily charts auto-thin X-axis labels to avoid crowding
+
 ## Recent Changes (March 4, 2026)
 - **NEW**: Level of Education field added to horse listings
 - New `education_level` column added to horses database table

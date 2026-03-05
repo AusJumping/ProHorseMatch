@@ -126,18 +126,21 @@ export interface IStorage {
   getLoginTrend(days: number): Promise<Array<{ date: string; count: number }>>;
   getLoginTrendMonthly(months: number): Promise<Array<{ month: string; count: number }>>;
   getLoginTrendAllTime(): Promise<Array<{ month: string; count: number }>>;
+  getLoginTrendAllTimeDaily(): Promise<Array<{ date: string; count: number }>>;
   
   // Message and conversation analytics methods
   getDailyMessages(date?: Date): Promise<number>;
   getWeeklyMessages(date?: Date): Promise<number>;
   getMonthlyMessages(date?: Date): Promise<number>;
   getMessageTrend(days: number): Promise<Array<{ date: string; count: number }>>;
+  getMessageTrendAllTime(): Promise<Array<{ date: string; count: number }>>;
   getDailyConversations(date?: Date): Promise<number>;
   getWeeklyConversations(date?: Date): Promise<number>;
   getMonthlyConversations(date?: Date): Promise<number>;
   getConversationTrend(days: number): Promise<Array<{ date: string; count: number }>>;
   getConversationTrendMonthly(months: number): Promise<Array<{ month: string; count: number }>>;
   getConversationTrendAllTime(): Promise<Array<{ month: string; count: number }>>;
+  getConversationTrendAllTimeDaily(): Promise<Array<{ date: string; count: number }>>;
 }
 
 import * as fs from 'fs';
@@ -1414,7 +1417,19 @@ export class MemStorage implements IStorage {
     return [];
   }
   
+  async getLoginTrendAllTimeDaily(): Promise<Array<{ date: string; count: number }>> {
+    return [];
+  }
+  
+  async getMessageTrendAllTime(): Promise<Array<{ date: string; count: number }>> {
+    return [];
+  }
+  
   async getConversationTrendAllTime(): Promise<Array<{ month: string; count: number }>> {
+    return [];
+  }
+  
+  async getConversationTrendAllTimeDaily(): Promise<Array<{ date: string; count: number }>> {
     return [];
   }
 }
@@ -2520,6 +2535,53 @@ export class DatabaseStorage implements IStorage {
     return Array.from(monthMap.entries())
       .map(([month, count]) => ({ month, count }))
       .sort((a, b) => a.month.localeCompare(b.month));
+  }
+
+  async getLoginTrendAllTimeDaily(): Promise<Array<{ date: string; count: number }>> {
+    const ADMIN_USER_ID = 31;
+    const result = await db
+      .select({
+        date: sql<string>`TO_CHAR(${loginEvents.logged_in_at}, 'YYYY-MM-DD')`,
+        count: sql<number>`COUNT(DISTINCT ${loginEvents.user_id})`
+      })
+      .from(loginEvents)
+      .where(sql`${loginEvents.user_id} != ${ADMIN_USER_ID}`)
+      .groupBy(sql`TO_CHAR(${loginEvents.logged_in_at}, 'YYYY-MM-DD')`);
+
+    return result
+      .map(r => ({ date: r.date, count: Number(r.count) }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  async getMessageTrendAllTime(): Promise<Array<{ date: string; count: number }>> {
+    const result = await db
+      .select({
+        date: sql<string>`DATE(${messages.created_at})`,
+        count: sql<number>`COUNT(*)`
+      })
+      .from(messages)
+      .groupBy(sql`DATE(${messages.created_at})`)
+      .orderBy(sql`DATE(${messages.created_at})`);
+
+    return result.map(r => ({ date: r.date, count: Number(r.count) }));
+  }
+
+  async getConversationTrendAllTimeDaily(): Promise<Array<{ date: string; count: number }>> {
+    const result = await db
+      .select({
+        date: sql<string>`TO_CHAR(MIN(${messages.created_at}), 'YYYY-MM-DD')`,
+      })
+      .from(messages)
+      .groupBy(sql`${messages.customer_id}, ${messages.owner_id}, ${messages.horse_id}`);
+
+    const dateMap = new Map<string, number>();
+    result.forEach(r => {
+      dateMap.set(r.date, (dateMap.get(r.date) || 0) + 1);
+    });
+
+    return Array.from(dateMap.entries())
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 }
 

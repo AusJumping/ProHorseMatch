@@ -2655,13 +2655,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mau = await storage.getMonthlyActiveUsers();
       const loginTrend = await storage.getLoginTrend(30);
       const loginTrendMonthly = await storage.getLoginTrendMonthly(24); // Last 2 years
-      const loginTrendAllTime = await storage.getLoginTrendAllTime(); // All historical data
+      const loginTrendAllTime = await storage.getLoginTrendAllTime(); // All historical data by month
+      const loginTrendAllTimeDaily = await storage.getLoginTrendAllTimeDaily(); // All historical data by day
       
       // Fetch message analytics data
       const dailyMessages = await storage.getDailyMessages();
       const weeklyMessages = await storage.getWeeklyMessages();
       const monthlyMessages = await storage.getMonthlyMessages();
       const messageTrend = await storage.getMessageTrend(30);
+      const messageTrendAllTime = await storage.getMessageTrendAllTime(); // All historical data by day
       
       // Fetch conversation analytics data
       const dailyConversations = await storage.getDailyConversations();
@@ -2669,7 +2671,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const monthlyConversations = await storage.getMonthlyConversations();
       const conversationTrend = await storage.getConversationTrend(30);
       const conversationTrendMonthly = await storage.getConversationTrendMonthly(24); // Last 2 years
-      const conversationTrendAllTime = await storage.getConversationTrendAllTime(); // All historical data
+      const conversationTrendAllTime = await storage.getConversationTrendAllTime(); // All historical data by month
+      const conversationTrendAllTimeDaily = await storage.getConversationTrendAllTimeDaily(); // All historical data by day
 
       return res.status(200).json({
         dailyActiveUsers: dau,
@@ -2678,16 +2681,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         loginTrend,
         loginTrendMonthly,
         loginTrendAllTime,
+        loginTrendAllTimeDaily,
         dailyMessages,
         weeklyMessages,
         monthlyMessages,
         messageTrend,
+        messageTrendAllTime,
         dailyConversations,
         weeklyConversations,
         monthlyConversations,
         conversationTrend,
         conversationTrendMonthly,
-        conversationTrendAllTime
+        conversationTrendAllTime,
+        conversationTrendAllTimeDaily
       });
     } catch (error) {
       console.error("Login analytics error:", error);
