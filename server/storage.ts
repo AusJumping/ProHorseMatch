@@ -1583,15 +1583,21 @@ export class DatabaseStorage implements IStorage {
     
     // Get all horses first and filter in JavaScript for now (simpler approach)
     const allHorses = await db.select().from(horses).orderBy(desc(horses.created_at));
+
+    // Temporary prioritization: pin Kitara Krug (ID 75) to the top
+    const prioritizedHorses = [
+      ...allHorses.filter(h => h.id === 75),
+      ...allHorses.filter(h => h.id !== 75)
+    ];
     
     // If no filters are provided, return all horses (most recent first)
     if (Object.keys(filters).length === 0) {
       console.log("DatabaseStorage.getHorsesByFilters - no filters provided, returning all horses");
-      return allHorses;
+      return prioritizedHorses;
     }
     
     // Filter horses in JavaScript (same logic as MemStorage)
-    const filteredHorses = allHorses.filter(horse => {
+    const filteredHorses = prioritizedHorses.filter(horse => {
       // Filter by owner_id if specified
       if (filters.owner_id !== undefined && horse.owner_id !== filters.owner_id) {
         return false;
