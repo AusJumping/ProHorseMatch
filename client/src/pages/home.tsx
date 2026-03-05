@@ -103,6 +103,9 @@ export default function Home() {
     if (disciplineFilter) {
       console.log("Found active discipline filter:", disciplineFilter);
       
+      // Clear from localStorage after reading so it only applies once (one-time handoff from landing page)
+      localStorage.removeItem('active_discipline_filter');
+      
       // Apply the filter from storage
       setActiveFilters(prev => ({
         ...prev,

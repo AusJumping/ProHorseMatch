@@ -196,18 +196,12 @@ const FilterPanel = ({
     // Then close the panel
     onClose();
     
-    // Store the filter choice in localStorage for retrieval but don't show any indicators
+    // Update URL query parameter for the current session only (no localStorage persistence)
     if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
-      localStorage.setItem('active_discipline_filter', filtersToApply.disciplines[0]);
-      
-      // Add a query parameter to the URL for persistence but don't display anything
       const url = new URL(window.location.href);
       url.searchParams.set('discipline', filtersToApply.disciplines[0]);
       window.history.replaceState(null, "", url.toString());
     } else {
-      localStorage.removeItem('active_discipline_filter');
-      
-      // Remove query parameter
       const url = new URL(window.location.href);
       url.searchParams.delete('discipline');
       window.history.replaceState(null, "", url.toString());
