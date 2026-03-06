@@ -581,6 +581,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Email unsubscribe endpoint
+  app.post("/api/unsubscribe", async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      await storage.setUserUnsubscribed(email);
+      console.log('User unsubscribed from emails:', email);
+      return res.status(200).json({ message: "Successfully unsubscribed" });
+    } catch (error) {
+      console.error("Unsubscribe error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Email verification endpoints
   app.get("/api/auth/verify-email", async (req, res) => {
     try {
@@ -4057,6 +4073,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const horse = await storage.getHorseById(parseInt(horse_id));
         
         if (sender && recipient && horse) {
+          const isUnsubscribed = await storage.isUserUnsubscribed(recipient.email);
+          if (isUnsubscribed) {
+            console.log(`Skipping email notification - user ${recipient.email} has unsubscribed`);
+          } else {
           console.log(`Sending ${shouldSendNewConversationEmail ? 'NEW CONVERSATION' : 'MESSAGE'} notification to:`, recipient.email);
           const baseUrl = req.protocol + '://' + req.get('host');
           const conversationUrl = `${baseUrl}/messages`;
@@ -4096,6 +4116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Send push notification to recipient
           await sendNewMessageNotification(recipientId, sender.username || sender.name || 'Someone', conversation.id);
+          } // end unsubscribe check
         } else {
           console.warn("Could not send email notification - missing user or horse data");
         }

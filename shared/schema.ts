@@ -35,6 +35,7 @@ export const users = pgTable("users", {
   
   // Email verification fields
   email_verified: boolean("email_verified").default(false),
+  email_unsubscribed: boolean("email_unsubscribed").default(false),
   verification_token: text("verification_token"),
   verification_token_expires: timestamp("verification_token_expires"),
   

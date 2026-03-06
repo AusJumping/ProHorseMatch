@@ -41,6 +41,8 @@ export interface IStorage {
   // Email verification methods
   getUserByVerificationToken(token: string): Promise<User | undefined>;
   updateUserVerification(id: number, verified: boolean, token?: string | null, expires?: Date | null): Promise<User>;
+  isUserUnsubscribed(email: string): Promise<boolean>;
+  setUserUnsubscribed(email: string): Promise<void>;
   
   // Reminder token methods (for subscription magic links)
   setReminderToken(userId: number, hashedToken: string, expiresAt: Date): Promise<void>;
@@ -956,6 +958,20 @@ export class MemStorage implements IStorage {
     return updatedUser;
   }
   
+  async isUserUnsubscribed(email: string): Promise<boolean> {
+    const user = Array.from(this.users.values()).find(u => u.email === email);
+    return user?.email_unsubscribed ?? false;
+  }
+  
+  async setUserUnsubscribed(email: string): Promise<void> {
+    const user = Array.from(this.users.values()).find(u => u.email === email);
+    if (user) {
+      user.email_unsubscribed = true;
+      this.users.set(user.id, user);
+      saveStorageToDisk();
+    }
+  }
+  
   // Reminder token methods (for subscription magic links)
   async setReminderToken(userId: number, hashedToken: string, expiresAt: Date): Promise<void> {
     if (!global.reminderTokens) {
@@ -1549,6 +1565,22 @@ export class DatabaseStorage implements IStorage {
     }
     
     return result;
+  }
+  
+  async isUserUnsubscribed(email: string): Promise<boolean> {
+    const result = await db
+      .select({ email_unsubscribed: users.email_unsubscribed })
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
+    return result[0]?.email_unsubscribed ?? false;
+  }
+  
+  async setUserUnsubscribed(email: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ email_unsubscribed: true })
+      .where(eq(users.email, email));
   }
   
   // Reminder token methods (for subscription magic links)

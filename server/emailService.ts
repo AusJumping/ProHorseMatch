@@ -21,6 +21,17 @@ async function initializeEmailService() {
 // Initialize the service
 initializeEmailService();
 
+const BASE_URL = 'https://pro-horse-match-info6446.replit.app';
+
+function getUnsubscribeHeaders(email: string): Record<string, string> {
+  const encodedEmail = Buffer.from(email).toString('base64url');
+  const unsubscribeUrl = `${BASE_URL}/unsubscribe?email=${encodedEmail}`;
+  return {
+    'List-Unsubscribe': `<${unsubscribeUrl}>`,
+    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+  };
+}
+
 interface EmailVerificationParams {
   to: string;
   username: string;
@@ -267,6 +278,7 @@ Visit: https://pro-horse-match-info6446.replit.app
       subject: 'Welcome to ProHorseMatch - Account Verified!',
       html: htmlContent,
       text: textContent,
+      headers: getUnsubscribeHeaders(to),
     });
 
     if (error) {
@@ -375,6 +387,7 @@ Once verified, you'll be able to:
         subject: 'Verify Your Email - Start Using ProHorseMatch',
         html: htmlContent,
         text: textContent,
+        headers: getUnsubscribeHeaders(to),
       });
 
       if (error) {
@@ -510,10 +523,11 @@ Questions? We're here to help! Simply reply to this email and we'll get back to 
     if (resend) {
       const { data, error} = await resend.emails.send({
         from: 'ProHorseMatch <noreply@prohorsematch.com>',
-        to: [to], // Resend requires array format
+        to: [to],
         subject: 'Complete Your ProHorseMatch Setup - Free Beta Access',
         html: htmlContent,
         text: textContent,
+        headers: getUnsubscribeHeaders(to),
       });
 
       if (error) {
@@ -741,6 +755,7 @@ Stay connected and don't miss important conversations about your horse interests
         subject: `New message about ${params.horseName} - ProHorseMatch`,
         html: htmlContent,
         text: textContent,
+        headers: getUnsubscribeHeaders(params.to),
       });
       
       if (error) {
@@ -847,6 +862,7 @@ This is an automated notification from the ProHorseMatch admin system.
         subject: `🐎 New Horse Listed: ${params.horseName}`,
         html: htmlContent,
         text: textContent,
+        headers: getUnsubscribeHeaders(params.to),
       });
       
       if (error) {
@@ -977,6 +993,7 @@ Connecting equestrian professionals worldwide
         subject: `🎯 New Inquiry About ${params.horseName}`,
         html: htmlContent,
         text: textContent,
+        headers: getUnsubscribeHeaders(params.to),
       });
       
       if (error) {
@@ -1099,6 +1116,7 @@ Connecting equestrian professionals worldwide
         subject: `⏰ Don't Miss Out: Message About ${params.horseName}`,
         html: htmlContent,
         text: textContent,
+        headers: getUnsubscribeHeaders(params.to),
       });
       
       if (error) {
@@ -1276,6 +1294,7 @@ Connecting Performance Horses with new owners
         subject: '📱 Never Miss a Match! Push Notifications Now Available',
         html: htmlContent,
         text: textContent,
+        headers: getUnsubscribeHeaders(params.to),
       });
       
       if (error) {
