@@ -862,7 +862,6 @@ This is an automated notification from the ProHorseMatch admin system.
         subject: `🐎 New Horse Listed: ${params.horseName}`,
         html: htmlContent,
         text: textContent,
-        headers: getUnsubscribeHeaders(params.to),
       });
       
       if (error) {
