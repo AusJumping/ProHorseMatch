@@ -172,8 +172,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       queryClient.setQueryData(['/api/auth/me'], null);
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
       
-      // Navigate to home page using client-side routing
-      navigate('/');
+      // Navigate directly to login page
+      navigate('/auth');
     } catch (error) {
       console.error('Logout error:', error);
       throw error;
