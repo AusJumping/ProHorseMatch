@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const MobileNavbar = () => {
   const [location, navigate] = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   
@@ -31,8 +31,7 @@ const MobileNavbar = () => {
 
   const handleLogout = async () => {
     try {
-      await apiRequest("POST", "/api/auth/logout");
-      window.location.href = "/";
+      await logout();
     } catch (error) {
       toast({
         title: "Logout Error",
