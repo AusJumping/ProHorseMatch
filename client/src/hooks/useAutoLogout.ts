@@ -7,8 +7,15 @@ const LAST_ACTIVITY_KEY = 'lastActivityTime';
 export const useAutoLogout = () => {
   const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const logout = () => {
+  const logout = async () => {
     console.log('Auto-logout triggered due to inactivity');
+
+    // Tell the server to end the session (clears the session cookie)
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch {
+      // Continue regardless
+    }
 
     localStorage.removeItem('authToken');
     localStorage.removeItem('auth_token');
@@ -23,7 +30,7 @@ export const useAutoLogout = () => {
     localStorage.setItem(LAST_ACTIVITY_KEY, Date.now().toString());
   };
 
-  const checkForTimeout = () => {
+  const checkForTimeout = async () => {
     const token = localStorage.getItem('authToken');
     if (!token) return;
 
@@ -31,7 +38,7 @@ export const useAutoLogout = () => {
     const timeSinceLastActivity = Date.now() - lastActivity;
 
     if (timeSinceLastActivity >= TIMEOUT_DURATION) {
-      logout();
+      await logout();
     }
   };
 
@@ -57,7 +64,7 @@ export const useAutoLogout = () => {
     // Check immediately when the app becomes visible again (e.g. returning from background on mobile)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        checkForTimeout();
+        void checkForTimeout();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
