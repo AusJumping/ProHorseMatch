@@ -22,6 +22,7 @@ interface Filter {
   breeds: string[];
   sexes: string[];
   levels: string[];
+  other_disciplines: string[];
   location_country: string | null;
   location_radius_km: number | null;
   age_min: number | null;
@@ -51,6 +52,7 @@ export default function Home() {
     breeds: [],       // Empty array for All Breeds
     sexes: [],        // Empty array for Any Sex
     levels: [],       // Empty array for All Levels
+    other_disciplines: [],
     location_country: null,
     location_radius_km: null,
     age_min: null,

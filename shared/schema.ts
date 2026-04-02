@@ -105,6 +105,7 @@ export const horses = pgTable("horses", {
   dam: text("dam"),
   dam_sire: text("dam_sire"),
   characteristics: text("characteristics").array(),
+  other_disciplines: text("other_disciplines").array(),
   education_level: text("education_level"),
   price_min: integer("price_min").notNull(),
   price_max: integer("price_max").notNull(),

@@ -56,6 +56,7 @@ const horseFormSchema = z.object({
   location_country: z.string().min(1, "Country is required"),
   disciplines: z.array(z.string()).min(1, "Select a discipline"),
   levels: z.array(z.string()).min(1, "Select at least one level"),
+  other_disciplines: z.array(z.string()).optional(),
   breeds: z.array(z.string()).min(1, "Select at least one breed"),
   sex: z.string().min(1, "Sex is required"),
   colour: z.string().min(1, "Colour is required"),
@@ -154,6 +155,7 @@ export default function AddHorse() {
       location_country: "",
       disciplines: [],
       levels: [],
+      other_disciplines: [],
       breeds: [],
       age: undefined,
       height_hands: undefined,
@@ -935,6 +937,41 @@ export default function AddHorse() {
                                 </div>
                               )}
                               
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="other_disciplines"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Other Discipline(s)</FormLabel>
+                              <div className="flex flex-wrap gap-3 mt-1">
+                                {constants?.disciplines
+                                  ?.filter((d: string) => d !== selectedDiscipline)
+                                  .map((discipline: string) => {
+                                    const checked = (field.value || []).includes(discipline);
+                                    return (
+                                      <label key={discipline} className="flex items-center gap-2 cursor-pointer">
+                                        <Checkbox
+                                          checked={checked}
+                                          onCheckedChange={(val) => {
+                                            const current = field.value || [];
+                                            if (val) {
+                                              field.onChange([...current, discipline]);
+                                            } else {
+                                              field.onChange(current.filter((d: string) => d !== discipline));
+                                            }
+                                          }}
+                                        />
+                                        <span className="text-sm">{discipline}</span>
+                                      </label>
+                                    );
+                                  })}
+                              </div>
+                              <FormDescription>Select any additional disciplines this horse competes in</FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}

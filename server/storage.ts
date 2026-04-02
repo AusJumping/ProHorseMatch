@@ -695,6 +695,15 @@ export class MemStorage implements IStorage {
           return false;
         }
       }
+
+      // Filter by other disciplines
+      if (filters.other_disciplines && filters.other_disciplines.length > 0) {
+        const horseOtherDisciplines = horse.other_disciplines || [];
+        const hasMatch = filters.other_disciplines.some((d: string) =>
+          horseOtherDisciplines.includes(d)
+        );
+        if (!hasMatch) return false;
+      }
       
       return true;
     });
@@ -1747,6 +1756,15 @@ export class DatabaseStorage implements IStorage {
         if (!horseDamSire.includes(searchDamSire)) {
           return false;
         }
+      }
+
+      // Filter by other disciplines
+      if (filters.other_disciplines && filters.other_disciplines.length > 0) {
+        const horseOtherDisciplines = horse.other_disciplines || [];
+        const hasMatch = filters.other_disciplines.some((d: string) =>
+          horseOtherDisciplines.includes(d)
+        );
+        if (!hasMatch) return false;
       }
       
       return true;

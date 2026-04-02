@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X, Menu } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useMobile } from "@/hooks/use-mobile";
@@ -214,6 +215,7 @@ const FilterPanel = ({
       disciplines: [],  // Empty array for All Disciplines
       breeds: [],       // Empty array for All Breeds
       sexes: [],        // Empty array for Any Sex
+      other_disciplines: [],
       location_country: null,
       location_radius_km: null,
       age_min: null,
@@ -322,6 +324,33 @@ const FilterPanel = ({
             </div>
           )}
           
+          {/* Other Disciplines */}
+          {constants?.disciplines && constants.disciplines.length > 0 && (
+            <div className="filter-group">
+              <Label className="block font-accent font-semibold mb-2 text-neutral-800">Other Discipline(s)</Label>
+              <div className="flex flex-wrap gap-3">
+                {constants.disciplines.map((discipline: string) => {
+                  const selected = (filters.other_disciplines || []).includes(discipline);
+                  return (
+                    <label key={discipline} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={selected}
+                        onCheckedChange={(val) => {
+                          const current = filters.other_disciplines || [];
+                          const updated = val
+                            ? [...current, discipline]
+                            : current.filter((d: string) => d !== discipline);
+                          handleChange('other_disciplines', updated, false);
+                        }}
+                      />
+                      <span className="text-sm">{discipline}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Price Range and Currency */}
           <div className="filter-group">
             <div className="mb-3">
