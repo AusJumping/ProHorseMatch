@@ -269,7 +269,7 @@ const FilterPanel = ({
         <div className="space-y-6">
           {/* Disciplines */}
           <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Disciplines</Label>
+            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Main Discipline</Label>
             <Select 
               value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"} 
               onValueChange={(value) => {
