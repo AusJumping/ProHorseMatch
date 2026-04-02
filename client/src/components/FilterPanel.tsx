@@ -295,7 +295,7 @@ const FilterPanel = ({
           {/* Discipline Levels */}
           {(filters.disciplines && filters.disciplines.length > 0 && filters.disciplines[0] && filters.disciplines[0] !== "all_disciplines") ? (
             <div className="filter-group">
-              <Label className="block font-accent font-semibold mb-2 text-neutral-800">Level</Label>
+              <Label className="block font-accent font-semibold mb-2 text-neutral-800">Competition Level</Label>
               <Select 
                 value={filters.levels?.[0] || ""} 
                 onValueChange={(value) => handleChange('levels', [value], false)}
@@ -315,7 +315,7 @@ const FilterPanel = ({
             </div>
           ) : (
             <div className="filter-group">
-              <Label className="block font-accent font-semibold mb-2 text-neutral-800 opacity-50">Level</Label>
+              <Label className="block font-accent font-semibold mb-2 text-neutral-800 opacity-50">Competition Level</Label>
               <Select disabled>
                 <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg opacity-50">
                   <SelectValue placeholder="Select a discipline first" />
