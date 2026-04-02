@@ -329,7 +329,12 @@ const FilterPanel = ({
             <div className="filter-group">
               <Label className="block font-accent font-semibold mb-2 text-neutral-800">Other Discipline(s)</Label>
               <div className="flex flex-wrap gap-3">
-                {constants.disciplines.map((discipline: string) => {
+                {constants.disciplines
+                  .filter((discipline: string) => {
+                    const mainDiscipline = filters.disciplines?.[0];
+                    return !mainDiscipline || mainDiscipline === "all_disciplines" || discipline !== mainDiscipline;
+                  })
+                  .map((discipline: string) => {
                   const selected = (filters.other_disciplines || []).includes(discipline);
                   return (
                     <label key={discipline} className="flex items-center gap-2 cursor-pointer">
