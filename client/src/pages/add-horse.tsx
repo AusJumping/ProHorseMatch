@@ -893,7 +893,7 @@ export default function AddHorse() {
                                         const disciplineLevels = constants.levels[selectedDiscipline] || [];
                                         
                                         // Create combined array with special options at the top
-                                        const allLevels = ["Unbroken", "Young Horse", ...disciplineLevels];
+                                        const allLevels = ["Unbroken", "Not Competing", "Young Horse", ...disciplineLevels];
                                         
                                         return allLevels.map((level) => (
                                           <SelectItem key={level} value={level}>
@@ -904,6 +904,7 @@ export default function AddHorse() {
                                     ) : (
                                       <>
                                         <SelectItem value="Unbroken">Unbroken</SelectItem>
+                                        <SelectItem value="Not Competing">Not Competing</SelectItem>
                                         <SelectItem value="Young Horse">Young Horse</SelectItem>
                                         <SelectItem value="Under 1m">Under 1m</SelectItem>
                                         <SelectItem value="1.10m">1.10m</SelectItem>
