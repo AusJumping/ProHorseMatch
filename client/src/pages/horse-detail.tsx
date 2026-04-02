@@ -322,19 +322,6 @@ export default function HorseDetail() {
               </div>
             )}
 
-            {/* Characteristics */}
-            {horse.characteristics && horse.characteristics.length > 0 && (
-              <div className="mb-6">
-                <h3 className="font-accent font-semibold mb-2">Characteristics</h3>
-                <div className="flex flex-wrap gap-2">
-                  {horse.characteristics.map((characteristic, index) => (
-                    <Badge key={index} variant="outline" className="bg-primary text-white border-transparent">
-                      {characteristic}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
             
 
             
