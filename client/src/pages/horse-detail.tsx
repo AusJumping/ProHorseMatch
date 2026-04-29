@@ -297,7 +297,7 @@ export default function HorseDetail() {
             {/* Description */}
             <div className="mb-6">
               <h3 className="font-accent font-semibold mb-2">About {horse.name}</h3>
-              <p className="text-neutral-700 text-sm leading-relaxed">
+              <p className="text-neutral-700 text-sm leading-relaxed whitespace-pre-wrap">
                 {horse.description || "No description provided."}
               </p>
             </div>
@@ -306,7 +306,7 @@ export default function HorseDetail() {
             {horse.additional_info && (
               <div className="mb-6">
                 <h3 className="font-accent font-semibold mb-2">Additional Information</h3>
-                <p className="text-neutral-700 text-sm leading-relaxed">
+                <p className="text-neutral-700 text-sm leading-relaxed whitespace-pre-wrap">
                   {horse.additional_info}
                 </p>
               </div>
