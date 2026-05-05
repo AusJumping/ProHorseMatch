@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "BV-Ms2u3ko-XCDQkNCf0w"
+uri = "file://backup_prohorsematch.sql.gz"
+type = "unspecified"
+title = "ProHorseMatch Database Backup"
