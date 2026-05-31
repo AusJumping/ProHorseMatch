@@ -429,13 +429,13 @@ export default function SubscriptionPage() {
       // Fallback for when the Stripe API call fails but we still have user data
       // This ensures the subscription page works even if Stripe API is unreachable
       if (user?.stripe_subscription_id) {
-        const isBetaPlan = user.stripe_subscription_id.startsWith('beta-');
+        const isBetaPlan = user.stripe_subscription_id === 'beta' || user.stripe_subscription_id.startsWith('beta-');
         
         return {
           hasSubscription: true,
           subscriptionId: user.stripe_subscription_id,
           status: user.subscription_status || 'active',
-          planId: user.subscription_plan || (isBetaPlan ? 'beta-seller' : 'standard'),
+          planId: user.subscription_plan || (isBetaPlan ? 'beta' : 'standard'),
           currentPeriodEnd: user.subscription_end_date 
             ? new Date(user.subscription_end_date).getTime() / 1000 
             : (Date.now() + 90 * 24 * 60 * 60 * 1000) / 1000,
@@ -675,7 +675,7 @@ export default function SubscriptionPage() {
     const plan = allPlans.find(p => p.id === planId) || { name: 'Unknown', price: 0, features: [] as string[] };
     
     // Check if this is a beta plan
-    const isBetaPlan = planId.startsWith('beta-');
+    const isBetaPlan = planId === 'beta' || planId.startsWith('beta-');
     // Get other plans that the user could upgrade or switch to
     const otherPlans = isBetaPlan 
       ? betaPlans.filter(p => p.id !== planId) 

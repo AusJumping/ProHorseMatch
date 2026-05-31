@@ -680,14 +680,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Auto-activate beta subscription on email verification
       if (!user.subscription_status || user.subscription_status !== 'active') {
         try {
-          const betaPlan = user.is_selling ? 'beta-seller' : 'beta-searching';
           await storage.updateUserSubscription(user.id, {
-            stripe_subscription_id: betaPlan,
+            stripe_subscription_id: 'beta',
             subscription_status: 'active',
-            subscription_plan: betaPlan,
+            subscription_plan: 'beta',
             subscription_end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
           });
-          console.log('Beta subscription auto-activated for user:', user.email, 'plan:', betaPlan);
+          await storage.updateUser(user.id, { is_selling: true, is_searching: true });
+          console.log('Beta subscription auto-activated for user:', user.email);
         } catch (betaErr) {
           console.warn('Auto beta activation failed (non-critical):', betaErr);
         }
@@ -3009,30 +3009,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Determine user permissions based on the plan type
+      // All beta users get the same unified plan with full access
       let updatedUserData: any = {
-        stripe_subscription_id: `beta-${Date.now()}`, // Create a unique ID for the beta subscription
+        stripe_subscription_id: 'beta',
         subscription_status: 'active',
-        subscription_plan: planId,
-        subscription_end_date: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) // 90 days from now
+        subscription_plan: 'beta',
+        subscription_end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
       };
-      
-      // Update user roles based on subscription type
-      if (planId === 'beta-seller') {
-        // Seller plan gets both selling and searching permissions
-        await storage.updateUser(userId, {
-          is_selling: true,
-          is_searching: true
-        });
-        console.log(`Updated user ${userId} with beta-seller permissions (selling: true, searching: true)`);
-      } else if (planId === 'beta-searching') {
-        // Searching plan only gets searching permissions
-        await storage.updateUser(userId, {
-          is_selling: false,
-          is_searching: true
-        });
-        console.log(`Updated user ${userId} with beta-searching permissions (selling: false, searching: true)`);
-      }
+
+      await storage.updateUser(userId, { is_selling: true, is_searching: true });
+      console.log(`Updated user ${userId} with full beta permissions`);
       
       // Update user with beta subscription info
       await storage.updateUserSubscription(userId, updatedUserData);
