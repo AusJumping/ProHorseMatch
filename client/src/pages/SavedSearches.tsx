@@ -15,8 +15,42 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Edit, Trash2, Bell, BellOff } from "lucide-react";
+import { Plus, Edit, Trash2, Bell, BellOff, CheckCircle, Mail, Smartphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+type PushStep = 'prompt' | 'enabling' | 'success' | 'unsupported' | 'denied';
+
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+async function subscribeToPush(): Promise<void> {
+  const registration = await navigator.serviceWorker.ready;
+  const response = await fetch('/api/push/vapid-public-key');
+  if (!response.ok) throw new Error('Could not get server key');
+  const { publicKey } = await response.json();
+  const applicationServerKey = urlBase64ToUint8Array(publicKey);
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey,
+  });
+  const p256dhKey = subscription.getKey('p256dh');
+  const authKey = subscription.getKey('auth');
+  await apiRequest('POST', '/api/push/subscribe', {
+    endpoint: subscription.endpoint,
+    keys: {
+      p256dh: p256dhKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(p256dhKey)))) : '',
+      auth: authKey ? btoa(String.fromCharCode(...Array.from(new Uint8Array(authKey)))) : '',
+    },
+  });
+}
 
 const savedSearchSchema = z.object({
   name: z.string().min(1, "Search name is required"),
@@ -44,8 +78,39 @@ type SavedSearchFormData = z.infer<typeof savedSearchSchema>;
 export default function SavedSearches() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingSearch, setEditingSearch] = useState<any>(null);
+  const [showPushPrompt, setShowPushPrompt] = useState(false);
+  const [pushStep, setPushStep] = useState<PushStep>('prompt');
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const supportsPush = typeof window !== 'undefined' &&
+    'Notification' in window &&
+    'serviceWorker' in navigator &&
+    'PushManager' in window;
+
+  const closeDialog = () => {
+    setIsCreateDialogOpen(false);
+    setEditingSearch(null);
+    setShowPushPrompt(false);
+    setPushStep('prompt');
+    form.reset();
+  };
+
+  const handleEnablePush = async () => {
+    setPushStep('enabling');
+    try {
+      const result = await Notification.requestPermission();
+      if (result !== 'granted') {
+        setPushStep('denied');
+        return;
+      }
+      await subscribeToPush();
+      queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
+      setPushStep('success');
+    } catch {
+      setPushStep('denied');
+    }
+  };
 
   // Get constants for form options
   const { data: constants } = useQuery({
@@ -78,14 +143,18 @@ export default function SavedSearches() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/saved-searches"] });
-      setIsCreateDialogOpen(false);
       form.reset();
-      toast({
-        title: "Success",
-        description: "Saved search created successfully",
-      });
+      // Instead of closing, show the post-save push prompt
+      if (!supportsPush) {
+        setPushStep('unsupported');
+      } else if (Notification.permission === 'denied') {
+        setPushStep('denied');
+      } else {
+        setPushStep('prompt');
+      }
+      setShowPushPrompt(true);
     },
-    onError: (error) => {
+    onError: () => {
       toast({
         title: "Error",
         description: "Failed to create saved search",
@@ -211,11 +280,7 @@ export default function SavedSearches() {
           </p>
         </div>
         <Dialog open={isCreateDialogOpen || !!editingSearch} onOpenChange={(open) => {
-          if (!open) {
-            setIsCreateDialogOpen(false);
-            setEditingSearch(null);
-            form.reset();
-          }
+          if (!open) closeDialog();
         }}>
           <DialogTrigger asChild>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
@@ -224,6 +289,85 @@ export default function SavedSearches() {
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            {showPushPrompt ? (
+              /* ── Post-save confirmation + push prompt ── */
+              <div className="space-y-6 py-2">
+                {/* Email confirmation — always shown */}
+                <div className="flex items-start gap-3 rounded-lg bg-green-50 border border-green-200 p-4">
+                  <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-green-900">Your email alert is ready.</p>
+                    <p className="text-sm text-green-800 mt-0.5">
+                      We'll email you when new horses match this search.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Push prompt — varies by state */}
+                {pushStep === 'unsupported' && (
+                  <div className="flex items-start gap-3 rounded-lg bg-muted p-4">
+                    <Mail className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+                    <p className="text-sm text-muted-foreground">
+                      Email alerts are active. Instant phone alerts are not available on this device.
+                    </p>
+                  </div>
+                )}
+
+                {pushStep === 'denied' && (
+                  <div className="flex items-start gap-3 rounded-lg bg-muted p-4">
+                    <Mail className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
+                    <p className="text-sm text-muted-foreground">
+                      Email alerts are active. You can enable instant phone alerts anytime from your profile settings.
+                    </p>
+                  </div>
+                )}
+
+                {pushStep === 'prompt' && (
+                  <div className="rounded-lg border p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Smartphone className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="font-semibold text-sm">Want instant phone alerts too?</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Get notified on your phone as soon as a matching horse is listed. You'll still receive email alerts if you skip this.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                      <Button onClick={handleEnablePush} className="flex-1">
+                        <Bell className="h-4 w-4 mr-2" />
+                        Enable instant phone alerts
+                      </Button>
+                      <Button variant="outline" onClick={closeDialog} className="flex-1">
+                        Email is fine for now
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {pushStep === 'enabling' && (
+                  <div className="flex items-center justify-center gap-3 rounded-lg border p-6 text-sm text-muted-foreground">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-amber-600" />
+                    Setting up instant phone alerts…
+                  </div>
+                )}
+
+                {pushStep === 'success' && (
+                  <div className="flex items-start gap-3 rounded-lg bg-amber-50 border border-amber-200 p-4">
+                    <CheckCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-amber-900 font-medium">
+                      Instant phone alerts are now enabled for this alert.
+                    </p>
+                  </div>
+                )}
+
+                {(pushStep === 'success' || pushStep === 'unsupported' || pushStep === 'denied') && (
+                  <Button onClick={closeDialog} className="w-full">Done</Button>
+                )}
+              </div>
+            ) : (
+              /* ── Standard create / edit form ── */
+              <>
             <DialogHeader>
               <DialogTitle>
                 {editingSearch ? "Edit Saved Search" : "Create New Saved Search"}
@@ -614,11 +758,7 @@ export default function SavedSearches() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => {
-                      setIsCreateDialogOpen(false);
-                      setEditingSearch(null);
-                      form.reset();
-                    }}
+                    onClick={closeDialog}
                   >
                     Cancel
                   </Button>
@@ -628,6 +768,8 @@ export default function SavedSearches() {
                 </DialogFooter>
               </form>
             </Form>
+            </>
+          )}
           </DialogContent>
         </Dialog>
       </div>
