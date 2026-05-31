@@ -261,12 +261,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const verificationToken = generateVerificationToken();
       const tokenExpires = createTokenExpiration();
       
-      // Create user with verification fields (beta: everyone gets both buyer + seller roles)
+      // Use role flags sent from the registration form.
+      // During beta, auto-activation (see verify-email endpoint) grants full access regardless of role.
+      // TODO: When subscriptions launch, remove the auto-activation override in verify-email
+      //       so that is_searching/is_selling here naturally gate which subscription plan is shown.
+      const is_searching = req.body.is_searching !== false;
+      const is_selling = req.body.is_selling === true;
+
       const user = await storage.createUser({
         ...validatedData,
         password: hashedPassword,
-        is_searching: true,
-        is_selling: true,
+        is_searching,
+        is_selling,
         name: null,
         email_verified: false,
         verification_token: verificationToken,

@@ -25,6 +25,7 @@ const loginSchema = z.object({
 });
 
 const customerRegisterSchema = z.object({
+  role: z.enum(['searching', 'selling', 'both'], { required_error: "Please select what you're here to do" }),
   username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
@@ -97,6 +98,7 @@ export default function Auth() {
   const customerRegisterForm = useForm<z.infer<typeof customerRegisterSchema>>({
     resolver: zodResolver(customerRegisterSchema),
     defaultValues: {
+      role: 'both',
       username: "",
       email: "",
       password: "",
@@ -155,9 +157,11 @@ export default function Auth() {
 
   const onCustomerRegisterSubmit = async (data: z.infer<typeof customerRegisterSchema>) => {
     try {
-      const { confirmPassword, acceptedTerms, ...registerData } = data;
+      const { confirmPassword, acceptedTerms, role, ...registerData } = data;
+      const is_searching = role === 'searching' || role === 'both';
+      const is_selling = role === 'selling' || role === 'both';
       
-      const userData = await register({ ...registerData, accepted_terms: true }, 'customer');
+      const userData = await register({ ...registerData, is_searching, is_selling, accepted_terms: true }, 'customer');
       
       // Show prominent email verification dialog
       setRegisteredEmail(data.email);
@@ -331,6 +335,39 @@ export default function Auth() {
               <CardContent>
                 <Form {...customerRegisterForm}>
                   <form onSubmit={customerRegisterForm.handleSubmit(onCustomerRegisterSubmit)} className="space-y-4">
+                    <FormField
+                      control={customerRegisterForm.control}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">I want to</FormLabel>
+                          <FormControl>
+                            <div className="grid grid-cols-3 gap-2">
+                              {([
+                                { value: 'searching', label: 'Find a horse', icon: '🔍' },
+                                { value: 'selling',   label: 'Sell a horse', icon: '🐴' },
+                                { value: 'both',      label: 'Both',         icon: '⭐' },
+                              ] as const).map((option) => (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() => field.onChange(option.value)}
+                                  className={`flex flex-col items-center justify-center gap-1 rounded-lg border-2 py-3 px-2 text-xs font-medium transition-colors
+                                    ${field.value === option.value
+                                      ? 'border-[#cdac6e] bg-[#faf7f2] text-[#8b6914]'
+                                      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'}`}
+                                >
+                                  <span className="text-lg">{option.icon}</span>
+                                  {option.label}
+                                </button>
+                              ))}
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
                     <FormField
                       control={customerRegisterForm.control}
                       name="username"
