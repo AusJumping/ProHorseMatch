@@ -327,7 +327,7 @@ export default function Auth() {
               <CardHeader>
                 <CardTitle>Create a Free Account</CardTitle>
                 <CardDescription>
-                  Browse horses for sale and list your own — no payment details needed during beta
+                  Browse horses for sale or list a horse. No payment details required while we are getting started!
                 </CardDescription>
               </CardHeader>
               <CardContent>
