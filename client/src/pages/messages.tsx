@@ -9,9 +9,42 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, User, MessageCircle, Trash2 } from "lucide-react";
+import { Send, ArrowLeft, User, MessageCircle, Trash2, Bell, X, Smartphone } from "lucide-react";
 import { Message, Conversation, Horse } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
+
+// ── Push helpers ────────────────────────────────────────────────────
+function urlBase64ToUint8Array(base64String: string) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const out = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) out[i] = rawData.charCodeAt(i);
+  return out;
+}
+
+async function enablePushNotifications(): Promise<'success' | 'denied' | 'unsupported'> {
+  if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return 'unsupported';
+  }
+  const permission = await Notification.requestPermission();
+  if (permission !== 'granted') return 'denied';
+  const reg = await navigator.serviceWorker.ready;
+  const keyRes = await fetch('/api/push/vapid-public-key');
+  if (!keyRes.ok) return 'unsupported';
+  const { publicKey } = await keyRes.json();
+  const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicKey) });
+  const p256dh = sub.getKey('p256dh');
+  const auth = sub.getKey('auth');
+  await apiRequest('POST', '/api/push/subscribe', {
+    endpoint: sub.endpoint,
+    keys: {
+      p256dh: p256dh ? btoa(String.fromCharCode(...Array.from(new Uint8Array(p256dh)))) : '',
+      auth: auth ? btoa(String.fromCharCode(...Array.from(new Uint8Array(auth)))) : '',
+    },
+  });
+  return 'success';
+}
 
 interface ConversationWithDetails extends Conversation {
   horse?: Horse;
@@ -30,9 +63,50 @@ export default function Messages() {
   const [selectedConversation, setSelectedConversation] = useState<ConversationWithDetails | null>(null);
   const [messageText, setMessageText] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isEnablingPush, setIsEnablingPush] = useState(false);
+  const [bannerDismissed, setBannerDismissed] = useState(
+    () => localStorage.getItem('msg-push-banner-dismissed') === 'true'
+  );
+  const [showPostSendNudge, setShowPostSendNudge] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  const supportsPush = typeof window !== 'undefined' &&
+    'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+
+  const { data: pushStatus } = useQuery<{ subscribed: boolean }>({
+    queryKey: ['/api/push/status'],
+    retry: false,
+    enabled: supportsPush,
+  });
+
+  const pushEnabled = pushStatus?.subscribed === true;
+
+  const handleEnablePush = async (source: 'banner' | 'nudge') => {
+    setIsEnablingPush(true);
+    try {
+      const result = await enablePushNotifications();
+      if (result === 'success') {
+        queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
+        toast({ title: "Phone alerts enabled!", description: "You'll get an instant alert whenever you receive a reply." });
+        if (source === 'banner') setBannerDismissed(true);
+        setShowPostSendNudge(false);
+      } else if (result === 'denied') {
+        toast({ title: "Alerts not enabled", description: "You can turn them on anytime from Profile → Account Settings." });
+        setShowPostSendNudge(false);
+      }
+    } catch {
+      toast({ title: "Couldn't enable alerts", description: "Try again from Profile → Account Settings.", variant: "destructive" });
+    } finally {
+      setIsEnablingPush(false);
+    }
+  };
+
+  const dismissBanner = () => {
+    setBannerDismissed(true);
+    localStorage.setItem('msg-push-banner-dismissed', 'true');
+  };
 
   // Mark conversation as read mutation
   const markAsReadMutation = useMutation({
@@ -275,11 +349,12 @@ export default function Messages() {
       queryClient.invalidateQueries({ 
         queryKey: ['/api/conversations', selectedConversation.customer_id, selectedConversation.owner_id, selectedConversation.horse_id, 'messages'] 
       });
-      
-      toast({
-        title: "Message sent!",
-        description: "Your message has been delivered successfully.",
-      });
+
+      // Show post-send nudge once per session if push not yet enabled
+      if (!pushEnabled && supportsPush && !sessionStorage.getItem('post-send-nudge-shown')) {
+        sessionStorage.setItem('post-send-nudge-shown', 'true');
+        setShowPostSendNudge(true);
+      }
       
     } catch (error: any) {
       setIsSending(false);
@@ -341,6 +416,41 @@ export default function Messages() {
               Conversations
             </h2>
           </div>
+
+          {/* Push notification banner — shown when user has conversations but push not enabled */}
+          {!pushEnabled && !bannerDismissed && supportsPush && Notification.permission !== 'denied' && (
+            <div className="mx-3 mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3 flex items-start gap-2">
+              <Smartphone className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-amber-900">Never miss a reply</p>
+                <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
+                  Get an instant alert on your phone when someone messages you.
+                </p>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    className="h-6 text-xs px-2 bg-amber-600 hover:bg-amber-700 text-white"
+                    onClick={() => handleEnablePush('banner')}
+                    disabled={isEnablingPush}
+                  >
+                    <Bell className="h-3 w-3 mr-1" />
+                    {isEnablingPush ? 'Setting up…' : 'Enable alerts'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 text-xs px-2 text-amber-700 hover:text-amber-900"
+                    onClick={dismissBanner}
+                  >
+                    Not now
+                  </Button>
+                </div>
+              </div>
+              <button onClick={dismissBanner} className="text-amber-400 hover:text-amber-600 shrink-0">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
           
           <ScrollArea className="flex-1">
             {conversationsError ? (
@@ -602,6 +712,40 @@ export default function Messages() {
                       <div className="w-2 h-2 bg-accent rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
                     <span className="ml-3 text-sm text-gray-500">Sending...</span>
+                  </div>
+                )}
+
+                {/* Post-send push nudge — appears once per session after first message */}
+                {showPostSendNudge && !pushEnabled && (
+                  <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 p-3 flex items-start gap-2 animate-in slide-in-from-bottom-2">
+                    <Bell className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-amber-900">Want to know when they reply?</p>
+                      <p className="text-xs text-amber-700 mt-0.5">
+                        Get an instant phone alert as soon as you receive a response.
+                      </p>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          className="h-6 text-xs px-2 bg-amber-600 hover:bg-amber-700 text-white"
+                          onClick={() => handleEnablePush('nudge')}
+                          disabled={isEnablingPush}
+                        >
+                          {isEnablingPush ? 'Setting up…' : 'Yes, alert me'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-6 text-xs px-2 text-amber-700"
+                          onClick={() => setShowPostSendNudge(false)}
+                        >
+                          No thanks
+                        </Button>
+                      </div>
+                    </div>
+                    <button onClick={() => setShowPostSendNudge(false)} className="text-amber-400 hover:text-amber-600 shrink-0">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 )}
               </div>
