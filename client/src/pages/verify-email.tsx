@@ -56,9 +56,9 @@ export default function VerifyEmail() {
           queryClient.setQueryData(['/api/auth/me'], data.user);
         }
         
-        // Redirect to subscription page after 2 seconds
+        // Redirect to welcome page after 2 seconds
         setTimeout(() => {
-          setLocation('/subscription');
+          setLocation('/welcome');
         }, 2000);
       } else {
         if (data.message.includes('expired')) {
@@ -145,7 +145,7 @@ export default function VerifyEmail() {
             {getTitle()}
           </CardTitle>
           <CardDescription>
-            {verificationStatus === 'success' && 'You will be redirected to select your subscription shortly.'}
+            {verificationStatus === 'success' && "You're all set! Taking you to the app now..."}
             {verificationStatus === 'pending' && !params?.token && 'Enter your email to resend verification link.'}
             {verificationStatus === 'expired' && 'Request a new verification link below.'}
             {verificationStatus === 'error' && 'There was an issue verifying your email.'}
@@ -179,17 +179,6 @@ export default function VerifyEmail() {
               >
                 {isResending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Send Verification Email
-              </Button>
-            </div>
-          )}
-
-          {verificationStatus === 'success' && (
-            <div className="text-center">
-              <Button 
-                onClick={() => setLocation('/subscription')}
-                className="w-full"
-              >
-                Choose Your Subscription
               </Button>
             </div>
           )}
