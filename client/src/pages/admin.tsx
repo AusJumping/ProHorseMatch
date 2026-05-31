@@ -1885,7 +1885,7 @@ export default function AdminPage() {
                             <div className="flex flex-col items-end space-y-1">
                               <div className="flex items-center space-x-2">
                                 {user.subscription_status === 'active' && (
-                                  <Badge variant="default">{user.subscription_plan}</Badge>
+                                  <Badge variant="default">Beta</Badge>
                                 )}
                                 {/* Edit email button */}
                                 <Button
@@ -1912,14 +1912,6 @@ export default function AdminPage() {
                                       <Trash2 className="h-3 w-3" />
                                     )}
                                   </Button>
-                                )}
-                              </div>
-                              <div className="flex space-x-1">
-                                {user.is_selling && user.subscription_status === 'active' && (
-                                  <Badge variant="secondary">Seller</Badge>
-                                )}
-                                {user.is_searching && user.subscription_status === 'active' && (
-                                  <Badge variant="outline">Searcher</Badge>
                                 )}
                               </div>
                             </div>
