@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, ArrowRight, Eye, EyeOff, Mail, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, CheckCircle } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -35,18 +35,6 @@ const customerRegisterSchema = z.object({
   path: ["confirmPassword"]
 });
 
-const ownerRegisterSchema = z.object({
-  username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
-  business_name: z.string().min(2, { message: "Business name must be at least 2 characters" }),
-  contact_name: z.string().min(2, { message: "Contact name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  confirmPassword: z.string(),
-  acceptedTerms: z.boolean().refine(val => val === true, { message: "You must accept the Terms and Conditions to register" })
-}).refine(data => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"]
-});
 
 const forgotPasswordSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" })
@@ -68,7 +56,6 @@ export default function Auth() {
   const { login, register } = useAuth();
   const [location, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
-  const [registerType, setRegisterType] = useState<string>("customer");
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
@@ -111,20 +98,6 @@ export default function Auth() {
     resolver: zodResolver(customerRegisterSchema),
     defaultValues: {
       username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      acceptedTerms: false
-    }
-  });
-
-  // Owner register form
-  const ownerRegisterForm = useForm<z.infer<typeof ownerRegisterSchema>>({
-    resolver: zodResolver(ownerRegisterSchema),
-    defaultValues: {
-      username: "",
-      business_name: "",
-      contact_name: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -185,35 +158,6 @@ export default function Auth() {
       const { confirmPassword, acceptedTerms, ...registerData } = data;
       
       const userData = await register({ ...registerData, accepted_terms: true }, 'customer');
-      
-      // Show prominent email verification dialog
-      setRegisteredEmail(data.email);
-      setShowEmailVerificationDialog(true);
-      
-      // Don't redirect - user needs to verify email first
-      return;
-    } catch (error: any) {
-      toast({
-        title: "Registration failed",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const onOwnerRegisterSubmit = async (data: z.infer<typeof ownerRegisterSchema>) => {
-    try {
-      const { confirmPassword, acceptedTerms, ...registerData } = data;
-      console.log("Submitting owner registration form with data:", registerData);
-      
-      // Use the proper register function that handles token storage
-      const userData = await register({ ...registerData, accepted_terms: true }, 'owner');
-      
-      console.log("=== OWNER REGISTRATION RESULT DEBUG ===");
-      console.log("userData:", userData);
-      console.log("userData type:", typeof userData);
-      console.log("requiresVerification:", (userData as any)?.requiresVerification);
-      console.log("message:", (userData as any)?.message);
       
       // Show prominent email verification dialog
       setRegisteredEmail(data.email);
@@ -377,378 +321,153 @@ export default function Auth() {
           </TabsContent>
 
           <TabsContent value="register">
-            {registerType === "selection" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Create an Account</CardTitle>
-                  <CardDescription>
-                    Choose your account type to get started
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-4">
-                    <Button
-                      onClick={() => setRegisterType("customer")}
-                      className="flex justify-between items-center"
-                    >
-                      <span>I'm looking for a horse</span>
-                      <ArrowRight size={18} />
-                    </Button>
-                    <Button
-                      onClick={() => setRegisterType("owner")}
-                      className="flex justify-between items-center"
-                    >
-                      <span>I have horses for sale</span>
-                      <ArrowRight size={18} />
-                    </Button>
-                  </div>
-                </CardContent>
-                <CardFooter className="flex justify-center">
-                  <Button
-                    variant="link"
-                    onClick={() => setActiveTab("login")}
-                  >
-                    Already have an account? Login
-                  </Button>
-                </CardFooter>
-              </Card>
-            )}
+            <Card>
+              <CardHeader>
+                <CardTitle>Create a Free Account</CardTitle>
+                <CardDescription>
+                  Browse horses for sale and list your own — no payment details needed during beta
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...customerRegisterForm}>
+                  <form onSubmit={customerRegisterForm.handleSubmit(onCustomerRegisterSubmit)} className="space-y-4">
+                    <FormField
+                      control={customerRegisterForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <Input placeholder="johndoe123" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-            {registerType === "customer" && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="mr-2" 
-                      onClick={() => setRegisterType("selection")}
-                    >
-                      <ChevronLeft size={18} />
-                    </Button>
-                    <div>
-                      <CardTitle>Registration Details</CardTitle>
-                      <CardDescription>
-                        Create your free account to search or list performance horses (no payment details needed)
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Form {...customerRegisterForm}>
-                    <form onSubmit={customerRegisterForm.handleSubmit(onCustomerRegisterSubmit)} className="space-y-4">
-                      <FormField
-                        control={customerRegisterForm.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input placeholder="johndoe123" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <FormField
+                      control={customerRegisterForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="you@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <FormField
-                        control={customerRegisterForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input placeholder="you@example.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={customerRegisterForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input 
-                                  type={showRegisterPassword ? "text" : "password"} 
-                                  placeholder="Create a password" 
-                                  {...field} 
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                                >
-                                  {showRegisterPassword ? (
-                                    <EyeOff className="h-4 w-4 text-gray-400" />
-                                  ) : (
-                                    <Eye className="h-4 w-4 text-gray-400" />
-                                  )}
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={customerRegisterForm.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input 
-                                  type={showConfirmPassword ? "text" : "password"} 
-                                  placeholder="Confirm your password" 
-                                  {...field} 
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                >
-                                  {showConfirmPassword ? (
-                                    <EyeOff className="h-4 w-4 text-gray-400" />
-                                  ) : (
-                                    <Eye className="h-4 w-4 text-gray-400" />
-                                  )}
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={customerRegisterForm.control}
-                        name="acceptedTerms"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
+                    <FormField
+                      control={customerRegisterForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input 
+                                type={showRegisterPassword ? "text" : "password"} 
+                                placeholder="Create a password" 
+                                {...field} 
                               />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="font-medium cursor-pointer">
-                                I agree to the{" "}
-                                <button
-                                  type="button"
-                                  className="text-primary underline font-medium"
-                                  onClick={() => setShowTermsDialog(true)}
-                                >
-                                  Terms and Conditions
-                                </button>
-                              </FormLabel>
-                              <FormMessage />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                              >
+                                {showRegisterPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-400" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-400" />
+                                )}
+                              </Button>
                             </div>
-                          </FormItem>
-                        )}
-                      />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <Button type="submit" className="w-full">
-                        Create Account
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
-            )}
-
-            {registerType === "owner" && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="mr-2" 
-                      onClick={() => setRegisterType("selection")}
-                    >
-                      <ChevronLeft size={18} />
-                    </Button>
-                    <div>
-                      <CardTitle>Selling Registration</CardTitle>
-                      <CardDescription>
-                        Create your account to list your horses for sale
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Form {...ownerRegisterForm}>
-                    <form onSubmit={ownerRegisterForm.handleSubmit(onOwnerRegisterSubmit)} className="space-y-4">
-                      <FormField
-                        control={ownerRegisterForm.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input placeholder="elitesporthorses" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={ownerRegisterForm.control}
-                        name="business_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Business Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Elite Sporthorses" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={ownerRegisterForm.control}
-                        name="contact_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Contact Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="John Doe" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={ownerRegisterForm.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input placeholder="you@example.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={ownerRegisterForm.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input 
-                                  type={showRegisterPassword ? "text" : "password"} 
-                                  placeholder="Create a password" 
-                                  {...field} 
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
-                                >
-                                  {showRegisterPassword ? (
-                                    <EyeOff className="h-4 w-4 text-gray-400" />
-                                  ) : (
-                                    <Eye className="h-4 w-4 text-gray-400" />
-                                  )}
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={ownerRegisterForm.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Input 
-                                  type={showConfirmPassword ? "text" : "password"} 
-                                  placeholder="Confirm your password" 
-                                  {...field} 
-                                />
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                >
-                                  {showConfirmPassword ? (
-                                    <EyeOff className="h-4 w-4 text-gray-400" />
-                                  ) : (
-                                    <Eye className="h-4 w-4 text-gray-400" />
-                                  )}
-                                </Button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={ownerRegisterForm.control}
-                        name="acceptedTerms"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
+                    <FormField
+                      control={customerRegisterForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input 
+                                type={showConfirmPassword ? "text" : "password"} 
+                                placeholder="Confirm your password" 
+                                {...field} 
                               />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel className="font-medium cursor-pointer">
-                                I agree to the{" "}
-                                <button
-                                  type="button"
-                                  className="text-primary underline font-medium"
-                                  onClick={() => setShowTermsDialog(true)}
-                                >
-                                  Terms and Conditions
-                                </button>
-                              </FormLabel>
-                              <FormMessage />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-400" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-400" />
+                                )}
+                              </Button>
                             </div>
-                          </FormItem>
-                        )}
-                      />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                      <Button type="submit" className="w-full">
-                        Create Account
-                      </Button>
-                    </form>
-                  </Form>
-                </CardContent>
-              </Card>
-            )}
+                    <FormField
+                      control={customerRegisterForm.control}
+                      name="acceptedTerms"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="font-medium cursor-pointer">
+                              I agree to the{" "}
+                              <button
+                                type="button"
+                                className="text-primary underline font-medium"
+                                onClick={() => setShowTermsDialog(true)}
+                              >
+                                Terms and Conditions
+                              </button>
+                            </FormLabel>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+
+                    <Button type="submit" className="w-full">
+                      Create Account
+                    </Button>
+                  </form>
+                </Form>
+              </CardContent>
+              <CardFooter className="flex justify-center">
+                <Button
+                  variant="link"
+                  onClick={() => setActiveTab("login")}
+                >
+                  Already have an account? Login
+                </Button>
+              </CardFooter>
+            </Card>
           </TabsContent>
 
         {/* Terms and Conditions Dialog */}

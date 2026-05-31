@@ -261,12 +261,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const verificationToken = generateVerificationToken();
       const tokenExpires = createTokenExpiration();
       
-      // Create user with verification fields
+      // Create user with verification fields (beta: everyone gets both buyer + seller roles)
       const user = await storage.createUser({
         ...validatedData,
         password: hashedPassword,
         is_searching: true,
-        name: null,  // Customer registration doesn't require a name
+        is_selling: true,
+        name: null,
         email_verified: false,
         verification_token: verificationToken,
         verification_token_expires: tokenExpires,
