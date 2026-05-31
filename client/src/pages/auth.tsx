@@ -14,7 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronLeft, ArrowRight, Eye, EyeOff, Mail, CheckCircle } from "lucide-react";
 
 const loginSchema = z.object({
@@ -26,7 +28,8 @@ const customerRegisterSchema = z.object({
   username: z.string().min(3, { message: "Username must be at least 3 characters" }).max(20, { message: "Username must be at most 20 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  confirmPassword: z.string()
+  confirmPassword: z.string(),
+  acceptedTerms: z.boolean().refine(val => val === true, { message: "You must accept the Terms and Conditions to register" })
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"]
@@ -38,7 +41,8 @@ const ownerRegisterSchema = z.object({
   contact_name: z.string().min(2, { message: "Contact name must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(8, { message: "Password must be at least 8 characters" }),
-  confirmPassword: z.string()
+  confirmPassword: z.string(),
+  acceptedTerms: z.boolean().refine(val => val === true, { message: "You must accept the Terms and Conditions to register" })
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"]
@@ -71,6 +75,7 @@ export default function Auth() {
   const [showResetPassword, setShowResetPassword] = useState<boolean>(false);
   const [showResetConfirmPassword, setShowResetConfirmPassword] = useState<boolean>(false);
   const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
+  const [showTermsDialog, setShowTermsDialog] = useState<boolean>(false);
   const [resetToken, setResetToken] = useState<string>("");
   const [showEmailVerificationDialog, setShowEmailVerificationDialog] = useState<boolean>(false);
   const [registeredEmail, setRegisteredEmail] = useState<string>("");
@@ -108,7 +113,8 @@ export default function Auth() {
       username: "",
       email: "",
       password: "",
-      confirmPassword: ""
+      confirmPassword: "",
+      acceptedTerms: false
     }
   });
 
@@ -121,7 +127,8 @@ export default function Auth() {
       contact_name: "",
       email: "",
       password: "",
-      confirmPassword: ""
+      confirmPassword: "",
+      acceptedTerms: false
     }
   });
 
@@ -157,8 +164,8 @@ export default function Auth() {
       // Use the proper login function that handles token storage
       const userData = await login(data.email, data.password);
       
-      if (userData && userData.subscription_status === 'active') {
-        console.log("User has active subscription, redirecting to welcome page");
+      if (userData && (userData.subscription_status === 'active' || userData.subscription_tier === 'beta_free')) {
+        console.log("User has active subscription or beta access, redirecting to welcome page");
         window.location.href = "/welcome";
       } else {
         console.log("User has no active subscription, redirecting to subscription page");
@@ -175,9 +182,9 @@ export default function Auth() {
 
   const onCustomerRegisterSubmit = async (data: z.infer<typeof customerRegisterSchema>) => {
     try {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword, acceptedTerms, ...registerData } = data;
       
-      const userData = await register(registerData, 'customer');
+      const userData = await register({ ...registerData, accepted_terms: true }, 'customer');
       
       // Show prominent email verification dialog
       setRegisteredEmail(data.email);
@@ -196,11 +203,11 @@ export default function Auth() {
 
   const onOwnerRegisterSubmit = async (data: z.infer<typeof ownerRegisterSchema>) => {
     try {
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword, acceptedTerms, ...registerData } = data;
       console.log("Submitting owner registration form with data:", registerData);
       
       // Use the proper register function that handles token storage
-      const userData = await register(registerData, 'owner');
+      const userData = await register({ ...registerData, accepted_terms: true }, 'owner');
       
       console.log("=== OWNER REGISTRATION RESULT DEBUG ===");
       console.log("userData:", userData);
@@ -524,6 +531,34 @@ export default function Auth() {
                         )}
                       />
 
+                      <FormField
+                        control={customerRegisterForm.control}
+                        name="acceptedTerms"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium cursor-pointer">
+                                I agree to the{" "}
+                                <button
+                                  type="button"
+                                  className="text-primary underline font-medium"
+                                  onClick={() => setShowTermsDialog(true)}
+                                >
+                                  Terms and Conditions
+                                </button>
+                              </FormLabel>
+                              <FormMessage />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
                       <Button type="submit" className="w-full">
                         Create Account
                       </Button>
@@ -678,6 +713,34 @@ export default function Auth() {
                         )}
                       />
 
+                      <FormField
+                        control={ownerRegisterForm.control}
+                        name="acceptedTerms"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="font-medium cursor-pointer">
+                                I agree to the{" "}
+                                <button
+                                  type="button"
+                                  className="text-primary underline font-medium"
+                                  onClick={() => setShowTermsDialog(true)}
+                                >
+                                  Terms and Conditions
+                                </button>
+                              </FormLabel>
+                              <FormMessage />
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
                       <Button type="submit" className="w-full">
                         Create Account
                       </Button>
@@ -687,6 +750,75 @@ export default function Auth() {
               </Card>
             )}
           </TabsContent>
+
+        {/* Terms and Conditions Dialog */}
+        <Dialog open={showTermsDialog} onOpenChange={setShowTermsDialog}>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold">ProHorseMatch Terms and Conditions</DialogTitle>
+              <DialogDescription>Effective Date: January 2025</DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="h-[500px] mt-4 pr-4">
+              <div className="text-sm space-y-4">
+                <div>
+                  <h3 className="text-lg font-bold mb-2">1. Introduction</h3>
+                  <p>Welcome to ProHorseMatch ("we," "our," or "us"). By accessing or using our website, mobile application, and related services (collectively, the "Services"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you may not use our Services.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">2. Definitions</h3>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>"User" refers to any individual or entity who accesses or uses our Services, including horse owners, prospective buyers, or browsers.</li>
+                    <li>"Sellers" are Users who create horse listings for sale or lease.</li>
+                    <li>"Searchers" are Users seeking to purchase horses through contact made with Sellers using our Services.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">3. Eligibility</h3>
+                  <p>You must be at least 18 years old, or the legal age of majority in your jurisdiction, to use our Services.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">4. Account Registration</h3>
+                  <p>To access certain features, you may need to create an account. You agree to provide accurate, current, and complete information, and to update it as necessary. You are responsible for safeguarding your login details and for all activities under your account.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">5. Horse Listings</h3>
+                  <p>Sellers are solely responsible for the accuracy and completeness of their listings. ProHorseMatch does not verify or guarantee the accuracy of listings.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">6. Transactions Between Users</h3>
+                  <p>Our Services facilitate introductions between Sellers and Buyers. We are not a party to any transaction, agreement, or dispute between Users.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">7. Disclaimer of Liability</h3>
+                  <p>ProHorseMatch makes no representations or warranties regarding the fitness, performance, soundness, or suitability of any horse listed on the platform. All horses are sold directly by the seller.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">8. Subscription Services</h3>
+                  <p>We may offer subscription plans with enhanced features. During the beta period, access is free. After the beta period, subscriptions may be subject to fees and auto-renewal unless cancelled in advance.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">9. Prohibited Conduct</h3>
+                  <p>You agree not to post false or misleading content, infringe intellectual property rights, or attempt to interfere with the Services. We reserve the right to remove content or suspend accounts that violate these Terms.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">10. Limitation of Liability</h3>
+                  <p>To the maximum extent permitted by law, ProHorseMatch shall not be liable for any indirect, incidental, special, or consequential damages arising out of your use of the Services.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">11. Governing Law</h3>
+                  <p>These Terms are governed by the laws of Australia. Any disputes will be resolved exclusively in the courts of Australia.</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold mb-2">12. Changes to Terms</h3>
+                  <p>We reserve the right to modify these Terms at any time. Continued use of the Services after updates constitutes acceptance of the revised Terms.</p>
+                </div>
+              </div>
+            </ScrollArea>
+            <DialogClose asChild>
+              <Button className="mt-4">I Understand</Button>
+            </DialogClose>
+          </DialogContent>
+        </Dialog>
 
         {/* Forgot Password Dialog */}
         <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>

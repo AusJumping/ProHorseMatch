@@ -242,6 +242,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertSearchingUserSchema.parse(req.body);
       
+      // Require Terms and Conditions acceptance
+      if (!req.body.accepted_terms) {
+        return res.status(400).json({ message: "You must accept the Terms and Conditions to register" });
+      }
+      
       // Check if email is already taken
       const existingUser = await storage.getUserByEmail(validatedData.email);
       if (existingUser) {
@@ -264,7 +269,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: null,  // Customer registration doesn't require a name
         email_verified: false,
         verification_token: verificationToken,
-        verification_token_expires: tokenExpires
+        verification_token_expires: tokenExpires,
+        accepted_terms: true,
+        accepted_terms_at: new Date(),
+        accepted_terms_version: '1.0',
+        subscription_tier: 'beta_free',
       });
       
       // Send verification email
@@ -310,6 +319,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertSellingUserSchema.parse(req.body);
       
+      // Require Terms and Conditions acceptance
+      if (!req.body.accepted_terms) {
+        return res.status(400).json({ message: "You must accept the Terms and Conditions to register" });
+      }
+      
       // Check if email is already taken
       const existingUser = await storage.getUserByEmail(validatedData.email);
       if (existingUser) {
@@ -326,7 +340,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         is_selling: true,
         email_verified: false,
         verification_token: verificationToken,
-        verification_token_expires: tokenExpires
+        verification_token_expires: tokenExpires,
+        accepted_terms: true,
+        accepted_terms_at: new Date(),
+        accepted_terms_version: '1.0',
+        subscription_tier: 'beta_free',
       });
       
       // Send verification email
@@ -468,6 +486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscription_status: user.subscription_status,
         subscription_plan: user.subscription_plan,
         subscription_end_date: user.subscription_end_date,
+        subscription_tier: user.subscription_tier,
         auth_token: authToken // Include token directly in response body
       });
     } catch (error: any) {
@@ -651,6 +670,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUserVerification(user.id, true, null, null);
       
       console.log('User verification updated successfully');
+      
+      // Auto-activate beta subscription on email verification
+      if (!user.subscription_status || user.subscription_status !== 'active') {
+        try {
+          const betaPlan = user.is_selling ? 'beta-seller' : 'beta-searching';
+          await storage.updateUserSubscription(user.id, {
+            stripe_subscription_id: betaPlan,
+            subscription_status: 'active',
+            subscription_plan: betaPlan,
+            subscription_end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+          });
+          console.log('Beta subscription auto-activated for user:', user.email, 'plan:', betaPlan);
+        } catch (betaErr) {
+          console.warn('Auto beta activation failed (non-critical):', betaErr);
+        }
+      }
       
       // Automatically log in the user after verification
       console.log('Automatically logging in user after verification...');
@@ -985,6 +1020,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: user.email,
         is_searching: user.is_searching,
         is_selling: user.is_selling,
+        stripe_subscription_id: user.stripe_subscription_id,
+        subscription_status: user.subscription_status,
+        subscription_plan: user.subscription_plan,
+        subscription_end_date: user.subscription_end_date,
+        subscription_tier: user.subscription_tier,
         profile
       });
     } catch (error) {

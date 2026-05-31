@@ -46,7 +46,13 @@ export const users = pgTable("users", {
   subscription_plan: text("subscription_plan"),
   subscription_end_date: timestamp("subscription_end_date"),
   subscription_reminder_sent_at: timestamp("subscription_reminder_sent_at"),
-  
+  subscription_tier: text("subscription_tier").default("beta_free"),
+
+  // Terms acceptance
+  accepted_terms: boolean("accepted_terms").default(false),
+  accepted_terms_at: timestamp("accepted_terms_at"),
+  accepted_terms_version: text("accepted_terms_version"),
+
   created_at: timestamp("created_at").defaultNow(),
 });
 

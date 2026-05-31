@@ -680,6 +680,106 @@ export default function SubscriptionPage() {
     const otherPlans = isBetaPlan 
       ? betaPlans.filter(p => p.id !== planId) 
       : futurePlans.filter(p => p.id !== planId);
+
+    // For beta users: show a clean simplified view (no billing, no cancel, no plan switching)
+    if (isBetaPlan) {
+      return (
+        <Layout pageTitle="Free Beta Access">
+          <div className="container mx-auto py-12 max-w-2xl">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-2xl font-accent">Free Beta Access</CardTitle>
+                    <CardDescription>You have full access during our beta period</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-amber-800 font-medium">
+                    You are currently on Free Beta Access. No payment is required during our beta period. Enjoy exploring all features of ProHorseMatch!
+                  </p>
+                </div>
+
+                {plan.features?.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="font-semibold font-accent">What's included:</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {plan.features.map((feature, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                          <span className="text-sm">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {user?.email === 'info@australianjumping.com.au' && (
+                  <Button onClick={() => setShowNotificationPrompt(true)} variant="outline">
+                    Test Notification Modal
+                  </Button>
+                )}
+
+                <div className="space-y-4 pt-6 border-t border-gray-200">
+                  <h3 className="text-lg font-semibold font-accent">Coming Soon</h3>
+                  <p className="text-sm text-muted-foreground">
+                    These premium plans will be available after our beta period ends. We'll notify you well in advance.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    {convertedFuturePlans.map((futurePlan) => (
+                      <Card key={futurePlan.id} className={`border ${futurePlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
+                        <CardHeader className="pb-2">
+                          {futurePlan.isPopular && (
+                            <div className="absolute top-0 right-0 bg-primary text-white px-3 py-1 text-xs font-medium rounded-bl-md">
+                              Popular
+                            </div>
+                          )}
+                          <CardTitle className="text-lg font-accent">{futurePlan.name}</CardTitle>
+                          <div className="flex items-baseline mt-1">
+                            <span className="text-xl font-bold">{formatPrice(futurePlan.price)}</span>
+                            <span className="text-muted-foreground ml-1">/month</span>
+                          </div>
+                          {currentCurrency !== 'AUD' && (
+                            <span className="text-xs text-muted-foreground">Original: A${futurePlan.price.toFixed(2)}</span>
+                          )}
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <Button className="w-full mb-3" variant="outline" disabled={true}>
+                            Coming Soon
+                          </Button>
+                          <div className="text-xs text-muted-foreground">
+                            {futurePlan.features.slice(0, 3).map((feature, i) => (
+                              <div key={i} className="flex items-start gap-1 mb-1">
+                                <Check className="h-3 w-3 text-green-500 shrink-0 mt-0.5" />
+                                <span>{feature}</span>
+                              </div>
+                            ))}
+                            {futurePlan.features.length > 3 && (
+                              <div className="text-xs text-muted-foreground mt-1">+{futurePlan.features.length - 3} more features</div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <NotificationPromptModal
+            isOpen={showNotificationPrompt}
+            onClose={() => { setShowNotificationPrompt(false); navigate('/filter'); }}
+            onComplete={() => { navigate('/filter'); }}
+          />
+        </Layout>
+      );
+    }
     
     return (
       <Layout pageTitle="My Subscription">
@@ -1007,349 +1107,119 @@ export default function SubscriptionPage() {
     );
   }
   
-  // Show subscription plans for new subscribers
+  // Show simplified beta activation for new subscribers
   return (
-    <Layout pageTitle="Subscription Plans">
+    <Layout pageTitle="Free Beta Access">
       <div className="w-full py-10" style={{ backgroundColor: "#e4e2dd" }}>
-        <div className="container mx-auto max-w-6xl">
+        <div className="container mx-auto max-w-2xl">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-accent font-bold mb-2">Beta Access - No Payment Details Needed</h1>
-            <p className="text-muted-foreground">Enjoy full access during our Beta Launch Period. This subscription is free and is for a limited time only. Enjoy exploring the features of this app. We hope you find your perfect match!</p>
+            <h1 className="text-3xl font-accent font-bold mb-2">Free Beta Access</h1>
+            <p className="text-muted-foreground">Enjoy full access during our Beta Launch Period — no payment details needed. This is completely free for a limited time.</p>
           </div>
-          
-          {/* Terms of Service Agreement - Global for all plans */}
-          <div id="terms-section" className="mb-8 p-4 border border-gray-300 rounded-lg bg-white transition-colors duration-300">
-            <div className="flex items-start space-x-3">
-              <Checkbox 
-                id="terms-global" 
-                checked={tosAgreed}
-                onCheckedChange={(checked) => {
-                  setTosAgreed(checked === true);
-                  console.log("Terms agreed:", checked === true);
-                }}
-                className="mt-1"
-              />
-              <div>
-                <label
-                  htmlFor="terms-global"
-                  className="text-base font-medium cursor-pointer"
-                  onClick={() => setTosAgreed(!tosAgreed)}
-                >
-                  I agree to the Terms of Service
-                </label>
-                <p className="text-sm text-muted-foreground mb-2">
-                  You must agree to our Terms of Service before subscribing to any plan or changing your subscription.
-                </p>
-                
-                {/* View Terms of Service Button */}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="mb-2 font-medium">
-                      View Terms of Service
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[800px] max-h-[90vh]">
-                    <DialogHeader>
-                      <DialogTitle className="text-xl font-bold">ProHorseMatch Terms and Conditions</DialogTitle>
-                      <DialogDescription>
-                        Effective Date: January 2025
-                      </DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className="h-[500px] mt-4 pr-4">
-                      <div className="text-sm space-y-4">
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">1. Introduction</h3>
-                          <p>Welcome to ProHorseMatch ("we," "our," or "us"). By accessing or using our website, mobile application, and related services (collectively, the "Services"), you agree to be bound by these Terms and Conditions ("Terms"). If you do not agree to these Terms, you may not use our Services.</p>
-                        </div>
 
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">2. Definitions</h3>
-                          <ul className="list-disc pl-5 space-y-1">
-                            <li>"User" refers to any individual or entity who accesses or uses our Services, including horse owners, prospective buyers, or browsers.</li>
-                            <li>"Content" refers to all information, text, images, videos, and other materials provided by Users on the platform.</li>
-                            <li>"Sellers" are Users who create horse listings for sale or lease.</li>
-                            <li>"Searchers" are Users seeking to purchase horses through contact made with 'Sellers' using our Services.</li>
-                          </ul>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">3. Eligibility</h3>
-                          <p>You must be at least 18 years old, or the legal age of majority in your jurisdiction, to use our Services. By using the Services, you represent and warrant that you meet these requirements.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">4. Account Registration</h3>
-                          <p>To access certain features, you may need to create an account. You agree to provide accurate, current, and complete information, and to update it as necessary. You are responsible for safeguarding your login details and for all activities under your account.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">5. Horse Listings</h3>
-                          <p>Sellers are solely responsible for the accuracy and completeness of their listings, including the horse's description, age, health, performance history, price, and images. ProHorseMatch does not verify or guarantee the accuracy of listings.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">6. Transactions Between Users</h3>
-                          <p>Our Services facilitate introductions between Sellers and Buyers. We are not a party to any transaction, agreement, or dispute between Users. All negotiations, contracts, and exchanges of funds take place directly between Users.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">7. Subscription Services</h3>
-                          <p>We may offer subscription plans with enhanced features. Details of these plans, including pricing and benefits, are provided in-app or on our website. Subscriptions are non-transferable and may be subject to auto-renewal unless cancelled in accordance with our cancellation policy.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">8. Payments and Refunds</h3>
-                          <p>All payments for subscription services are processed through third-party providers. By purchasing a subscription, you agree to abide by the payment terms provided at checkout. Refunds are granted only where required by law.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">9. Prohibited Content and Conduct</h3>
-                          <p className="mb-2">You agree not to:</p>
-                          <ul className="list-disc pl-5 space-y-1">
-                            <li>Post false, misleading, or deceptive Content.</li>
-                            <li>Infringe on any intellectual property rights.</li>
-                            <li>Post Content that is unlawful, offensive, defamatory, obscene, or harmful.</li>
-                            <li>Attempt to interfere with or disrupt the Services.</li>
-                          </ul>
-                          <p className="mt-2">We reserve the right to remove Content or suspend accounts that violate these Terms.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">10. Communication with Users</h3>
-                          <p>By creating an account, you consent to receive communications from us electronically. We may contact you via email from time to time regarding issues, updates, or changes to our Services and offerings.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">11. Intellectual Property</h3>
-                          <p>All trademarks, logos, and proprietary materials used in connection with the Services are owned by us or our licensors. You may not use, copy, or distribute our intellectual property without prior written consent.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">12. Disclaimer of Warranties</h3>
-                          <p>The Services are provided "as is" and "as available." We make no warranties or representations about the accuracy, reliability, or availability of the Services or Content.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">13. Limitation of Liability</h3>
-                          <p>To the maximum extent permitted by law, ProHorseMatch shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or relating to your use of the Services.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">14. Indemnity</h3>
-                          <p>You agree to indemnify and hold harmless ProHorseMatch, its affiliates, and employees from any claims, damages, losses, or expenses (including legal fees) arising out of your use of the Services or violation of these Terms.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">15. Termination</h3>
-                          <p>We may suspend or terminate your account or access to the Services at any time if we reasonably believe you have violated these Terms or engaged in harmful conduct.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">16. Governing Law</h3>
-                          <p>These Terms are governed by the laws of Australia. Any disputes will be resolved exclusively in the courts of Australia.</p>
-                        </div>
-
-                        <div>
-                          <h3 className="text-lg font-bold mb-2">17. Changes to the Terms</h3>
-                          <p>We reserve the right to modify these Terms at any time. If changes are made, we will notify Users by posting the updated Terms on our website or app. Continued use of the Services after such updates constitutes acceptance of the revised Terms.</p>
-                        </div>
-                      </div>
-                    </ScrollArea>
-                    <DialogClose asChild>
-                      <Button className="mt-4">I Understand</Button>
-                    </DialogClose>
-                  </DialogContent>
-                </Dialog>
-                
-                {!tosAgreed && (
-                  <p className="text-sm text-red-500 font-medium">
-                    Please check this box to continue
-                  </p>
-                )}
+          <Card className="max-w-md mx-auto">
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-8 h-8 text-green-600" />
               </div>
-            </div>
-          </div>
-          
-          {!clientSecret ? (
-            <>
-              {/* Beta Plans Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
-                {betaPlans.map((plan) => (
-                  <Card key={plan.id} className="overflow-hidden flex flex-col">
-                    <CardHeader className="pb-4">
-                      <CardTitle className="font-accent">{plan.name}</CardTitle>
-                      <div className="flex items-baseline mt-2">
-                        <span className="text-xl font-medium">{plan.price === 0 ? 'Free for a limited time' : `$${plan.price}/${plan.interval}`}</span>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="flex-grow">
-                      <ul className="space-y-2 mb-6">
-                        {plan.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      
-
-                    </CardContent>
-                    
-                    <div className="px-6 pb-6 mt-auto">
-                      <Button 
-                        onClick={() => handleSelectPlan(plan.id)} 
-                        className="w-full"
-                        disabled={!tosAgreed || isPendingSubscribe}
-                      >
-                        {isPendingSubscribe ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processing...
-                          </>
-                        ) : (
-                          plan.buttonText || "Get Started"
-                        )}
-                      </Button>
-                    </div>
-                  </Card>
+              <CardTitle className="font-accent text-2xl">Activate Free Beta Access</CardTitle>
+              <CardDescription>No payment details required</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ul className="space-y-2">
+                {(user?.is_selling ? betaPlans[0] : betaPlans[1]).features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
                 ))}
-              </div>
-              
-              {/* Future Plans Section */}
-              <div className="text-center mb-8 mt-20">
-                <h1 className="text-3xl font-accent font-bold mb-2">Select Your Plan</h1>
-                <p className="text-muted-foreground">When we approach the end of the Beta phase, we will notify you well in advance via email. At that time, if you would would like to continue using the platform, simply select the subscription level below that best suits your needs.</p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                {futurePlans.map((plan) => (
-                  <Card 
-                    key={plan.id} 
-                    className={`overflow-hidden flex flex-col ${plan.isPopular ? 'ring-2 ring-[#cdac6e] relative' : ''}`}
-                  >
-                    {plan.isPopular && (
-                      <div className="absolute top-0 right-0 bg-[#cdac6e] text-white px-4 py-1 text-xs font-medium">
-                        Popular
-                      </div>
+              </ul>
+
+              {/* Terms of Service Agreement */}
+              <div id="terms-section" className="p-4 border border-gray-300 rounded-lg bg-neutral-50 transition-colors duration-300">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="terms-global"
+                    checked={tosAgreed}
+                    onCheckedChange={(checked) => setTosAgreed(checked === true)}
+                    className="mt-1"
+                  />
+                  <div>
+                    <label htmlFor="terms-global" className="text-base font-medium cursor-pointer" onClick={() => setTosAgreed(!tosAgreed)}>
+                      I agree to the Terms of Service
+                    </label>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      You must agree before activating.
+                    </p>
+                    <TermsOfServiceDialog />
+                    {!tosAgreed && (
+                      <p className="text-sm text-red-500 font-medium mt-1">Please check this box to continue</p>
                     )}
-                    <CardHeader className="pb-4">
-                      <CardTitle className="font-accent">{plan.name}</CardTitle>
-                      <div className="flex items-baseline mt-2">
-                        <span className="text-3xl font-bold">${plan.price}</span>
-                        <span className="text-sm text-muted-foreground ml-1">/{plan.interval}</span>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="flex-grow">
-                      <ul className="space-y-2 mb-6">
-                        {plan.features.map((feature, i) => (
-                          <li key={i} className="flex items-start gap-2">
-                            <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                    
-                    <div className="px-6 pb-6 mt-auto">
-                      <Button 
-                        className="w-full"
-                        variant="outline"
-                        disabled={true}
-                      >
-                        {plan.buttonText || "Coming Soon"}
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="max-w-md mx-auto">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-accent">Complete Your Subscription</CardTitle>
-                  <CardDescription>
-                    Enter your payment details to start your subscription
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: 'stripe' } }}>
-                    <CheckoutForm onSuccess={handlePaymentSuccess} />
-                  </Elements>
-                </CardContent>
-              </Card>
-            </div>
-          )}
-          
-          {/* Donation Section */}
-          <div className="max-w-2xl mx-auto mt-20 mb-10 bg-white rounded-lg p-6 border border-[#d1cfc8]">
-            <div className="text-center">
-              <h3 className="text-xl font-accent mb-3">Support Our Development</h3>
-              <p className="text-muted-foreground mb-6">
-                Help us make Pro Horse Match the #1 horse sale app with a one-time donation. 
-                Every contribution helps us build new features and improve the platform.
-              </p>
-              
-              <div className="flex flex-wrap justify-center gap-4 mb-6">
-                {[10, 25, 50, 100].map((amount) => (
-                  <Button 
-                    key={amount}
-                    variant="outline" 
-                    className="min-w-[80px] bg-white hover:bg-[#cdac6e] hover:text-white border-[#d1cfc8]"
-                    onClick={() => handleDonation(amount)}
-                    disabled={isDonating}
-                  >
-                    ${amount}
-                  </Button>
-                ))}
-                <Button 
-                  variant="outline" 
-                  className="min-w-[80px] bg-white hover:bg-primary hover:text-white border-amber-300"
-                  onClick={() => setShowCustomAmount(true)}
-                  disabled={isDonating}
-                >
-                  Custom
-                </Button>
-              </div>
-              
-              {showCustomAmount && (
-                <div className="max-w-xs mx-auto mb-6">
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      placeholder="Enter amount"
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={customAmount}
-                      onChange={(e) => setCustomAmount(Number(e.target.value))}
-                      min={1}
-                    />
-                    <Button 
-                      variant="default" 
-                      onClick={() => handleDonation(customAmount)}
-                      disabled={isDonating || customAmount <= 0}
-                    >
-                      Donate
-                    </Button>
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+
+              <Button
+                onClick={() => handleSelectPlan(user?.is_selling ? 'beta-seller' : 'beta-searching')}
+                className="w-full"
+                disabled={!tosAgreed || isPendingSubscribe}
+              >
+                {isPendingSubscribe ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Activating...
+                  </>
+                ) : (
+                  "Get Started — It's Free"
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Future Plans Section */}
+          <div className="text-center mt-20 mb-8">
+            <h2 className="text-2xl font-accent font-bold mb-2">Future Plans</h2>
+            <p className="text-muted-foreground">When we approach the end of the beta phase, we'll notify you well in advance. At that point you can choose the plan that best suits your needs.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            {futurePlans.map((plan) => (
+              <Card key={plan.id} className={`overflow-hidden flex flex-col ${plan.isPopular ? 'ring-2 ring-[#cdac6e] relative' : ''}`}>
+                {plan.isPopular && (
+                  <div className="absolute top-0 right-0 bg-[#cdac6e] text-white px-4 py-1 text-xs font-medium">Popular</div>
+                )}
+                <CardHeader className="pb-4">
+                  <CardTitle className="font-accent">{plan.name}</CardTitle>
+                  <div className="flex items-baseline mt-2">
+                    <span className="text-3xl font-bold">${plan.price}</span>
+                    <span className="text-sm text-muted-foreground ml-1">/{plan.interval}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <ul className="space-y-2 mb-6">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                        <span className="text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+                <div className="px-6 pb-6 mt-auto">
+                  <Button className="w-full" variant="outline" disabled={true}>
+                    {plan.buttonText || "Coming Soon"}
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       </div>
-      
-      {/* Notification Prompt Modal - shown after subscription activation */}
+
       <NotificationPromptModal
         isOpen={showNotificationPrompt}
-        onClose={() => {
-          setShowNotificationPrompt(false);
-          navigate('/filter');
-        }}
-        onComplete={() => {
-          navigate('/filter');
-        }}
+        onClose={() => { setShowNotificationPrompt(false); navigate('/filter'); }}
+        onComplete={() => { navigate('/filter'); }}
       />
     </Layout>
   );
