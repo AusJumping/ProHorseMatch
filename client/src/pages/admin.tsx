@@ -1884,7 +1884,7 @@ export default function AdminPage() {
                             </div>
                             <div className="flex flex-col items-end space-y-1">
                               <div className="flex items-center space-x-2">
-                                {user.subscription_status === 'active' && (
+                                {user.email_verified && (
                                   <Badge variant="default">Beta</Badge>
                                 )}
                                 {/* Edit email button */}
