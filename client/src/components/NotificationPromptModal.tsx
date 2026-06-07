@@ -136,9 +136,7 @@ export function NotificationPromptModal({ isOpen, onClose, onComplete }: Notific
 
   const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
-  console.log('NotificationPromptModal render - isOpen:', isOpen);
   if (!isOpen) return null;
-  console.log('NotificationPromptModal - rendering modal UI');
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
