@@ -1,56 +1,103 @@
-const CACHE_VERSION = 'v5'; // Fix mobile input interaction - viewport and replit banner fixes
+const CACHE_VERSION = 'v6';
+const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
-self.addEventListener("install", () => {
-  console.log("Service Worker installed");
+// Assets to cache immediately on install (app shell)
+const SHELL_ASSETS = [
+  '/',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/apple-touch-icon.png',
+  '/manifest.webmanifest',
+];
+
+self.addEventListener('install', (event) => {
+  console.log('Service Worker installing, caching app shell');
+  event.waitUntil(
+    caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_ASSETS))
+  );
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
-  console.log("Service Worker activated");
-  // Clear all old caches when activating
+self.addEventListener('activate', (event) => {
+  console.log('Service Worker activated');
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_VERSION) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames
+          .filter((name) => name !== SHELL_CACHE)
+          .map((name) => {
+            console.log('Deleting old cache:', name);
+            return caches.delete(name);
+          })
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-self.addEventListener("push", (event) => {
-  console.log("Push notification received", event);
-  
-  const data = event.data ? event.data.json() : { 
-    title: "ProHorseMatch", 
-    body: "New notification" 
-  };
-  
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Never intercept API calls — always go to network
+  if (url.pathname.startsWith('/api/')) return;
+
+  // For navigation requests (page loads / PWA resume), use network-first
+  // with a fast fallback to the cached shell so there's no white screen
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Cache a fresh copy of the shell on successful load
+          const clone = response.clone();
+          caches.open(SHELL_CACHE).then((cache) => cache.put('/', clone));
+          return response;
+        })
+        .catch(() => {
+          // Network failed (offline / slow) — serve cached shell instantly
+          return caches.match('/') || caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // For static assets: cache-first, fall back to network
+  if (
+    url.pathname.startsWith('/icons/') ||
+    url.pathname.startsWith('/assets/') ||
+    url.pathname.endsWith('.webmanifest')
+  ) {
+    event.respondWith(
+      caches.match(request).then((cached) => cached || fetch(request))
+    );
+    return;
+  }
+
+  // Everything else goes straight to the network
+});
+
+self.addEventListener('push', (event) => {
+  console.log('Push notification received', event);
+
+  const data = event.data
+    ? event.data.json()
+    : { title: 'ProHorseMatch', body: 'New notification' };
+
   event.waitUntil(
-    self.registration.showNotification(data.title || "ProHorseMatch", {
-      body: data.body || "New matches waiting",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
-      data: {
-        url: data.url || "/"
-      },
-      tag: data.tag || "default",
-      requireInteraction: false
+    self.registration.showNotification(data.title || 'ProHorseMatch', {
+      body: data.body || 'New matches waiting',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: data.url || '/' },
+      tag: data.tag || 'default',
+      requireInteraction: false,
     })
   );
 });
 
-self.addEventListener("notificationclick", (event) => {
-  console.log("Notification clicked", event);
+self.addEventListener('notificationclick', (event) => {
+  console.log('Notification clicked', event);
   event.notification.close();
-  
-  const url = event.notification.data?.url || "/";
-  
-  event.waitUntil(
-    clients.openWindow(url)
-  );
+
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(clients.openWindow(url));
 });

@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Register service worker for push notifications
+// Register service worker for push notifications + app shell caching
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
@@ -15,4 +15,16 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-createRoot(document.getElementById("root")!).render(<App />);
+// Dismiss the splash screen smoothly once React is ready to paint
+function hideSplash() {
+  const splash = document.getElementById('splash');
+  if (!splash) return;
+  splash.style.opacity = '0';
+  setTimeout(() => { splash.style.display = 'none'; }, 300);
+}
+
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
+
+// Hide splash after first render — requestAnimationFrame ensures the DOM has painted
+requestAnimationFrame(() => requestAnimationFrame(hideSplash));

@@ -87,10 +87,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     refetchInterval: false,
   });
-  
+
+  // Re-check auth immediately when the PWA comes back from background
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refetch();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [refetch]);
+
   // Ensure user is either User object or null, never undefined
   const user = data === undefined ? null : data;
   
