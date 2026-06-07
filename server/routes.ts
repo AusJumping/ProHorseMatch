@@ -447,15 +447,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       global.authTokens.set(authToken, {
         userId: user.id,
-        expires: Date.now() + (24 * 60 * 60 * 1000), // 24 hour expiration for better user experience
+        expires: Date.now() + (365 * 24 * 60 * 60 * 1000), // 365 days - users stay logged in
         lastActivity: Date.now()
       });
       
       console.log("Created auth token:", authToken);
       
-      // Set multiple cookies to ensure one works (24 hour expiration)
+      // Set multiple cookies to ensure one works (365 day expiration)
       res.cookie('auth_token', authToken, {
-        maxAge: 24 * 60 * 60 * 1000, // 24 hour expiration
+        maxAge: 365 * 24 * 60 * 60 * 1000, // 365 days - users stay logged in
         httpOnly: false, // Allow frontend access
         secure: false,
         sameSite: 'lax',
@@ -753,7 +753,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('X-Auth-Token', authToken);
       res.setHeader('Access-Control-Expose-Headers', 'X-Auth-Token');
       res.cookie('auth_token', authToken, {
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 365 * 24 * 60 * 60 * 1000,
         httpOnly: false,
         sameSite: 'lax'
       });
@@ -893,7 +893,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('X-Auth-Token', authToken);
       res.setHeader('Access-Control-Expose-Headers', 'X-Auth-Token');
       res.cookie('auth_token', authToken, {
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 365 * 24 * 60 * 60 * 1000,
         httpOnly: false,
         sameSite: 'lax'
       });
@@ -945,7 +945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const tokenAge = Date.now() - parseInt(timestamp);
-      const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+      const maxAge = 365 * 24 * 60 * 60 * 1000; // 365 days - users stay logged in
       
       if (tokenAge < maxAge) {
         return parseInt(userId);
