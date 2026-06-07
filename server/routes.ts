@@ -4872,6 +4872,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Admin updating password for user ${userId} (${user.email})`);
 
+      const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
       await storage.updateUser(userId, { password: hashedPassword });
 
