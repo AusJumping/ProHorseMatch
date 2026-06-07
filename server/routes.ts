@@ -4852,6 +4852,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin Update User Email
+  app.patch("/api/admin/users/:userId/password", isTokenAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { password } = req.body;
+
+      if (!userId || isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      if (!password || password.length < 6) {
+        return res.status(400).json({ message: "Password must be at least 6 characters" });
+      }
+
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      console.log(`Admin updating password for user ${userId} (${user.email})`);
+
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      await storage.updateUser(userId, { password: hashedPassword });
+
+      console.log(`Successfully updated password for user ${userId}`);
+      return res.json({ message: `Successfully updated password for ${user.username || user.email}` });
+    } catch (error) {
+      console.error("Admin update user password error:", error);
+      res.status(500).json({ message: "Failed to update user password" });
+    }
+  });
+
   app.patch("/api/admin/users/:userId/email", isTokenAuthenticated, isAdmin, async (req, res) => {
     try {
       const userId = parseInt(req.params.userId);

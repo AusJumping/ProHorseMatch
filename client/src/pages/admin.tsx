@@ -32,7 +32,8 @@ import {
   Eye,
   Bookmark,
   Bell,
-  Send
+  Send,
+  KeyRound
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -1279,6 +1280,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
   const [editingEmail, setEditingEmail] = useState<{userId: number, currentEmail: string, newEmail: string} | null>(null);
+  const [editingPassword, setEditingPassword] = useState<{userId: number, userEmail: string, newPassword: string, confirmPassword: string} | null>(null);
   const queryClient = useQueryClient();
 
   // Excel export function
@@ -1607,6 +1609,53 @@ export default function AdminPage() {
     });
   };
 
+  const updatePasswordMutation = useMutation({
+    mutationFn: async (data: {userId: number, newPassword: string}) => {
+      const response = await fetch(`/api/admin/users/${data.userId}/password`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: data.newPassword }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Password Updated",
+        description: "User password has been successfully changed",
+        duration: 5000,
+      });
+      setEditingPassword(null);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update password",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  });
+
+  const handlePasswordUpdate = (userId: number, userEmail: string) => {
+    setEditingPassword({ userId, userEmail, newPassword: '', confirmPassword: '' });
+  };
+
+  const submitPasswordUpdate = () => {
+    if (!editingPassword) return;
+    if (editingPassword.newPassword !== editingPassword.confirmPassword) {
+      toast({ title: "Passwords don't match", variant: "destructive", duration: 4000 });
+      return;
+    }
+    updatePasswordMutation.mutate({ userId: editingPassword.userId, newPassword: editingPassword.newPassword });
+  };
+
   const submitEmailUpdate = () => {
     if (editingEmail && editingEmail.newEmail !== editingEmail.currentEmail) {
       updateEmailMutation.mutate({
@@ -1894,8 +1943,20 @@ export default function AdminPage() {
                                   onClick={() => handleEmailUpdate(user.id, user.email)}
                                   disabled={updateEmailMutation.isPending}
                                   className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-300 hover:border-blue-400"
+                                  title="Edit email"
                                 >
                                   <Edit className="h-3 w-3" />
+                                </Button>
+                                {/* Change password button */}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handlePasswordUpdate(user.id, user.email)}
+                                  disabled={updatePasswordMutation.isPending}
+                                  className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 border-amber-300 hover:border-amber-400"
+                                  title="Change password"
+                                >
+                                  <KeyRound className="h-3 w-3" />
                                 </Button>
                                 {/* Only show delete button for non-admin users */}
                                 {user.email !== 'info@australianjumping.com.au' && (
@@ -2372,6 +2433,61 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Password Change Dialog */}
+      <Dialog open={!!editingPassword} onOpenChange={() => setEditingPassword(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change User Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>User</Label>
+              <Input value={editingPassword?.userEmail || ''} disabled className="bg-gray-50" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={editingPassword?.newPassword || ''}
+                onChange={(e) => setEditingPassword(prev => prev ? { ...prev, newPassword: e.target.value } : null)}
+                placeholder="Enter new password (min 6 characters)"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={editingPassword?.confirmPassword || ''}
+                onChange={(e) => setEditingPassword(prev => prev ? { ...prev, confirmPassword: e.target.value } : null)}
+                placeholder="Confirm new password"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => setEditingPassword(null)}
+                disabled={updatePasswordMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submitPasswordUpdate}
+                disabled={updatePasswordMutation.isPending || !editingPassword?.newPassword || editingPassword.newPassword.length < 6}
+                className="bg-amber-600 hover:bg-amber-700"
+              >
+                {updatePasswordMutation.isPending ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                ) : (
+                  'Update Password'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Email Edit Dialog */}
       <Dialog open={!!editingEmail} onOpenChange={() => setEditingEmail(null)}>
