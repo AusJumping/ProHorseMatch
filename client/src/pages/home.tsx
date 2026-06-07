@@ -129,8 +129,10 @@ export default function Home() {
   const [swipingIndex, setSwipingIndex] = useState(0);
 
   // Query for horses with filters
-  const { data: horses, isLoading, isError } = useQuery<Horse[]>({
+  const { data: horses, isLoading, isError, refetch: refetchHorses } = useQuery<Horse[]>({
     queryKey: ['/api/horses', activeFilters],
+    refetchOnWindowFocus: true,
+    staleTime: 30 * 1000,
     queryFn: async () => {
       // Build query parameters from activeFilters
       const params = new URLSearchParams();
@@ -207,6 +209,19 @@ export default function Home() {
       return result;
     }
   });
+
+  // Refresh the horse list whenever the app comes back from the background
+  // (e.g. a logged-in user reopening the installed PWA) so newly listed
+  // horses always appear without a manual reload
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        refetchHorses();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [refetchHorses]);
 
   const handleLike = async (horseId: number) => {
     // Debug logging to help diagnose authentication issues
