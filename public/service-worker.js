@@ -1,7 +1,8 @@
 const CACHE_VERSION = 'v6';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
-// Assets to cache immediately on install (app shell)
+// Assets to cache on install — failures are caught individually so one bad
+// asset cannot prevent the service worker from installing
 const SHELL_ASSETS = [
   '/',
   '/icons/icon-192.png',
@@ -13,7 +14,15 @@ const SHELL_ASSETS = [
 self.addEventListener('install', (event) => {
   console.log('Service Worker installing, caching app shell');
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_ASSETS))
+    caches.open(SHELL_CACHE).then((cache) =>
+      Promise.allSettled(
+        SHELL_ASSETS.map((url) =>
+          cache.add(url).catch((err) =>
+            console.warn('SW: could not cache', url, err)
+          )
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
