@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 // Assets to cache on install — failures are caught individually so one bad
@@ -54,17 +54,24 @@ self.addEventListener('fetch', (event) => {
   // with a fast fallback to the cached shell so there's no white screen
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
+      (async () => {
+        try {
+          const response = await fetch(request);
           // Cache a fresh copy of the shell on successful load
           const clone = response.clone();
           caches.open(SHELL_CACHE).then((cache) => cache.put('/', clone));
           return response;
-        })
-        .catch(() => {
-          // Network failed (offline / slow) — serve cached shell instantly
-          return caches.match('/') || caches.match(request);
-        })
+        } catch (err) {
+          // Network failed (offline / phone just woke up) — serve cached shell.
+          // Await the cache properly so we never resolve to `undefined`, which
+          // would make the page fail to load (white screen).
+          const cached = (await caches.match('/')) || (await caches.match(request));
+          if (cached) return cached;
+          // Nothing cached yet — try the network one last time rather than
+          // returning undefined.
+          return fetch(request);
+        }
+      })()
     );
     return;
   }
