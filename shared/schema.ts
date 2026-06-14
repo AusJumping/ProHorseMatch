@@ -121,6 +121,7 @@ export const horses = pgTable("horses", {
   photos: text("photos").array().notNull(),
   videos: text("videos").array(),
   social_media_promotion: boolean("social_media_promotion").default(false),
+  featured_order: integer("featured_order"),
   created_at: timestamp("created_at").defaultNow(),
 });
 
