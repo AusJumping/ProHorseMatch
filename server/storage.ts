@@ -1625,7 +1625,6 @@ export class DatabaseStorage implements IStorage {
   // Horse methods
   async getHorses(): Promise<Horse[]> {
     return await db.select().from(horses).orderBy(
-      sql`featured_order NULLS LAST`,
       desc(horses.created_at)
     );
   }
@@ -1642,7 +1641,6 @@ export class DatabaseStorage implements IStorage {
     
     // Get all horses first and filter in JavaScript for now (simpler approach)
     const allHorses = await db.select().from(horses).orderBy(
-      sql`featured_order NULLS LAST`,
       desc(horses.created_at)
     );
 
