@@ -4,6 +4,14 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// Permanent redirect: any replit.app hostname → prohorsematch.com
+app.use((req, res, next) => {
+  if (req.hostname && req.hostname.includes('replit.app')) {
+    return res.redirect(301, `https://prohorsematch.com${req.originalUrl}`);
+  }
+  next();
+});
+
 // Debug ALL incoming requests first
 app.use((req, res, next) => {
   if (req.method === 'POST' && req.url === '/api/messages') {
