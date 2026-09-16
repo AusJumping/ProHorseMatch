@@ -4,10 +4,19 @@ import "./index.css";
 
 // Register service worker for push notifications + app shell caching
 if ('serviceWorker' in navigator) {
+  let refreshingForNewServiceWorker = false;
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshingForNewServiceWorker) return;
+    refreshingForNewServiceWorker = true;
+    window.location.reload();
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
         console.log('Service Worker registered successfully:', registration.scope);
+        registration.update();
       })
       .catch(error => {
         console.error('Service Worker registration failed:', error);

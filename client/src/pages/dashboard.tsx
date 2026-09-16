@@ -40,7 +40,11 @@ const Dashboard = () => {
   ];
 
   const displayName =
-    user.name || user.business_name || "User";
+    user.name ||
+    user.business_name ||
+    user.contact_name ||
+    user.username ||
+    user.email.split("@")[0];
   const welcomeTextSize =
     displayName.length > 36
       ? "text-lg sm:text-2xl"
