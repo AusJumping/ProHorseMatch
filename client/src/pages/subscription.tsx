@@ -128,7 +128,9 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
+    // Guard against a double-submit (e.g. an accidental double-click)
+    // creating two payments for the same subscription.
+    if (!stripe || !elements || isProcessing) {
       return;
     }
 
@@ -136,7 +138,7 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
     setErrorMessage(null);
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: window.location.origin + '/subscription/success',
@@ -152,7 +154,22 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
           variant: 'destructive',
         });
       } else {
-        // Payment succeeded
+        // Payment succeeded with Stripe - now tell our own server so it can
+        // actually activate the account. This does not depend on a webhook.
+        if (paymentIntent?.id) {
+          try {
+            await apiRequest('POST', '/api/subscription/confirm', { paymentIntentId: paymentIntent.id });
+          } catch (confirmErr: any) {
+            console.error('Failed to confirm subscription with server:', confirmErr);
+            toast({
+              title: 'Payment succeeded, but activation failed',
+              description: 'Your card was charged but we could not activate your plan automatically. Please contact support.',
+              variant: 'destructive',
+            });
+            setIsProcessing(false);
+            return;
+          }
+        }
         toast({
           title: 'Payment Successful',
           description: 'Your subscription has been activated!',
@@ -527,6 +544,13 @@ export default function SubscriptionPage() {
   
   // When plan is selected, handle beta or paid subscriptions accordingly
   const handleSelectPlan = (planId: string) => {
+    // Guard against rapid repeated calls (e.g. a double-click, or the
+    // disabled state lagging a frame behind) creating multiple payment
+    // intents for the same subscription attempt.
+    if (isPendingSubscribe || isCreatingSubscription || isActivatingBeta) {
+      return;
+    }
+
     // Always verify that user has agreed to Terms of Service
     if (!tosAgreed) {
       toast({
