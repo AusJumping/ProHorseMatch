@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
@@ -31,7 +32,7 @@ export function NativePaymentGate({ path = '/subscription' }: { path?: string })
             </p>
             <Button
               className="w-full"
-              onClick={() => window.open(`https://prohorsematch.com${path}`, '_system')}
+              onClick={() => Browser.open({ url: `https://prohorsematch.com${path}` })}
             >
               <ExternalLink className="mr-2 h-4 w-4" />
               Open prohorsematch.com
