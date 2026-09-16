@@ -28,15 +28,15 @@ const Dashboard = () => {
   }
 
   const options = [
-    { label: "Find Horses", description: "Browse your next prospect", path: "/filter", icon: House, featured: true },
-    { label: "My Horses", description: "Manage your listings", path: "/my-horses", icon: List },
+    { label: "Find Horses", description: "Browse your next prospect", path: "/filter", icon: House, featured: true, emphasis: "large" },
+    { label: "My Horses", description: "Manage your listings", path: "/my-horses", icon: List, emphasis: "medium" },
     ...(user.is_selling
-      ? [{ label: "Add Horse", description: "List a new performer", path: "/add-horse", icon: PlusCircle }]
+      ? [{ label: "Add Horse", description: "List a new performer", path: "/add-horse", icon: PlusCircle, emphasis: "medium" }]
       : []),
-    { label: "My Favourites", description: "Your considered horses", path: "/favorites", icon: Heart },
-    { label: "Messages", description: "Keep conversations moving", path: "/messages", icon: MessageCircle },
-    { label: "Saved Searches", description: "Return to your shortlists", path: "/saved-searches", icon: Search },
-    { label: "Subscription", description: "Manage your membership", path: "/subscription", icon: CreditCard },
+    { label: "My Favourites", description: "Your considered horses", path: "/favorites", icon: Heart, emphasis: "compact" },
+    { label: "Messages", description: "Keep conversations moving", path: "/messages", icon: MessageCircle, emphasis: "compact" },
+    { label: "Saved Searches", description: "Return to your shortlists", path: "/saved-searches", icon: Search, emphasis: "compact" },
+    { label: "Subscription", description: "Manage your membership", path: "/subscription", icon: CreditCard, emphasis: "wide" },
   ];
 
   const displayName =
@@ -53,15 +53,9 @@ const Dashboard = () => {
           <div className="pointer-events-none absolute -right-5 -top-12 h-44 w-44 rounded-full border border-[#cdac6e]/10" />
           <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div>
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#cdac6e]">
-                Pro Horse Match / Home
-              </p>
-              <h1 className="font-accent text-3xl font-bold tracking-tight sm:text-4xl">
+              <h1 className="font-accent text-2xl font-bold tracking-tight sm:text-3xl">
                 Welcome, {displayName}
               </h1>
-              <p className="mt-2 max-w-md text-sm leading-6 text-[#c9c5bb]">
-                Your considered place to discover, manage and move performance horses.
-              </p>
             </div>
             <div className="hidden border-l border-[#d4b77f]/30 pl-5 text-right sm:block">
               <p className="text-[10px] uppercase tracking-[0.2em] text-[#aaa59a]">Your stable</p>
@@ -80,13 +74,21 @@ const Dashboard = () => {
           <span className="text-xs text-[#aaa59a]">{options.length} destinations</span>
         </div>
 
-        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-          {options.map(({ label, description, path, icon: Icon, featured }) => (
+        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4 lg:auto-rows-[104px]">
+          {options.map(({ label, description, path, icon: Icon, featured, emphasis }) => (
             <button
               key={path}
               type="button"
               onClick={() => navigate(path)}
-              className={`group relative flex min-h-[96px] items-center gap-4 overflow-hidden rounded-xl border p-4 text-left text-white transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#272725] active:translate-y-0 ${
+              className={`group relative flex items-center gap-4 overflow-hidden rounded-xl border p-4 text-left text-white transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#272725] active:translate-y-0 ${
+                emphasis === "large"
+                  ? "min-h-[148px] sm:col-span-2 lg:col-span-2 lg:row-span-2 lg:min-h-0"
+                  : emphasis === "medium"
+                    ? "min-h-[116px] lg:col-span-1 lg:min-h-0"
+                    : emphasis === "wide"
+                      ? "min-h-[94px] lg:col-span-2 lg:min-h-0"
+                      : "min-h-[92px] lg:col-span-1 lg:min-h-0"
+              } ${
                 featured
                   ? "border-[#cdac6e] bg-[#403a30] shadow-[0_8px_18px_rgba(0,0,0,0.2)] hover:bg-[#4a4235]"
                   : "border-white/10 bg-[#343432] hover:border-[#cdac6e]/70 hover:bg-[#3d3c38]"
