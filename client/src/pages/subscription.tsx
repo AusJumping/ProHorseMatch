@@ -75,8 +75,8 @@ const futurePlans = [
       'Notification options',
       'GST Included'
     ],
-    buttonText: 'Subscribe',
-    isComingSoon: false
+    buttonText: 'Coming Soon',
+    isComingSoon: true
   },
   {
     id: 'professional',
