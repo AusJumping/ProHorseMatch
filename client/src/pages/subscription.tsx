@@ -689,6 +689,38 @@ export default function SubscriptionPage() {
 
     // For beta users: show a clean simplified view (no billing, no cancel, no plan switching)
     if (isBetaPlan) {
+      // A real payment intent has been created (clientSecret is set) - show the
+      // actual Stripe card entry form instead of the plan picker until it
+      // either succeeds or the user backs out.
+      if (clientSecret) {
+        return (
+          <Layout pageTitle="Complete Your Subscription">
+            <div className="container mx-auto py-12 max-w-md">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl font-accent">Enter Payment Details</CardTitle>
+                  <CardDescription>
+                    Subscribing to {allPlans.find(p => p.id === selectedPlan)?.name || 'your selected plan'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Elements stripe={stripePromise} options={{ clientSecret }}>
+                    <CheckoutForm onSuccess={handlePaymentSuccess} />
+                  </Elements>
+                  <Button
+                    variant="ghost"
+                    className="w-full mt-4"
+                    onClick={() => { setClientSecret(''); setIsPendingSubscribe(false); }}
+                  >
+                    Cancel
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </Layout>
+        );
+      }
+
       return (
         <Layout pageTitle="Free Beta Access">
           <div className="container mx-auto py-12 max-w-2xl">
