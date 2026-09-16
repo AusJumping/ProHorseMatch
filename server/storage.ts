@@ -10,6 +10,8 @@ import {
   horseDeletionResponses, type HorseDeletionResponse, type InsertHorseDeletionResponse,
   pushSubscriptions, type PushSubscription, type InsertPushSubscription,
   deviceTokens, type DeviceToken, type InsertDeviceToken,
+  blockedUsers, type BlockedUser, type InsertBlockedUser,
+  reports, type Report, type InsertReport,
   loginEvents, type LoginEvent, type InsertLoginEvent
 } from "@shared/schema";
 import { db } from "./db";
@@ -105,6 +107,13 @@ export interface IStorage {
   createDeviceToken(deviceToken: InsertDeviceToken): Promise<DeviceToken>;
   getDeviceTokensByUserId(userId: number): Promise<DeviceToken[]>;
   deleteDeviceToken(token: string): Promise<boolean>;
+  blockUser(blockerId: number, blockedId: number): Promise<BlockedUser>;
+  unblockUser(blockerId: number, blockedId: number): Promise<boolean>;
+  getBlockedUserIds(blockerId: number): Promise<number[]>;
+  isBlocked(userA: number, userB: number): Promise<boolean>;
+  createReport(report: InsertReport): Promise<Report>;
+  getAllReports(): Promise<Report[]>;
+  updateReportStatus(id: number, status: string): Promise<boolean>;
   updatePushPreferences(userId: number, preferences: {
     notify_matches?: boolean;
     notify_messages?: boolean;
@@ -1382,6 +1391,34 @@ export class MemStorage implements IStorage {
   async deleteDeviceToken(token: string): Promise<boolean> {
     return false;
   }
+
+  async blockUser(blockerId: number, blockedId: number): Promise<BlockedUser> {
+    throw new Error("Blocking not implemented in MemStorage - use DatabaseStorage");
+  }
+
+  async unblockUser(blockerId: number, blockedId: number): Promise<boolean> {
+    return false;
+  }
+
+  async getBlockedUserIds(blockerId: number): Promise<number[]> {
+    return [];
+  }
+
+  async isBlocked(userA: number, userB: number): Promise<boolean> {
+    return false;
+  }
+
+  async createReport(report: InsertReport): Promise<Report> {
+    throw new Error("Reports not implemented in MemStorage - use DatabaseStorage");
+  }
+
+  async getAllReports(): Promise<Report[]> {
+    return [];
+  }
+
+  async updateReportStatus(id: number, status: string): Promise<boolean> {
+    return false;
+  }
   
   async updatePushPreferences(userId: number, preferences: {
     notify_matches?: boolean;
@@ -2275,6 +2312,70 @@ export class DatabaseStorage implements IStorage {
       .where(eq(deviceTokens.token, token))
       .returning();
 
+    return result.length > 0;
+  }
+
+  async blockUser(blockerId: number, blockedId: number): Promise<BlockedUser> {
+    const existing = await db
+      .select()
+      .from(blockedUsers)
+      .where(and(eq(blockedUsers.blocker_id, blockerId), eq(blockedUsers.blocked_id, blockedId)))
+      .limit(1);
+
+    if (existing.length > 0) return existing[0];
+
+    const [block] = await db
+      .insert(blockedUsers)
+      .values({ blocker_id: blockerId, blocked_id: blockedId })
+      .returning();
+    return block;
+  }
+
+  async unblockUser(blockerId: number, blockedId: number): Promise<boolean> {
+    const result = await db
+      .delete(blockedUsers)
+      .where(and(eq(blockedUsers.blocker_id, blockerId), eq(blockedUsers.blocked_id, blockedId)))
+      .returning();
+    return result.length > 0;
+  }
+
+  async getBlockedUserIds(blockerId: number): Promise<number[]> {
+    const rows = await db
+      .select()
+      .from(blockedUsers)
+      .where(eq(blockedUsers.blocker_id, blockerId));
+    return rows.map(r => r.blocked_id);
+  }
+
+  async isBlocked(userA: number, userB: number): Promise<boolean> {
+    const rows = await db
+      .select()
+      .from(blockedUsers)
+      .where(
+        or(
+          and(eq(blockedUsers.blocker_id, userA), eq(blockedUsers.blocked_id, userB)),
+          and(eq(blockedUsers.blocker_id, userB), eq(blockedUsers.blocked_id, userA))
+        )
+      )
+      .limit(1);
+    return rows.length > 0;
+  }
+
+  async createReport(report: InsertReport): Promise<Report> {
+    const [newReport] = await db.insert(reports).values(report).returning();
+    return newReport;
+  }
+
+  async getAllReports(): Promise<Report[]> {
+    return await db.select().from(reports).orderBy(desc(reports.created_at));
+  }
+
+  async updateReportStatus(id: number, status: string): Promise<boolean> {
+    const result = await db
+      .update(reports)
+      .set({ status })
+      .where(eq(reports.id, id))
+      .returning();
     return result.length > 0;
   }
 

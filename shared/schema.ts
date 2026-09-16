@@ -327,6 +327,44 @@ export const insertDeviceTokenSchema = createInsertSchema(deviceTokens).omit({
 export type InsertDeviceToken = z.infer<typeof insertDeviceTokenSchema>;
 export type DeviceToken = typeof deviceTokens.$inferSelect;
 
+// Blocking between users - blocked messages stop delivering in both directions
+export const blockedUsers = pgTable("blocked_users", {
+  id: serial("id").primaryKey(),
+  blocker_id: integer("blocker_id").notNull(),
+  blocked_id: integer("blocked_id").notNull(),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertBlockedUserSchema = createInsertSchema(blockedUsers).omit({
+  id: true,
+  created_at: true,
+});
+
+export type InsertBlockedUser = z.infer<typeof insertBlockedUserSchema>;
+export type BlockedUser = typeof blockedUsers.$inferSelect;
+
+// Reports - a user, listing, or message flagged for review
+export const reports = pgTable("reports", {
+  id: serial("id").primaryKey(),
+  reporter_id: integer("reporter_id").notNull(),
+  reported_user_id: integer("reported_user_id"),
+  horse_id: integer("horse_id"),
+  message_id: integer("message_id"),
+  reason: text("reason").notNull(),
+  details: text("details"),
+  status: text("status").notNull().default("pending"), // pending | reviewed | dismissed
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertReportSchema = createInsertSchema(reports).omit({
+  id: true,
+  status: true,
+  created_at: true,
+});
+
+export type InsertReport = z.infer<typeof insertReportSchema>;
+export type Report = typeof reports.$inferSelect;
+
 // Login Events (for analytics tracking)
 export const loginEvents = pgTable("login_events", {
   id: serial("id").primaryKey(),

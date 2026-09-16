@@ -8,12 +8,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Heart, MessageSquare, ChevronLeft, Loader2, ArrowLeft } from "lucide-react";
+import { Heart, MessageSquare, ChevronLeft, Loader2, ArrowLeft, Flag } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useMutation } from "@tanstack/react-query";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function HorseDetail() {
   const isMobile = useMobile();
@@ -27,6 +38,23 @@ export default function HorseDetail() {
   const [messageContent, setMessageContent] = useState("");
   const [convertedMinPrice, setConvertedMinPrice] = useState<number | null>(null);
   const [convertedMaxPrice, setConvertedMaxPrice] = useState<number | null>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
+
+  const reportMutation = useMutation({
+    mutationFn: (data: { horse_id: number; reason: string; details?: string }) =>
+      apiRequest('POST', '/api/reports', data),
+    onSuccess: () => {
+      setReportDialogOpen(false);
+      setReportReason("");
+      setReportDetails("");
+      toast({ title: "Report submitted", description: "Thanks for letting us know, our team will review this listing." });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to submit report. Please try again.", variant: "destructive" });
+    }
+  });
 
   // Fetch horse data
   const { data: horse, isLoading, isError } = useQuery<Horse>({
@@ -397,6 +425,16 @@ export default function HorseDetail() {
                 </Button>
               </div>
             )}
+
+            {!isOwner && (
+              <button
+                onClick={() => setReportDialogOpen(true)}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 mt-3 mx-auto"
+              >
+                <Flag className="h-3 w-3" />
+                Report this listing
+              </button>
+            )}
             
             {/* Owner message - Show when viewing your own horse */}
             {isOwner && (
@@ -422,6 +460,52 @@ export default function HorseDetail() {
           </div>
         </div>
       </div>
+
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report this listing</DialogTitle>
+            <DialogDescription>
+              Let us know what's wrong. Our team will review it.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Reason</label>
+              <Select value={reportReason} onValueChange={setReportReason}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="misleading_listing">Misleading or inaccurate listing</SelectItem>
+                  <SelectItem value="inappropriate_content">Inappropriate content</SelectItem>
+                  <SelectItem value="scam">Scam or fraud</SelectItem>
+                  <SelectItem value="not_available">Horse no longer available</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Details (optional)</label>
+              <Textarea
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                placeholder="Anything else we should know?"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>Cancel</Button>
+            <Button
+              disabled={!reportReason || !horse || reportMutation.isPending}
+              onClick={() => horse && reportMutation.mutate({ horse_id: horse.id, reason: reportReason, details: reportDetails.trim() || undefined })}
+            >
+              Submit report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

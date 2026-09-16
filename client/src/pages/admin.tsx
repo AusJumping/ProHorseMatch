@@ -1388,6 +1388,19 @@ export default function AdminPage() {
     }
   });
 
+  const { data: reports, isLoading: reportsLoading } = useQuery<any[]>({
+    queryKey: ['/api/admin/reports'],
+    retry: false,
+  });
+
+  const updateReportStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) =>
+      apiRequest('PATCH', `/api/admin/reports/${id}`, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/reports'] });
+    }
+  });
+
   const { data: horses, isLoading: horsesLoading } = useQuery<Horse[]>({
     queryKey: ['/api/admin/horses'],
     retry: false,
@@ -1732,6 +1745,7 @@ export default function AdminPage() {
               <SelectContent>
                 <SelectItem value="overview">Overview</SelectItem>
                 <SelectItem value="users">Users</SelectItem>
+                <SelectItem value="reports">Reports</SelectItem>
                 <SelectItem value="horses">Horses</SelectItem>
                 <SelectItem value="revenue">Revenue</SelectItem>
                 <SelectItem value="engagement">Engagement</SelectItem>
@@ -1747,6 +1761,7 @@ export default function AdminPage() {
           <TabsList className="hidden md:grid w-full grid-cols-9">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="horses">Horses</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
             <TabsTrigger value="engagement">Engagement</TabsTrigger>
@@ -1881,6 +1896,72 @@ export default function AdminPage() {
                 </Card>
               </>
             )}
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Reports</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Reported users, listings, and messages awaiting review
+                </p>
+              </CardHeader>
+              <CardContent>
+                {reportsLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                  </div>
+                ) : reports && reports.length > 0 ? (
+                  <ScrollArea className="h-96">
+                    <div className="space-y-4">
+                      {reports.map((report: any) => (
+                        <div key={report.id} className="border rounded-lg p-4 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{report.reason}</span>
+                                <Badge variant={report.status === 'pending' ? 'default' : 'outline'}>
+                                  {report.status}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Reporter #{report.reporter_id}
+                                {report.reported_user_id && ` · Reported user #${report.reported_user_id}`}
+                                {report.horse_id && ` · Horse #${report.horse_id}`}
+                                {report.message_id && ` · Message #${report.message_id}`}
+                                {' · '}{new Date(report.created_at).toLocaleString()}
+                              </p>
+                              {report.details && (
+                                <p className="text-sm mt-2">{report.details}</p>
+                              )}
+                            </div>
+                            {report.status === 'pending' && (
+                              <div className="flex gap-2 shrink-0">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => updateReportStatusMutation.mutate({ id: report.id, status: 'dismissed' })}
+                                >
+                                  Dismiss
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateReportStatusMutation.mutate({ id: report.id, status: 'reviewed' })}
+                                >
+                                  Mark reviewed
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                ) : (
+                  <p className="text-sm text-muted-foreground py-8 text-center">No reports yet.</p>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="users" className="space-y-6">

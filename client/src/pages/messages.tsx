@@ -9,7 +9,33 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Send, ArrowLeft, User, MessageCircle, Trash2, Bell, X, Smartphone } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Send, ArrowLeft, User, MessageCircle, Trash2, Bell, X, Smartphone, MoreVertical, Flag, UserX } from "lucide-react";
 import { Message, Conversation, Horse } from "@shared/schema";
 import { formatDistanceToNow } from "date-fns";
 
@@ -68,6 +94,10 @@ export default function Messages() {
     () => localStorage.getItem('msg-push-banner-dismissed') === 'true'
   );
   const [showPostSendNudge, setShowPostSendNudge] = useState(false);
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -141,6 +171,45 @@ export default function Messages() {
       });
     }
   });
+
+  // Block user mutation
+  const blockUserMutation = useMutation({
+    mutationFn: (blockedId: number) => apiRequest('POST', '/api/blocks', { blocked_id: blockedId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      setSelectedConversation(null);
+      setBlockConfirmOpen(false);
+      toast({ title: "User blocked", description: "They can no longer message you, and this conversation is hidden." });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to block this user. Please try again.", variant: "destructive" });
+    }
+  });
+
+  // Report mutation - covers reporting a person or the horse listing tied to this conversation
+  const reportMutation = useMutation({
+    mutationFn: (data: { reported_user_id?: number; horse_id?: number; reason: string; details?: string }) =>
+      apiRequest('POST', '/api/reports', data),
+    onSuccess: () => {
+      setReportDialogOpen(false);
+      setReportReason("");
+      setReportDetails("");
+      toast({ title: "Report submitted", description: "Thanks for letting us know, our team will review this." });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to submit report. Please try again.", variant: "destructive" });
+    }
+  });
+
+  const handleSubmitReport = () => {
+    if (!selectedConversation || !reportReason) return;
+    reportMutation.mutate({
+      reported_user_id: selectedConversation.otherUser?.id,
+      horse_id: selectedConversation.horse_id,
+      reason: reportReason,
+      details: reportDetails.trim() || undefined,
+    });
+  };
 
   // Fetch conversations with robust error handling
   const { data: conversations, isLoading: conversationsLoading, error: conversationsError } = useQuery<ConversationWithDetails[]>({
@@ -611,13 +680,32 @@ export default function Messages() {
                       </div>
                     </div>
                   </div>
-                  {/* Subtle loading indicator for background refetches */}
-                  {messagesFetching && messages && (
-                    <div className="flex items-center space-x-2 text-gray-500">
-                      <div className="w-2 h-2 bg-accent/60 rounded-full animate-pulse"></div>
-                      <span className="text-xs">Checking for new messages...</span>
-                    </div>
-                  )}
+                  <div className="flex items-center space-x-3">
+                    {/* Subtle loading indicator for background refetches */}
+                    {messagesFetching && messages && (
+                      <div className="flex items-center space-x-2 text-gray-500">
+                        <div className="w-2 h-2 bg-accent/60 rounded-full animate-pulse"></div>
+                        <span className="text-xs">Checking for new messages...</span>
+                      </div>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9">
+                          <MoreVertical className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setReportDialogOpen(true)}>
+                          <Flag className="h-4 w-4 mr-2" />
+                          Report
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setBlockConfirmOpen(true)} className="text-red-600 focus:text-red-600">
+                          <UserX className="h-4 w-4 mr-2" />
+                          Block user
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </div>
 
@@ -761,6 +849,70 @@ export default function Messages() {
           )}
         </div>
       </div>
+
+      <AlertDialog open={blockConfirmOpen} onOpenChange={setBlockConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Block {selectedConversation?.otherUser?.username ? `@${selectedConversation.otherUser.username}` : "this user"}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              They won't be able to send you any more messages, and this conversation will be hidden from your messages. You can't undo this from here, contact support if you change your mind.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              disabled={blockUserMutation.isPending}
+              onClick={() => selectedConversation?.otherUser && blockUserMutation.mutate(selectedConversation.otherUser.id)}
+            >
+              Block user
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report this conversation</DialogTitle>
+            <DialogDescription>
+              Let us know what's wrong. Our team will review it.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Reason</label>
+              <Select value={reportReason} onValueChange={setReportReason}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="inappropriate_content">Inappropriate content</SelectItem>
+                  <SelectItem value="harassment">Harassment or abuse</SelectItem>
+                  <SelectItem value="scam">Scam or fraud</SelectItem>
+                  <SelectItem value="misleading_listing">Misleading horse listing</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Details (optional)</label>
+              <Textarea
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                placeholder="Anything else we should know?"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSubmitReport} disabled={!reportReason || reportMutation.isPending}>
+              Submit report
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 }

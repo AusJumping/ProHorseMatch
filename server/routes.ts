@@ -24,6 +24,7 @@ import {
   insertSavedSearchSchema,
   insertPushSubscriptionSchema,
   insertDeviceTokenSchema,
+  insertReportSchema,
   insertLoginEventSchema,
   type InsertMessage,
   type InsertConversation,
@@ -3896,7 +3897,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
       
       console.log(`Final conversations for user ${userId}:`, uniqueConversations);
-      const conversations = uniqueConversations;
+
+      // Hide conversations with anyone the user has blocked (or who has blocked them)
+      const blockedIds = await storage.getBlockedUserIds(userId);
+      const conversations = blockedIds.length === 0 ? uniqueConversations : uniqueConversations.filter((conv: any) => {
+        const otherPartyId = conv.customer_id === userId ? conv.owner_id : conv.customer_id;
+        return !blockedIds.includes(otherPartyId);
+      });
 
       // Enhance conversations with horse details and other user info with error handling
       let conversationsWithDetails;
@@ -4032,6 +4039,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Verify user has permission to send this message
       if (userId !== parseInt(customer_id) && userId !== parseInt(owner_id)) {
         return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Stop the message if either party has blocked the other
+      const otherPartyId = userId === parseInt(customer_id) ? parseInt(owner_id) : parseInt(customer_id);
+      if (await storage.isBlocked(userId, otherPartyId)) {
+        return res.status(403).json({ message: "Unable to send message" });
       }
 
       // Determine sender type
@@ -5386,6 +5399,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Error unregistering device",
         error: error instanceof Error ? error.message : "Unknown error"
       });
+    }
+  });
+
+  // Block another user - stops their messages reaching you and hides existing conversations with them
+  app.post("/api/blocks", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      const blockerId = req.userId;
+      const blockedId = parseInt(req.body.blocked_id);
+      if (!blockedId || isNaN(blockedId)) {
+        return res.status(400).json({ message: "blocked_id is required" });
+      }
+      if (blockedId === blockerId) {
+        return res.status(400).json({ message: "You cannot block yourself" });
+      }
+      await storage.blockUser(blockerId, blockedId);
+      return res.status(201).json({ message: "User blocked" });
+    } catch (error) {
+      console.error("Block user error:", error);
+      return res.status(500).json({ message: "Error blocking user" });
+    }
+  });
+
+  app.delete("/api/blocks/:blockedId", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      const blockerId = req.userId;
+      const blockedId = parseInt(req.params.blockedId);
+      await storage.unblockUser(blockerId, blockedId);
+      return res.json({ message: "User unblocked" });
+    } catch (error) {
+      console.error("Unblock user error:", error);
+      return res.status(500).json({ message: "Error unblocking user" });
+    }
+  });
+
+  app.get("/api/blocks", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      const blockedIds = await storage.getBlockedUserIds(req.userId);
+      return res.json({ blockedIds });
+    } catch (error) {
+      console.error("Get blocks error:", error);
+      return res.status(500).json({ message: "Error fetching blocked users" });
+    }
+  });
+
+  // Report a user, a horse listing, or a specific message for review
+  app.post("/api/reports", isTokenAuthenticated, async (req: any, res) => {
+    try {
+      const validatedReport = insertReportSchema.parse({
+        reporter_id: req.userId,
+        reported_user_id: req.body.reported_user_id || null,
+        horse_id: req.body.horse_id || null,
+        message_id: req.body.message_id || null,
+        reason: req.body.reason,
+        details: req.body.details || null,
+      });
+      await storage.createReport(validatedReport);
+      return res.status(201).json({ message: "Report submitted" });
+    } catch (error) {
+      console.error("Create report error:", error);
+      return res.status(500).json({
+        message: "Error submitting report",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.get("/api/admin/reports", isTokenAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const allReports = await storage.getAllReports();
+      return res.json(allReports);
+    } catch (error) {
+      console.error("Get reports error:", error);
+      return res.status(500).json({ message: "Error fetching reports" });
+    }
+  });
+
+  app.patch("/api/admin/reports/:id", isTokenAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+      if (!["pending", "reviewed", "dismissed"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      await storage.updateReportStatus(id, status);
+      return res.json({ message: "Report updated" });
+    } catch (error) {
+      console.error("Update report error:", error);
+      return res.status(500).json({ message: "Error updating report" });
     }
   });
 
