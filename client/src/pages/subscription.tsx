@@ -736,6 +736,31 @@ export default function SubscriptionPage() {
                   <p className="text-sm text-muted-foreground">
                     These premium plans will be available after our beta period ends. We'll notify you well in advance.
                   </p>
+
+                  {/* Terms of Service Agreement - required before subscribing to any plan below */}
+                  <div id="terms-section" className="p-4 border border-gray-300 rounded-lg bg-neutral-50 transition-colors duration-300">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="terms-global-beta"
+                        checked={tosAgreed}
+                        onCheckedChange={(checked) => setTosAgreed(checked === true)}
+                        className="mt-1"
+                      />
+                      <div>
+                        <label htmlFor="terms-global-beta" className="text-base font-medium cursor-pointer" onClick={() => setTosAgreed(!tosAgreed)}>
+                          I agree to the Terms of Service
+                        </label>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          You must agree before subscribing.
+                        </p>
+                        <TermsOfServiceDialog />
+                        {!tosAgreed && (
+                          <p className="text-sm text-red-500 font-medium mt-1">Please check this box to continue</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     {convertedFuturePlans.map((futurePlan) => (
                       <Card key={futurePlan.id} className={`border ${futurePlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
@@ -755,8 +780,20 @@ export default function SubscriptionPage() {
                           )}
                         </CardHeader>
                         <CardContent className="pt-0">
-                          <Button className="w-full mb-3" variant="outline" disabled={true}>
-                            Coming Soon
+                          <Button
+                            className="w-full mb-3"
+                            variant="outline"
+                            disabled={futurePlan.isComingSoon || isCreatingSubscription}
+                            onClick={() => handleSelectPlan(futurePlan.id)}
+                          >
+                            {isCreatingSubscription && selectedPlan === futurePlan.id ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              futurePlan.buttonText || "Coming Soon"
+                            )}
                           </Button>
                           <div className="text-xs text-muted-foreground">
                             {futurePlan.features.slice(0, 3).map((feature, i) => (
