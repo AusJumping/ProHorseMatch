@@ -7,6 +7,7 @@ import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, Heart } from 'lucide-react';
 import { apiRequest } from "@/lib/queryClient";
+import { isNativeApp, NativePaymentGate } from '@/components/NativePaymentGate';
 
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
@@ -143,14 +144,17 @@ export default function DonationCheckout() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [, navigate] = useLocation();
-  
+
   useEffect(() => {
+    // Never sell anything inside the native app shell - see NativePaymentGate
+    if (isNativeApp()) return;
+
     // Get a payment intent for the donation
     const createPaymentIntent = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        
+
         // Make sure amount is valid - must be a positive number
         if (isNaN(amount) || amount <= 0) {
           throw new Error('Invalid donation amount');
@@ -188,6 +192,11 @@ export default function DonationCheckout() {
     
     createPaymentIntent();
   }, [amount, toast, navigate]);
+
+  // Never sell anything inside the native app shell - see NativePaymentGate
+  if (isNativeApp()) {
+    return <NativePaymentGate path={`/donation-checkout?amount=${amountParam}`} />;
+  }
 
   if (isLoading) {
     return (

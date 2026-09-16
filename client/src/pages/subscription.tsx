@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { ScrollArea } from "@/components/ui/scroll-area";
 import TermsDialog from '@/components/TermsDialog';
 import { NotificationPromptModal } from '@/components/NotificationPromptModal';
+import { isNativeApp, NativePaymentGate } from '@/components/NativePaymentGate';
 
 // Ensure we have the public key
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
@@ -612,6 +613,11 @@ export default function SubscriptionPage() {
     });
   };
   
+  // Never sell anything inside the native app shell - see NativePaymentGate
+  if (isNativeApp()) {
+    return <NativePaymentGate path="/subscription" />;
+  }
+
   // Show login message if user is not authenticated
   if (!user && !isLoadingAuth) {
     return (
