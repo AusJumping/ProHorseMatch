@@ -1,6 +1,7 @@
-import admin from 'firebase-admin';
+import { initializeApp, getApps, getApp, cert } from 'firebase-admin/app';
+import { getMessaging, type Messaging } from 'firebase-admin/messaging';
 
-let messaging: admin.messaging.Messaging | null = null;
+let messaging: Messaging | null = null;
 
 const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
@@ -9,15 +10,15 @@ if (!serviceAccountJson) {
 } else {
   try {
     const serviceAccount = JSON.parse(serviceAccountJson);
-    const app = admin.apps.length ? admin.app() : admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+    const app = getApps().length ? getApp() : initializeApp({
+      credential: cert(serviceAccount),
     });
-    messaging = admin.messaging(app);
+    messaging = getMessaging(app);
   } catch (error) {
     console.error('Failed to initialize Firebase Admin SDK:', error);
   }
 }
 
-export function getMessaging(): admin.messaging.Messaging | null {
+export function getFirebaseMessaging(): Messaging | null {
   return messaging;
 }

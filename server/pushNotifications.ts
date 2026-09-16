@@ -1,6 +1,6 @@
 import webpush from 'web-push';
 import { storage } from './storage';
-import { getMessaging } from './firebaseAdmin';
+import { getFirebaseMessaging } from './firebaseAdmin';
 import type { PushSubscription, DeviceToken } from '@shared/schema';
 
 // Configure VAPID keys
@@ -85,7 +85,7 @@ export async function sendPushNotification(
     });
 
     // Native app (iOS/Android) device tokens via Firebase Cloud Messaging
-    const messaging = getMessaging();
+    const messaging = getFirebaseMessaging();
     let nativePromises: Promise<void>[] = [];
 
     if (messaging) {
