@@ -56,27 +56,26 @@ const Dashboard = () => {
         : "text-lg sm:text-xl";
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#c9a96e_0%,#e1d1b4_34%,#f1ece3_100%)] p-2.5 sm:p-5">
+    <div className="min-h-screen bg-[#eeeae1] p-2.5 sm:p-5">
       <div className="mx-auto w-full max-w-6xl rounded-xl sm:rounded-2xl">
         <section
-          className="relative overflow-hidden rounded-lg border border-[#f1dcad]/70 bg-[linear-gradient(125deg,#d7b976_0%,#cba968_65%,#e0c58b_100%)] px-4 py-3 text-[#292824] shadow-[0_8px_24px_rgba(66,52,27,0.16)] sm:rounded-xl sm:px-7 sm:py-5"
+          className="relative overflow-hidden rounded-lg border border-[#d8d0c2] bg-[#f5f1e9] px-4 py-3 text-[#302f2c] sm:rounded-xl sm:px-7 sm:py-5"
         >
-          <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full border border-white/30" />
-          <div className="pointer-events-none absolute -right-5 -top-12 h-44 w-44 rounded-full border border-white/20" />
           <div className="relative flex flex-col items-center justify-between gap-2 sm:flex-row sm:gap-6">
-            <div className="flex min-w-0 items-center gap-3">
+            <div className="flex min-w-0 flex-col items-center gap-2 sm:flex-row sm:gap-3">
               <img
                 src={logoImage}
                 alt="Pro Horse Match"
-                className="h-12 w-16 shrink-0 rounded-md object-cover shadow-sm sm:h-14 sm:w-[74px]"
+                className="h-10 w-auto shrink-0 object-contain sm:h-12"
               />
-              <h1 className={`max-w-3xl truncate whitespace-nowrap font-accent font-bold leading-tight tracking-tight ${welcomeTextSize}`}>
+              <div className="hidden h-8 w-px bg-[#c9a96e]/50 sm:block" />
+              <h1 className={`max-w-3xl whitespace-nowrap text-center font-accent font-bold leading-tight tracking-tight sm:text-left ${welcomeTextSize}`}>
                 Welcome, {displayName}
               </h1>
             </div>
-            <div className="hidden border-l border-[#5b492b]/25 pl-5 text-right sm:block">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#675536]">Your stable</p>
-              <p className="mt-1 text-sm font-medium text-[#292824]">
+            <div className="hidden border-l border-[#c9a96e]/40 pl-5 text-right sm:block">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#8d8477]">Your stable</p>
+              <p className="mt-1 text-sm font-medium text-[#4b4740]">
                 {user.business_name || (user.is_selling ? "Seller account" : "Buyer account")}
               </p>
             </div>
@@ -89,32 +88,30 @@ const Dashboard = () => {
               key={path}
               type="button"
               onClick={() => navigate(path)}
-              className={`group relative flex items-center gap-4 overflow-hidden rounded-xl border p-4 text-left text-white shadow-[0_7px_18px_rgba(43,39,31,0.16)] transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8f713c] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e1d1b4] active:translate-y-0 ${
+              className={`group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border p-3 text-center text-white shadow-[0_7px_18px_rgba(43,39,31,0.16)] transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8f713c] focus-visible:ring-offset-2 focus-visible:ring-offset-[#eeeae1] active:translate-y-0 ${
                 emphasis === "large"
                   ? "col-span-2 min-h-[116px] sm:min-h-[148px] lg:col-span-2 lg:row-span-2 lg:min-h-0"
                   : emphasis === "medium"
                     ? "min-h-[100px] sm:min-h-[116px] lg:col-span-1 lg:min-h-0"
                     : emphasis === "add"
                     ? "min-h-[100px] sm:min-h-[116px] lg:col-span-1 lg:min-h-0"
-                      : emphasis === "wide"
-                        ? "min-h-[100px] sm:min-h-[94px] lg:col-span-2 lg:min-h-0"
+                    : emphasis === "wide"
+                        ? "min-h-[78px] sm:min-h-[94px] lg:col-span-2 lg:min-h-0"
                         : "min-h-[100px] sm:min-h-[92px] lg:col-span-1 lg:min-h-0"
               } ${
                 featured
-                  ? "border-[#f0cf82] bg-[linear-gradient(135deg,#3b372e_0%,#302f2c_68%,#55482e_100%)] hover:bg-[#423d32]"
-                  : "border-[#d8b96f] bg-[#383733] hover:border-[#f0cf82] hover:bg-[#403f3a]"
+                  ? "border-[#cdac6e] bg-[#302f2c] hover:bg-[#393733]"
+                  : "border-white/10 bg-[#343432] hover:border-[#cdac6e] hover:bg-[#3d3c38]"
               }`}
             >
-              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-11 sm:w-11 sm:rounded-lg ${
-                featured ? "bg-[#d2ae67] text-[#292824]" : "bg-[#cdac6e]/20 text-[#e0c184] ring-1 ring-[#cdac6e]/20"
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg sm:h-11 sm:w-11 ${
+                featured ? "bg-[#c9a96e] text-[#2e2c29]" : "bg-[#cdac6e]/15 text-[#d9bb82]"
               }`}>
                 <Icon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
               </span>
               <span className="min-w-0">
-                <span className={`block font-semibold leading-tight sm:text-[15px] ${
-                  featured ? "text-base" : "text-sm"
-                }`}>{label}</span>
-                <span className="mt-1 block text-[10px] leading-tight text-white/85 sm:text-xs">{description}</span>
+                <span className="block text-[15px] font-semibold leading-tight sm:text-[17px]">{label}</span>
+                <span className="mt-1 block text-[11px] leading-tight text-white sm:text-xs">{description}</span>
               </span>
               <ArrowUpRight className={`absolute right-2.5 top-2.5 h-3 w-3 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:right-4 sm:top-4 sm:h-4 sm:w-4 ${
                 featured ? "text-[#e1c58e]" : "text-[#aa9162]"

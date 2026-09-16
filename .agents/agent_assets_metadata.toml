@@ -49,3 +49,17 @@ mtime_ms = 1789544760116
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/cbf8f8b8-ea7c-47ca-9694-7c25a4e5b041/d76065e9-db74-458d-9982-c4a12dbb62d0"
 storage_version_token = "1789544787776595"
 content_type = "image/png"
+
+[[outputs]]
+id = "GopO_XXsPWk6URrMManz8"
+uri = "file://screenshots/dashboard-mobile-centered-preview.png"
+type = "image"
+title = "Centered mobile dashboard option"
+description = "Alternate phone dashboard with a neutral background, logo above the full welcome name, centered icons, larger centered titles, and restrained gold accents."
+logical_id = "4124d035-796a-4511-985a-1f5fec0a0bbd"
+content_hash = "sha256:725dd528bf8edd2bfd6f2cc8165a3ecbdaf660638fd3f02e8a45c770c6968f21"
+size = 49030
+mtime_ms = 1789545019322
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/4124d035-796a-4511-985a-1f5fec0a0bbd/9bc13e2f-2bdb-4e80-ac6f-a38581808c4a"
+storage_version_token = "1789545056457755"
+content_type = "image/png"
