@@ -13,7 +13,11 @@ const Landing = () => {
   // seeing the Sign In / Register screen, which looks like being logged out.
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      navigate("/filter", { replace: true });
+      const redirectTimer = window.setTimeout(() => {
+        navigate("/filter", { replace: true });
+      }, 1200);
+
+      return () => window.clearTimeout(redirectTimer);
     }
   }, [isLoading, isAuthenticated, navigate]);
 
