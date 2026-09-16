@@ -1212,8 +1212,20 @@ export default function SubscriptionPage() {
                   </ul>
                 </CardContent>
                 <div className="px-6 pb-6 mt-auto">
-                  <Button className="w-full" variant="outline" disabled={true}>
-                    {plan.buttonText || "Coming Soon"}
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    disabled={plan.isComingSoon || isCreatingSubscription}
+                    onClick={() => handleSelectPlan(plan.id)}
+                  >
+                    {isCreatingSubscription && selectedPlan === plan.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      plan.buttonText || "Coming Soon"
+                    )}
                   </Button>
                 </div>
               </Card>
