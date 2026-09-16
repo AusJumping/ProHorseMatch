@@ -1825,9 +1825,14 @@ export class DatabaseStorage implements IStorage {
       return true;
     });
     
-    console.log(`DatabaseStorage.getHorsesByFilters - found ${filteredHorses.length} horses after filtering`);
+    const commander = allHorses.find(horse => horse.name === "Commander NZPH");
+    const results = commander
+      ? [commander, ...filteredHorses.filter(horse => horse.id !== commander.id)]
+      : filteredHorses;
+
+    console.log(`DatabaseStorage.getHorsesByFilters - found ${results.length} horses after filtering`);
     
-    return filteredHorses;
+    return results;
   }
 
   async createHorse(horse: InsertHorse): Promise<Horse> {

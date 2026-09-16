@@ -47,6 +47,7 @@ export default function Home() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [currentHorseIndex, setCurrentHorseIndex] = useState<number>(0);
+  const [filterRevision, setFilterRevision] = useState(0);
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
     breeds: [],       // Empty array for All Breeds
@@ -439,6 +440,8 @@ export default function Home() {
     console.log('Applying filters:', cleanFilters);
     // Reset the swiping index to show the first horse in the new filtered results
     setSwipingIndex(0);
+    setCurrentHorseIndex(0);
+    setFilterRevision(revision => revision + 1);
     setActiveFilters(cleanFilters);
     setIsFilterOpen(false);
     
@@ -543,7 +546,7 @@ export default function Home() {
                   {/* All filter indicators completely removed as requested */}
                   
                   <SwipeSection 
-                    key={`filter-${activeFilters.disciplines.join('-')}`}
+                    key={`filter-${filterRevision}`}
                     horses={horses || []}
                     isLoading={isLoading}
                     activeIndex={0}
