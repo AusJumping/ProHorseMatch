@@ -56,26 +56,26 @@ const Dashboard = () => {
         : "text-lg sm:text-xl";
 
   return (
-    <div className="min-h-screen bg-[#eeeae1] p-2.5 sm:p-5">
+    <div className="min-h-screen bg-[#272725] p-2.5 sm:p-5">
       <div className="mx-auto w-full max-w-6xl rounded-xl sm:rounded-2xl">
         <section
-          className="relative overflow-hidden rounded-lg border border-[#d8d0c2] bg-[#f5f1e9] px-4 py-3 text-[#302f2c] sm:rounded-xl sm:px-7 sm:py-5"
+          className="relative overflow-hidden rounded-lg border border-[#cdac6e]/25 bg-[#292929] px-4 py-4 text-[#f2eee6] sm:rounded-xl sm:px-7 sm:py-5"
         >
           <div className="relative flex flex-col items-center justify-between gap-2 sm:flex-row sm:gap-6">
             <div className="flex min-w-0 flex-col items-center gap-2 sm:flex-row sm:gap-3">
               <img
                 src={logoImage}
                 alt="Pro Horse Match"
-                className="h-10 w-auto shrink-0 object-contain sm:h-12"
+                className="h-20 w-auto shrink-0 object-contain sm:h-24"
               />
-              <div className="hidden h-8 w-px bg-[#c9a96e]/50 sm:block" />
+              <div className="hidden h-8 w-px bg-[#c9a96e]/40 sm:block" />
               <h1 className={`max-w-3xl whitespace-nowrap text-center font-accent font-bold leading-tight tracking-tight sm:text-left ${welcomeTextSize}`}>
                 Welcome, {displayName}
               </h1>
             </div>
-            <div className="hidden border-l border-[#c9a96e]/40 pl-5 text-right sm:block">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#8d8477]">Your stable</p>
-              <p className="mt-1 text-sm font-medium text-[#4b4740]">
+            <div className="hidden border-l border-[#c9a96e]/30 pl-5 text-right sm:block">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#aaa59a]">Your stable</p>
+              <p className="mt-1 text-sm font-medium text-[#eee8dc]">
                 {user.business_name || (user.is_selling ? "Seller account" : "Buyer account")}
               </p>
             </div>
@@ -88,7 +88,7 @@ const Dashboard = () => {
               key={path}
               type="button"
               onClick={() => navigate(path)}
-              className={`group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border p-3 text-center text-white shadow-[0_7px_18px_rgba(43,39,31,0.16)] transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8f713c] focus-visible:ring-offset-2 focus-visible:ring-offset-[#eeeae1] active:translate-y-0 ${
+              className={`group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-xl border p-3 text-center text-white shadow-[0_7px_18px_rgba(0,0,0,0.2)] transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#272725] active:translate-y-0 ${
                 emphasis === "large"
                   ? "col-span-2 min-h-[116px] sm:min-h-[148px] lg:col-span-2 lg:row-span-2 lg:min-h-0"
                   : emphasis === "medium"
