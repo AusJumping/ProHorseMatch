@@ -11,6 +11,7 @@ import {
   Search,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import logoImage from "../assets/logo.jpg";
 
 const Dashboard = () => {
   const [, navigate] = useLocation();
@@ -55,23 +56,27 @@ const Dashboard = () => {
         : "text-lg sm:text-xl";
 
   return (
-    <div className="min-h-screen bg-[#272725] p-2.5 sm:p-5">
-      <div className="mx-auto w-full max-w-6xl rounded-xl bg-[#272725] sm:rounded-2xl">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#c9a96e_0%,#e1d1b4_34%,#f1ece3_100%)] p-2.5 sm:p-5">
+      <div className="mx-auto w-full max-w-6xl rounded-xl sm:rounded-2xl">
         <section
-          className="relative overflow-hidden rounded-lg border border-[#cdac6e]/20 px-4 py-3 text-[#f2eee6] sm:rounded-xl sm:px-7 sm:py-6"
-          style={{ background: "linear-gradient(125deg, #2e2e2b 0%, #34332f 65%, #3b372f 100%)" }}
+          className="relative overflow-hidden rounded-lg border border-[#f1dcad]/70 bg-[linear-gradient(125deg,#d7b976_0%,#cba968_65%,#e0c58b_100%)] px-4 py-3 text-[#292824] shadow-[0_8px_24px_rgba(66,52,27,0.16)] sm:rounded-xl sm:px-7 sm:py-5"
         >
-          <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full border border-[#cdac6e]/20" />
-          <div className="pointer-events-none absolute -right-5 -top-12 h-44 w-44 rounded-full border border-[#cdac6e]/10" />
-          <div className="relative flex flex-col justify-between gap-2 sm:flex-row sm:items-end sm:gap-6">
-            <div>
+          <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full border border-white/30" />
+          <div className="pointer-events-none absolute -right-5 -top-12 h-44 w-44 rounded-full border border-white/20" />
+          <div className="relative flex flex-col items-center justify-between gap-2 sm:flex-row sm:gap-6">
+            <div className="flex min-w-0 items-center gap-3">
+              <img
+                src={logoImage}
+                alt="Pro Horse Match"
+                className="h-12 w-16 shrink-0 rounded-md object-cover shadow-sm sm:h-14 sm:w-[74px]"
+              />
               <h1 className={`max-w-3xl truncate whitespace-nowrap font-accent font-bold leading-tight tracking-tight ${welcomeTextSize}`}>
                 Welcome, {displayName}
               </h1>
             </div>
-            <div className="hidden border-l border-[#d4b77f]/30 pl-5 text-right sm:block">
-              <p className="text-[10px] uppercase tracking-[0.2em] text-[#aaa59a]">Your stable</p>
-              <p className="mt-1 text-sm font-medium text-[#eee8dc]">
+            <div className="hidden border-l border-[#5b492b]/25 pl-5 text-right sm:block">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-[#675536]">Your stable</p>
+              <p className="mt-1 text-sm font-medium text-[#292824]">
                 {user.business_name || (user.is_selling ? "Seller account" : "Buyer account")}
               </p>
             </div>
@@ -84,7 +89,7 @@ const Dashboard = () => {
               key={path}
               type="button"
               onClick={() => navigate(path)}
-              className={`group relative flex items-center gap-4 overflow-hidden rounded-xl border p-4 text-left text-white transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#272725] active:translate-y-0 ${
+              className={`group relative flex items-center gap-4 overflow-hidden rounded-xl border p-4 text-left text-white shadow-[0_7px_18px_rgba(43,39,31,0.16)] transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8f713c] focus-visible:ring-offset-2 focus-visible:ring-offset-[#e1d1b4] active:translate-y-0 ${
                 emphasis === "large"
                   ? "col-span-2 min-h-[116px] sm:min-h-[148px] lg:col-span-2 lg:row-span-2 lg:min-h-0"
                   : emphasis === "medium"
@@ -96,8 +101,8 @@ const Dashboard = () => {
                         : "min-h-[100px] sm:min-h-[92px] lg:col-span-1 lg:min-h-0"
               } ${
                 featured
-                  ? "border-[#d6b56f] bg-[linear-gradient(135deg,#37352f_0%,#302f2c_70%,#443c2c_100%)] shadow-[0_8px_18px_rgba(0,0,0,0.2)] hover:bg-[#3e3b34]"
-                  : "border-[#cdac6e]/30 bg-[#30302e] hover:border-[#cdac6e]/80 hover:bg-[#373633]"
+                  ? "border-[#f0cf82] bg-[linear-gradient(135deg,#3b372e_0%,#302f2c_68%,#55482e_100%)] hover:bg-[#423d32]"
+                  : "border-[#d8b96f] bg-[#383733] hover:border-[#f0cf82] hover:bg-[#403f3a]"
               }`}
             >
               <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-11 sm:w-11 sm:rounded-lg ${

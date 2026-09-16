@@ -35,3 +35,17 @@ mtime_ms = 1789543818546
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/704e0c9c-8464-484a-ad86-0f1ed5d9df46/adad9941-8020-476e-8486-97b5a11ca0c6"
 storage_version_token = "1789543861220371"
 content_type = "image/png"
+
+[[outputs]]
+id = "W1v-jPChPUxRydXrNuadr"
+uri = "file://screenshots/dashboard-mobile-brighter-preview.png"
+type = "image"
+title = "Brighter gold mobile dashboard"
+description = "Updated dashboard with the logo, warm gold header and background, stronger gold accents, and high-contrast charcoal tiles."
+logical_id = "cbf8f8b8-ea7c-47ca-9694-7c25a4e5b041"
+content_hash = "sha256:05dc6f5ee73d010e58dec21b3131851f6fad4f944f1b3bc77a6770571dcf3cc6"
+size = 92551
+mtime_ms = 1789544760116
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/cbf8f8b8-ea7c-47ca-9694-7c25a4e5b041/d76065e9-db74-458d-9982-c4a12dbb62d0"
+storage_version_token = "1789544787776595"
+content_type = "image/png"
