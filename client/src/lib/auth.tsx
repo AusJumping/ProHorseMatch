@@ -5,6 +5,7 @@ import { initNativePush } from "./nativePush";
 
 interface User {
   id: number;
+  username?: string;
   name?: string;
   business_name?: string;
   contact_name?: string;

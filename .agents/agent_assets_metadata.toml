@@ -6,3 +6,60 @@ id = "BV-Ms2u3ko-XCDQkNCf0w"
 uri = "file://backup_prohorsematch.sql.gz"
 type = "unspecified"
 title = "ProHorseMatch Database Backup"
+logical_id = "78016aad-971b-4019-b61e-feaf2a87a829"
+
+[[outputs]]
+id = "7Fd36CzQNahQ9ujbJKUur"
+uri = "file://screenshots/dashboard-mobile-preview.png"
+type = "image"
+title = "Mobile dashboard preview"
+description = "Phone-sized preview showing all seven dashboard options without scrolling."
+logical_id = "253afe68-8a98-40ae-8d27-cca5ae141ab9"
+content_hash = "sha256:adff9ee81910ee32a1443cbc0d9222a0de9b8805d236da7f427e432cf03f2cf4"
+size = 44964
+mtime_ms = 1789543693521
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/253afe68-8a98-40ae-8d27-cca5ae141ab9/c56d131a-9441-4dd3-97c1-ebb2af20cfbc"
+storage_version_token = "1789543735295860"
+content_type = "image/png"
+
+[[outputs]]
+id = "pl0Bv9JimzMKhz1Z7OJtY"
+uri = "file://screenshots/dashboard-mobile-clean-preview.png"
+type = "image"
+title = "Simplified mobile dashboard"
+description = "Phone preview without the duplicate app header, with smaller welcome text and all dashboard options visible."
+logical_id = "704e0c9c-8464-484a-ad86-0f1ed5d9df46"
+content_hash = "sha256:b941959caa2844e20a36d16f7680f7dfba6ffda1d261e590d29058308f1a3ca4"
+size = 34843
+mtime_ms = 1789543818546
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/704e0c9c-8464-484a-ad86-0f1ed5d9df46/adad9941-8020-476e-8486-97b5a11ca0c6"
+storage_version_token = "1789543861220371"
+content_type = "image/png"
+
+[[outputs]]
+id = "W1v-jPChPUxRydXrNuadr"
+uri = "file://screenshots/dashboard-mobile-brighter-preview.png"
+type = "image"
+title = "Brighter gold mobile dashboard"
+description = "Updated dashboard with the logo, warm gold header and background, stronger gold accents, and high-contrast charcoal tiles."
+logical_id = "cbf8f8b8-ea7c-47ca-9694-7c25a4e5b041"
+content_hash = "sha256:05dc6f5ee73d010e58dec21b3131851f6fad4f944f1b3bc77a6770571dcf3cc6"
+size = 92551
+mtime_ms = 1789544760116
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/cbf8f8b8-ea7c-47ca-9694-7c25a4e5b041/d76065e9-db74-458d-9982-c4a12dbb62d0"
+storage_version_token = "1789544787776595"
+content_type = "image/png"
+
+[[outputs]]
+id = "GopO_XXsPWk6URrMManz8"
+uri = "file://screenshots/dashboard-mobile-centered-preview.png"
+type = "image"
+title = "Centered mobile dashboard option"
+description = "Alternate phone dashboard with a neutral background, logo above the full welcome name, centered icons, larger centered titles, and restrained gold accents."
+logical_id = "4124d035-796a-4511-985a-1f5fec0a0bbd"
+content_hash = "sha256:725dd528bf8edd2bfd6f2cc8165a3ecbdaf660638fd3f02e8a45c770c6968f21"
+size = 49030
+mtime_ms = 1789545019322
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/4124d035-796a-4511-985a-1f5fec0a0bbd/9bc13e2f-2bdb-4e80-ac6f-a38581808c4a"
+storage_version_token = "1789545056457755"
+content_type = "image/png"

@@ -1693,9 +1693,13 @@ export class DatabaseStorage implements IStorage {
     console.log("DatabaseStorage.getHorsesByFilters - dam_sire filter:", filters.dam_sire);
     
     // Get all horses first and filter in JavaScript for now (simpler approach)
-    const allHorses = await db.select().from(horses).orderBy(
+    const horsesByRecency = await db.select().from(horses).orderBy(
       desc(horses.created_at)
     );
+    const allHorses = [
+      ...horsesByRecency.filter(horse => horse.name === "Commander NZPH"),
+      ...horsesByRecency.filter(horse => horse.name !== "Commander NZPH"),
+    ];
 
     // If no filters are provided, return all horses (most recent first)
     if (Object.keys(filters).length === 0) {

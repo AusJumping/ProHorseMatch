@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v7';
+const CACHE_VERSION = 'v9';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 // Assets to cache on install — failures are caught individually so one bad
@@ -39,7 +39,14 @@ self.addEventListener('activate', (event) => {
             return caches.delete(name);
           })
       )
-    ).then(() => self.clients.claim())
+    )
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) =>
+        Promise.all(
+          clients.map((client) => client.navigate(client.url))
+        )
+      )
   );
 });
 
