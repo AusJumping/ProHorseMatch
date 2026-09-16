@@ -23,6 +23,7 @@ import {
   insertConversationSchema,
   insertSavedSearchSchema,
   insertPushSubscriptionSchema,
+  insertDeviceTokenSchema,
   insertLoginEventSchema,
   type InsertMessage,
   type InsertConversation,
@@ -5331,13 +5332,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json({ message: "Unsubscribed from push notifications" });
     } catch (error) {
       console.error("Push unsubscribe error:", error);
-      return res.status(500).json({ 
+      return res.status(500).json({
         message: "Error unsubscribing from push notifications",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
-  
+
+  // Register a native (iOS/Android) device token for push notifications
+  app.post("/api/push/register-device", isTokenAuthenticated, async (req, res) => {
+    try {
+      const userId = req.userId;
+      const { token, platform } = req.body;
+
+      if (!token || !platform) {
+        return res.status(400).json({ message: "token and platform are required" });
+      }
+      if (platform !== "ios" && platform !== "android") {
+        return res.status(400).json({ message: "platform must be 'ios' or 'android'" });
+      }
+
+      const validatedToken = insertDeviceTokenSchema.parse({
+        user_id: userId,
+        token,
+        platform
+      });
+
+      await storage.createDeviceToken(validatedToken);
+
+      console.log(`Device token registered for user ${userId} (${platform})`);
+      return res.status(201).json({ message: "Device registered for push notifications" });
+    } catch (error) {
+      console.error("Device token registration error:", error);
+      return res.status(500).json({
+        message: "Error registering device for push notifications",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Unregister a native device token
+  app.post("/api/push/unregister-device", isTokenAuthenticated, async (req, res) => {
+    try {
+      const { token } = req.body;
+      if (!token) {
+        return res.status(400).json({ message: "token is required" });
+      }
+      await storage.deleteDeviceToken(token);
+      return res.json({ message: "Device unregistered from push notifications" });
+    } catch (error) {
+      console.error("Device token unregister error:", error);
+      return res.status(500).json({
+        message: "Error unregistering device",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Get user's push subscription status
   app.get("/api/push/status", isTokenAuthenticated, async (req, res) => {
     try {

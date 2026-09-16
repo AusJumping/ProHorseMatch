@@ -1,6 +1,7 @@
 import webpush from 'web-push';
 import { storage } from './storage';
-import type { PushSubscription } from '@shared/schema';
+import { getMessaging } from './firebaseAdmin';
+import type { PushSubscription, DeviceToken } from '@shared/schema';
 
 // Configure VAPID keys
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
@@ -25,38 +26,26 @@ interface NotificationPayload {
   tag?: string;
 }
 
+const preferenceMap = {
+  matches: 'notify_matches',
+  messages: 'notify_messages',
+  updates: 'notify_updates',
+  digest: 'notify_digest'
+} as const;
+
 export async function sendPushNotification(
   userId: number,
   payload: NotificationPayload,
   notificationType: 'matches' | 'messages' | 'updates' | 'digest'
 ) {
   try {
-    // Get all subscriptions for this user
-    const subscriptions = await storage.getPushSubscriptionsByUserId(userId);
-    
-    if (subscriptions.length === 0) {
-      console.log(`No push subscriptions found for user ${userId}`);
-      return;
-    }
-
-    // Filter based on user preferences
-    const preferenceMap = {
-      matches: 'notify_matches',
-      messages: 'notify_messages',
-      updates: 'notify_updates',
-      digest: 'notify_digest'
-    };
-    
     const preferenceKey = preferenceMap[notificationType];
+
+    // Browser (web push) subscriptions
+    const subscriptions = await storage.getPushSubscriptionsByUserId(userId);
     const activeSubscriptions = subscriptions.filter(sub => sub[preferenceKey as keyof PushSubscription] === true);
 
-    if (activeSubscriptions.length === 0) {
-      console.log(`User ${userId} has disabled ${notificationType} notifications`);
-      return;
-    }
-
-    // Send to all active subscriptions
-    const promises = activeSubscriptions.map(async (subscription) => {
+    const webPromises = activeSubscriptions.map(async (subscription) => {
       if (!subscription.endpoint || !subscription.p256dh || !subscription.auth) {
         console.log(`Invalid subscription data for user ${userId}, skipping`);
         return;
@@ -83,10 +72,10 @@ export async function sendPushNotification(
 
       try {
         await webpush.sendNotification(pushSubscription, JSON.stringify(notificationData));
-        console.log(`Push notification sent to user ${userId} for ${notificationType}`);
+        console.log(`Web push notification sent to user ${userId} for ${notificationType}`);
       } catch (error: any) {
-        console.error(`Failed to send push notification to user ${userId}:`, error);
-        
+        console.error(`Failed to send web push notification to user ${userId}:`, error);
+
         // If subscription is invalid (410 Gone or 404 Not Found), remove it
         if (error.statusCode === 410 || error.statusCode === 404) {
           console.log(`Removing invalid subscription for user ${userId}`);
@@ -95,7 +84,53 @@ export async function sendPushNotification(
       }
     });
 
-    await Promise.all(promises);
+    // Native app (iOS/Android) device tokens via Firebase Cloud Messaging
+    const messaging = getMessaging();
+    let nativePromises: Promise<void>[] = [];
+
+    if (messaging) {
+      const deviceTokens = await storage.getDeviceTokensByUserId(userId);
+      const activeDeviceTokens = deviceTokens.filter(d => d[preferenceKey as keyof DeviceToken] === true);
+
+      nativePromises = activeDeviceTokens.map(async (device) => {
+        try {
+          await messaging.send({
+            token: device.token,
+            notification: {
+              title: payload.title,
+              body: payload.body,
+            },
+            data: {
+              url: payload.url || '/',
+              tag: payload.tag || '',
+            },
+            apns: {
+              payload: {
+                aps: { sound: 'default' },
+              },
+            },
+          });
+          console.log(`FCM notification sent to user ${userId} (${device.platform}) for ${notificationType}`);
+        } catch (error: any) {
+          console.error(`Failed to send FCM notification to user ${userId}:`, error);
+
+          // Remove tokens that are no longer valid
+          if (
+            error?.code === 'messaging/registration-token-not-registered' ||
+            error?.code === 'messaging/invalid-registration-token'
+          ) {
+            console.log(`Removing invalid device token for user ${userId}`);
+            await storage.deleteDeviceToken(device.token);
+          }
+        }
+      });
+    }
+
+    if (activeSubscriptions.length === 0 && nativePromises.length === 0) {
+      console.log(`User ${userId} has no active devices for ${notificationType} notifications`);
+    }
+
+    await Promise.all([...webPromises, ...nativePromises]);
   } catch (error) {
     console.error(`Error sending push notifications to user ${userId}:`, error);
   }

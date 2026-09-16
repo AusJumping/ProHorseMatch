@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useContext, ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { initNativePush } from "./nativePush";
 
 interface User {
   id: number;
@@ -104,9 +105,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Ensure user is either User object or null, never undefined
   const user = data === undefined ? null : data;
-  
+
   // Debug log for auth state
   console.log("Auth state:", { isAuthenticated: !!user });
+
+  // Set up native push notifications (no-op on the regular website) once logged in
+  useEffect(() => {
+    if (user) {
+      initNativePush();
+    }
+  }, [!!user]);
 
   const login = async (email: string, password: string): Promise<User | null> => {
     try {

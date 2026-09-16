@@ -9,6 +9,7 @@ import {
   searchNotifications, type SearchNotification, type InsertSearchNotification,
   horseDeletionResponses, type HorseDeletionResponse, type InsertHorseDeletionResponse,
   pushSubscriptions, type PushSubscription, type InsertPushSubscription,
+  deviceTokens, type DeviceToken, type InsertDeviceToken,
   loginEvents, type LoginEvent, type InsertLoginEvent
 } from "@shared/schema";
 import { db } from "./db";
@@ -101,6 +102,9 @@ export interface IStorage {
   getPushSubscriptionsByUserId(userId: number): Promise<PushSubscription[]>;
   getAllPushSubscriptions(): Promise<PushSubscription[]>;
   deletePushSubscription(endpoint: string): Promise<boolean>;
+  createDeviceToken(deviceToken: InsertDeviceToken): Promise<DeviceToken>;
+  getDeviceTokensByUserId(userId: number): Promise<DeviceToken[]>;
+  deleteDeviceToken(token: string): Promise<boolean>;
   updatePushPreferences(userId: number, preferences: {
     notify_matches?: boolean;
     notify_messages?: boolean;
@@ -1366,6 +1370,18 @@ export class MemStorage implements IStorage {
   async deletePushSubscription(endpoint: string): Promise<boolean> {
     return false;
   }
+
+  async createDeviceToken(deviceToken: InsertDeviceToken): Promise<DeviceToken> {
+    throw new Error("Device tokens not implemented in MemStorage - use DatabaseStorage");
+  }
+
+  async getDeviceTokensByUserId(userId: number): Promise<DeviceToken[]> {
+    return [];
+  }
+
+  async deleteDeviceToken(token: string): Promise<boolean> {
+    return false;
+  }
   
   async updatePushPreferences(userId: number, preferences: {
     notify_matches?: boolean;
@@ -2216,10 +2232,52 @@ export class DatabaseStorage implements IStorage {
       .delete(pushSubscriptions)
       .where(eq(pushSubscriptions.endpoint, endpoint))
       .returning();
-    
+
     return result.length > 0;
   }
-  
+
+  async createDeviceToken(deviceToken: InsertDeviceToken): Promise<DeviceToken> {
+    // Check if this token already exists (same device, possibly different user)
+    const existing = await db
+      .select()
+      .from(deviceTokens)
+      .where(eq(deviceTokens.token, deviceToken.token))
+      .limit(1);
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(deviceTokens)
+        .set({
+          user_id: deviceToken.user_id,
+          platform: deviceToken.platform,
+          created_at: new Date()
+        })
+        .where(eq(deviceTokens.token, deviceToken.token))
+        .returning();
+      return updated;
+    }
+
+    const [newToken] = await db.insert(deviceTokens).values(deviceToken).returning();
+    return newToken;
+  }
+
+  async getDeviceTokensByUserId(userId: number): Promise<DeviceToken[]> {
+    return await db
+      .select()
+      .from(deviceTokens)
+      .where(eq(deviceTokens.user_id, userId))
+      .orderBy(desc(deviceTokens.created_at));
+  }
+
+  async deleteDeviceToken(token: string): Promise<boolean> {
+    const result = await db
+      .delete(deviceTokens)
+      .where(eq(deviceTokens.token, token))
+      .returning();
+
+    return result.length > 0;
+  }
+
   async updatePushPreferences(userId: number, preferences: {
     notify_matches?: boolean;
     notify_messages?: boolean;

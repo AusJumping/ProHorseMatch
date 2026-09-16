@@ -303,6 +303,30 @@ export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions
 export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 
+// Device tokens for native iOS/Android push notifications (via Firebase Cloud Messaging)
+export const deviceTokens = pgTable("device_tokens", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull(),
+  token: text("token").notNull().unique(),
+  platform: text("platform").notNull(), // 'ios' | 'android'
+
+  // Notification preferences
+  notify_matches: boolean("notify_matches").default(true),
+  notify_messages: boolean("notify_messages").default(true),
+  notify_updates: boolean("notify_updates").default(true),
+  notify_digest: boolean("notify_digest").default(true),
+
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+export const insertDeviceTokenSchema = createInsertSchema(deviceTokens).omit({
+  id: true,
+  created_at: true,
+});
+
+export type InsertDeviceToken = z.infer<typeof insertDeviceTokenSchema>;
+export type DeviceToken = typeof deviceTokens.$inferSelect;
+
 // Login Events (for analytics tracking)
 export const loginEvents = pgTable("login_events", {
   id: serial("id").primaryKey(),
