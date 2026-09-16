@@ -530,7 +530,7 @@ export default function Home() {
         )}
 
         {/* Main content area */}
-        <div className="flex-1 flex flex-col items-center relative">
+        <div className="flex-1 min-w-0 flex flex-col items-center relative">
           {isMobile ? (
             /* Horse swiping area for mobile screens */
             <>
