@@ -33,8 +33,8 @@ const SwipeSection = ({
   
   useEffect(() => {
     // Check if horses array actually changed by comparing IDs
-    const currentHorseIds = horses.map(h => h.id).sort().join(',');
-    const prevHorseIds = prevHorsesRef.current.map(h => h.id).sort().join(',');
+    const currentHorseIds = horses.map(h => h.id).join(',');
+    const prevHorseIds = prevHorsesRef.current.map(h => h.id).join(',');
     
     if (currentHorseIds !== prevHorseIds) {
       console.log("SwipeSection: HORSES ACTUALLY CHANGED");
