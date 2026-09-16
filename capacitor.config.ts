@@ -2,10 +2,12 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.prohorsematch.app',
-  appName: 'ProHorseMatch',
-  webDir: 'dist',
+  appName: 'Pro Horse Match',
+  webDir: 'dist/public',
   server: {
-    androidScheme: 'https'
+    url: 'https://prohorsematch.com',
+    androidScheme: 'https',
+    cleartext: false
   }
 };
 
