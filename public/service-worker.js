@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v10';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 // Assets to cache on install — failures are caught individually so one bad
@@ -90,7 +90,29 @@ self.addEventListener('fetch', (event) => {
     url.pathname.endsWith('.webmanifest')
   ) {
     event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request))
+      (async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+
+        const response = await fetch(request).catch(() => null);
+
+        // A hashed /assets/ file that's missing or comes back as something
+        // other than the real file (e.g. the server's HTML fallback page,
+        // because this exact build no longer exists after a newer deploy)
+        // means the cached app shell referencing it is stale. Clear it and
+        // tell every open tab to reload, instead of leaving the page stuck
+        // on a blank screen indefinitely.
+        const isRealFile = response && response.ok &&
+          !(response.headers.get('content-type') || '').includes('text/html');
+
+        if (url.pathname.startsWith('/assets/') && !isRealFile) {
+          await caches.delete(SHELL_CACHE);
+          const clients = await self.clients.matchAll({ type: 'window' });
+          clients.forEach((client) => client.postMessage({ type: 'STALE_SHELL_RELOAD' }));
+        }
+
+        return response || Response.error();
+      })()
     );
     return;
   }

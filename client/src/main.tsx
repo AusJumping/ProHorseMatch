@@ -12,6 +12,17 @@ if ('serviceWorker' in navigator) {
     window.location.reload();
   });
 
+  // The service worker tells us this when it discovers the cached app shell
+  // is stale (referencing a build that no longer exists on the server after
+  // a newer deploy) - reload immediately instead of leaving the page blank.
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'STALE_SHELL_RELOAD') {
+      if (refreshingForNewServiceWorker) return;
+      refreshingForNewServiceWorker = true;
+      window.location.reload();
+    }
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
