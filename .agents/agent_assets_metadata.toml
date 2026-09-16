@@ -21,3 +21,17 @@ mtime_ms = 1789543693521
 storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/253afe68-8a98-40ae-8d27-cca5ae141ab9/c56d131a-9441-4dd3-97c1-ebb2af20cfbc"
 storage_version_token = "1789543735295860"
 content_type = "image/png"
+
+[[outputs]]
+id = "pl0Bv9JimzMKhz1Z7OJtY"
+uri = "file://screenshots/dashboard-mobile-clean-preview.png"
+type = "image"
+title = "Simplified mobile dashboard"
+description = "Phone preview without the duplicate app header, with smaller welcome text and all dashboard options visible."
+logical_id = "704e0c9c-8464-484a-ad86-0f1ed5d9df46"
+content_hash = "sha256:b941959caa2844e20a36d16f7680f7dfba6ffda1d261e590d29058308f1a3ca4"
+size = 34843
+mtime_ms = 1789543818546
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/704e0c9c-8464-484a-ad86-0f1ed5d9df46/adad9941-8020-476e-8486-97b5a11ca0c6"
+storage_version_token = "1789543861220371"
+content_type = "image/png"

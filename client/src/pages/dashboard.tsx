@@ -10,7 +10,6 @@ import {
   PlusCircle,
   Search,
 } from "lucide-react";
-import Layout from "@/components/Layout";
 import { useAuth } from "@/lib/auth";
 
 const Dashboard = () => {
@@ -47,14 +46,14 @@ const Dashboard = () => {
     user.email.split("@")[0];
   const welcomeTextSize =
     displayName.length > 36
-      ? "text-lg sm:text-2xl"
+      ? "text-sm sm:text-lg"
       : displayName.length > 22
-        ? "text-xl sm:text-2xl"
-        : "text-2xl sm:text-3xl";
+        ? "text-base sm:text-lg"
+        : "text-lg sm:text-xl";
 
   return (
-    <Layout pageTitle="Home">
-      <div className="mx-auto w-full max-w-6xl rounded-xl bg-[#272725] p-2.5 shadow-[0_18px_45px_rgba(25,24,22,0.2)] sm:rounded-2xl sm:p-5">
+    <div className="min-h-screen bg-[#272725] p-2.5 sm:p-5">
+      <div className="mx-auto w-full max-w-6xl rounded-xl bg-[#272725] sm:rounded-2xl">
         <section
           className="relative overflow-hidden rounded-lg border border-[#cdac6e]/20 px-4 py-3 text-[#f2eee6] sm:rounded-xl sm:px-7 sm:py-6"
           style={{ background: "linear-gradient(125deg, #302f2c 0%, #393630 62%, #463e31 100%)" }}
@@ -75,14 +74,6 @@ const Dashboard = () => {
             </div>
           </div>
         </section>
-
-        <div className="mt-2.5 flex items-center justify-between px-1 sm:mt-4">
-          <div>
-            <p className="hidden text-[10px] font-semibold uppercase tracking-[0.22em] text-[#cdac6e] sm:block">Your workspace</p>
-            <h2 className="font-accent text-base font-bold text-white sm:mt-1 sm:text-xl">Make your next move</h2>
-          </div>
-          <span className="hidden text-xs text-[#aaa59a] sm:block">{options.length} destinations</span>
-        </div>
 
         <div className="mt-2 grid grid-cols-2 gap-1.5 sm:mt-3 sm:gap-2.5 lg:grid-cols-4 lg:auto-rows-[104px]">
           {options.map(({ label, description, path, icon: Icon, featured, emphasis }) => (
@@ -120,7 +111,7 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
