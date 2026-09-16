@@ -54,14 +54,14 @@ const Dashboard = () => {
 
   return (
     <Layout pageTitle="Home">
-      <div className="mx-auto w-full max-w-6xl rounded-2xl bg-[#272725] p-4 shadow-[0_18px_45px_rgba(25,24,22,0.2)] sm:p-5">
+      <div className="mx-auto w-full max-w-6xl rounded-xl bg-[#272725] p-2.5 shadow-[0_18px_45px_rgba(25,24,22,0.2)] sm:rounded-2xl sm:p-5">
         <section
-          className="relative overflow-hidden rounded-xl border border-[#cdac6e]/20 px-5 py-5 text-[#f2eee6] sm:px-7 sm:py-6"
+          className="relative overflow-hidden rounded-lg border border-[#cdac6e]/20 px-4 py-3 text-[#f2eee6] sm:rounded-xl sm:px-7 sm:py-6"
           style={{ background: "linear-gradient(125deg, #302f2c 0%, #393630 62%, #463e31 100%)" }}
         >
           <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full border border-[#cdac6e]/20" />
           <div className="pointer-events-none absolute -right-5 -top-12 h-44 w-44 rounded-full border border-[#cdac6e]/10" />
-          <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
+          <div className="relative flex flex-col justify-between gap-2 sm:flex-row sm:items-end sm:gap-6">
             <div>
               <h1 className={`max-w-3xl truncate whitespace-nowrap font-accent font-bold leading-tight tracking-tight ${welcomeTextSize}`}>
                 Welcome, {displayName}
@@ -76,15 +76,15 @@ const Dashboard = () => {
           </div>
         </section>
 
-        <div className="mt-4 flex items-center justify-between px-1">
+        <div className="mt-2.5 flex items-center justify-between px-1 sm:mt-4">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#cdac6e]">Your workspace</p>
-            <h2 className="mt-1 font-accent text-xl font-bold text-white">Make your next move</h2>
+            <p className="hidden text-[10px] font-semibold uppercase tracking-[0.22em] text-[#cdac6e] sm:block">Your workspace</p>
+            <h2 className="font-accent text-base font-bold text-white sm:mt-1 sm:text-xl">Make your next move</h2>
           </div>
-          <span className="text-xs text-[#aaa59a]">{options.length} destinations</span>
+          <span className="hidden text-xs text-[#aaa59a] sm:block">{options.length} destinations</span>
         </div>
 
-        <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4 lg:auto-rows-[104px]">
+        <div className="mt-2 grid grid-cols-2 gap-1.5 sm:mt-3 sm:gap-2.5 lg:grid-cols-4 lg:auto-rows-[104px]">
           {options.map(({ label, description, path, icon: Icon, featured, emphasis }) => (
             <button
               key={path}
@@ -92,28 +92,28 @@ const Dashboard = () => {
               onClick={() => navigate(path)}
               className={`group relative flex items-center gap-4 overflow-hidden rounded-xl border p-4 text-left text-white transition duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e] focus-visible:ring-offset-2 focus-visible:ring-offset-[#272725] active:translate-y-0 ${
                 emphasis === "large"
-                  ? "min-h-[148px] sm:col-span-2 lg:col-span-2 lg:row-span-2 lg:min-h-0"
+                  ? "col-span-2 min-h-[72px] sm:min-h-[148px] lg:col-span-2 lg:row-span-2 lg:min-h-0"
                   : emphasis === "medium"
-                    ? "min-h-[116px] lg:col-span-1 lg:min-h-0"
+                    ? "min-h-[68px] sm:min-h-[116px] lg:col-span-1 lg:min-h-0"
                     : emphasis === "wide"
-                      ? "min-h-[94px] lg:col-span-2 lg:min-h-0"
-                      : "min-h-[92px] lg:col-span-1 lg:min-h-0"
+                      ? "min-h-[68px] sm:min-h-[94px] lg:col-span-2 lg:min-h-0"
+                      : "min-h-[68px] sm:min-h-[92px] lg:col-span-1 lg:min-h-0"
               } ${
                 featured
                   ? "border-[#cdac6e] bg-[#403a30] shadow-[0_8px_18px_rgba(0,0,0,0.2)] hover:bg-[#4a4235]"
                   : "border-white/10 bg-[#343432] hover:border-[#cdac6e]/70 hover:bg-[#3d3c38]"
               }`}
             >
-              <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg ${
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md sm:h-11 sm:w-11 sm:rounded-lg ${
                 featured ? "bg-[#c9a96e] text-[#2e2c29]" : "bg-[#cdac6e]/15 text-[#d9bb82]"
               }`}>
-                <Icon className="h-5 w-5" aria-hidden="true" />
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
               </span>
               <span className="min-w-0">
-                <span className="block text-[15px] font-semibold">{label}</span>
-                <span className="mt-1 block text-xs text-[#bdb8ae]">{description}</span>
+                <span className="block text-xs font-semibold leading-tight sm:text-[15px]">{label}</span>
+                <span className="mt-1 hidden text-xs text-[#bdb8ae] sm:block">{description}</span>
               </span>
-              <ArrowUpRight className={`absolute right-4 top-4 h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 ${
+              <ArrowUpRight className={`absolute right-2.5 top-2.5 h-3 w-3 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 sm:right-4 sm:top-4 sm:h-4 sm:w-4 ${
                 featured ? "text-[#e1c58e]" : "text-[#aa9162]"
               }`} aria-hidden="true" />
             </button>

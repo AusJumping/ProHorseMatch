@@ -6,3 +6,18 @@ id = "BV-Ms2u3ko-XCDQkNCf0w"
 uri = "file://backup_prohorsematch.sql.gz"
 type = "unspecified"
 title = "ProHorseMatch Database Backup"
+logical_id = "78016aad-971b-4019-b61e-feaf2a87a829"
+
+[[outputs]]
+id = "7Fd36CzQNahQ9ujbJKUur"
+uri = "file://screenshots/dashboard-mobile-preview.png"
+type = "image"
+title = "Mobile dashboard preview"
+description = "Phone-sized preview showing all seven dashboard options without scrolling."
+logical_id = "253afe68-8a98-40ae-8d27-cca5ae141ab9"
+content_hash = "sha256:adff9ee81910ee32a1443cbc0d9222a0de9b8805d236da7f427e432cf03f2cf4"
+size = 44964
+mtime_ms = 1789543693521
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:f934e92c-a307-4648-aed4-17e8b994aaa8/253afe68-8a98-40ae-8d27-cca5ae141ab9/c56d131a-9441-4dd3-97c1-ebb2af20cfbc"
+storage_version_token = "1789543735295860"
+content_type = "image/png"
