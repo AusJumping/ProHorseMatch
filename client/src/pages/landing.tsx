@@ -14,7 +14,7 @@ const Landing = () => {
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
       const redirectTimer = window.setTimeout(() => {
-        navigate("/filter", { replace: true });
+        navigate("/dashboard", { replace: true });
       }, 1200);
 
       return () => window.clearTimeout(redirectTimer);

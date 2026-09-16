@@ -19,6 +19,7 @@ import Favorites from "@/pages/favorites";
 import Messages from "@/pages/messages";
 import SavedSearches from "@/pages/SavedSearches";
 import Landing from "@/pages/landing";
+import Dashboard from "@/pages/dashboard";
 import Checkout from "@/pages/checkout";
 import PaymentSuccess from "@/pages/payment-success";
 import Subscription from "@/pages/subscription";
@@ -44,6 +45,7 @@ function Router() {
     <AutoLogoutWrapper>
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/filter" component={Home} />
         <Route path="/browse">
           {() => {

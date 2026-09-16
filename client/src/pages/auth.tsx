@@ -140,8 +140,8 @@ export default function Auth() {
       const userData = await login(data.email, data.password);
       
       if (userData && (userData.subscription_status === 'active' || userData.subscription_tier === 'beta_free')) {
-        console.log("User has active subscription or beta access, redirecting to welcome page");
-        window.location.href = "/welcome";
+        console.log("User has active subscription or beta access, continuing through the landing screen");
+        window.location.href = "/";
       } else {
         console.log("User has no active subscription, redirecting to subscription page");
         window.location.href = "/subscription";
