@@ -41,6 +41,12 @@ const Dashboard = () => {
 
   const displayName =
     user.name || user.business_name || "User";
+  const welcomeTextSize =
+    displayName.length > 36
+      ? "text-lg sm:text-2xl"
+      : displayName.length > 22
+        ? "text-xl sm:text-2xl"
+        : "text-2xl sm:text-3xl";
 
   return (
     <Layout pageTitle="Home">
@@ -53,7 +59,7 @@ const Dashboard = () => {
           <div className="pointer-events-none absolute -right-5 -top-12 h-44 w-44 rounded-full border border-[#cdac6e]/10" />
           <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
             <div>
-              <h1 className="font-accent text-2xl font-bold tracking-tight sm:text-3xl">
+              <h1 className={`max-w-3xl truncate whitespace-nowrap font-accent font-bold leading-tight tracking-tight ${welcomeTextSize}`}>
                 Welcome, {displayName}
               </h1>
             </div>
