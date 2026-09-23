@@ -75,8 +75,8 @@ const futurePlans = [
       'Notification options',
       'GST Included'
     ],
-    buttonText: 'Subscribe',
-    isComingSoon: false
+    buttonText: 'Coming Soon',
+    isComingSoon: true
   },
   {
     id: 'professional',
@@ -128,7 +128,9 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
+    // Guard against a double-submit (e.g. an accidental double-click)
+    // creating two payments for the same subscription.
+    if (!stripe || !elements || isProcessing) {
       return;
     }
 
@@ -136,7 +138,7 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
     setErrorMessage(null);
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: window.location.origin + '/subscription/success',
@@ -152,7 +154,22 @@ const CheckoutForm = ({ onSuccess }: { onSuccess: () => void }) => {
           variant: 'destructive',
         });
       } else {
-        // Payment succeeded
+        // Payment succeeded with Stripe - now tell our own server so it can
+        // actually activate the account. This does not depend on a webhook.
+        if (paymentIntent?.id) {
+          try {
+            await apiRequest('POST', '/api/subscription/confirm', { paymentIntentId: paymentIntent.id });
+          } catch (confirmErr: any) {
+            console.error('Failed to confirm subscription with server:', confirmErr);
+            toast({
+              title: 'Payment succeeded, but activation failed',
+              description: 'Your card was charged but we could not activate your plan automatically. Please contact support.',
+              variant: 'destructive',
+            });
+            setIsProcessing(false);
+            return;
+          }
+        }
         toast({
           title: 'Payment Successful',
           description: 'Your subscription has been activated!',
@@ -527,6 +544,13 @@ export default function SubscriptionPage() {
   
   // When plan is selected, handle beta or paid subscriptions accordingly
   const handleSelectPlan = (planId: string) => {
+    // Guard against rapid repeated calls (e.g. a double-click, or the
+    // disabled state lagging a frame behind) creating multiple payment
+    // intents for the same subscription attempt.
+    if (isPendingSubscribe || isCreatingSubscription || isActivatingBeta) {
+      return;
+    }
+
     // Always verify that user has agreed to Terms of Service
     if (!tosAgreed) {
       toast({
@@ -689,6 +713,38 @@ export default function SubscriptionPage() {
 
     // For beta users: show a clean simplified view (no billing, no cancel, no plan switching)
     if (isBetaPlan) {
+      // A real payment intent has been created (clientSecret is set) - show the
+      // actual Stripe card entry form instead of the plan picker until it
+      // either succeeds or the user backs out.
+      if (clientSecret) {
+        return (
+          <Layout pageTitle="Complete Your Subscription">
+            <div className="container mx-auto py-12 max-w-md">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl font-accent">Enter Payment Details</CardTitle>
+                  <CardDescription>
+                    Subscribing to {allPlans.find(p => p.id === selectedPlan)?.name || 'your selected plan'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Elements stripe={stripePromise} options={{ clientSecret }}>
+                    <CheckoutForm onSuccess={handlePaymentSuccess} />
+                  </Elements>
+                  <Button
+                    variant="ghost"
+                    className="w-full mt-4"
+                    onClick={() => { setClientSecret(''); setIsPendingSubscribe(false); }}
+                  >
+                    Cancel
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </Layout>
+        );
+      }
+
       return (
         <Layout pageTitle="Free Beta Access">
           <div className="container mx-auto py-12 max-w-2xl">
@@ -736,6 +792,31 @@ export default function SubscriptionPage() {
                   <p className="text-sm text-muted-foreground">
                     These premium plans will be available after our beta period ends. We'll notify you well in advance.
                   </p>
+
+                  {/* Terms of Service Agreement - required before subscribing to any plan below */}
+                  <div id="terms-section" className="p-4 border border-gray-300 rounded-lg bg-neutral-50 transition-colors duration-300">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id="terms-global-beta"
+                        checked={tosAgreed}
+                        onCheckedChange={(checked) => setTosAgreed(checked === true)}
+                        className="mt-1"
+                      />
+                      <div>
+                        <label htmlFor="terms-global-beta" className="text-base font-medium cursor-pointer" onClick={() => setTosAgreed(!tosAgreed)}>
+                          I agree to the Terms of Service
+                        </label>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          You must agree before subscribing.
+                        </p>
+                        <TermsOfServiceDialog />
+                        {!tosAgreed && (
+                          <p className="text-sm text-red-500 font-medium mt-1">Please check this box to continue</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     {convertedFuturePlans.map((futurePlan) => (
                       <Card key={futurePlan.id} className={`border ${futurePlan.isPopular ? 'border-primary' : 'border-gray-200'}`}>
@@ -755,8 +836,20 @@ export default function SubscriptionPage() {
                           )}
                         </CardHeader>
                         <CardContent className="pt-0">
-                          <Button className="w-full mb-3" variant="outline" disabled={true}>
-                            Coming Soon
+                          <Button
+                            className="w-full mb-3"
+                            variant="outline"
+                            disabled={futurePlan.isComingSoon || isCreatingSubscription}
+                            onClick={() => handleSelectPlan(futurePlan.id)}
+                          >
+                            {isCreatingSubscription && selectedPlan === futurePlan.id ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Processing...
+                              </>
+                            ) : (
+                              futurePlan.buttonText || "Coming Soon"
+                            )}
                           </Button>
                           <div className="text-xs text-muted-foreground">
                             {futurePlan.features.slice(0, 3).map((feature, i) => (

@@ -96,8 +96,12 @@ self.addEventListener('fetch', (event) => {
 
         const response = await fetch(request).catch(() => null);
 
-        // A missing hashed asset means the cached shell belongs to an older
-        // deployment. Discard it so the next load gets the current shell.
+        // A hashed /assets/ file that's missing or comes back as something
+        // other than the real file (e.g. the server's HTML fallback page,
+        // because this exact build no longer exists after a newer deploy)
+        // means the cached app shell referencing it is stale. Clear it and
+        // tell every open tab to reload, instead of leaving the page stuck
+        // on a blank screen indefinitely.
         const isRealFile = response && response.ok &&
           !(response.headers.get('content-type') || '').includes('text/html');
         if (url.pathname.startsWith('/assets/') && !isRealFile) {

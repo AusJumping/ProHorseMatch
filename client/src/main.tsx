@@ -12,6 +12,8 @@ if ('serviceWorker' in navigator) {
     window.location.reload();
   });
 
+  // If a cached app shell references an asset removed by a newer deployment,
+  // reload after the service worker discards that stale shell.
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data?.type !== 'STALE_SHELL_RELOAD' || refreshingForNewServiceWorker) return;
     refreshingForNewServiceWorker = true;

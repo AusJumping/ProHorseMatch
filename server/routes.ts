@@ -3347,20 +3347,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Price IDs for each plan
-      const prices = {
-        basic: 'price_basic', // Replace with actual Stripe price IDs
-        pro: 'price_pro',
-        premium: 'price_premium'
+      // Real plan prices - must stay in sync with client/src/pages/subscription.tsx's
+      // futurePlans array. Amounts are in AUD cents (Stripe wants the smallest unit).
+      const planAmountsAudCents: Record<string, number> = {
+        searching: 495,     // A$4.95
+        professional: 3995, // A$39.95 (displayed as "SELLING")
+        elite: 9995,        // A$99.95 (displayed as "UNLIMITED")
       };
-      
-      // For testing without real price IDs
-      const priceAmounts = {
-        basic: 1999, // $19.99
-        pro: 4999,   // $49.99
-        premium: 9999 // $99.99
-      };
-      
+
+      const amount = planAmountsAudCents[planId];
+      if (!amount) {
+        return res.status(400).json({ message: `Unknown plan: ${planId}` });
+      }
+
       // Create or retrieve a customer
       let customerId = user.stripe_customer_id;
       
@@ -3381,20 +3380,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get the amount based on the plan or use a default
-      let amount = 1999; // Default to $19.99 if plan not found
-      if (planId === 'basic') {
-        amount = 1999; // $19.99
-      } else if (planId === 'pro') {
-        amount = 4999; // $49.99
-      } else if (planId === 'premium') {
-        amount = 9999; // $99.99
-      }
-      
       // Create a subscription
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
-        currency: 'usd',
+        currency: 'aud',
         customer: customerId,
         setup_future_usage: 'off_session',
         metadata: {
@@ -3410,13 +3399,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Error creating subscription:", error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: "Error creating subscription",
-        error: error.message 
+        error: error.message
       });
     }
   });
-  
+
+  // Confirm a subscription payment immediately after the card is charged
+  // client-side. This is the primary way the account gets activated - it
+  // does not depend on a Stripe webhook being configured, since it verifies
+  // success directly against Stripe's own API using the real, authenticated
+  // user's session rather than trusting anything the client claims.
+  app.post('/api/subscription/confirm', isTokenAuthenticated, async (req: any, res) => {
+    try {
+      if (!stripe) {
+        return res.status(500).json({ message: "Stripe is not configured" });
+      }
+
+      const { paymentIntentId } = req.body;
+      if (!paymentIntentId) {
+        return res.status(400).json({ message: "paymentIntentId is required" });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({ message: `Payment has not succeeded (status: ${paymentIntent.status})` });
+      }
+
+      // Only allow a user to confirm a payment intent that actually belongs to them
+      if (paymentIntent.metadata?.userId !== req.userId.toString()) {
+        return res.status(403).json({ message: "This payment does not belong to your account" });
+      }
+
+      const planId = paymentIntent.metadata?.planId;
+      if (!planId) {
+        return res.status(400).json({ message: "Payment is missing plan information" });
+      }
+
+      const subscriptionEndDate = new Date();
+      subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+
+      await storage.updateUserSubscription(req.userId, {
+        stripe_subscription_id: paymentIntent.id,
+        subscription_status: 'active',
+        subscription_plan: planId,
+        subscription_end_date: subscriptionEndDate,
+      });
+
+      res.json({ message: "Subscription activated", planId });
+    } catch (error) {
+      console.error("Error confirming subscription:", error);
+      res.status(500).json({
+        message: "Error confirming subscription",
+        error: error.message,
+      });
+    }
+  });
+
   // Handle webhook from Stripe for subscription events
   app.post('/api/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
     try {
