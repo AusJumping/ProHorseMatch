@@ -1,0 +1,1 @@
+- [iPhone notification diagnosis](iphone-notifications.md) — do not mistake separate app/browser permissions or current-version screenshots for stale-cache problems.

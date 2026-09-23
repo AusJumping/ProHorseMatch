@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Capacitor } from "@capacitor/core";
-import { AUTO_PUSH_OPT_OUT_KEY, hasCurrentWebPushSubscription, isIOSBrowserTab, supportsWebPushHere } from "@/lib/webPushSupport";
+import { AUTO_PUSH_OPT_OUT_KEY, hasCurrentWebPushSubscription, isIOSDevice, isIOSBrowserTab, supportsWebPushHere } from "@/lib/webPushSupport";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -32,7 +32,7 @@ export function NotificationSettings() {
     typeof Notification !== 'undefined' ? Notification.permission : 'denied'
   );
   const [isPWAInstalled, setIsPWAInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const isIOS = isIOSDevice();
   const isIOSBrowser = isIOSBrowserTab();
   const isNativeApp = Capacitor.isNativePlatform();
   const supportsNotifications = supportsWebPushHere();
@@ -41,10 +41,8 @@ export function NotificationSettings() {
   useEffect(() => {
     const checkPWAInstalled = () => {
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isIOSStandalone = (window.navigator as any).standalone === true;
-      setIsPWAInstalled(isStandalone || (isIOSDevice && isIOSStandalone));
-      setIsIOS(isIOSDevice);
+      setIsPWAInstalled(isStandalone || isIOSStandalone);
     };
     
     checkPWAInstalled();
@@ -278,12 +276,17 @@ export function NotificationSettings() {
         
         {supportsNotifications && permission === 'denied' && (
           <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
-            <p>Notifications are blocked. To enable them:</p>
-            <ol className="list-decimal ml-5 mt-2 space-y-1">
-              <li>Click the lock icon in your address bar</li>
-              <li>Find "Notifications" and set it to "Allow"</li>
-              <li>Refresh the page and try again</li>
-            </ol>
+            <p>This browser reports that notification access is not allowed.</p>
+            <p className="mt-2">
+              This does not mean notifications are switched off for your installed
+              ProHorseMatch app. The browser and installed app have separate permissions.
+            </p>
+            <p className="mt-2">
+              On iPhone or iPad, open ProHorseMatch using its Home Screen icon.
+              Check Settings → Notifications → ProHorseMatch → Allow Notifications.
+              If it is already on, leave it on and return to the installed app.
+              In other browsers, check this website's notification permission in the browser settings.
+            </p>
           </div>
         )}
         
@@ -295,7 +298,9 @@ export function NotificationSettings() {
             {isIOS ? (
               <div className="text-blue-800 dark:text-blue-200 space-y-2">
                 <p className="font-medium">
-                  On iOS/Safari, push notifications only work when the app is installed to your home screen:
+                  Notifications allowed in iPhone Settings apply to the installed app, not this browser tab.
+                  If ProHorseMatch is already installed, close this tab and open it from its Home Screen icon.
+                  Otherwise, install it using these steps:
                 </p>
                 <ol className="list-decimal ml-5 space-y-1">
                   <li>Open this site in <strong>Safari</strong> (not Chrome or other browsers)</li>
