@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { apiRequest } from "@/lib/queryClient";
 import Layout from "@/components/Layout";
+import { AUTO_PUSH_OPT_OUT_KEY, supportsWebPushHere } from "@/lib/webPushSupport";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -102,8 +103,7 @@ export default function Messages() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const supportsPush = typeof window !== 'undefined' &&
-    'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+  const supportsPush = supportsWebPushHere();
 
   const { data: pushStatus } = useQuery<{ subscribed: boolean }>({
     queryKey: ['/api/push/status'],
@@ -118,6 +118,7 @@ export default function Messages() {
     try {
       const result = await enablePushNotifications();
       if (result === 'success') {
+        localStorage.removeItem(AUTO_PUSH_OPT_OUT_KEY);
         queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
         toast({ title: "Phone alerts enabled!", description: "You'll get an instant alert whenever you receive a reply." });
         if (source === 'banner') setBannerDismissed(true);

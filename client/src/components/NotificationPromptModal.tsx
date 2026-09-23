@@ -4,6 +4,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Bell, MessageSquare, Heart, Sparkles, Smartphone, Monitor } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AUTO_PUSH_OPT_OUT_KEY, supportsWebPushHere } from "@/lib/webPushSupport";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -67,6 +68,7 @@ export function NotificationPromptModal({ isOpen, onClose, onComplete }: Notific
       return subscription;
     },
     onSuccess: () => {
+      localStorage.removeItem(AUTO_PUSH_OPT_OUT_KEY);
       queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
       toast({
         title: "Notifications enabled!",
@@ -89,10 +91,10 @@ export function NotificationPromptModal({ isOpen, onClose, onComplete }: Notific
   const handleEnableNotifications = async () => {
     setIsEnabling(true);
     
-    if (!('Notification' in window)) {
+    if (!supportsWebPushHere()) {
       toast({
         title: "Not supported",
-        description: "Your browser doesn't support push notifications. Try installing the app first.",
+        description: "On iPhone, open the installed Home Screen app to enable notifications.",
         variant: "destructive"
       });
       setIsEnabling(false);
@@ -134,7 +136,7 @@ export function NotificationPromptModal({ isOpen, onClose, onComplete }: Notific
     onClose();
   };
 
-  const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+  const supportsNotifications = supportsWebPushHere();
 
   if (!isOpen) return null;
 

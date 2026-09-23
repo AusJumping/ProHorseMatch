@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, AlertTriangle, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AUTO_PUSH_OPT_OUT_KEY, supportsWebPushHere } from "@/lib/webPushSupport";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -70,6 +71,7 @@ export function NotificationReminder() {
       return subscription;
     },
     onSuccess: () => {
+      localStorage.removeItem(AUTO_PUSH_OPT_OUT_KEY);
       queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
       toast({
         title: "Notifications enabled!",
@@ -123,7 +125,7 @@ export function NotificationReminder() {
     }
   };
 
-  const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+  const supportsNotifications = supportsWebPushHere();
   const notificationPermission = typeof Notification !== 'undefined' ? Notification.permission : 'denied';
   
   if (isLoading || pushStatus?.subscribed || isDismissed || !supportsNotifications || notificationPermission === 'denied') {

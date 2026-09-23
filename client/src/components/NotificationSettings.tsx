@@ -8,6 +8,8 @@ import { Link } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Capacitor } from "@capacitor/core";
+import { AUTO_PUSH_OPT_OUT_KEY, hasCurrentWebPushSubscription, isIOSBrowserTab, supportsWebPushHere } from "@/lib/webPushSupport";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -31,6 +33,9 @@ export function NotificationSettings() {
   );
   const [isPWAInstalled, setIsPWAInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const isIOSBrowser = isIOSBrowserTab();
+  const isNativeApp = Capacitor.isNativePlatform();
+  const supportsNotifications = supportsWebPushHere();
   
   // Check if PWA is installed and detect iOS
   useEffect(() => {
@@ -45,6 +50,18 @@ export function NotificationSettings() {
     checkPWAInstalled();
   }, []);
 
+  useEffect(() => {
+    const refreshPermission = () => {
+      setPermission(typeof Notification !== "undefined" ? Notification.permission : "denied");
+    };
+    window.addEventListener("focus", refreshPermission);
+    document.addEventListener("visibilitychange", refreshPermission);
+    return () => {
+      window.removeEventListener("focus", refreshPermission);
+      document.removeEventListener("visibilitychange", refreshPermission);
+    };
+  }, []);
+
   // Get subscription status and preferences
   const { data: status } = useQuery<{ 
     subscribed: boolean; 
@@ -57,7 +74,13 @@ export function NotificationSettings() {
     };
   }>({
     queryKey: ['/api/push/status'],
-    enabled: permission === 'granted'
+    retry: false,
+  });
+  const { data: hasDeviceSubscription } = useQuery({
+    queryKey: ["push", "current-device"],
+    queryFn: hasCurrentWebPushSubscription,
+    enabled: supportsNotifications && permission === "granted",
+    refetchOnWindowFocus: true,
   });
 
   // Update notification preferences
@@ -138,7 +161,9 @@ export function NotificationSettings() {
       return subscription;
     },
     onSuccess: () => {
+      localStorage.removeItem(AUTO_PUSH_OPT_OUT_KEY);
       queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
+      queryClient.invalidateQueries({ queryKey: ["push", "current-device"] });
       toast({
         title: "Notifications enabled",
         description: "You'll now receive push notifications for new matches and messages"
@@ -171,6 +196,7 @@ export function NotificationSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
+      queryClient.invalidateQueries({ queryKey: ["push", "current-device"] });
       toast({
         title: "Notifications disabled",
         description: "You won't receive push notifications anymore"
@@ -218,14 +244,12 @@ export function NotificationSettings() {
   };
 
   const handleDisableNotifications = () => {
+    localStorage.setItem(AUTO_PUSH_OPT_OUT_KEY, "true");
     unsubscribeMutation.mutate();
   };
 
-  const isSubscribed = status?.subscribed;
+  const isSubscribed = supportsNotifications && permission === "granted" && hasDeviceSubscription === true;
   const isLoading = subscribeMutation.isPending || unsubscribeMutation.isPending;
-  
-  // Check if browser supports notifications
-  const supportsNotifications = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
   return (
     <Card>
@@ -239,7 +263,13 @@ export function NotificationSettings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!supportsNotifications && (
+        {isNativeApp && (
+          <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+            App notifications are managed through your phone's notification settings.
+            The web subscriptions on your account do not indicate this app's permission.
+          </div>
+        )}
+        {!supportsNotifications && !isIOSBrowser && !isNativeApp && (
           <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
             <p>Push notifications are not supported in your current browser.</p>
             <p className="mt-1">Try using Chrome, Edge, or Firefox for the best experience.</p>
@@ -257,7 +287,7 @@ export function NotificationSettings() {
           </div>
         )}
         
-        {supportsNotifications && permission !== 'denied' && !isPWAInstalled && (
+        {(isIOSBrowser || (supportsNotifications && permission !== 'denied' && !isPWAInstalled)) && (
           <div className="text-sm bg-blue-50 dark:bg-blue-950 p-4 rounded-md border border-blue-200 dark:border-blue-800">
             <p className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
               📱 {isIOS ? 'iOS Installation Required' : 'Install as App for Best Experience'}
@@ -312,12 +342,20 @@ export function NotificationSettings() {
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <p className="text-sm font-medium">
-              {isSubscribed ? 'Notifications Enabled' : 'Notifications Disabled'}
+              {isNativeApp
+                ? 'App notification settings'
+                : isSubscribed
+                  ? 'Notifications enabled on this device'
+                  : 'Notifications not enabled in this browser'}
             </p>
             <p className="text-sm text-muted-foreground">
-              {isSubscribed 
-                ? "You're receiving push notifications" 
-                : "Enable to get instant updates"}
+              {isNativeApp
+                ? "Check your phone's settings for this app"
+                : isSubscribed
+                  ? "This browser is subscribed to push notifications"
+                  : status?.subscribed
+                    ? "Your account has subscriptions saved, but this browser is not enabled"
+                    : "Enable to get instant updates"}
             </p>
           </div>
           
@@ -346,9 +384,9 @@ export function NotificationSettings() {
           )}
         </div>
 
-        {isSubscribed && status?.preferences && (
+        {status?.subscribed && status.preferences && (
           <div className="space-y-4 pt-4 border-t">
-            <p className="text-sm font-medium">Choose which notifications you want to receive:</p>
+            <p className="text-sm font-medium">Choose which notifications your account receives:</p>
             
             <div className="space-y-3">
               <div className="flex items-center justify-between space-x-2">

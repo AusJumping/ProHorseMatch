@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell, X } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { AUTO_PUSH_OPT_OUT_KEY, hasCurrentWebPushSubscription, supportsWebPushHere } from "@/lib/webPushSupport";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -21,16 +22,7 @@ export function ContextualNotificationPrompt() {
   const hasShownRef = useRef(false);
   const { toast } = useToast();
 
-  const supportsNotifications =
-    typeof Notification !== 'undefined' &&
-    'serviceWorker' in navigator &&
-    'PushManager' in window;
-
-  const { data: notificationStatus } = useQuery<{ subscribed: boolean }>({
-    queryKey: ['/api/push/status'],
-    retry: false,
-    enabled: supportsNotifications && typeof Notification !== 'undefined' && Notification.permission === 'granted',
-  });
+  const supportsNotifications = supportsWebPushHere();
 
   const subscribeMutation = useMutation({
     mutationFn: async () => {
@@ -53,30 +45,53 @@ export function ContextualNotificationPrompt() {
       });
     },
     onSuccess: () => {
+      localStorage.removeItem(AUTO_PUSH_OPT_OUT_KEY);
       queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
       toast({ title: "Notifications enabled!", description: "You'll get instant alerts for matches and messages." });
       setIsVisible(false);
     },
-    onError: () => {
+    onError: (error: Error) => {
       setIsEnabling(false);
+      toast({ title: "Could not enable notifications", description: error.message, variant: "destructive" });
     },
   });
 
   useEffect(() => {
-    if (hasShownRef.current) return;
-    if (!supportsNotifications) return;
-    if (typeof Notification === 'undefined') return;
-    if (Notification.permission === 'denied') return;
+    if (hasShownRef.current || !supportsNotifications || Notification.permission === "denied") return;
+    if (localStorage.getItem("notification-prompt-dismissed") === "true") return;
+    if (sessionStorage.getItem("notification-prompt-dismissed-session") === "true") return;
 
-    if (localStorage.getItem('notification-prompt-dismissed') === 'true') return;
-    if (sessionStorage.getItem('notification-prompt-dismissed-session') === 'true') return;
-
-    if (Notification.permission === 'granted' && notificationStatus?.subscribed) return;
-
-    hasShownRef.current = true;
-    const timer = setTimeout(() => setIsVisible(true), 4000);
-    return () => clearTimeout(timer);
-  }, [notificationStatus]);
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const checkThisDevice = async () => {
+      if (Notification.permission === "granted") {
+        try {
+          if (await hasCurrentWebPushSubscription()) return;
+        } catch {
+          // Don't prompt if the browser's subscription can't be checked.
+          return;
+        }
+      }
+      if (cancelled) return;
+      hasShownRef.current = true;
+      timer = setTimeout(async () => {
+        if (Notification.permission === "denied") return;
+        if (Notification.permission === "granted") {
+          try {
+            if (await hasCurrentWebPushSubscription()) return;
+          } catch {
+            return;
+          }
+        }
+        if (!cancelled) setIsVisible(true);
+      }, 4000);
+    };
+    void checkThisDevice();
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [supportsNotifications]);
 
   const handleEnable = async () => {
     if (!supportsNotifications) {

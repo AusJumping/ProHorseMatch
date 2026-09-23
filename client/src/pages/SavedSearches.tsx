@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import Layout from "@/components/Layout";
+import { AUTO_PUSH_OPT_OUT_KEY, hasCurrentWebPushSubscription, supportsWebPushHere } from "@/lib/webPushSupport";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -83,10 +84,7 @@ export default function SavedSearches() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const supportsPush = typeof window !== 'undefined' &&
-    'Notification' in window &&
-    'serviceWorker' in navigator &&
-    'PushManager' in window;
+  const supportsPush = supportsWebPushHere();
 
   const closeDialog = () => {
     setIsCreateDialogOpen(false);
@@ -105,6 +103,7 @@ export default function SavedSearches() {
         return;
       }
       await subscribeToPush();
+      localStorage.removeItem(AUTO_PUSH_OPT_OUT_KEY);
       queryClient.invalidateQueries({ queryKey: ['/api/push/status'] });
       setPushStep('success');
     } catch {
@@ -141,9 +140,19 @@ export default function SavedSearches() {
     mutationFn: async (data: SavedSearchFormData) => {
       return apiRequest("POST", "/api/saved-searches", data);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["/api/saved-searches"] });
       form.reset();
+      if (supportsPush && Notification.permission === "granted") {
+        try {
+          if (await hasCurrentWebPushSubscription()) {
+            closeDialog();
+            return;
+          }
+        } catch {
+          // Keep the existing prompt path if this browser can't be checked.
+        }
+      }
       // Instead of closing, show the post-save push prompt
       if (!supportsPush) {
         setPushStep('unsupported');

@@ -33,6 +33,7 @@ import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
 import { IntroGate } from "@/components/intro-gate";
+import { AutoWebPushRegistration } from "@/components/AutoWebPushRegistration";
 
 // Auto-logout component to handle inactivity timeout
 function AutoLogoutWrapper({ children }: { children: React.ReactNode }) {
@@ -86,6 +87,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <AutoWebPushRegistration />
         <CurrencyProvider initialCurrency="AUD">
           <TooltipProvider>
             <Toaster />
