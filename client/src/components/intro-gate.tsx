@@ -1,52 +1,52 @@
 import { useEffect, useState, type ReactNode } from "react";
 import mobileIntro from "@/assets/intro-video-mobile.mp4";
 
-const INTRO_LAST_SHOWN_KEY = "phm_intro_last_shown";
-
-// Add the landscape import here when it arrives; the same daily date applies
-// regardless of which source was selected.
+// Add the landscape import here when it arrives.
 const INTRO_SOURCES = [
   { minWidth: 768, src: null },
   { minWidth: 0, src: mobileIntro },
 ] as const;
 
+// Keep navigation within one app opening from replaying the intro. A page
+// reload starts a new opening; a background/resume cycle resets this below.
+let shownThisOpening = false;
+
 function pickIntroSource(width: number): string | null {
   return INTRO_SOURCES.find(({ minWidth }) => width >= minWidth)?.src ?? null;
 }
 
-function todayLocalDate(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-}
-
-function introSourceForToday(): string | null {
+function claimIntroSource(): string | null {
+  if (document.visibilityState !== "visible" || shownThisOpening) return null;
   const source = pickIntroSource(window.innerWidth);
-  if (!source) return null;
-
-  try {
-    const today = todayLocalDate();
-    if (window.localStorage.getItem(INTRO_LAST_SHOWN_KEY) === today) return null;
-    // Claim today's showing as soon as the intro opens, even if it is skipped.
-    window.localStorage.setItem(INTRO_LAST_SHOWN_KEY, today);
-  } catch {
-    // If storage is unavailable, the intro still works for this visit.
-  }
+  if (source) shownThisOpening = true;
   return source;
 }
 
+type Playback = { source: string; sequence: number };
+
 export function IntroGate({ children }: { children: ReactNode }) {
-  const [videoSource, setVideoSource] = useState<string | null>(introSourceForToday);
+  const [playback, setPlayback] = useState<Playback | null>(() => {
+    const source = claimIntroSource();
+    return source ? { source, sequence: 0 } : null;
+  });
 
   useEffect(() => {
     const onResize = () => {
       // Leave the intro if resized to a screen without a video source.
-      if (videoSource && !pickIntroSource(window.innerWidth)) setVideoSource(null);
+      if (!pickIntroSource(window.innerWidth)) setPlayback(null);
     };
     const onVisibilityChange = () => {
-      // Installed apps can resume the next morning without reloading the page.
-      if (document.visibilityState === "visible" && !videoSource) {
-        setVideoSource(introSourceForToday());
+      if (document.visibilityState === "hidden") {
+        shownThisOpening = false;
+        return;
       }
+      // Installed apps can resume without a reload. Restart the video from
+      // the beginning even if the previous opening ended while it was playing.
+      const source = claimIntroSource();
+      if (source) setPlayback(previous => ({
+        source,
+        sequence: (previous?.sequence ?? 0) + 1,
+      }));
     };
     window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisibilityChange);
@@ -54,19 +54,19 @@ export function IntroGate({ children }: { children: ReactNode }) {
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
-  }, [videoSource]);
+  }, []);
 
   const finishIntro = () => {
-    setVideoSource(null);
+    setPlayback(null);
   };
 
-  if (!videoSource) return <>{children}</>;
+  if (!playback) return <>{children}</>;
 
   return (
     <div className="fixed inset-0 z-[9999] bg-[#2b2b2b]">
       <video
-        key={videoSource}
-        src={videoSource}
+        key={`${playback.source}-${playback.sequence}`}
+        src={playback.source}
         className="absolute inset-0 h-full w-full object-cover"
         autoPlay
         playsInline
