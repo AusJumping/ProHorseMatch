@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "wouter";
+import { Redirect, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import logoImage from "../assets/logo.jpg";
 import { useAuth } from "@/lib/auth";
@@ -7,6 +7,9 @@ import { useAuth } from "@/lib/auth";
 const Landing = () => {
   const [, navigate] = useLocation();
   const { isAuthenticated, isLoading } = useAuth();
+  const isInstalledApp =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true;
 
   // Returning users go directly to Find Horses instead of the dashboard.
   useEffect(() => {
@@ -14,6 +17,12 @@ const Landing = () => {
       navigate("/filter", { replace: true });
     }
   }, [isLoading, isAuthenticated, navigate]);
+
+  // Existing home-screen icons may still launch at "/" even after the
+  // manifest changes. Take those users straight to the listings.
+  if (isInstalledApp) {
+    return <Redirect to="/filter" />;
+  }
 
   // Avoid flashing login buttons while checking a saved session.
   if (isLoading || isAuthenticated) {

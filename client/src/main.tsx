@@ -12,6 +12,12 @@ if ('serviceWorker' in navigator) {
     window.location.reload();
   });
 
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type !== 'STALE_SHELL_RELOAD' || refreshingForNewServiceWorker) return;
+    refreshingForNewServiceWorker = true;
+    window.location.reload();
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {

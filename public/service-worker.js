@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v9';
+const CACHE_VERSION = 'v11';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 // Assets to cache on install — failures are caught individually so one bad
@@ -90,7 +90,24 @@ self.addEventListener('fetch', (event) => {
     url.pathname.endsWith('.webmanifest')
   ) {
     event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request))
+      (async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+
+        const response = await fetch(request).catch(() => null);
+
+        // A missing hashed asset means the cached shell belongs to an older
+        // deployment. Discard it so the next load gets the current shell.
+        const isRealFile = response && response.ok &&
+          !(response.headers.get('content-type') || '').includes('text/html');
+        if (url.pathname.startsWith('/assets/') && !isRealFile) {
+          await caches.delete(SHELL_CACHE);
+          const clients = await self.clients.matchAll({ type: 'window' });
+          clients.forEach((client) => client.postMessage({ type: 'STALE_SHELL_RELOAD' }));
+        }
+
+        return response || Response.error();
+      })()
     );
     return;
   }

@@ -1,7 +1,7 @@
 {
   "name": "ProHorseMatch",
   "short_name": "ProHorseMatch",
-  "start_url": "/",
+  "start_url": "/filter",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#2b2b2b",
