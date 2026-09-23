@@ -8,21 +8,14 @@ const Landing = () => {
   const [, navigate] = useLocation();
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Already-logged-in users (e.g. iOS PWA reopening at the start page after the
-  // app was evicted from memory) should go straight into the app instead of
-  // seeing the Sign In / Register screen, which looks like being logged out.
+  // Returning users go directly to Find Horses instead of the dashboard.
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      const redirectTimer = window.setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 1200);
-
-      return () => window.clearTimeout(redirectTimer);
+      navigate("/filter", { replace: true });
     }
   }, [isLoading, isAuthenticated, navigate]);
 
-  // While we're checking the saved login (or about to redirect a logged-in
-  // user), show a quiet loading state rather than flashing the login buttons.
+  // Avoid flashing login buttons while checking a saved session.
   if (isLoading || isAuthenticated) {
     return (
       <div

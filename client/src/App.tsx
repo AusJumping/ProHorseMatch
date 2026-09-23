@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -26,7 +26,6 @@ import Subscription from "@/pages/subscription";
 import SubscriptionSuccess from "@/pages/subscription/success";
 import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
-import WelcomePage from "@/pages/welcome";
 import VerifyEmail from "@/pages/verify-email";
 import HelpPage from "@/pages/help";
 import UnsubscribePage from "@/pages/unsubscribe";
@@ -73,7 +72,7 @@ function Router() {
         <Route path="/subscription/success" component={SubscriptionSuccess} />
         <Route path="/donation-checkout" component={DonationCheckout} />
         <Route path="/donation-success" component={DonationSuccess} />
-        <Route path="/welcome" component={WelcomePage} />
+        <Route path="/welcome"><Redirect to="/filter" /></Route>
         <Route path="/help" component={HelpPage} />
         <Route path="/unsubscribe" component={UnsubscribePage} />
         <Route component={NotFound} />
