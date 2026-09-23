@@ -32,6 +32,7 @@ import UnsubscribePage from "@/pages/unsubscribe";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { useAutoLogout } from "@/hooks/useAutoLogout";
+import { IntroGate } from "@/components/intro-gate";
 
 // Auto-logout component to handle inactivity timeout
 function AutoLogoutWrapper({ children }: { children: React.ReactNode }) {
@@ -43,9 +44,9 @@ function Router() {
   return (
     <AutoLogoutWrapper>
       <Switch>
-        <Route path="/" component={Landing} />
+        <Route path="/"><IntroGate><Landing /></IntroGate></Route>
         <Route path="/dashboard" component={Dashboard} />
-        <Route path="/filter" component={Home} />
+        <Route path="/filter"><IntroGate><Home /></IntroGate></Route>
         <Route path="/browse">
           {() => {
             window.location.replace('/filter');

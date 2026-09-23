@@ -1696,9 +1696,12 @@ export class DatabaseStorage implements IStorage {
     const horsesByRecency = await db.select().from(horses).orderBy(
       desc(horses.created_at)
     );
+    // Temporary featured listing: move it to the front without changing
+    // the order of the other horses.
+    const featuredHorseId = 118; // Finch Farm Whitaker
     const allHorses = [
-      ...horsesByRecency.filter(horse => horse.name === "Commander NZPH"),
-      ...horsesByRecency.filter(horse => horse.name !== "Commander NZPH"),
+      ...horsesByRecency.filter(horse => horse.id === featuredHorseId),
+      ...horsesByRecency.filter(horse => horse.id !== featuredHorseId),
     ];
 
     // If no filters are provided, return all horses (most recent first)
@@ -1825,14 +1828,9 @@ export class DatabaseStorage implements IStorage {
       return true;
     });
     
-    const commander = allHorses.find(horse => horse.name === "Commander NZPH");
-    const results = commander
-      ? [commander, ...filteredHorses.filter(horse => horse.id !== commander.id)]
-      : filteredHorses;
-
-    console.log(`DatabaseStorage.getHorsesByFilters - found ${results.length} horses after filtering`);
+    console.log(`DatabaseStorage.getHorsesByFilters - found ${filteredHorses.length} horses after filtering`);
     
-    return results;
+    return filteredHorses;
   }
 
   async createHorse(horse: InsertHorse): Promise<Horse> {
