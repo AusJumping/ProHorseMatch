@@ -2,7 +2,6 @@ import { ReactNode } from "react";
 import { useLocation } from "wouter";
 import Sidebar from "./Sidebar";
 import MobileNavbar from "./MobileNavbar";
-import { ContextualNotificationPrompt } from "./ContextualNotificationPrompt";
 import { PWAInstallBanner } from "./PWAInstallBanner";
 import { NotificationBell } from "./NotificationBell";
 import { UnreadNotificationBanner } from "./UnreadNotificationBanner";
@@ -150,7 +149,6 @@ const Layout = ({
       {isAuthenticated && <UnreadNotificationBanner />}
 
       {/* Contextual Notification Prompt */}
-      {isAuthenticated && <ContextualNotificationPrompt />}
       
       {/* PWA Install Banner */}
       {isAuthenticated && <PWAInstallBanner />}
