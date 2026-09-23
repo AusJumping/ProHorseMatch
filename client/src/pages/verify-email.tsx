@@ -56,9 +56,9 @@ export default function VerifyEmail() {
           queryClient.setQueryData(['/api/auth/me'], data.user);
         }
         
-        // Redirect to welcome page after 2 seconds
+        // Redirect to Find Horses after 2 seconds
         setTimeout(() => {
-          setLocation('/welcome');
+          setLocation('/filter');
         }, 2000);
       } else {
         if (data.message.includes('expired')) {
