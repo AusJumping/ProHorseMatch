@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v11';
+const CACHE_VERSION = 'v12';
 const SHELL_CACHE = 'shell-' + CACHE_VERSION;
 
 // Assets to cache on install — failures are caught individually so one bad

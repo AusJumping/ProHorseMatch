@@ -5324,6 +5324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const content = await fs.promises.readFile(serviceWorkerPath, "utf-8");
       res.setHeader("Content-Type", "application/javascript");
       res.setHeader("Service-Worker-Allowed", "/");
+      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
       res.send(content);
     } catch (error) {
       console.error("Error serving service worker:", error);

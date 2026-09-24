@@ -18,3 +18,9 @@ Establish the installation method before following native-push configuration war
 **Why:** In this investigation the user confirmed Safari “Add to Home Screen.” A missing Firebase credential for the separate native app does not explain that web app's permission mismatch.
 
 **How to apply:** For Safari-installed apps, investigate the current origin, standalone/embedded context, service worker, and web subscription. Do not change the installed app's identity or recommend deleting it before collecting those facts.
+
+If the public HTML and hashed JavaScript bundle are current but a Home Screen app still shows an old notification prompt, consider the update path before blaming permissions.
+
+**Why:** A deployed UI had removed the popup and included diagnostics while an installed iPhone screen continued showing the old UI. A service worker whose script is unchanged across releases has no install/activate event to reload already-open clients.
+
+**How to apply:** Version the worker when the installed app must refresh its shell, and prevent HTTP caching of the worker script. Confirm what the public site serves separately from what the user's running client displays.
