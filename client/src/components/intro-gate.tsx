@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import mobileIntro from "@/assets/intro-video-mobile.mp4";
 
 // Add the landscape import here when it arrives.
@@ -25,10 +25,44 @@ function claimIntroSource(): string | null {
 type Playback = { source: string; sequence: number };
 
 export function IntroGate({ children }: { children: ReactNode }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [playback, setPlayback] = useState<Playback | null>(() => {
     const source = claimIntroSource();
     return source ? { source, sequence: 0 } : null;
   });
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!playback || !video) return;
+    let cancelled = false;
+    document.documentElement.classList.add("intro-playing");
+
+    // Set both the DOM properties and attributes before explicitly requesting
+    // playback: iOS does not always honour React's muted prop on its own.
+    video.defaultMuted = true;
+    video.muted = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+    const play = () => {
+      video.play().catch(error => {
+        if (!cancelled && error.name !== "AbortError") setPlayback(null);
+      });
+    };
+    play();
+    video.addEventListener("loadeddata", play);
+    // Low Power Mode or a stalled download must never leave a play button
+    // blocking entry to the app.
+    const timeout = window.setTimeout(() => {
+      if (!cancelled && video.currentTime === 0) setPlayback(null);
+    }, 8000);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+      video.removeEventListener("loadeddata", play);
+      document.documentElement.classList.remove("intro-playing");
+    };
+  }, [playback]);
 
   useEffect(() => {
     const onResize = () => {
@@ -63,12 +97,15 @@ export function IntroGate({ children }: { children: ReactNode }) {
   if (!playback) return <>{children}</>;
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#2b2b2b]">
+    <div className="intro-overlay fixed inset-0 z-[9999] overflow-hidden bg-[#2b2b2b]">
       <video
+        ref={videoRef}
         key={`${playback.source}-${playback.sequence}`}
         src={playback.source}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="intro-video absolute inset-0 block h-full w-full border-0 object-cover"
         autoPlay
+        controls={false}
+        disablePictureInPicture
         playsInline
         muted
         preload="auto"

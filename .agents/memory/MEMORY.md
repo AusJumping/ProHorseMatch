@@ -1,1 +1,2 @@
 - [iPhone notification diagnosis](iphone-notifications.md) — do not mistake separate app/browser permissions or current-version screenshots for stale-cache problems.
+- [iPhone intro playback](iphone-intro-playback.md) — check Low Power Mode before treating a new play button as an autoplay regression.

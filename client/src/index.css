@@ -2,6 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Keep the intro edge-to-edge, including Safari's bottom safe area. */
+html.intro-playing,
+html.intro-playing body {
+  background: #2b2b2b;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+.intro-overlay {
+  height: 100%;
+  height: 100dvh;
+}
+
+.intro-video {
+  /* Cover fractional-pixel seams without adding padding below the video. */
+  transform: scale(1.003);
+  pointer-events: none;
+}
+
+.intro-video::-webkit-media-controls,
+.intro-video::-webkit-media-controls-enclosure,
+.intro-video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+}
+
 :root {
   --background: 60 30% 98%;
   --foreground: 45 10% 17%;
