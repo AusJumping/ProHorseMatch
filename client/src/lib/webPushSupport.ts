@@ -2,6 +2,10 @@ import { Capacitor } from "@capacitor/core";
 
 export const AUTO_PUSH_OPT_OUT_KEY = "phm_push_opted_out";
 
+export function isEmbeddedPage(): boolean {
+  return typeof window !== "undefined" && window.self !== window.top;
+}
+
 export function isIOSDevice(): boolean {
   if (typeof navigator === "undefined") return false;
   // Safari's desktop-site mode can disguise an iPhone as a Mac. The
@@ -21,6 +25,7 @@ export function isIOSBrowserTab(): boolean {
 
 export function supportsWebPushHere(): boolean {
   return typeof window !== "undefined" &&
+    !isEmbeddedPage() &&
     !Capacitor.isNativePlatform() &&
     !isIOSBrowserTab() &&
     "Notification" in window &&

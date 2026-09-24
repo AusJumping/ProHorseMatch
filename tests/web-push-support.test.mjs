@@ -13,11 +13,13 @@ const compiled = buildSync({
 
 function environment({ userAgent = "Desktop Chrome", platform = "Win32",
   maxTouchPoints = 0, standalone, displayStandalone = false,
-  native = false, nativePlatform = "web", supported = true } = {}) {
+  native = false, nativePlatform = "web", supported = true, embedded = false } = {}) {
   const module = { exports: {} };
   const navigator = { userAgent, platform, maxTouchPoints };
   if (standalone !== undefined) navigator.standalone = standalone;
   const window = { matchMedia: () => ({ matches: displayStandalone }) };
+  window.self = window;
+  window.top = embedded ? {} : window;
   if (supported) {
     navigator.serviceWorker = {};
     window.Notification = {};
@@ -77,4 +79,10 @@ test("native apps never use browser push registration", () => {
 
 test("missing push APIs are unsupported", () => {
   assert.equal(environment({ supported: false }).supportsWebPushHere(), false);
+});
+
+test("embedded previews cannot request web push even with browser APIs present", () => {
+  const device = environment({ embedded: true });
+  assert.equal(device.isEmbeddedPage(), true);
+  assert.equal(device.supportsWebPushHere(), false);
 });

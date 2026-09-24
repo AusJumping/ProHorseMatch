@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Capacitor } from "@capacitor/core";
-import { AUTO_PUSH_OPT_OUT_KEY, hasCurrentWebPushSubscription, isIOSDevice, isIOSBrowserTab, supportsWebPushHere } from "@/lib/webPushSupport";
+import { NotificationDeviceCheck } from "./NotificationDeviceCheck";
+import { AUTO_PUSH_OPT_OUT_KEY, hasCurrentWebPushSubscription, isEmbeddedPage, isIOSDevice, isIOSBrowserTab, supportsWebPushHere } from "@/lib/webPushSupport";
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -35,6 +36,7 @@ export function NotificationSettings() {
   const isIOS = isIOSDevice();
   const isIOSBrowser = isIOSBrowserTab();
   const isNativeApp = Capacitor.isNativePlatform();
+  const isEmbedded = isEmbeddedPage();
   const supportsNotifications = supportsWebPushHere();
   
   // Check if PWA is installed and detect iOS
@@ -267,7 +269,14 @@ export function NotificationSettings() {
             The web subscriptions on your account do not indicate this app's permission.
           </div>
         )}
-        {!supportsNotifications && !isIOSBrowser && !isNativeApp && (
+        {isEmbedded && !isNativeApp && (
+          <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+            This page is embedded inside another page. Notification permission for
+            your installed app cannot be checked or changed here. Open ProHorseMatch
+            directly in Safari or from its installed Home Screen icon.
+          </div>
+        )}
+        {!supportsNotifications && !isIOSBrowser && !isNativeApp && !isEmbedded && (
           <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
             <p>Push notifications are not supported in your current browser.</p>
             <p className="mt-1">Try using Chrome, Edge, or Firefox for the best experience.</p>
@@ -278,8 +287,12 @@ export function NotificationSettings() {
           <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
             <p>This browser reports that notification access is not allowed.</p>
             <p className="mt-2">
-              This does not mean notifications are switched off for your installed
+              {isPWAInstalled ? (
+                <>If iPhone Settings already allows notifications, leave that setting on.
+                Open the Device notification check below to inspect this installation.</>
+              ) : (<>This does not mean notifications are switched off for your installed
               ProHorseMatch app. The browser and installed app have separate permissions.
+              </>)}
             </p>
             <p className="mt-2">
               On iPhone or iPad, open ProHorseMatch using its Home Screen icon.
@@ -388,6 +401,8 @@ export function NotificationSettings() {
             </Button>
           )}
         </div>
+
+        {!isNativeApp && <NotificationDeviceCheck />}
 
         {status?.subscribed && status.preferences && (
           <div className="space-y-4 pt-4 border-t">

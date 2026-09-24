@@ -12,3 +12,9 @@ An iPhone screenshot showing ProHorseMatch enabled in system Settings does not p
 Do not reintroduce an automatic page-wide notification enable popup. Keep permission requests user-initiated through settings or an explicit feature action.
 
 **Why:** Repeated screenshots showed the enable popup remaining visible alongside a denied-permission message. Device detection alone did not resolve the contradictory experience.
+
+Establish the installation method before following native-push configuration warnings.
+
+**Why:** In this investigation the user confirmed Safari “Add to Home Screen.” A missing Firebase credential for the separate native app does not explain that web app's permission mismatch.
+
+**How to apply:** For Safari-installed apps, investigate the current origin, standalone/embedded context, service worker, and web subscription. Do not change the installed app's identity or recommend deleting it before collecting those facts.
