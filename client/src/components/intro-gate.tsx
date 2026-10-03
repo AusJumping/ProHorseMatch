@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import mobileIntro from "@/assets/intro-video-mobile.mp4";
+import { startIntroPlayback } from "@/lib/introPlayback";
 
 // Add the landscape import here when it arrives.
 const INTRO_SOURCES = [
@@ -7,19 +8,8 @@ const INTRO_SOURCES = [
   { minWidth: 0, src: mobileIntro },
 ] as const;
 
-// Keep navigation within one app opening from replaying the intro. A page
-// reload starts a new opening; a background/resume cycle resets this below.
-let shownThisOpening = false;
-
 function pickIntroSource(width: number): string | null {
   return INTRO_SOURCES.find(({ minWidth }) => width >= minWidth)?.src ?? null;
-}
-
-function claimIntroSource(): string | null {
-  if (document.visibilityState !== "visible" || shownThisOpening) return null;
-  const source = pickIntroSource(window.innerWidth);
-  if (source) shownThisOpening = true;
-  return source;
 }
 
 type Playback = { source: string; sequence: number };
@@ -27,39 +17,18 @@ type Playback = { source: string; sequence: number };
 export function IntroGate({ children }: { children: ReactNode }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playback, setPlayback] = useState<Playback | null>(() => {
-    const source = claimIntroSource();
+    const source = document.visibilityState === "visible"
+      ? pickIntroSource(window.innerWidth) : null;
     return source ? { source, sequence: 0 } : null;
   });
 
   useEffect(() => {
     const video = videoRef.current;
     if (!playback || !video) return;
-    let cancelled = false;
     document.documentElement.classList.add("intro-playing");
-
-    // Set both the DOM properties and attributes before explicitly requesting
-    // playback: iOS does not always honour React's muted prop on its own.
-    video.defaultMuted = true;
-    video.muted = true;
-    video.setAttribute("muted", "");
-    video.setAttribute("playsinline", "");
-    video.setAttribute("webkit-playsinline", "");
-    const play = () => {
-      video.play().catch(error => {
-        if (!cancelled && error.name !== "AbortError") setPlayback(null);
-      });
-    };
-    play();
-    video.addEventListener("loadeddata", play);
-    // Low Power Mode or a stalled download must never leave a play button
-    // blocking entry to the app.
-    const timeout = window.setTimeout(() => {
-      if (!cancelled && video.currentTime === 0) setPlayback(null);
-    }, 8000);
+    const stop = startIntroPlayback(video, () => setPlayback(null));
     return () => {
-      cancelled = true;
-      window.clearTimeout(timeout);
-      video.removeEventListener("loadeddata", play);
+      stop();
       document.documentElement.classList.remove("intro-playing");
     };
   }, [playback]);
@@ -71,12 +40,13 @@ export function IntroGate({ children }: { children: ReactNode }) {
     };
     const onVisibilityChange = () => {
       if (document.visibilityState === "hidden") {
-        shownThisOpening = false;
+        // Cancel playback deadlines while the app is in the background.
+        setPlayback(null);
         return;
       }
       // Installed apps can resume without a reload. Restart the video from
       // the beginning even if the previous opening ended while it was playing.
-      const source = claimIntroSource();
+      const source = pickIntroSource(window.innerWidth);
       if (source) setPlayback(previous => ({
         source,
         sequence: (previous?.sequence ?? 0) + 1,
@@ -94,9 +64,10 @@ export function IntroGate({ children }: { children: ReactNode }) {
     setPlayback(null);
   };
 
-  if (!playback) return <>{children}</>;
-
   return (
+    <>
+    {children}
+    {playback && (
     <div className="intro-overlay fixed inset-0 z-[9999] overflow-hidden bg-[#2b2b2b]">
       <video
         ref={videoRef}
@@ -123,5 +94,7 @@ export function IntroGate({ children }: { children: ReactNode }) {
         Skip
       </button>
     </div>
+    )}
+    </>
   );
 }

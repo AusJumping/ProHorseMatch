@@ -45,9 +45,9 @@ function Router() {
   return (
     <AutoLogoutWrapper>
       <Switch>
-        <Route path="/"><IntroGate><Landing /></IntroGate></Route>
+        <Route path="/" component={Landing} />
         <Route path="/dashboard" component={Dashboard} />
-        <Route path="/filter"><IntroGate><Home /></IntroGate></Route>
+        <Route path="/filter" component={Home} />
         <Route path="/browse">
           {() => {
             window.location.replace('/filter');
@@ -91,7 +91,7 @@ function App() {
         <CurrencyProvider initialCurrency="AUD">
           <TooltipProvider>
             <Toaster />
-            <Router />
+            <IntroGate><Router /></IntroGate>
           </TooltipProvider>
         </CurrencyProvider>
       </AuthProvider>
