@@ -28,6 +28,8 @@ import DonationSuccess from "@/pages/donation-success";
 import DonationCheckout from "@/pages/donation-checkout";
 import VerifyEmail from "@/pages/verify-email";
 import HelpPage from "@/pages/help";
+import PrivacyPolicy from "@/pages/privacy";
+import DeleteAccountPage from "@/pages/delete-account";
 import UnsubscribePage from "@/pages/unsubscribe";
 import { AuthProvider } from "@/lib/auth";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
@@ -76,6 +78,8 @@ function Router() {
         <Route path="/donation-success" component={DonationSuccess} />
         <Route path="/welcome"><Redirect to="/filter" /></Route>
         <Route path="/help" component={HelpPage} />
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/delete-account" component={DeleteAccountPage} />
         <Route path="/unsubscribe" component={UnsubscribePage} />
         <Route component={NotFound} />
       </Switch>

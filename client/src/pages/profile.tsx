@@ -5,12 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, LogOut, HelpCircle, Smartphone } from "lucide-react";
+import { Loader2, LogOut, HelpCircle, Smartphone, ShieldCheck } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { NotificationReminder } from "@/components/NotificationReminder";
+import { DeleteAccountDialog } from "@/components/DeleteAccountDialog";
 
 
 
@@ -150,6 +151,15 @@ export default function Profile() {
                       <HelpCircle className="w-4 h-4 mr-2" />
                       FAQs
                     </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/privacy')}
+                      className="flex-1"
+                      data-testid="button-privacy-policy"
+                    >
+                      <ShieldCheck className="w-4 h-4 mr-2" />
+                      Privacy Policy
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -183,6 +193,12 @@ export default function Profile() {
                       </>
                     )}
                   </Button>
+                  <div className="mt-6 border-t pt-4">
+                    <p className="text-sm text-neutral-500 mb-4">
+                      Permanently delete your account, listings, messages and all other data. This can't be undone.
+                    </p>
+                    <DeleteAccountDialog />
+                  </div>
                 </CardContent>
               </Card>
             </div>

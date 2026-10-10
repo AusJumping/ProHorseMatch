@@ -9,7 +9,10 @@ import fs from "fs";
 import Stripe from "stripe";
 import cookieParser from "cookie-parser";
 import bcrypt from "bcrypt";
-import { uploadToCloudinary, deleteFromCloudinary } from "./cloudinary";
+import { uploadToCloudinary, deleteFromCloudinary, cloudinary } from "./cloudinary";
+import { db } from "./db";
+import { deleteAccountData, removeCloudinaryMedia } from "./accountDeletion";
+import { createAuthToken, verifyAuthToken } from "./authToken";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail, sendVerificationReminderEmail } from "./emailService";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
@@ -408,17 +411,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For existing users with plain text passwords, use direct comparison
       // For new users with hashed passwords, use bcrypt
       let passwordValid = false;
+      let isLegacyPlaintext = false;
       if (user.password.startsWith('$2b$') || user.password.startsWith('$2a$')) {
         // This is a bcrypt hash
         passwordValid = await bcrypt.compare(password, user.password);
       } else {
         // This is plain text (legacy users)
         passwordValid = user.password === password;
+        isLegacyPlaintext = passwordValid;
       }
       
       if (!passwordValid) {
         console.log("Login failed - Invalid password for user:", email);
         return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Re-secure legacy plaintext passwords the first time their owner logs in.
+      if (isLegacyPlaintext) {
+        try {
+          await storage.updateUser(user.id, { password: await bcrypt.hash(password, 12) });
+          console.log(`Upgraded legacy password to a secure hash for user ${user.id}`);
+        } catch (upgradeError) {
+          console.error("Password upgrade failed (login continues):", upgradeError);
+        }
       }
       
       // Check if email is verified (skip for test users)
@@ -441,7 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.userId = user.id;
       
       // Create a simple auth token instead of relying on sessions
-      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+      const authToken = createAuthToken(user.id);
       
       // Store auth token mapping in memory (simple approach for development)
       if (!global.authTokens) {
@@ -452,8 +467,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expires: Date.now() + (365 * 24 * 60 * 60 * 1000), // 365 days - users stay logged in
         lastActivity: Date.now()
       });
-      
-      console.log("Created auth token:", authToken);
       
       // Set multiple cookies to ensure one works (365 day expiration)
       res.cookie('auth_token', authToken, {
@@ -467,10 +480,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Also set as header for immediate use
       res.setHeader('X-Auth-Token', authToken);
       res.setHeader('Access-Control-Expose-Headers', 'X-Auth-Token');
-      
-      console.log("=== RESPONSE DEBUG ===");
-      console.log("Setting auth token header:", authToken);
-      console.log("Response headers:", res.getHeaders());
       
       // Track login event (non-blocking, safe)
       try {
@@ -727,7 +736,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // Create auth token (same way as login route)
-      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+      const authToken = createAuthToken(user.id);
       
       // Store auth token mapping in memory
       if (!global.authTokens) {
@@ -739,7 +748,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastActivity: Date.now()
       });
       
-      console.log('User logged in automatically, auth token created:', authToken);
+      console.log('User logged in automatically, auth token created');
       
       // NOTE: Welcome email is now sent AFTER subscription selection, not at verification
       // NOTE: Subscription reminder email is now sent 24 hours after verification if user hasn't subscribed
@@ -877,7 +886,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Reminder token deleted (one-time use)');
       
       // Create auth token
-      const authToken = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+      const authToken = createAuthToken(user.id);
       
       // Store auth token mapping in memory
       if (!global.authTokens) {
@@ -936,28 +945,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Helper function to validate auth token - improved stateless validation
-  const validateAuthToken = (token: string): number | null => {
-    try {
-      // Decode the base64 token
-      const decodedToken = Buffer.from(token, 'base64').toString('utf8');
-      const [userId, timestamp] = decodedToken.split(':');
-      
-      if (!userId || !timestamp) {
-        return null;
-      }
-      
-      const tokenAge = Date.now() - parseInt(timestamp);
-      const maxAge = 365 * 24 * 60 * 60 * 1000; // 365 days - users stay logged in
-      
-      if (tokenAge < maxAge) {
-        return parseInt(userId);
-      }
-      
-      return null;
-    } catch {
-      return null;
-    }
-  };
+  const validateAuthToken = (token: string): number | null => verifyAuthToken(token);
 
   app.get("/api/auth/me", async (req, res) => {
     // Check for auth token in multiple places
@@ -970,12 +958,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }, {});
       authToken = cookies.auth_token;
     }
-    
-    console.log("Auth check - Token debug:", {
-      authToken: authToken ? authToken.substring(0, 10) + '...' : 'none',
-      authHeader: req.headers.authorization,
-      cookies: req.headers.cookie
-    });
     
     if (!authToken) {
       console.log("Auth check failed - No token provided");
@@ -1064,12 +1046,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       authToken = cookies.auth_token;
     }
     
-    console.log("Token auth debug:", {
-      authToken: authToken ? authToken.substring(0, 10) + '...' : 'none',
-      authHeader: req.headers.authorization,
-      cookies: req.headers.cookie
-    });
-    
     if (!authToken) {
       console.log("Token auth failed - No token provided");
       return res.status(401).json({ message: "Authentication required" });
@@ -1088,6 +1064,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
   
+  // Self-service account deletion (required by the App Store and Google Play).
+  // Only ever acts on the logged-in user's own account, and needs their password.
+  app.delete("/api/account", isTokenAuthenticated, async (req: any, res: Response) => {
+    try {
+      const password = req.body?.password;
+      if (typeof password !== "string" || password.length === 0) {
+        return res.status(400).json({ message: "Please enter your password to confirm." });
+      }
+
+      const user = await storage.getUserById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: "Account not found." });
+      }
+      if (user.email === 'info@australianjumping.com.au') {
+        return res.status(403).json({ message: "The admin account can't be deleted here." });
+      }
+
+      const passwordValid = user.password.startsWith('$2b$') || user.password.startsWith('$2a$')
+        ? await bcrypt.compare(password, user.password)
+        : user.password === password;
+      if (!passwordValid) {
+        return res.status(401).json({ message: "That password isn't correct." });
+      }
+
+      const { mediaUrls } = await deleteAccountData(db, user.id);
+      console.log(`Account deleted: user ${user.id}`);
+
+      removeCloudinaryMedia(mediaUrls, process.env.CLOUDINARY_CLOUD_NAME, (ref) =>
+        cloudinary.uploader.destroy(ref.publicId, { resource_type: ref.resourceType }),
+      ).catch((error) => console.error("Account deletion media cleanup error:", error));
+
+      req.session.destroy(() => {
+        res.clearCookie("connect.sid");
+        res.clearCookie("auth_token");
+        return res.json({ message: "Your account has been deleted." });
+      });
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      return res.status(500).json({ message: "We couldn't delete your account. Please try again, or email us and we'll do it for you." });
+    }
+  });
+
   // Admin routes
   app.delete("/api/admin/delete-all-horses", isAuthenticated, async (req, res) => {
     try {
