@@ -8,6 +8,10 @@ import { Label } from "@/components/ui/label";
 import { CheckCircle, XCircle, Mail, Loader2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+// The link in the email opens in the phone's browser, which has its own login separate from the app.
+// So on phones we tell people to return to the app instead of silently dropping them on the website.
+const isPhoneBrowser = typeof navigator !== "undefined" && /iPhone|iPod|Android.+Mobile/i.test(navigator.userAgent);
+
 export default function VerifyEmail() {
   const [, params] = useRoute("/verify-email/:token?");
   const [, setLocation] = useLocation();
@@ -56,10 +60,12 @@ export default function VerifyEmail() {
           queryClient.setQueryData(['/api/auth/me'], data.user);
         }
         
-        // Redirect to Find Horses after 2 seconds
-        setTimeout(() => {
-          setLocation('/filter');
-        }, 2000);
+        // On desktop, carry on to Find Horses. On phones, let the person choose (app or website).
+        if (!isPhoneBrowser) {
+          setTimeout(() => {
+            setLocation('/filter');
+          }, 2000);
+        }
       } else {
         if (data.message.includes('expired')) {
           setVerificationStatus('expired');
@@ -145,7 +151,7 @@ export default function VerifyEmail() {
             {getTitle()}
           </CardTitle>
           <CardDescription>
-            {verificationStatus === 'success' && "You're all set! Taking you to the app now..."}
+            {verificationStatus === 'success' && (isPhoneBrowser ? "Your email is verified." : "You're all set! Taking you to the app now...")}
             {verificationStatus === 'pending' && !params?.token && 'Enter your email to resend verification link.'}
             {verificationStatus === 'expired' && 'Request a new verification link below.'}
             {verificationStatus === 'error' && 'There was an issue verifying your email.'}
@@ -157,6 +163,17 @@ export default function VerifyEmail() {
             <Alert className={verificationStatus === 'success' ? 'border-green-200 bg-green-50' : verificationStatus === 'error' || verificationStatus === 'expired' ? 'border-red-200 bg-red-50' : ''}>
               <AlertDescription>{message}</AlertDescription>
             </Alert>
+          )}
+
+          {verificationStatus === 'success' && isPhoneBrowser && (
+            <div className="space-y-3 text-center" data-testid="verified-phone-options">
+              <p className="text-sm text-gray-700">
+                If you signed up in the Pro Horse Match app, open the app now and log in with your email and password.
+              </p>
+              <Button className="w-full" onClick={() => setLocation('/filter')}>
+                Continue on the website instead
+              </Button>
+            </div>
           )}
 
           {(verificationStatus === 'expired' || verificationStatus === 'error' || (!params?.token && verificationStatus === 'pending')) && (
