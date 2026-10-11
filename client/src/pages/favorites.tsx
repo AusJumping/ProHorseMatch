@@ -160,9 +160,9 @@ export default function Favorites() {
             <p className="text-gray-500 mb-6">You haven't added any horses to your favorites.</p>
             <Button 
               onClick={(e) => {
-                e.preventDefault(); // Prevent any default behavior
-                // Use the most direct navigation approach to avoid any issues with auth state
-                window.location.href = "/filter";
+                e.preventDefault();
+                // In-app navigation, not a page reload: a reload restarts the app and replays the intro video
+                navigate("/filter");
               }}
             >
               Discover Horses
