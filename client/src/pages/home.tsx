@@ -110,8 +110,9 @@ export default function Home() {
       // Clear from localStorage after reading so it only applies once (one-time handoff from landing page)
       localStorage.removeItem('active_discipline_filter');
       
-      // Apply the filter from storage
-      setActiveFilters(prev => ({
+      // Apply the filter from storage, unless filters are already chosen (the filter panel
+      // also writes the discipline into the URL, and that must not overwrite a multi-select)
+      setActiveFilters(prev => prev.disciplines.length > 0 ? prev : ({
         ...prev,
         disciplines: [disciplineFilter]
       }));
@@ -449,6 +450,15 @@ export default function Home() {
     // On mobile, ensure the filter panel doesn't automatically show after applying filters
     if (isMobile && location === "/filter") {
       setShowFilter(false);
+      // The "show filters" request is now done. Remove it from the URL, otherwise the next URL
+      // change (the filter panel records the chosen discipline there) reopens the panel and the
+      // person has to tap Apply Filters a second time.
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('show_filters') || url.searchParams.has('t')) {
+        url.searchParams.delete('show_filters');
+        url.searchParams.delete('t');
+        window.history.replaceState(null, "", url.toString());
+      }
     }
   };
 
