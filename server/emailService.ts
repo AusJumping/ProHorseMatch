@@ -131,6 +131,10 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
           </a>
         </div>
         
+        <p style="font-size: 15px; line-height: 1.6; color: #4A453E; background: #F8F6F0; padding: 14px 16px; border-radius: 6px; margin: 0 0 25px 0;">
+          <strong>Signed up in the Pro Horse Match app?</strong> Tapping the button opens your phone's web browser to confirm your email. Once it says "Email verified", switch back to the app and log in with your email and password.
+        </p>
+        
         <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
           If the button doesn't work, copy and paste this link into your browser:
         </p>
@@ -161,6 +165,8 @@ Hi ${params.username},
 Thank you for joining ProHorseMatch! To complete your registration and start discovering amazing horses, please verify your email address by visiting this link:
 
 ${verificationUrl}
+
+Signed up in the Pro Horse Match app? Opening the link uses your phone's web browser to confirm your email. Once it says "Email verified", switch back to the app and log in with your email and password.
 
 This verification link will expire in 48 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
 
@@ -341,6 +347,10 @@ export async function sendVerificationReminderEmail(to: string, username: string
             Verify Email Address
           </a>
         </div>
+        
+        <p style="font-size: 15px; line-height: 1.6; color: #4A453E; background: #F8F6F0; padding: 14px 16px; border-radius: 6px; margin: 0 0 25px 0;">
+          <strong>Signed up in the Pro Horse Match app?</strong> Tapping the button opens your phone's web browser to confirm your email. Once it says "Email verified", switch back to the app and log in with your email and password.
+        </p>
         
         <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
           If the button doesn't work, copy and paste this link into your browser:
