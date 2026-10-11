@@ -537,10 +537,13 @@ export default function Home() {
         )}
 
         {/* Main content area */}
-        <div className={`flex-1 min-w-0 flex flex-col items-center relative ${isMobile ? 'justify-center' : ''}`}>
+        <div className={`flex-1 min-w-0 flex flex-col items-center relative`}>
           {isMobile ? (
             /* Horse swiping area for mobile screens */
             <>
+              {/* Spare height is split 2:1 above:below, so the card sits a little below centre.
+                  The home indicator already adds space under the buttons, so true centre looked too high. */}
+              <div className="flex-[2]" aria-hidden="true" />
 
               {/* Add a manually filtered list of horses to handle filtering on mobile */}
               {horses && (
@@ -560,6 +563,7 @@ export default function Home() {
                   />
                 </div>
               )}
+              <div className="flex-1" aria-hidden="true" />
             </>
           ) : (
             /* Horse grid for non-touch devices */
