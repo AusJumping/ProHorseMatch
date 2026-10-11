@@ -519,7 +519,10 @@ export default function Home() {
       horseCount={horses?.length || 0}
       currentHorseIndex={currentHorseIndex}
     >
-      <div className="flex w-full h-full">
+      <div
+        className="flex w-full h-full"
+        style={isMobile ? { minHeight: "calc(100dvh - 9rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))" } : undefined}
+      >
         {/* Filter sidebar - desktop only or when explicitly showing filters */}
         {(!isMobile || showFilter) && (
           <div className={`${isMobile ? 'w-full' : 'w-72'} bg-white rounded-xl p-5 shadow-sm h-fit ${isMobile ? 'mb-6' : 'mr-6'}`}>
@@ -534,7 +537,7 @@ export default function Home() {
         )}
 
         {/* Main content area */}
-        <div className="flex-1 min-w-0 flex flex-col items-center relative">
+        <div className={`flex-1 min-w-0 flex flex-col items-center relative ${isMobile ? 'justify-center' : ''}`}>
           {isMobile ? (
             /* Horse swiping area for mobile screens */
             <>
