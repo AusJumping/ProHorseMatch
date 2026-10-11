@@ -7,7 +7,7 @@ let fallbackSecret: string | undefined;
 
 // Signing key. If SESSION_SECRET is missing we use a random per-process key instead of a
 // known default: logins then reset on every restart, but they can never be forged.
-function secret(): string {
+export function secret(): string {
   const configured = process.env.SESSION_SECRET;
   if (configured) return configured;
   if (!fallbackSecret) {

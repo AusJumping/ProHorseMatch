@@ -17,7 +17,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Eye, EyeOff, Mail, CheckCircle } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import VerifyCodeDialog from "@/components/VerifyCodeDialog";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -147,6 +148,11 @@ export default function Auth() {
         window.location.href = "/subscription";
       }
     } catch (error: any) {
+      if (error?.requiresVerification) {
+        setRegisteredEmail(error.email || data.email);
+        setShowEmailVerificationDialog(true);
+        return;
+      }
       toast({
         title: "Login failed",
         description: error.message || "Please check your credentials",
@@ -676,57 +682,15 @@ export default function Auth() {
             </Card>
         )}
 
-        {/* Email Verification Success Dialog */}
-        <Dialog open={showEmailVerificationDialog} onOpenChange={setShowEmailVerificationDialog}>
-          <DialogContent className="sm:max-w-md bg-white dark:bg-gray-900">
-            <DialogHeader className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center">
-                <Mail className="h-8 w-8 text-white" />
-              </div>
-              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                Check Your Email!
-              </DialogTitle>
-              <DialogDescription className="text-base text-gray-600 dark:text-gray-300 space-y-3">
-                <div className="flex items-start gap-3 text-left bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-                  <CheckCircle className="h-5 w-5 text-amber-600 dark:text-amber-500 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-semibold text-gray-900 dark:text-white mb-1">
-                      Registration Successful!
-                    </p>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
-                      We've sent a verification email to <span className="font-medium text-amber-700 dark:text-amber-400">{registeredEmail}</span>
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="text-left space-y-2 pt-2">
-                  <p className="font-medium text-gray-900 dark:text-white">Next steps:</p>
-                  <ol className="list-decimal list-inside space-y-1.5 text-sm text-gray-600 dark:text-gray-400">
-                    <li>Check your inbox (and spam folder)</li>
-                    <li>Click the verification link in the email</li>
-                    <li>Return here to log in</li>
-                  </ol>
-                </div>
-
-                <p className="text-sm text-gray-500 dark:text-gray-400 italic pt-2">
-                  The verification link expires in 48 hours
-                </p>
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="sm:justify-center">
-              <Button
-                onClick={() => {
-                  setShowEmailVerificationDialog(false);
-                  setActiveTab('login');
-                }}
-                className="w-full sm:w-auto bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white"
-                data-testid="button-email-verification-ok"
-              >
-                Got it, I'll check my email
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <VerifyCodeDialog
+          open={showEmailVerificationDialog}
+          email={registeredEmail}
+          onOpenChange={setShowEmailVerificationDialog}
+          onVerified={() => {
+            setShowEmailVerificationDialog(false);
+            setActiveTab('login');
+          }}
+        />
 
       </div>
     </div>

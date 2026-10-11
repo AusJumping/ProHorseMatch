@@ -1,4 +1,5 @@
 import { MailService } from '@sendgrid/mail';
+import { verificationCodeFor } from './verificationCode';
 
 // Support both SendGrid and Resend
 let mailService: MailService | null = null;
@@ -104,7 +105,7 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
   });
 
   const verificationUrl = `${params.baseUrl}/verify-email?token=${params.verificationToken}`;
-  console.log('Verification URL generated:', verificationUrl);
+  const verificationCode = verificationCodeFor(params.verificationToken);
   
   const htmlContent = `
     <div style="max-width: 600px; margin: 0 auto; font-family: 'Inter', 'Arial', sans-serif; color: #2D2A25;">
@@ -120,20 +121,26 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
           Hi <strong>${params.username}</strong>,
         </p>
         
-        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 30px; color: #4A453E;">
-          Thank you for joining ProHorseMatch! To complete your registration and start discovering amazing horses, please verify your email address by clicking the button below.
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #4A453E;">
+          Thank you for joining ProHorseMatch! To complete your registration, please confirm your email address.
         </p>
-        
-        <div style="text-align: center; margin: 40px 0;">
+
+        <div style="text-align: center; margin: 30px 0; padding: 24px 16px; background: #F8F6F0; border: 2px solid #CDAC6E; border-radius: 8px;">
+          <p style="font-size: 16px; color: #4A453E; margin: 0 0 12px 0;"><strong>Using the Pro Horse Match app?</strong> Enter this code in the app:</p>
+          <p style="font-size: 40px; letter-spacing: 8px; font-weight: 700; color: #2D2A25; margin: 0; font-family: 'Courier New', monospace;">${verificationCode}</p>
+          <p style="font-size: 14px; color: #6B5B3D; margin: 12px 0 0 0;">Then log in with your email and password. There is nothing to tap in this email.</p>
+        </div>
+
+        <p style="font-size: 16px; line-height: 1.7; margin: 30px 0 10px 0; color: #4A453E; text-align: center;">
+          <strong>Signed up on the website instead?</strong> Use this button:
+        </p>
+
+        <div style="text-align: center; margin: 20px 0 40px 0;">
           <a href="${verificationUrl}" 
-             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3); transition: transform 0.2s;">
+             style="background: linear-gradient(135deg, #6B5B3D 0%, #CDAC6E 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(107, 91, 61, 0.3);">
             Verify Email Address
           </a>
         </div>
-        
-        <p style="font-size: 15px; line-height: 1.6; color: #4A453E; background: #F8F6F0; padding: 14px 16px; border-radius: 6px; margin: 0 0 25px 0;">
-          <strong>Signed up in the Pro Horse Match app?</strong> Tapping the button opens your phone's web browser to confirm your email. Once it says "Email verified", switch back to the app and log in with your email and password.
-        </p>
         
         <p style="font-size: 14px; color: #6B5B3D; margin-top: 35px; margin-bottom: 8px;">
           If the button doesn't work, copy and paste this link into your browser:
@@ -144,7 +151,7 @@ export async function sendVerificationEmail(params: EmailVerificationParams): Pr
         
         <div style="margin-top: 40px; padding-top: 25px; border-top: 2px solid #E8E3D3;">
           <p style="font-size: 14px; color: #6B5B3D; margin: 0; line-height: 1.5;">
-            This verification link will expire in 48 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
+            This code and link will expire in 48 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
           </p>
         </div>
       </div>
@@ -162,13 +169,17 @@ Welcome to ProHorseMatch!
 
 Hi ${params.username},
 
-Thank you for joining ProHorseMatch! To complete your registration and start discovering amazing horses, please verify your email address by visiting this link:
+Thank you for joining ProHorseMatch! To complete your registration, please confirm your email address.
+
+Using the Pro Horse Match app? Enter this code in the app, then log in with your email and password:
+
+${verificationCode}
+
+Signed up on the website instead? Visit this link:
 
 ${verificationUrl}
 
-Signed up in the Pro Horse Match app? Opening the link uses your phone's web browser to confirm your email. Once it says "Email verified", switch back to the app and log in with your email and password.
-
-This verification link will expire in 48 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
+This code and link will expire in 48 hours. If you didn't create an account with ProHorseMatch, please ignore this email.
 
 © 2025 ProHorseMatch. Connecting Performance Horses with new owners.
   `;

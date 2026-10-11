@@ -14,6 +14,7 @@ import { db } from "./db";
 import { deleteAccountData, removeCloudinaryMedia } from "./accountDeletion";
 import { createAuthToken, verifyAuthToken } from "./authToken";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail, sendVerificationReminderEmail } from "./emailService";
+import { codeMatches, AttemptLimiter } from "./verificationCode";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
@@ -440,7 +441,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user.email_verified && !email.includes('@example.com')) {
         console.log("Login failed - Email not verified for user:", email);
         return res.status(403).json({ 
-          message: "Please verify your email before logging in. Check your inbox for a verification link.",
+          message: "Please verify your email before logging in. Check your inbox for the verification email.",
           requiresVerification: true,
           email: user.email
         });
@@ -849,6 +850,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error("Resend verification error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Verify an email address by typing the 6-digit code from the verification email.
+  // Used by the mobile apps so people never have to leave the app for a browser.
+  // It does not log anyone in: the app sends them to the login screen afterwards.
+  const verifyCodeByEmail = new AttemptLimiter(5, 15 * 60 * 1000);
+  app.post("/api/auth/verify-code", async (req, res) => {
+    try {
+      const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+      const code = req.body?.code;
+      if (!email || typeof code !== "string") {
+        return res.status(400).json({ message: "Please enter your email and the 6-digit code." });
+      }
+
+      // Keyed by email only: behind the host's proxy every visitor shares one IP address.
+      if (verifyCodeByEmail.isBlocked(email)) {
+        return res.status(429).json({ message: "Too many incorrect attempts. Please wait 15 minutes and try again." });
+      }
+
+      const wrongCode = () => {
+        verifyCodeByEmail.recordFailure(email);
+        return res.status(400).json({ message: "That code is not right. Please check it and try again, or tap Resend code." });
+      };
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) return wrongCode();
+
+      if (user.email_verified) {
+        return res.status(200).json({ verified: true, message: "Your email is already verified. You can log in now." });
+      }
+
+      if (!user.verification_token) return wrongCode();
+      if (user.verification_token_expires && isTokenExpired(user.verification_token_expires)) {
+        return res.status(400).json({ message: "That code has expired. Tap Resend code to get a new one." });
+      }
+      if (!codeMatches(user.verification_token, code)) return wrongCode();
+
+      verifyCodeByEmail.clear(email);
+      await storage.updateUserVerification(user.id, true, null, null);
+
+      // Same beta activation as the email link
+      if (!user.subscription_status || user.subscription_status !== 'active') {
+        try {
+          await storage.updateUserSubscription(user.id, {
+            stripe_subscription_id: 'beta',
+            subscription_status: 'active',
+            subscription_plan: 'beta',
+            subscription_end_date: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+          });
+          await storage.updateUser(user.id, { is_selling: true, is_searching: true });
+        } catch (betaErr) {
+          console.warn('Auto beta activation failed (non-critical):', betaErr);
+        }
+      }
+
+      return res.status(200).json({ verified: true, message: "Email verified. You can log in now." });
+    } catch (error) {
+      console.error("Verify code error:", error);
       return res.status(500).json({ message: "Internal server error" });
     }
   });

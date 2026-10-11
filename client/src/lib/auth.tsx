@@ -130,7 +130,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+        const loginError: Error & { requiresVerification?: boolean; email?: string } = new Error(error.message || 'Login failed');
+        loginError.requiresVerification = !!error.requiresVerification;
+        loginError.email = error.email;
+        throw loginError;
       }
 
       const userData = await response.json() as User & { auth_token?: string };
