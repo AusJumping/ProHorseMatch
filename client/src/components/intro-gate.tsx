@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import mobileIntro from "@/assets/intro-video-mobile.mp4";
+// Embedded so it paints instantly. Otherwise Android shows its own grey play-button placeholder until the video loads.
+import { mobileIntroPoster } from "@/assets/introPoster";
 import { startIntroPlayback } from "@/lib/introPlayback";
 
 // Add the landscape import here when it arrives.
@@ -73,6 +75,8 @@ export function IntroGate({ children }: { children: ReactNode }) {
         ref={videoRef}
         key={`${playback.source}-${playback.sequence}`}
         src={playback.source}
+        poster={mobileIntroPoster}
+        style={{ backgroundColor: "#2b2b2b" }}
         className="intro-video absolute inset-0 block h-full w-full border-0 object-cover"
         autoPlay
         controls={false}
