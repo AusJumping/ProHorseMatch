@@ -151,7 +151,7 @@ export default function VerifyEmail() {
             {getTitle()}
           </CardTitle>
           <CardDescription>
-            {verificationStatus === 'success' && (isPhoneBrowser ? "Your email is verified." : "You're all set! Taking you to the app now...")}
+            {verificationStatus === 'success' && (isPhoneBrowser ? "Your email is verified. Please go back to the app." : "You're all set! Taking you to the app now...")}
             {verificationStatus === 'pending' && !params?.token && 'Enter your email to resend verification link.'}
             {verificationStatus === 'expired' && 'Request a new verification link below.'}
             {verificationStatus === 'error' && 'There was an issue verifying your email.'}
@@ -168,10 +168,11 @@ export default function VerifyEmail() {
           {verificationStatus === 'success' && isPhoneBrowser && (
             <div className="space-y-3 text-center" data-testid="verified-phone-options">
               <p className="text-sm text-gray-700">
-                If you signed up in the Pro Horse Match app, open the app now and log in with your email and password.
+                Open the <strong>Pro Horse Match app</strong> on your phone (switch back to it, or tap its icon on your
+                home screen) and log in with your email and password.
               </p>
-              <Button className="w-full" onClick={() => setLocation('/filter')}>
-                Continue on the website instead
+              <Button variant="link" className="text-sm text-gray-600" onClick={() => setLocation('/filter')}>
+                Signed up on the website? Continue here
               </Button>
             </div>
           )}
