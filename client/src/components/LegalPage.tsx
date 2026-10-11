@@ -23,7 +23,7 @@ export default function LegalPage({ title, updated, children }: LegalPageProps) 
 
   return (
     <div className="min-h-screen bg-white">
-      <header className="py-6 px-4 text-center" style={{ backgroundColor: "#2b2b2b" }}>
+      <header className="py-6 px-4 text-center" style={{ backgroundColor: "#2b2b2b", paddingTop: "calc(1.5rem + env(safe-area-inset-top, 0px))" }}>
         <Link href="/">
           <img src={logoImage} alt="Pro Horse Match" className="h-16 mx-auto object-contain cursor-pointer" />
         </Link>

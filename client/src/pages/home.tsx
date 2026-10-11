@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import SwipeSection from "@/components/SwipeSection";
 import HorseGrid from "@/components/HorseGrid";
 import FilterPanel from "@/components/FilterPanel";
@@ -40,6 +40,7 @@ export default function Home() {
   const isMobile = useMobile();
   const isTouchDevice = useIsTouchDevice();
   const [location, navigate] = useLocation();
+  const search = useSearch();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const { currentCurrency } = useCurrency();
@@ -115,7 +116,7 @@ export default function Home() {
         disciplines: [disciplineFilter]
       }));
     }
-  }, [location, isMobile]);
+  }, [location, isMobile, search]);
   
   // This effect ensures that when filters change, we reset our swiping index
   useEffect(() => {

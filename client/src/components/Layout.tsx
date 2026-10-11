@@ -73,7 +73,10 @@ const Layout = ({
       {/* Main Content */}
       <div className={`flex-1 flex flex-col ${isMobile ? 'w-full max-w-full' : ''}`}>
         {/* Header */}
-        <header className={`bg-white border-b border-neutral-200 p-4 ${isMobile ? 'w-full' : ''}`}>
+        <header
+          className={`bg-white border-b border-neutral-200 p-4 ${isMobile ? 'w-full' : ''}`}
+          style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}
+        >
           <div className="flex justify-between items-center">
             <div className="flex items-center">
               {/* Mobile horse counter */}
@@ -140,7 +143,10 @@ const Layout = ({
         </header>
 
         {/* Main Content Area */}
-        <main className={`flex-1 p-4 md:p-6 overflow-auto ${isMobile ? 'w-full max-w-full' : ''}`}>
+        <main
+          className={`flex-1 p-4 md:p-6 overflow-auto ${isMobile ? 'w-full max-w-full' : ''}`}
+          style={isMobile ? { paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" } : undefined}
+        >
           {children}
         </main>
       </div>

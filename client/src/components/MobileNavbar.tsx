@@ -63,7 +63,8 @@ const MobileNavbar = () => {
           className={`justify-start h-12 ${location === "/filter" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
           onClick={() => {
             console.log("Find Horses clicked, navigating to /filter with show_filters");
-            navigate("/filter?show_filters=true");
+            // The timestamp makes every tap a new address, so the filters reopen even when already on this page
+            navigate(`/filter?show_filters=true&t=${Date.now()}`);
             setOpen(false); // Close the sheet
           }}
         >
@@ -231,7 +232,7 @@ const MobileNavbar = () => {
             <Menu className="h-14 w-14 stroke-[2.5px] text-[#cdac6e]" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="fixed inset-y-0 right-0 z-50 h-full w-[80%] border-l bg-white p-4 shadow-lg sm:max-w-sm">
+        <SheetContent side="right" className="fixed inset-y-0 right-0 z-50 h-full w-[80%] border-l bg-white p-4 shadow-lg sm:max-w-sm" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
           {renderMobileMenu()}
         </SheetContent>
       </Sheet>

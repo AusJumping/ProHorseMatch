@@ -47,7 +47,7 @@ export function UnreadNotificationBanner() {
   if (!showBanner || isDismissed || totalUnreadMessages === 0) return null;
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 animate-in slide-in-from-top-4">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-4 animate-in slide-in-from-top-4" style={{ top: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
       <div className="bg-white rounded-xl shadow-xl border-2 border-[#8B7355] p-4">
         <div className="flex items-start gap-3">
           <div className="bg-red-100 p-2 rounded-full flex-shrink-0">
