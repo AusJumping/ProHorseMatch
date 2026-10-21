@@ -15,6 +15,7 @@ import { deleteAccountData, removeCloudinaryMedia } from "./accountDeletion";
 import { createAuthToken, verifyAuthToken } from "./authToken";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail, sendVerificationReminderEmail } from "./emailService";
 import { codeMatches, AttemptLimiter } from "./verificationCode";
+import { buildHorsePage, robotsTxt, sitemapXml } from "./seoPages";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
@@ -1953,6 +1954,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get horse error:", error);
       return res.status(500).json({ message: "Failed to get horse" });
+    }
+  });
+
+  // Public, crawler-readable pages for search engines and AI tools (see server/seoPages.ts).
+  // Browsers get the same app as before: React takes over from the page content.
+  const publicBaseUrl = process.env.PUBLIC_BASE_URL || "https://prohorsematch.com";
+  let indexTemplate: string | null | undefined;
+  const getIndexTemplate = (): string | null => {
+    if (indexTemplate === undefined) {
+      try {
+        indexTemplate = fs.readFileSync(path.resolve(import.meta.dirname, "public", "index.html"), "utf-8");
+      } catch {
+        indexTemplate = null; // development: the dev server serves the page instead
+      }
+    }
+    return indexTemplate;
+  };
+
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").set("Cache-Control", "no-cache").send(robotsTxt(publicBaseUrl));
+  });
+
+  app.get("/sitemap.xml", async (_req, res) => {
+    try {
+      const horses = await storage.getHorsesByFilters({});
+      res.type("application/xml").set("Cache-Control", "no-cache").send(sitemapXml(horses, publicBaseUrl));
+    } catch (error) {
+      console.error("Sitemap error:", error);
+      res.status(500).type("text/plain").send("Sitemap unavailable");
+    }
+  });
+
+  app.get("/horse/:id", async (req, res, next) => {
+    try {
+      const template = getIndexTemplate();
+      const id = Number(req.params.id);
+      if (!template || !Number.isInteger(id) || id <= 0) return next();
+      const horse = await storage.getHorseById(id);
+      if (!horse) return next();
+      res.status(200).type("text/html").set("Cache-Control", "no-cache").send(buildHorsePage(template, horse, publicBaseUrl));
+    } catch (error) {
+      console.error("Horse page error:", error);
+      next(); // fall back to the normal app page
     }
   });
 
