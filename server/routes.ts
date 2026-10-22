@@ -53,6 +53,8 @@ import {
 // Ensure we have test users available but NOT test horses
 // We remove the default horses completely from our application
 (async () => {
+  // The separate redesign database contains only explicitly seeded fake users.
+  if (process.env.REDESIGN_SANDBOX === "true") return;
   console.log("Setting up test users only (no default horses)...");
   try {
     // Remove all horses owned by user ID 1 (problematic seed horses)

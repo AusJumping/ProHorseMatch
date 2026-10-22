@@ -4,8 +4,8 @@ import { getFirebaseMessaging } from './firebaseAdmin';
 import type { PushSubscription, DeviceToken } from '@shared/schema';
 
 // Configure VAPID keys
-const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
+const vapidPublicKey = process.env.REDESIGN_SANDBOX === "true" ? undefined : process.env.VAPID_PUBLIC_KEY;
+const vapidPrivateKey = process.env.REDESIGN_SANDBOX === "true" ? undefined : process.env.VAPID_PRIVATE_KEY;
 
 if (!vapidPublicKey || !vapidPrivateKey) {
   console.error('VAPID keys are not configured');
