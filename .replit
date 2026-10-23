@@ -20,6 +20,7 @@ localPort = 5904
 externalPort = 3000
 
 [workflows]
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
@@ -30,6 +31,10 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Style preview verification"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -38,6 +43,18 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Style preview verification"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node node_modules/vite/bin/vite.js preview --host 0.0.0.0 --port 5000"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [agent]
 integrations = ["javascript_sendgrid:1.0.0", "javascript_database:1.0.0", "javascript_object_storage:1.0.0", "javascript_stripe:1.0.0"]
