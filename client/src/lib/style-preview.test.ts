@@ -45,3 +45,11 @@ test("preview is static, no-index and uses only the local photograph", () => {
   assert.match(source, /aria-pressed=\{saved\}/);
   assert.match(source, /aria-expanded=\{expanded\}/);
 });
+
+test("sample card preserves the existing no-location layout and detail footer", () => {
+  const source = readFileSync(new URL("../pages/style-preview.tsx", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /Southern Highlands|MapPin|sp-location/);
+  for (const text of ["Level of Education", "Well educated", "Back", "Favourite", "Contact Seller", "Report this listing"]) {
+    assert.ok(source.includes(text), text);
+  }
+});

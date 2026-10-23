@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet";
-import { ArrowDown, ArrowRight, Check, Heart, MapPin, MessageCircle, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowRight, Check, Heart, MessageCircle, Search, SlidersHorizontal } from "lucide-react";
 import logo from "@/assets/logo-filter.png";
 import auditText from "@/docs/design-audit.md?raw";
 import { previewContrast } from "@/lib/style-preview";
@@ -24,7 +24,6 @@ const iconSamples = [
   { name: "Search", Icon: Search },
   { name: "Favourite", Icon: Heart },
   { name: "Message", Icon: MessageCircle },
-  { name: "Location", Icon: MapPin },
   { name: "Filter", Icon: SlidersHorizontal },
 ];
 
@@ -113,13 +112,25 @@ export default function StylePreview() {
                   <span>Illustrative profile</span>
                 </div>
                 <p className="sp-card-meta"><span>8 years</span><span>Gelding</span><span>Warmblood</span></p>
-                <p className="sp-location"><MapPin aria-hidden="true" /> Southern Highlands, NSW</p>
                 <button className="sp-btn" type="button" aria-expanded={expanded} aria-controls="sp-horse-detail" onClick={() => setExpanded((value) => !value)}>
                   {expanded ? "Close sample profile" : "View sample profile"} <ArrowRight aria-hidden="true" />
                 </button>
                   <div className="sp-card-detail" id="sp-horse-detail" hidden={!expanded}>
-                    <h3>A profile, not a listing</h3>
+                    <h3>Additional information</h3>
                     <p>Arden is an invented name. All profile details are fictional and do not describe the photographed horse. This is a style demonstration, with no seller, price, enquiry or payment attached.</p>
+                    <h3>Level of Education</h3>
+                    <p><span className="sp-education">Well educated</span></p>
+                    <div className="sp-detail-actions" aria-label="Sample detail actions">
+                      <button className="sp-btn sp-btn-secondary" type="button" onClick={() => setExpanded(false)}>Back</button>
+                      <button className="sp-btn sp-btn-secondary" type="button" aria-pressed={saved} onClick={() => setSaved(value => !value)}>
+                        <Heart aria-hidden="true" />{saved ? "Favourited" : "Favourite"}
+                      </button>
+                      <button className="sp-btn" type="button" onClick={() => setDemoStatus("Contact Seller is a preview sample only. No message was sent.")}>
+                        <MessageCircle aria-hidden="true" />Contact Seller
+                      </button>
+                    </div>
+                    <button className="sp-text-link" type="button" onClick={() => setDemoStatus("Report this listing is a preview sample only. No report was submitted.")}>Report this listing</button>
+                    <p role="status" aria-live="polite">{demoStatus}</p>
                   </div>
                 <p role="status" aria-live="polite">{saved ? "Saved in this preview only. Refreshing clears it." : "Sample only. No live listing or account connection."}</p>
               </div>
