@@ -6,7 +6,8 @@ import { Loader2, Check, CheckCircle2, ExternalLink } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { useLocation } from 'wouter';
-import { loadStripe } from '@stripe/stripe-js';
+import { paymentsAvailable, stripePromise } from '@/lib/payments';
+import { PaymentsUnavailable } from '@/components/PaymentsUnavailable';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import Layout from '@/components/Layout';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -17,12 +18,6 @@ import TermsDialog from '@/components/TermsDialog';
 import { NotificationPromptModal } from '@/components/NotificationPromptModal';
 import { isNativeApp, NativePaymentGate } from '@/components/NativePaymentGate';
 
-// Ensure we have the public key
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing environment variable: VITE_STRIPE_PUBLIC_KEY');
-}
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 // Beta plans - Free during beta period
 const betaPlans = [
@@ -337,6 +332,10 @@ const TermsOfServiceDialog = () => {
 
 // Main subscription page component
 export default function SubscriptionPage() {
+  return paymentsAvailable ? <EnabledSubscriptionPage /> : <PaymentsUnavailable />;
+}
+
+function EnabledSubscriptionPage() {
   const [selectedPlan, setSelectedPlan] = useState('beta-seller');
   const [clientSecret, setClientSecret] = useState('');
   const [showCustomAmount, setShowCustomAmount] = useState(false);

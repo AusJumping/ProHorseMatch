@@ -16,6 +16,7 @@ test("redesign never falls back to existing production database settings", () =>
   const env = redesignEnvironment({ ...safe, DATABASE_URL: "production", NEON_DATABASE_URL: "production" });
   assert.equal(env.DATABASE_URL, safe.REDESIGN_DATABASE_URL);
   assert.equal(env.NEON_DATABASE_URL, undefined);
+  assert.equal(env.VITE_REDESIGN_SANDBOX, "true");
 });
 test("the ordinary Neon database name is refused", () => {
   assert.throws(() => redesignEnvironment({ ...safe, REDESIGN_DATABASE_URL: safe.REDESIGN_DATABASE_URL.replace("prohorsematch_redesign", "neondb") }), /separate Neon/);

@@ -30,6 +30,7 @@ export function redesignEnvironment(source) {
   }
   env.DATABASE_URL = database;
   env.REDESIGN_SANDBOX = "true";
+  env.VITE_REDESIGN_SANDBOX = "true";
   return env;
 }
 
