@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
 import postcss from "postcss";
-import { isStylePreviewRoute, previewContrast } from "./style-preview";
+import { horseDisciplines, isStylePreviewRoute, pedigreeDetails, previewContrast } from "./style-preview";
 
 test("preview requires the literal opt-in and exact path", () => {
   assert.equal(isStylePreviewRoute("true", "/style-preview"), true);
@@ -56,14 +56,16 @@ test("expanded horse profile follows the approved photo-led detail layout", () =
   const card = source.slice(cardStart, cardEnd);
 
   for (const text of [
-    "Discipline", "Showjumping", "Height", "16.2 hands", "Age", "8 years",
+    "Discipline", "horseDisciplines[0]", "Height", "16.2 hands", "Age", "8 years",
     "Sex", "Gelding", "Breed", "Warmblood", "Location", "Southern Highlands, NSW",
     "Level of Education", "Established competition horse", "About",
-    "A$18,500", "Contact Seller", "Report this listing",
+    "Pedigree", "Contact Seller", "Report this listing",
   ]) {
     assert.ok(source.includes(text), text);
   }
   assert.match(card, /sp-photo-expanded/);
+  assert.doesNotMatch(card, /18,500|sp-horse-price/);
+  assert.match(card, /pedigree\.length > 0/);
   assert.match(card, /aria-label="Close horse profile"/);
   assert.match(card, /className="sp-photo-control sp-save"/);
   assert.match(card, /className="sp-btn" type="button" onClick=\{\(\) => setActionFeedback\("Contact Seller is a preview only\. No message was sent\."\)\}/);
@@ -101,4 +103,18 @@ test("expanded horse profile follows the approved photo-led detail layout", () =
   const report = declarations.get(".phm-style-preview .sp-detail-report") ?? [];
   assert.ok(report.some(({ prop, value }) => prop === "font-size" && value === "14px"));
   assert.ok(report.some(({ prop, value }) => prop === "text-decoration" && value === "none"));
+});
+
+test("pedigree hides absent fields and preserves supplied ancestors", () => {
+  assert.deepEqual(pedigreeDetails({}), []);
+  assert.deepEqual(pedigreeDetails({ sire: "  ", dam: null }), []);
+  assert.deepEqual(pedigreeDetails({ sire: " Oakwood ", dam_sire: "Regent" }), [
+    { label: "Sire", value: "Oakwood" },
+    { label: "Dam Sire", value: "Regent" },
+  ]);
+  assert.deepEqual(pedigreeDetails({ sire: "Sire", dam: "Dam", dam_sire: "Dam Sire" }).map(x => x.label), ["Sire", "Dam", "Dam Sire"]);
+});
+
+test("discipline names match the product", () => {
+  assert.deepEqual(horseDisciplines, ["Jumping", "Dressage", "Eventing"]);
 });

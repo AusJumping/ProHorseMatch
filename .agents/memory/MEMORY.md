@@ -2,3 +2,4 @@
 - [iPhone intro playback](iphone-intro-playback.md) — check Low Power Mode before treating a new play button as an autoplay regression.
 - [GitHub authorization](github-authorization.md) — shell Git and the connected GitHub App can have different authorization states.
 - [Redesign approval boundaries](redesign-approval.md) — preserve logos/colours; preview first, approval before visual-only rollout.
+- [Safe merge setup](safe-merge-setup.md) — automatic task setup installs, tests and compiles without database migrations or application credentials.

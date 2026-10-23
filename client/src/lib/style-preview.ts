@@ -3,6 +3,16 @@ export function isStylePreviewRoute(sandboxFlag: unknown, pathname: string): boo
   return sandboxFlag === "true" && (pathname === "/style-preview" || pathname === "/style-preview/");
 }
 
+export const horseDisciplines = ["Jumping", "Dressage", "Eventing"] as const;
+
+export function pedigreeDetails(horse: { sire?: string | null; dam?: string | null; dam_sire?: string | null }) {
+  return [
+    { label: "Sire", value: horse.sire?.trim() },
+    { label: "Dam", value: horse.dam?.trim() },
+    { label: "Dam Sire", value: horse.dam_sire?.trim() },
+  ].filter((field): field is { label: string; value: string } => Boolean(field.value));
+}
+
 /** WCAG 2.x sRGB relative luminance; preview specimens use opaque hex colours. */
 function luminance(hex: string): number {
   const channels = hex.replace("#", "").match(/.{2}/g)!.map((value) => {

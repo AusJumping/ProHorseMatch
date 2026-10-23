@@ -1,21 +1,16 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
-import SwipeSection from "@/components/SwipeSection";
-import HorseGrid from "@/components/HorseGrid";
 import FilterPanel from "@/components/FilterPanel";
 import Layout from "@/components/Layout";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "@/components/ui/badge";
-import { X, PlusCircle, Filter } from "lucide-react";
-import { Horse } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import type { Horse, Match } from "@shared/schema";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
-import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import CurrencyRate from "@/components/ui/CurrencyRate";
+import BrowseHorseGrid from "@/components/browse/BrowseHorseGrid";
+import BrowseQuickFilters from "@/components/browse/BrowseQuickFilters";
+import { Button } from "@/components/ui/button";
+import { SlidersHorizontal } from "lucide-react";
 
 interface Filter {
   disciplines: string[];
@@ -38,17 +33,16 @@ interface Filter {
 
 export default function Home() {
   const isMobile = useMobile();
-  const isTouchDevice = useIsTouchDevice();
-  const [location, navigate] = useLocation();
+  const [location] = useLocation();
   const search = useSearch();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
-  const { currentCurrency } = useCurrency();
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
-  const [currentHorseIndex, setCurrentHorseIndex] = useState<number>(0);
-  const [filterRevision, setFilterRevision] = useState(0);
+  const [hasLocalUser, setHasLocalUser] = useState(false);
+  const [pendingSaveIds, setPendingSaveIds] = useState<Set<number>>(() => new Set());
+  const pendingSaveIdsRef = useRef<Set<number>>(new Set());
   const [activeFilters, setActiveFilters] = useState<Filter>({
     disciplines: [],  // Empty array for All Disciplines
     breeds: [],       // Empty array for All Breeds
@@ -80,20 +74,17 @@ export default function Home() {
     if (location === "/discover") {
       console.log("Setting showFilter to true for discover route");
       setShowFilter(true);
-    } else if (location === "/filter" && !isMobile) {
-      console.log("Setting showFilter to true for desktop filter route");
-      setShowFilter(true);
-    } else if (location === "/filter" && isMobile && showFiltersParam === "true") {
+    } else if (location === "/filter" && showFiltersParam === "true") {
       // User clicked "Find Horses" in navigation - show filters
       console.log("Setting showFilter to true for mobile filter route with show_filters=true");
-      setShowFilter(true);
+      setShowFilter(isMobile);
+      setIsFilterOpen(!isMobile);
     } else if (location === "/filter" && isMobile) {
       // Mobile users on filter route without show_filters param (like "Get Started") - show horses first
       console.log("Setting showFilter to false for mobile filter route (horses first)");
       setShowFilter(false);
     } else if (location === "/filter") {
-      // Fallback: ensure mobile filter route shows horses first by default
-      console.log("Fallback: Setting showFilter to false for filter route");
+      // Keep the browse grid full-width until advanced filters are requested.
       setShowFilter(false);
     }
     
@@ -119,17 +110,13 @@ export default function Home() {
     }
   }, [location, isMobile, search]);
   
-  // This effect ensures that when filters change, we reset our swiping index
   useEffect(() => {
-    // Reset to the first horse when filters change
-    setSwipingIndex(0);
-    setCurrentHorseIndex(0);
-  }, [activeFilters]);
-
-  // Debug log
-  console.log("Home - Auth state:", { isAuthenticated, is_selling: user?.is_selling, is_searching: user?.is_searching, location, showFilter });
-
-  const [swipingIndex, setSwipingIndex] = useState(0);
+    try {
+      setHasLocalUser(Boolean(localStorage.getItem("user")));
+    } catch {
+      setHasLocalUser(false);
+    }
+  }, []);
 
   // Query for horses with filters
   const { data: horses, isLoading, isError, refetch: refetchHorses } = useQuery<Horse[]>({
@@ -213,6 +200,11 @@ export default function Home() {
     }
   });
 
+  const { data: matches = [] } = useQuery<Match[]>({
+    queryKey: ['/api/matches'],
+    enabled: isAuthenticated || hasLocalUser,
+  });
+
   // Refresh the horse list whenever the app comes back from the background
   // (e.g. a logged-in user reopening the installed PWA) so newly listed
   // horses always appear without a manual reload
@@ -226,49 +218,41 @@ export default function Home() {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [refetchHorses]);
 
-  const handleLike = async (horseId: number) => {
-    // Debug logging to help diagnose authentication issues
-    console.log("Like horse - Auth state:", { isAuthenticated, user, userId: user?.id });
-    
-    // First try to get a current user from localStorage if React Query hasn't loaded it yet
-    // This helps with mobile browsers that might have session issues
+  const handleToggleSaved = async (horseId: number, isSaved: boolean): Promise<boolean> => {
+    if (pendingSaveIdsRef.current.has(horseId)) return false;
     let currentUser = user;
     if (!currentUser) {
       try {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
           currentUser = JSON.parse(storedUser);
-          console.log("Using cached user from localStorage:", currentUser);
         }
       } catch (e) {
-        console.error("Error parsing stored user:", e);
+        console.error("Error reading cached user:", e);
       }
     }
-    
-    // Now check if we have a valid user
+
     if (!currentUser || !currentUser.id) {
       toast({
         title: "Login Required",
         description: "Please log in to save this horse to your favorites.",
         variant: "default",
       });
-      
-      setSwipingIndex(prev => prev + 1);
-      return;
+      return false;
     }
-    
-    // Now that we've verified the user is available, proceed with like
+
     if (!horseId) {
       toast({
         title: "Error",
         description: "Invalid horse selection. Please try again.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
-    
+
+    pendingSaveIdsRef.current.add(horseId);
+    setPendingSaveIds(new Set(pendingSaveIdsRef.current));
     try {
-      // Get auth token for API request
       const authToken = localStorage.getItem('authToken');
       const headers: Record<string, string> = {
         'Content-Type': 'application/json'
@@ -278,136 +262,67 @@ export default function Home() {
         headers['Authorization'] = `Bearer ${authToken}`;
       }
 
-      // Use fetch directly to get more control over the response
       const response = await fetch('/api/matches', {
         method: 'POST',
         headers,
         body: JSON.stringify({
           customer_id: currentUser.id,
           horse_id: horseId,
-          is_liked: true
+          is_liked: !isSaved
         }),
         credentials: 'include'
       });
-      
-      console.log("Like response status:", response.status);
-      
+
       if (response.ok) {
-        // Force an immediate invalidation of the matches cache so favorites page will update
         queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
-        
         toast({
-          title: "Horse Liked!",
-          description: "This horse has been added to your favorites.",
-          duration: 800, // Very brief notification (just under 1 second)
+          title: isSaved ? "Removed from favorites" : "Horse saved",
+          description: isSaved ? "This horse has been removed from your favorites." : "This horse has been added to your favorites.",
+          duration: 1200,
         });
-        
-        // Wait a brief moment before advancing to let the toast appear properly
-        setTimeout(() => {
-          setSwipingIndex(prev => prev + 1);
-        }, 300);
+        return true;
       } else {
         const errorText = await response.text();
-        console.error("API error:", errorText);
         throw new Error(errorText || "Failed to process like request");
       }
     } catch (error) {
-      console.error("Error liking horse:", error);
+      console.error("Error updating saved horse:", error);
       toast({
         title: "Error",
-        description: "Failed to like horse. Please try again.",
+        description: "Failed to update your saved horses. Please try again.",
         variant: "destructive",
       });
+      return false;
+    } finally {
+      pendingSaveIdsRef.current.delete(horseId);
+      setPendingSaveIds(new Set(pendingSaveIdsRef.current));
     }
   };
 
-  const handleDislike = async (horseId: number) => {
-    // Debug logging to help diagnose authentication issues
-    console.log("Dislike horse - Auth state:", { isAuthenticated, user, userId: user?.id });
-    
-    // First try to get a current user from localStorage if React Query hasn't loaded it yet
-    let currentUser = user;
-    if (!currentUser) {
-      try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          currentUser = JSON.parse(storedUser);
-          console.log("Using cached user from localStorage for dislike:", currentUser);
-        }
-      } catch (e) {
-        console.error("Error parsing stored user:", e);
-      }
-    }
-    
-    // Check if user is authenticated
-    if (!currentUser) {
-      // For dislikes, we won't show a login message
-      // Just advance to the next horse
-      setSwipingIndex(prev => prev + 1);
-      return;
-    }
-    
-    if (!horseId) {
-      setSwipingIndex(prev => prev + 1);
-      return;
-    }
-    
-    try {
-      // Use fetch directly to get more control over the response
-      const response = await fetch('/api/matches', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customer_id: currentUser.id,
-          horse_id: horseId,
-          is_liked: false
-        }),
-        credentials: 'include'
-      });
-      
-      console.log("Dislike response status:", response.status);
-      
-      // Any successful response means we can move to the next horse
-      if (response.ok) {
-        // Force an immediate invalidation of the matches cache so favorites page will update
-        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
-        
-        setSwipingIndex(prev => prev + 1);
-      } else {
-        const errorText = await response.text();
-        console.error("API error on dislike:", errorText);
-        throw new Error(errorText || "Failed to process dislike request");
-      }
-    } catch (error) {
-      console.error("Error disliking horse:", error);
-      toast({
-        title: "Error",
-        description: "Failed to dislike horse. Please try again.",
-        variant: "destructive",
-        duration: 800, // Very brief error notification to match the "Horse Liked!" toast
-      });
-    }
+  const toggleQuickDiscipline = (discipline: string) => {
+    setActiveFilters((prev) => ({
+      ...prev,
+      disciplines: prev.disciplines.includes(discipline)
+        ? prev.disciplines.filter((item) => item !== discipline)
+        : [discipline],
+      levels: [],
+    }));
   };
 
-  const handleShowMore = (horseId: number) => {
-    navigate(`/horse/${horseId}`);
-  };
-
-  const removeFilter = (type: keyof Filter, value: string) => {
-    setActiveFilters(prev => {
-      // Handle array values
-      if (Array.isArray(prev[type])) {
-        return {
-          ...prev,
-          [type]: (prev[type] as string[]).filter(item => item !== value)
-        };
-      }
-      // Handle single values
-      return {
-        ...prev,
-        [type]: null
-      };
-    });
+  const applyQuickRange = (
+    key: "price" | "height" | "age",
+    range: [number | null, number | null] | null,
+  ) => {
+    const fields = key === "price"
+      ? ["price_min", "price_max"] as const
+      : key === "height"
+        ? ["height_min", "height_max"] as const
+        : ["age_min", "age_max"] as const;
+    setActiveFilters((prev) => ({
+      ...prev,
+      [fields[0]]: range?.[0] ?? null,
+      [fields[1]]: range?.[1] ?? null,
+    }));
   };
 
   const handleApplyFilters = (newFilters: Filter) => {
@@ -440,10 +355,6 @@ export default function Home() {
     }
     
     console.log('Applying filters:', cleanFilters);
-    // Reset the swiping index to show the first horse in the new filtered results
-    setSwipingIndex(0);
-    setCurrentHorseIndex(0);
-    setFilterRevision(revision => revision + 1);
     setActiveFilters(cleanFilters);
     setIsFilterOpen(false);
     
@@ -471,53 +382,6 @@ export default function Home() {
       setIsFilterOpen(!isFilterOpen);
     }
   };
-
-  // Generate active filter pills from the activeFilters object
-  const renderFilterPills = () => {
-    const pills = [];
-
-    activeFilters.disciplines.forEach(discipline => 
-      pills.push({ type: 'disciplines', value: discipline }));
-    
-    activeFilters.breeds.forEach(breed => 
-      pills.push({ type: 'breeds', value: breed }));
-    
-    activeFilters.sexes.forEach(sex => 
-      pills.push({ type: 'sexes', value: sex }));
-
-    if (activeFilters.location_country) {
-      pills.push({ type: 'location_country', value: activeFilters.location_country });
-    }
-
-    return (
-      <div className="mb-4 flex gap-2 flex-wrap">
-        {pills.map((pill, index) => (
-          <Badge key={index} variant="outline" className="flex items-center gap-1 px-3 py-1.5 rounded-full">
-            <span>{pill.value}</span>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-4 w-4 p-0 hover:bg-transparent" 
-              onClick={() => removeFilter(pill.type as keyof Filter, pill.value)}
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </Badge>
-        ))}
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="rounded-full bg-primary bg-opacity-10 text-primary border-transparent text-xs"
-          onClick={toggleFilterPanel}
-        >
-          Edit Filters
-        </Button>
-      </div>
-    );
-  };
-
-  // Check if user has selling permission
-  const isOwner = user?.is_selling === true;
   
   return (
     <Layout 
@@ -526,71 +390,60 @@ export default function Home() {
       onFilterClick={toggleFilterPanel}
       showMobileFilterButton={isMobile}
       onMobileFilterClick={toggleFilterPanel}
-      horseCount={horses?.length || 0}
-      currentHorseIndex={currentHorseIndex}
     >
-      <div
-        className="flex w-full h-full"
-        style={isMobile ? { minHeight: "calc(100dvh - 9rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))" } : undefined}
-      >
-        {/* Filter sidebar - desktop only or when explicitly showing filters */}
-        {(!isMobile || showFilter) && (
-          <div className={`${isMobile ? 'w-full' : 'w-72'} bg-white rounded-xl p-5 shadow-sm h-fit ${isMobile ? 'mb-6' : 'mr-6'}`}>
-            <FilterPanel 
-              isOpen={true} 
-              onClose={() => {}} 
+      <div className="mx-auto w-full max-w-[1600px] px-4 pb-12 pt-7 sm:px-7 sm:pt-10 lg:px-10">
+        <div className="mb-7 flex flex-col gap-2 sm:mb-9">
+          <p className="font-accent text-[0.68rem] font-bold uppercase tracking-[0.2em] text-secondary">The collection</p>
+          <h1 className="font-display text-3xl leading-tight text-foreground sm:text-[2.65rem]">Find your next great horse.</h1>
+          <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+            Thoughtfully matched performance horses, ready for what comes next.
+          </p>
+        </div>
+
+        <BrowseQuickFilters
+          activeFilters={activeFilters}
+          onDisciplineToggle={toggleQuickDiscipline}
+          onApplyRange={applyQuickRange}
+        />
+
+        {(!isMobile && isFilterOpen || isMobile && showFilter) ? (
+          <div className="mb-8 rounded-[1.25rem] border border-border/70 bg-card p-5 shadow-sm sm:p-6">
+            <FilterPanel
+              isOpen={true}
+              onClose={() => { setIsFilterOpen(false); setShowFilter(false); }}
               activeFilters={activeFilters}
               onApplyFilters={handleApplyFilters}
               horseCount={horses?.length || 0}
             />
           </div>
-        )}
+        ) : null}
 
-        {/* Main content area */}
-        <div className={`flex-1 min-w-0 flex flex-col items-center relative`}>
-          {isMobile ? (
-            /* Horse swiping area for mobile screens */
-            <>
-              {/* Spare height is split 2:1 above:below, so the card sits a little below centre.
-                  The home indicator already adds space under the buttons, so true centre looked too high. */}
-              <div className="flex-[2]" aria-hidden="true" />
-
-              {/* Add a manually filtered list of horses to handle filtering on mobile */}
-              {horses && (
-                <div>
-                  {/* Removed yellow filter notification as requested */}
-                  
-                  {/* All filter indicators completely removed as requested */}
-                  
-                  <SwipeSection 
-                    key={`filter-${filterRevision}`}
-                    horses={horses || []}
-                    isLoading={isLoading}
-                    activeIndex={0}
-                    onShowMore={handleShowMore}
-                    onLike={handleLike}
-                    onIndexChange={setCurrentHorseIndex} // Restore index tracking for counter display
-                  />
-                </div>
-              )}
-              <div className="flex-1" aria-hidden="true" />
-            </>
-          ) : (
-            /* Horse grid for non-touch devices */
-            <HorseGrid
-              horses={horses || []}
-              onShowMore={handleShowMore}
-            />
+        <div className="mb-5 flex min-h-6 items-baseline justify-between gap-3">
+          <p className="font-accent text-sm font-semibold text-foreground" aria-live="polite">
+            {isLoading ? "Finding horses…" : isError ? "Listings unavailable" : `${horses?.length ?? 0} ${horses?.length === 1 ? "horse" : "horses"}`}
+          </p>
+          {!isMobile && (
+            <Button type="button" variant="outline" className="rounded-full" onClick={toggleFilterPanel} aria-expanded={isFilterOpen}>
+              <SlidersHorizontal className="mr-2 h-4 w-4" aria-hidden="true" />
+              All filters
+            </Button>
           )}
         </div>
 
+        <BrowseHorseGrid
+          horses={horses}
+          matches={matches}
+          pendingSaveIds={pendingSaveIds}
+          isLoading={isLoading}
+          isError={isError}
+          onRetry={() => { void refetchHorses(); }}
+          onToggleSaved={handleToggleSaved}
+        />
 
-
-        {/* Mobile filter panel */}
         {isMobile && (
-          <FilterPanel 
-            isOpen={isFilterOpen} 
-            onClose={() => setIsFilterOpen(false)} 
+          <FilterPanel
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
             activeFilters={activeFilters}
             onApplyFilters={handleApplyFilters}
             horseCount={horses?.length || 0}

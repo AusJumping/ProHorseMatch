@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet";
 import { ArrowDown, ArrowRight, Heart, MessageCircle, Search, SlidersHorizontal, X } from "lucide-react";
 import logo from "@/assets/logo-filter.png";
 import auditText from "@/docs/design-audit.md?raw";
-import { previewContrast } from "@/lib/style-preview";
+import { horseDisciplines, pedigreeDetails, previewContrast } from "@/lib/style-preview";
 import "./style-preview.css";
 
 const palette = [
@@ -28,6 +28,11 @@ const iconSamples = [
 ];
 
 export default function StylePreview() {
+  const pedigree = pedigreeDetails({
+    sire: "Oakwood Cavalier",
+    dam: "Willow Grace",
+    dam_sire: "Silver Regent",
+  });
   const [saved, setSaved] = useState(false);
   const [expanded, setExpanded] = useState(() => new URLSearchParams(window.location.search).get("details") === "open");
   const [demoStatus, setDemoStatus] = useState("Try an enabled sample. Nothing is sent or saved to an account.");
@@ -122,7 +127,7 @@ export default function StylePreview() {
               <div className={`sp-card-body${expanded ? " sp-card-body-expanded" : ""}`}>
                 <div className={`sp-card-heading${expanded ? " sp-card-heading-expanded" : ""}`}>
                   <h2 id="sp-horse-name">Arden</h2>
-                  {expanded ? <p className="sp-horse-price">A$18,500</p> : <span>8 years · Gelding · Warmblood</span>}
+                  {!expanded && <span>8 years · Gelding · Warmblood</span>}
                 </div>
                 {!expanded ? (
                   <>
@@ -134,7 +139,7 @@ export default function StylePreview() {
                 ) : (
                   <div className="sp-card-detail" id="sp-horse-detail">
                     <dl className="sp-facts-grid">
-                      <div><dt>Discipline</dt><dd>Showjumping</dd></div>
+                      <div><dt>Discipline</dt><dd>{horseDisciplines[0]}</dd></div>
                       <div><dt>Height</dt><dd>16.2 hands</dd></div>
                       <div><dt>Age</dt><dd>8 years</dd></div>
                       <div><dt>Sex</dt><dd>Gelding</dd></div>
@@ -145,6 +150,16 @@ export default function StylePreview() {
                       <h3 id="sp-education-heading">Level of Education</h3>
                       <p><span className="sp-education">Established competition horse</span></p>
                     </section>
+                    {pedigree.length > 0 && (
+                      <section className="sp-detail-section" aria-labelledby="sp-pedigree-heading">
+                        <h3 id="sp-pedigree-heading">Pedigree</h3>
+                        <dl className="sp-facts-grid">
+                          {pedigree.map(({ label, value }) => (
+                            <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+                          ))}
+                        </dl>
+                      </section>
+                    )}
                     <section className="sp-detail-section sp-about" aria-labelledby="sp-about-heading">
                       <h3 id="sp-about-heading">About</h3>
                       <p className="sp-detail-copy">Arden is a thoughtful, elastic gelding with a careful jump and an easy rhythm around a course. He is established at 1.20m and enjoys a varied routine at home.</p>
