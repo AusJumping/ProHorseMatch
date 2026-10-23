@@ -18,6 +18,8 @@ interface LayoutProps {
   horseCount?: number;
   currentHorseIndex?: number;
   browseMode?: boolean;
+  hideHeader?: boolean;
+  hideMobileNavigation?: boolean;
 }
 
 const Layout = ({
@@ -28,6 +30,8 @@ const Layout = ({
   horseCount,
   currentHorseIndex,
   browseMode = false,
+  hideHeader = false,
+  hideMobileNavigation = false,
 }: LayoutProps) => {
   const isMobile = useMobile();
   const [, navigate] = useLocation();
@@ -50,7 +54,7 @@ const Layout = ({
       {/* Main Content */}
       <div className={`flex-1 flex flex-col ${isMobile ? 'w-full max-w-full' : ''}`}>
         {/* Header */}
-        {!browseMode ? <header
+        {!browseMode && !hideHeader ? <header
           className={`bg-white border-b border-neutral-200 p-4 ${isMobile ? 'w-full' : ''}`}
           style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}
         >
@@ -97,7 +101,7 @@ const Layout = ({
         </main>
       </div>
 
-      {isMobile && <MobileNavbar />}
+      {isMobile && !hideMobileNavigation && <MobileNavbar />}
       {/* Unread Notification Banner - shows on login if user has unread messages */}
       {isAuthenticated && <UnreadNotificationBanner />}
 

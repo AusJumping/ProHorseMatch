@@ -1,20 +1,15 @@
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import { Horse } from "@shared/schema";
+import { ownsHorse } from "@shared/horsePermissions";
 import Layout from "@/components/Layout";
-import MediaCarousel from "@/components/MediaCarousel";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Heart, MessageSquare, ChevronLeft, Loader2, ArrowLeft, Flag } from "lucide-react";
+import { Heart, MessageSquare, Loader2, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
-import { useCurrency } from "@/contexts/CurrencyContext";
-import { useMutation } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -27,24 +22,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 
 export default function HorseDetail() {
-  const isMobile = useMobile();
   const [, params] = useRoute("/horse/:id");
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
-  const { currentCurrency, convertPrice, formatPrice, isLoading: currencyLoading } = useCurrency();
   const [isSaved, setIsSaved] = useState(false);
   const [isMessageOpen, setIsMessageOpen] = useState(false);
   const [messageContent, setMessageContent] = useState("");
-  const [convertedMinPrice, setConvertedMinPrice] = useState<number | null>(null);
-  const [convertedMaxPrice, setConvertedMaxPrice] = useState<number | null>(null);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const touchStart = useRef<number | null>(null);
 
   const reportMutation = useMutation({
     mutationFn: (data: { horse_id: number; reason: string; details?: string }) =>
-      apiRequest('POST', '/api/reports', data),
+      apiRequest("POST", "/api/reports", data),
     onSuccess: () => {
       setReportDialogOpen(false);
       setReportReason("");
@@ -53,188 +47,147 @@ export default function HorseDetail() {
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to submit report. Please try again.", variant: "destructive" });
-    }
+    },
   });
 
-  // Fetch horse data
-  const { data: horse, isLoading, isError } = useQuery<Horse>({
+  const { data: horse, isLoading, isError, refetch } = useQuery<Horse>({
     queryKey: [`/api/horses/${params?.id}`],
     enabled: !!params?.id,
   });
-  
-  // Check if the current user owns this horse
-  const isOwner = user && horse && user.id === horse.owner_id;
-  
-  // Convert price range when currency or horse changes
-  useEffect(() => {
-    async function doConversion() {
-      if (horse?.price_min) {
-        const convertedMin = await convertPrice(horse.price_min, horse.currency);
-        setConvertedMinPrice(convertedMin);
-      }
-      
-      if (horse?.price_max) {
-        const convertedMax = await convertPrice(horse.price_max, horse.currency);
-        setConvertedMaxPrice(convertedMax);
-      }
-    }
-    
-    if (horse) {
-      doConversion();
-    }
-  }, [horse, currentCurrency, convertPrice]);
+  const isOwner = Boolean(horse && ownsHorse(user?.id, horse));
+  const isBuyer = Boolean(isAuthenticated && user && horse && !isOwner);
+  const photos = Array.isArray(horse?.photos) ? horse.photos : [];
 
-  // Check if this horse is in the user's favorites
   useEffect(() => {
+    setPhotoIndex(0);
+    setGalleryOpen(false);
+  }, [params?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
     const checkFavorite = async () => {
-      try {
-        if (!isAuthenticated) {
-          setIsSaved(false);
-          return;
-        }
-        const matches = await apiRequest("GET", "/api/matches");
-        const isLiked = matches.some(
-          (match: any) => match.horse_id === parseInt(params!.id) && match.is_liked
-        );
-        setIsSaved(isLiked);
-      } catch (error) {
-        console.error("Error checking if horse is favorite:", error);
+      if (!isAuthenticated || !params?.id) {
         setIsSaved(false);
-      }
-    };
-
-    if (params?.id) {
-      checkFavorite();
-    }
-  }, [params?.id, isAuthenticated]);
-
-  const handleSave = async () => {
-    try {
-      if (!isAuthenticated || !user) {
-        toast({
-          title: "Login required",
-          description: "Please log in to save this horse to favorites.",
-          variant: "destructive",
-        });
-        navigate("/auth");
         return;
       }
-      
-      // First check if there's already a match for this user and horse
-      const existingMatches = await apiRequest("GET", "/api/matches");
-      
-      const existingMatch = existingMatches.find(
-        (match: any) => match.horse_id === parseInt(params!.id) && match.customer_id === user.id
-      );
+      try {
+        const matches = await apiRequest("GET", "/api/matches");
+        if (!cancelled) {
+          const liked = matches.some((match: any) =>
+            match.horse_id === Number(params.id) && match.is_liked
+          );
+          setIsSaved(liked);
+        }
+      } catch (error) {
+        console.error("Error checking if horse is favorite:", error);
+        if (!cancelled) setIsSaved(false);
+      }
+    };
+    checkFavorite();
+    return () => { cancelled = true; };
+  }, [params?.id, isAuthenticated]);
 
-      if (existingMatch) {
-        // Toggle the like status
-        const newLikedStatus = !existingMatch.is_liked;
-        
-        await apiRequest("PATCH", `/api/matches/${existingMatch.id}`, { is_liked: newLikedStatus });
-        
-        setIsSaved(newLikedStatus);
-        
-        // Invalidate the matches cache to ensure other pages get updated data
-        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
-        
+  useEffect(() => {
+    if (!galleryOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setGalleryOpen(false);
+      if (event.key === "ArrowRight" && photos.length > 1) setPhotoIndex((index) => (index + 1) % photos.length);
+      if (event.key === "ArrowLeft" && photos.length > 1) setPhotoIndex((index) => (index + photos.length - 1) % photos.length);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [galleryOpen, photos.length]);
+
+  const requireSignIn = (action: string) => {
+    if (isAuthenticated && user) return true;
+    toast({ title: "Login required", description: `Please log in to ${action}.`, variant: "destructive" });
+    navigate("/auth");
+    return false;
+  };
+
+  const handleSave = async () => {
+    if (isOwner || !horse || !params?.id) return;
+    if (!requireSignIn("save this horse to favourites")) return;
+    try {
+      const matches = await apiRequest("GET", "/api/matches");
+      const existing = matches.find((match: any) =>
+        match.horse_id === Number(params.id) && match.customer_id === user!.id
+      );
+      if (existing) {
+        const liked = !existing.is_liked;
+        await apiRequest("PATCH", `/api/matches/${existing.id}`, { is_liked: liked });
+        setIsSaved(liked);
+        queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
         toast({
-          title: newLikedStatus ? "Horse saved" : "Horse removed",
-          description: newLikedStatus ? "This horse has been added to your favorites." : "This horse has been removed from your favorites.",
-          variant: "default",
-          duration: 4000, // Show for 4 seconds
+          title: liked ? "Horse saved" : "Horse removed",
+          description: liked ? "This horse has been added to your favourites." : "This horse has been removed from your favourites.",
         });
       } else {
-        // Create new match if one doesn't exist
         await apiRequest("POST", "/api/matches", {
-          customer_id: user.id,
-          horse_id: parseInt(params!.id),
-          is_liked: true
+          customer_id: user!.id,
+          horse_id: Number(params.id),
+          is_liked: true,
         });
-        
         setIsSaved(true);
-        
-        // Invalidate the matches cache to ensure other pages get updated data
-        queryClient.invalidateQueries({ queryKey: ['/api/matches'] });
-        
-        toast({
-          title: "Horse saved",
-          description: "This horse has been added to your favorites.",
-          variant: "default",
-          duration: 4000, // Show for 4 seconds
-        });
+        queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+        toast({ title: "Horse saved", description: "This horse has been added to your favourites." });
       }
     } catch (error) {
       console.error("Save error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to save horse. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to save horse. Please try again.", variant: "destructive" });
     }
   };
 
   const handleSendMessage = async () => {
-    if (!messageContent.trim()) return;
-    
+    if (isOwner || !horse || !messageContent.trim()) return;
+    if (!requireSignIn("send messages")) return;
     try {
-      if (!isAuthenticated || !user) {
-        toast({
-          title: "Login required",
-          description: "Please log in to send messages.",
-          variant: "destructive",
-        });
-        navigate("/auth");
-        return;
-      }
-      
       await apiRequest("POST", "/api/messages", {
-        customer_id: user.id,
-        owner_id: horse!.owner_id,
-        horse_id: horse!.id,
+        customer_id: user!.id,
+        owner_id: horse.owner_id,
+        horse_id: horse.id,
         content: messageContent,
-        sender_type: "customer"
+        sender_type: "customer",
       });
-      
-      toast({
-        title: "Message sent",
-        description: "Your message has been sent to the owner.",
-      });
-      
+      toast({ title: "Message sent", description: "Your message has been sent to the owner." });
       setMessageContent("");
       setIsMessageOpen(false);
       navigate("/messages");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
-      });
+    } catch {
+      toast({ title: "Error", description: "Failed to send message. Please try again.", variant: "destructive" });
     }
   };
-
-  const handleContactOwner = () => {
-    setIsMessageOpen(!isMessageOpen);
-  };
-
-
 
   const handleBack = () => {
-    // Check if we have history to go back
-    if (window.history.length > 1) {
-      window.history.back(); // This preserves the user's session and properly returns to previous page
-    } else {
-      // Fallback to home if there's no history
-      navigate("/"); 
-    }
+    if (window.history.length > 1) window.history.back();
+    else navigate("/");
   };
+
+  const showReportDialog = () => {
+    if (!requireSignIn("report this listing")) return;
+    setReportDialogOpen(true);
+  };
+
+  const startSwipe = (event: React.TouchEvent) => { touchStart.current = event.touches[0]?.clientX ?? null; };
+  const finishSwipe = (event: React.TouchEvent) => {
+    if (touchStart.current === null || photos.length < 2) return;
+    const distance = event.changedTouches[0].clientX - touchStart.current;
+    if (Math.abs(distance) > 45) setPhotoIndex((index) => (index + (distance < 0 ? 1 : photos.length - 1)) % photos.length);
+    touchStart.current = null;
+  };
+  const stepPhoto = (direction: number) => setPhotoIndex((index) => photos.length ? (index + direction + photos.length) % photos.length : 0);
 
   if (isLoading) {
     return (
-      <Layout pageTitle="Horse Detail" showBackButton onBackClick={handleBack}>
-        <div className="flex justify-center items-center h-full">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading horse details...</span>
+      <Layout pageTitle="Horse detail" showBackButton onBackClick={handleBack}>
+        <div className="mx-auto max-w-xl animate-pulse space-y-5">
+          <div className="h-[38vh] min-h-64 rounded-2xl bg-neutral-200" />
+          <div className="h-8 w-2/3 rounded bg-neutral-200" />
+          <div className="grid grid-cols-2 gap-3">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-14 rounded-lg bg-neutral-200" />)}</div>
         </div>
       </Layout>
     );
@@ -242,240 +195,208 @@ export default function HorseDetail() {
 
   if (isError || !horse) {
     return (
-      <Layout pageTitle="Horse Detail" showBackButton onBackClick={handleBack}>
-        <div className="flex justify-center items-center h-full">
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-red-500">Error Loading Horse</h2>
-            <p className="mt-2">Could not load horse details. Please try again later.</p>
-            <Button 
-              className="mt-4" 
-              size="icon"
-              onClick={handleBack}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+      <Layout pageTitle="Horse detail" showBackButton onBackClick={handleBack}>
+        <section className="mx-auto max-w-xl rounded-2xl border border-neutral-200 bg-white px-6 py-12 text-center">
+          <h2 className="font-accent text-xl font-bold text-neutral-800">We couldn’t load this listing</h2>
+          <p className="mt-2 text-sm text-neutral-600">Please check your connection and try again.</p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Button variant="outline" onClick={handleBack}><ArrowLeft className="mr-2 h-4 w-4" />Go back</Button>
+            <Button onClick={() => refetch()}>Try again</Button>
           </div>
-        </div>
+        </section>
       </Layout>
     );
   }
 
+  const details = [
+    ["Discipline", horse.disciplines?.filter(Boolean).join(", ")],
+    ["Level", horse.levels?.filter(Boolean).join(", ")],
+    ["Age", horse.age === 1 ? "Yearling" : `${horse.age} years`],
+    ["Sex", horse.sex],
+    ["Height", horse.height_hands ? `${horse.height_hands} hands` : "Not specified"],
+    ["Colour", horse.colour],
+    ["Breed", horse.breeds?.filter(Boolean).join(", ")],
+    ["Location", horse.location_country],
+  ] as const;
+  const pedigree = [
+    ["Sire", horse.sire],
+    ["Dam", horse.dam],
+    ["Dam sire", horse.dam_sire],
+  ].filter((item): item is [string, string] => Boolean(item[1]?.trim()));
+
   return (
-    <Layout 
-      pageTitle={horse.name} 
-      showBackButton 
-      onBackClick={handleBack}
-    >
-      <div className={`${isMobile ? '' : 'w-full max-w-xl px-6 mx-auto'}`}>
-        <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-md">
-          {/* Media Gallery - Above content for all screen sizes */}
-          <div className={`w-full ${isMobile ? 'h-[35vh]' : 'h-[45vh]'}`}>
-            <div className="h-full">
-              <MediaCarousel 
-                media={horse.photos || []} 
-                videos={horse.videos || []} 
-              />
+      <Layout pageTitle={horse.name} showBackButton onBackClick={handleBack} hideHeader hideMobileNavigation>
+      <div className={`mx-auto w-full ${isOwner ? "pb-4" : isBuyer ? "pb-32" : "pb-12"} max-w-3xl`}>
+        {isOwner && (
+          <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#cdac6e]/35 bg-[#cdac6e]/10 px-4 py-3">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800">You’re viewing your listing</p>
+              <p className="mt-0.5 text-xs text-neutral-600">Only you can see and manage your listing details.</p>
             </div>
+            <Button size="sm" className="shrink-0 bg-[#cdac6e] text-white hover:bg-[#b99a5e]" onClick={() => navigate(`/edit-horse/${horse.id}`)}>Edit listing</Button>
           </div>
-          
-          {/* Details Content */}
-          <div className={`${isMobile ? 'w-full p-3 overflow-hidden' : 'w-full p-6'}`}>
-            <div className="flex justify-between items-start mb-2">
-              <h2 className={`font-accent font-bold ${isMobile ? 'text-xl' : 'text-2xl'} break-words`}>{horse.name}</h2>
-            </div>
-            
-            <p className={`text-neutral-800 mb-4 ${isMobile ? 'text-sm' : ''} break-words`}>
-              {horse.colour || "Unknown Colour"} {horse.age === 1 ? "Yearling" : `${horse.age}yo`} {horse.breeds[0]} {horse.sex} • {(horse.height_hands as any) === "young_horse" || !horse.height_hands ? "Height TBD" : `${horse.height_hands} hands`}
-            </p>
-            
-            {/* Stats Grid */}
-            <div className={`grid grid-cols-2 ${isMobile ? 'gap-1.5 w-full' : 'gap-3'} mb-4`}>
-              <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
-                <p className="text-sm text-neutral-500">Primary Discipline</p>
-                <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.disciplines.join(", ")}</p>
-              </div>
-              <div className={`bg-neutral-50 ${isMobile ? 'p-2 min-w-0' : 'p-3'} rounded-lg overflow-hidden`}>
-                <p className="text-sm text-neutral-500">Level</p>
-                <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.levels.join(", ")}</p>
-              </div>
-            </div>
-            
-            {/* Full Width Pedigree */}
-            <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden mb-4`}>
-              <p className="text-sm text-neutral-500">Pedigree</p>
-              <div className={`font-medium space-y-1 ${isMobile ? 'text-sm' : ''}`}>
-                <div className="break-words">
-                  <span className="font-bold">Sire:</span> {horse.sire || "Not specified"}
-                </div>
-                <div className="break-words">
-                  <span className="font-bold">Dam:</span> {horse.dam || "Not specified"}
-                </div>
-                <div className="break-words">
-                  <span className="font-bold">Dam Sire:</span> {horse.dam_sire || "Not specified"}
-                </div>
-              </div>
-            </div>
-            
-            {/* Location Box */}
-            <div className={`bg-neutral-50 ${isMobile ? 'p-2' : 'p-3'} rounded-lg overflow-hidden mb-6`}>
-              <p className="text-sm text-neutral-500">Location</p>
-              <p className={`font-medium ${isMobile ? 'text-sm' : ''} break-words`}>{horse.location_country}</p>
-            </div>
-            
-            {/* Description */}
-            <div className="mb-6">
-              <h3 className="font-accent font-semibold mb-2">About {horse.name}</h3>
-              <p className="text-neutral-700 text-sm leading-relaxed whitespace-pre-wrap">
-                {horse.description || "No description provided."}
-              </p>
-            </div>
-            
-            {/* Additional Information */}
-            {horse.additional_info && (
-              <div className="mb-6">
-                <h3 className="font-accent font-semibold mb-2">Additional Information</h3>
-                <p className="text-neutral-700 text-sm leading-relaxed whitespace-pre-wrap">
-                  {horse.additional_info}
-                </p>
-              </div>
-            )}
-            
-            {/* Level of Education */}
-            {horse.education_level && (
-              <div className="mb-6">
-                <h3 className="font-accent font-semibold mb-2">Level of Education</h3>
-                <Badge variant="outline" className="bg-primary text-white border-transparent">
-                  {horse.education_level}
-                </Badge>
-              </div>
-            )}
+        )}
 
-            
-
-            
-            {/* Message form (conditionally displayed) */}
-            {isMessageOpen && (
-              <div className="mb-6">
-                <h3 className="font-accent font-semibold mb-2">Message the Owner</h3>
-                <textarea
-                  className="w-full p-3 border border-neutral-200 rounded-lg mb-3"
-                  rows={3}
-                  placeholder={`Ask a question about ${horse.name}...`}
-                  value={messageContent}
-                  onChange={(e) => setMessageContent(e.target.value)}
-                ></textarea>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setIsMessageOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSendMessage}>
-                    Send Message
-                  </Button>
-                </div>
-              </div>
-            )}
-            
-            {/* Price Range Display - Only show for horse owners */}
-            {isOwner && horse.price_min && horse.price_max && (
-              <div className="mb-6">
-                <h3 className="font-accent font-semibold mb-2">Price Range</h3>
-                <div className="bg-primary text-white font-accent font-semibold text-lg px-4 py-2 rounded-lg inline-block">
-                  {currencyLoading ? (
-                    <div className="flex items-center">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      <span>Converting...</span>
-                    </div>
-                  ) : convertedMinPrice !== null && convertedMaxPrice !== null ? (
-                    formatPrice(convertedMinPrice) + " - " + formatPrice(convertedMaxPrice)
-                  ) : (
-                    `${horse.currency} ${horse.price_min?.toLocaleString()} - ${horse.price_max?.toLocaleString()}`
-                  )}
-                  {!currencyLoading && convertedMinPrice !== null && currentCurrency !== horse.currency && (
-                    <span className="text-sm opacity-80 ml-2">
-                      (orig. {horse.currency})
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons - Only show if not the owner of this horse */}
-            {!isMessageOpen && !isOwner && (
-              <div className="flex gap-3 mt-auto">
-                <Button 
-                  variant="outline"
-                  className="flex-shrink-0"
-                  onClick={handleBack}
-                >
-                  <ChevronLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-                <Button 
-                  variant={isSaved ? "outline" : "default"}
-                  className={`flex-1 ${isSaved ? 'bg-primary-light bg-opacity-10 text-primary' : ''}`}
-                  onClick={handleSave} 
-                  style={!isSaved ? { backgroundColor: "#cdac6e", borderColor: "#cdac6e", color: "white" } : {}}
-                >
-                  <Heart className={`${isMobile ? '' : 'mr-2'} h-4 w-4 ${isSaved ? 'fill-primary' : ''}`} />
-                  {!isMobile && 'Favourite'}
-                </Button>
-                <Button className="flex-1" onClick={handleContactOwner}>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Contact Seller
-                </Button>
-              </div>
-            )}
-
-            {!isOwner && (
-              <button
-                onClick={() => setReportDialogOpen(true)}
-                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 mt-3 mx-auto"
-              >
-                <Flag className="h-3 w-3" />
-                Report this listing
+        <div
+          className="group relative h-[42vh] min-h-[280px] max-h-[520px] overflow-hidden rounded-2xl bg-neutral-200 sm:h-[48vh]"
+          onTouchStart={startSwipe}
+          onTouchEnd={finishSwipe}
+        >
+          {photos.length ? (
+            <button
+              type="button"
+              className="absolute inset-0 block h-full w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#cdac6e]"
+              onClick={() => setGalleryOpen(true)}
+              aria-label={`Open photo ${photoIndex + 1} of ${photos.length} in full screen`}
+            >
+              <img src={photos[photoIndex]} alt={`${horse.name}, photo ${photoIndex + 1}`} className="h-full w-full object-cover object-center" />
+            </button>
+          ) : (
+            <div className="flex h-full items-center justify-center bg-[#e8e6df] text-center">
+              <p className="font-accent text-sm text-neutral-500">Photos coming soon</p>
+            </div>
+          )}
+          {photos.length > 1 && (
+            <>
+              <button type="button" aria-label="Previous photo" onClick={() => stepPhoto(-1)} className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/45 text-white transition hover:bg-neutral-950/65"><ChevronLeft className="h-5 w-5" /></button>
+              <button type="button" aria-label="Next photo" onClick={() => stepPhoto(1)} className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/45 text-white transition hover:bg-neutral-950/65"><ChevronRight className="h-5 w-5" /></button>
+              <div className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-neutral-950/55 px-3 py-1 text-xs font-medium tracking-wide text-white">{photoIndex + 1} / {photos.length}</div>
+            </>
+          )}
+          {photos.length > 1 && (
+            <div className="absolute bottom-3 left-3 flex gap-1.5" aria-label="Choose photo">
+              {photos.map((photo, index) => (
+                <button key={`${photo}-${index}`} type="button" onClick={() => setPhotoIndex(index)} aria-label={`Show photo ${index + 1}`} aria-current={index === photoIndex} className={`h-1.5 rounded-full transition-all ${index === photoIndex ? "w-6 bg-white" : "w-2 bg-white/60"}`} />
+              ))}
+            </div>
+          )}
+          <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]">
+            <button type="button" onClick={handleBack} aria-label="Back to listings" className="flex h-11 w-11 items-center justify-center rounded-full bg-neutral-950/50 text-white shadow-sm backdrop-blur-sm transition hover:bg-neutral-950/70"><ArrowLeft className="h-5 w-5" /></button>
+            {isBuyer ? (
+              <button type="button" onClick={handleSave} aria-label={isSaved ? "Remove from favourites" : "Save to favourites"} aria-pressed={isSaved} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-neutral-800 shadow-sm backdrop-blur-sm transition hover:bg-white">
+                <Heart className={`h-5 w-5 ${isSaved ? "fill-[#cdac6e] text-[#cdac6e]" : ""}`} />
               </button>
-            )}
-            
-            {/* Owner message - Show when viewing your own horse */}
-            {isOwner && (
-              <div className="mt-auto">
-                <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 text-center mb-4">
-                  <p className="text-accent font-medium">This is your horse listing</p>
-                  <p className="text-sm text-gray-600 mt-1">You can edit or manage this listing from your dashboard</p>
-                </div>
-                <div className="flex justify-start">
-                  <Button 
-                    variant="outline"
-                    size="icon"
-                    onClick={handleBack}
-                    className="h-8 w-8"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            )}
-            
+            ) : <span className="h-11 w-11" aria-hidden="true" />}
+          </div>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-neutral-950/35 to-transparent" />
+          {photos.length > 0 && <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 text-[11px] font-medium tracking-wide text-white/90">Tap to view photos</p>}
+        </div>
 
+        <article className="px-1 pt-5 sm:px-3">
+          <h1 className="font-accent break-words text-3xl font-bold leading-tight text-neutral-900 sm:text-4xl">{horse.name}</h1>
+
+          <section aria-label="Horse details" className="mt-5 grid grid-cols-2 gap-x-5 gap-y-5 border-y border-neutral-200 py-5 sm:gap-x-10">
+            {details.map(([label, value]) => (
+              <div key={label} className="min-w-0">
+                <p className="text-xs font-medium tracking-wide text-neutral-500">{label}</p>
+                <p className="mt-1 break-words text-sm font-bold leading-snug text-neutral-900">{value || "Not specified"}</p>
+              </div>
+            ))}
+          </section>
+
+          {pedigree.length > 0 && (
+            <section className="mt-6">
+              <h2 className="font-accent text-lg font-semibold text-neutral-900">Pedigree</h2>
+              <div className="mt-3 grid grid-cols-2 gap-x-5 gap-y-4 border-l-2 border-[#cdac6e] pl-4">
+                {pedigree.map(([label, value]) => <div key={label}><p className="text-xs font-medium text-neutral-500">{label}</p><p className="mt-1 break-words text-sm font-semibold text-neutral-900">{value}</p></div>)}
+              </div>
+            </section>
+          )}
+
+          <section className="mt-7">
+            <h2 className="font-accent text-xl font-semibold text-neutral-900">About {horse.name}</h2>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-neutral-700">{horse.description || "No description provided."}</p>
+          </section>
+
+          {horse.additional_info && (
+            <section className="mt-7">
+              <h2 className="font-accent text-lg font-semibold text-neutral-900">Additional Information</h2>
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-neutral-700">{horse.additional_info}</p>
+            </section>
+          )}
+
+          {horse.education_level && (
+            <section className="mt-7">
+              <h2 className="font-accent text-lg font-semibold text-neutral-900">Level of Education</h2>
+              <Badge variant="outline" className="mt-2 border-[#cdac6e]/50 bg-[#cdac6e]/10 text-neutral-800">{horse.education_level}</Badge>
+            </section>
+          )}
+
+          {isMessageOpen && isBuyer && (
+            <section className="mt-7 rounded-xl border border-neutral-200 bg-white p-4">
+              <h2 className="font-accent text-lg font-semibold">Message the seller</h2>
+              <label className="sr-only" htmlFor="seller-message">Your message</label>
+              <textarea
+                id="seller-message"
+                className="mt-3 w-full rounded-lg border border-neutral-300 bg-[#fbfaf7] p-3 text-sm outline-none focus:border-[#cdac6e] focus:ring-2 focus:ring-[#cdac6e]/25"
+                rows={4}
+                placeholder={`Ask a question about ${horse.name}...`}
+                value={messageContent}
+                onChange={(event) => setMessageContent(event.target.value)}
+              />
+              <div className="mt-3 flex gap-2">
+                <Button variant="outline" onClick={() => setIsMessageOpen(false)}>Cancel</Button>
+                <Button onClick={handleSendMessage} disabled={!messageContent.trim()}><MessageSquare className="mr-2 h-4 w-4" />Send message</Button>
+              </div>
+            </section>
+          )}
+
+          {isBuyer && (
+            <div className="mt-9 flex justify-center pb-2">
+              <button type="button" onClick={showReportDialog} className="text-xs text-neutral-400 transition-colors hover:text-neutral-600 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e]">Report this listing</button>
+            </div>
+          )}
+        </article>
+      </div>
+
+      {isBuyer && !isMessageOpen && (
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200 bg-[#f5f4f0]/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-3 backdrop-blur-sm">
+          <div className="mx-auto max-w-3xl">
+            <Button className="h-12 w-full bg-[#cdac6e] text-base font-semibold text-white hover:bg-[#b99a5e]" onClick={() => setIsMessageOpen(true)}>
+              <MessageSquare className="mr-2 h-4 w-4" />Contact Seller
+            </Button>
           </div>
         </div>
-      </div>
+      )}
+
+      {galleryOpen && (
+        <div className="fixed inset-0 z-[70] flex h-[100dvh] flex-col bg-neutral-950 text-white" role="dialog" aria-modal="true" aria-label={`${horse.name} photo gallery`}>
+          <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]">
+            <button type="button" onClick={() => setGalleryOpen(false)} aria-label="Back to listing" className="flex h-11 w-11 items-center justify-center rounded-full bg-neutral-900/60 text-white transition hover:bg-neutral-800"><ArrowLeft className="h-5 w-5" /></button>
+            {isBuyer && (
+              <button type="button" onClick={handleSave} aria-label={isSaved ? "Remove from favourites" : "Save to favourites"} aria-pressed={isSaved} className="flex h-11 w-11 items-center justify-center rounded-full bg-neutral-900/60 text-[#cdac6e] transition hover:bg-neutral-800">
+                <Heart className={`h-5 w-5 ${isSaved ? "fill-[#cdac6e]" : ""}`} />
+              </button>
+            )}
+          </header>
+          {photos.length ? (
+            <div className="flex min-h-0 flex-1 items-center justify-center px-2 py-20" onTouchStart={startSwipe} onTouchEnd={finishSwipe}>
+              <img src={photos[photoIndex]} alt={`${horse.name}, photo ${photoIndex + 1}`} className="max-h-full max-w-full select-none object-contain" />
+            </div>
+          ) : (
+            <div className="flex flex-1 items-center justify-center text-sm text-neutral-400">No photos available</div>
+          )}
+          {photos.length > 1 && (
+            <>
+              <button type="button" onClick={() => stepPhoto(-1)} aria-label="Previous photo" className="absolute left-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-900/60 text-white"><ChevronLeft className="h-6 w-6" /></button>
+              <button type="button" onClick={() => stepPhoto(1)} aria-label="Next photo" className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-900/60 text-white"><ChevronRight className="h-6 w-6" /></button>
+            </>
+          )}
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-center pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] text-sm text-white/75">{photos.length ? `${photoIndex + 1} / ${photos.length}` : horse.name}</div>
+        </div>
+      )}
 
       <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Report this listing</DialogTitle>
-            <DialogDescription>
-              Let us know what's wrong. Our team will review it.
-            </DialogDescription>
+            <DialogDescription>Let us know what’s wrong. Our team will review it.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-1.5 block">Reason</label>
+              <label className="mb-1.5 block text-sm font-medium">Reason</label>
               <Select value={reportReason} onValueChange={setReportReason}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a reason" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select a reason" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="misleading_listing">Misleading or inaccurate listing</SelectItem>
                   <SelectItem value="inappropriate_content">Inappropriate content</SelectItem>
@@ -486,22 +407,14 @@ export default function HorseDetail() {
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1.5 block">Details (optional)</label>
-              <Textarea
-                value={reportDetails}
-                onChange={(e) => setReportDetails(e.target.value)}
-                placeholder="Anything else we should know?"
-                rows={3}
-              />
+              <label className="mb-1.5 block text-sm font-medium" htmlFor="report-details">Details (optional)</label>
+              <Textarea id="report-details" value={reportDetails} onChange={(event) => setReportDetails(event.target.value)} placeholder="Anything else we should know?" rows={3} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setReportDialogOpen(false)}>Cancel</Button>
-            <Button
-              disabled={!reportReason || !horse || reportMutation.isPending}
-              onClick={() => horse && reportMutation.mutate({ horse_id: horse.id, reason: reportReason, details: reportDetails.trim() || undefined })}
-            >
-              Submit report
+            <Button disabled={!reportReason || reportMutation.isPending} onClick={() => reportMutation.mutate({ horse_id: horse.id, reason: reportReason, details: reportDetails.trim() || undefined })}>
+              {reportMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Submit report
             </Button>
           </DialogFooter>
         </DialogContent>
