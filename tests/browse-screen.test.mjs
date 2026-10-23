@@ -29,7 +29,7 @@ const Grid = load("client/src/components/browse/BrowseHorseGrid.tsx").default;
 const { default: QuickFilters, CurrencyProvider } = load("client/src/components/browse/BrowseQuickFilters.tsx", true);
 const baseProps = {
   pendingSaveIds: new Set(), isLoading: false, isError: false,
-  currentUserId: 2, isBuyer: true,
+  currentUserId: 2,
   onRetry() {}, onToggleSaved: async () => true,
 };
 const horse = {
@@ -73,16 +73,17 @@ test("cards expose a profile link and independent accessible save control", () =
   assert.match(html, /16\.2hh/);
   assert.match(html, /7yo Mare · 16\.2hh · Bay/);
   assert.match(html, /Jumping · 1\.20m/);
-  assert.match(html, />NSW</);
+  assert.doesNotMatch(html, /NSW|Australia|MapPin|Location/);
   assert.match(html, /View horse/);
   assert.match(html, /Photo unavailable/);
   assert.match(html, />New</);
+  assert.match(html, /bg-\[#cdac6e\][^>]*text-white/);
   assert.match(html, /grid-cols-1/);
   assert.match(html, /lg:grid-cols-3/);
   assert.doesNotMatch(html.match(/<a\b[^>]*>[\s\S]*?<\/a>/)?.[0] ?? "", /<button/);
 });
-test("hearts are absent on own horses, logged-out cards and selling-only accounts", () => {
-  for (const props of [{ currentUserId: 1 }, { currentUserId: undefined, isBuyer: false }, { isBuyer: false }]) {
+test("hearts are absent on own horses and logged-out cards", () => {
+  for (const props of [{ currentUserId: 1 }, { currentUserId: undefined }]) {
     const html = render(React.createElement(Grid, { ...baseProps, ...props, horses: [horse] }));
     assert.doesNotMatch(html, /aria-label="Save |aria-pressed/);
     assert.match(html, /View horse/);
@@ -104,6 +105,16 @@ test("saved and pending controls reflect match state", () => {
   assert.match(html, /aria-pressed="true"/);
   assert.match(html, /Remove Fictional listing from saved horses/);
   assert.match(html, /disabled=""/);
+});
+test("owners can open their listing but cannot save it; other users keep the save control", () => {
+  const props = { ...baseProps, horses: [{ ...horse, owner_id: 2 }] };
+  const ownerHtml = render(React.createElement(Grid, { ...props, currentUserId: 2 }));
+  assert.match(ownerHtml, /href="\/horse\/42"/);
+  assert.doesNotMatch(ownerHtml, /aria-label="Save Fictional listing"/);
+  for (const currentUserId of [1, 3]) {
+    const html = render(React.createElement(Grid, { ...props, currentUserId }));
+    assert.match(html, /aria-label="Save Fictional listing"/);
+  }
 });
 test("all six quick filters are present and selected discipline is announced", () => {
   const html = render(React.createElement(QuickFilters, {

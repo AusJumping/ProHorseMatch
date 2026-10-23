@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowRight, Heart, MapPin } from "lucide-react";
+import { ArrowRight, Heart } from "lucide-react";
 import type { Horse, Match } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatHorseHeight, getAustralianState, isRecentlyAdded } from "@/components/browse/presentation";
+import { formatHorseHeight, isRecentlyAdded } from "@/components/browse/presentation";
+import { ownsHorse } from "@shared/horsePermissions";
 
 interface BrowseHorseGridProps {
+  currentUserId?: number;
   horses?: Horse[];
   matches?: Match[];
   pendingSaveIds: Set<number>;
@@ -14,8 +16,6 @@ interface BrowseHorseGridProps {
   isError: boolean;
   onRetry: () => void;
   onToggleSaved: (horseId: number, isSaved: boolean) => Promise<boolean>;
-  currentUserId?: number;
-  isBuyer: boolean;
 }
 
 function HorsePhoto({ horse }: { horse: Horse }) {
@@ -48,7 +48,7 @@ function HorsePhoto({ horse }: { horse: Horse }) {
         </div>
       )}
       {isRecentlyAdded(horse.created_at) ? (
-        <span className="absolute left-4 top-4 rounded-full bg-background/95 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-foreground shadow-sm">
+        <span className="absolute left-4 top-4 rounded-full bg-[#cdac6e] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-white shadow-sm">
           New
         </span>
       ) : null}
@@ -60,14 +60,12 @@ function HorseListing({
   horse,
   isSaved,
   isPending,
-  isBuyer,
   isOwnerHorse,
   onToggleSaved,
 }: {
   horse: Horse;
   isSaved: boolean;
   isPending: boolean;
-  isBuyer: boolean;
   isOwnerHorse: boolean;
   onToggleSaved: (horseId: number, isSaved: boolean) => Promise<boolean>;
 }) {
@@ -90,12 +88,6 @@ function HorseListing({
       : formatHorseHeight(heightHands);
   const colour = horse.colour ? horse.colour.charAt(0).toUpperCase() + horse.colour.slice(1).toLowerCase() : null;
   const details = [[age, sex].filter(Boolean).join(" "), height, colour].filter(Boolean).join(" · ");
-  const state = getAustralianState(
-    horse.additional_info,
-    (horse as Horse & { location_state?: string; state?: string }).location_state ??
-      (horse as Horse & { state?: string }).state,
-  );
-
   return (
     <article className="group relative min-w-0">
       <Link
@@ -106,7 +98,7 @@ function HorseListing({
       <div className="relative z-10 pointer-events-none">
         <div className="relative">
           <HorsePhoto horse={horse} />
-          {isBuyer && !isOwnerHorse ? <Button
+          {!isOwnerHorse ? <Button
             type="button"
             variant="ghost"
             size="icon"
@@ -137,12 +129,6 @@ function HorseListing({
             {discipline}{level ? ` · ${level}` : ""}
           </p>
           {details ? <p className="mt-1 truncate text-[0.78rem] leading-relaxed text-muted-foreground">{details}</p> : null}
-          {state ? (
-            <p className="mt-1.5 flex items-center gap-1 text-xs leading-relaxed text-muted-foreground">
-              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              <span>{state}</span>
-            </p>
-          ) : null}
           <Link
             href={`/horse/${horse.id}`}
             className="pointer-events-auto mt-3 inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.02em] text-secondary hover:underline"
@@ -157,6 +143,7 @@ function HorseListing({
 }
 
 export default function BrowseHorseGrid({
+  currentUserId,
   horses,
   matches = [],
   pendingSaveIds,
@@ -164,8 +151,6 @@ export default function BrowseHorseGrid({
   isError,
   onRetry,
   onToggleSaved,
-  currentUserId,
-  isBuyer,
 }: BrowseHorseGridProps) {
   if (isLoading) {
     return (
@@ -212,8 +197,7 @@ export default function BrowseHorseGrid({
           horse={horse}
           isSaved={likedHorseIds.has(horse.id)}
           isPending={pendingSaveIds.has(horse.id)}
-          isBuyer={isBuyer}
-          isOwnerHorse={currentUserId === undefined || horse.owner_id === currentUserId}
+          isOwnerHorse={currentUserId === undefined || ownsHorse(currentUserId, horse)}
           onToggleSaved={onToggleSaved}
         />
       ))}

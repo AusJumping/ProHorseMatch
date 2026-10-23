@@ -76,7 +76,9 @@ try {
   assert.equal(await evaluate("getComputedStyle(document.querySelector('article').parentElement).gridTemplateColumns.split(' ').length"), 1);
   assert.equal(await evaluate("document.documentElement.scrollWidth<=innerWidth"), true, "No page-wide horizontal overflow");
   const cardText = await evaluate("[...document.querySelectorAll('article')].map(a=>a.innerText).join('\\n')");
-  for (const text of ["Amber", "Jumping", "1.20m", "Mare", "16.1hh", "Bay", "NSW", "View horse"]) assert.ok(cardText.includes(text), text);
+  for (const text of ["Amber", "Jumping", "1.20m", "Mare", "16.1hh", "Bay", "View horse"]) assert.ok(cardText.includes(text), text);
+  assert.doesNotMatch(cardText, /NSW|VIC|QLD|Australia|Location/);
+  assert.equal(await evaluate("document.querySelector('article button[aria-pressed]')?.getAttribute('aria-label')"), "Save Bramble");
   assert.doesNotMatch(cardText, /\$|AUD|25,000|35,000|Price/);
   assert.equal(await evaluate("document.querySelectorAll('article button[aria-pressed]').length"), 10);
   await wait("document.querySelector('article img')?.complete && document.querySelector('article img')?.naturalWidth>0");
