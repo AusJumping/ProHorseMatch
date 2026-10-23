@@ -9,9 +9,13 @@ Review all pages for inconsistencies before changing appearance. Present one mob
 
 When approved, change only the look, not functionality, data or how any page works.
 
-Horse cards have no location field. Keep the detailed horse page's bottom information and actions, including Level of Education, Back, Favourite, Contact Seller and Report this listing.
+Compact browsing cards have no location field. The user subsequently specified Location in the expanded profile's two-column facts grid, alongside Discipline, Height, Age, Sex and Breed.
 
-**Why:** The user corrected the style preview using the existing detailed-card screenshot; a style change must not add card fields or omit existing details.
+For the expanded profile preview, use top photo close/save icons instead of separate Back/Close/Favourite buttons, name and price on one row, a light education tag, About text and one dark Contact Seller button fixed to the mobile bottom. Keep Report this listing quiet and centred. Put any sample disclaimer under the card, never inside it.
+
+Standing design rules: one dark primary action per screen; other actions are icons, light secondary buttons or text links. Keep icons beside labels. Navigation is a small top icon, never a full-width button. Information must not look like a button. Section spacing is at least twice within-section line spacing.
+
+**Why:** The user supplied a detailed replacement brief after reviewing the first expanded preview. These instructions supersede the earlier requirement to retain separate Back/Favourite footer buttons, but do not authorize rollout beyond the preview.
 
 **Why:** The user explicitly wants to preserve their brand and approve a consistent style before a broader rollout.
 

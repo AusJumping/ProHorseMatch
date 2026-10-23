@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet";
-import { ArrowDown, ArrowRight, Check, Heart, MessageCircle, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowRight, Heart, MessageCircle, Search, SlidersHorizontal, X } from "lucide-react";
 import logo from "@/assets/logo-filter.png";
 import auditText from "@/docs/design-audit.md?raw";
 import { previewContrast } from "@/lib/style-preview";
@@ -29,8 +29,9 @@ const iconSamples = [
 
 export default function StylePreview() {
   const [saved, setSaved] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(() => new URLSearchParams(window.location.search).get("details") === "open");
   const [demoStatus, setDemoStatus] = useState("Try an enabled sample. Nothing is sent or saved to an account.");
+  const [actionFeedback, setActionFeedback] = useState("");
   const [imageState, setImageState] = useState<"loading" | "ready" | "error">("loading");
   const [imageAttempt, setImageAttempt] = useState(0);
 
@@ -64,7 +65,7 @@ export default function StylePreview() {
             <div className="sp-intro-rule" aria-hidden="true" />
             <h1 id="sp-title">A little less interface.<br />A lot more horse.</h1>
             <p>A calm, confident direction for ProHorseMatch. Familiar colours, considered type, and space for the horse to make the first impression.</p>
-            <a className="sp-btn" href="#sp-foundations">Explore the style <ArrowDown aria-hidden="true" /></a>
+            <a className="sp-btn sp-btn-secondary" href="#sp-foundations">Explore the style <ArrowDown aria-hidden="true" /></a>
             <div className="sp-intro-foot">
               <p>One page. One proposed system.<br />Your existing logo and colours, unchanged.</p>
               <a className="sp-text-link" href="#sp-audit">Read the audit notes <ArrowRight aria-hidden="true" /></a>
@@ -73,19 +74,19 @@ export default function StylePreview() {
 
           <div>
             <article className="sp-horse-card" aria-labelledby="sp-horse-name">
-              <div className="sp-photo" aria-busy={imageState === "loading"}>
+              <div className={`sp-photo${expanded ? " sp-photo-expanded" : ""}`} aria-busy={imageState === "loading"}>
                 {imageState === "error" ? (
                   <div className="sp-image-fallback" role="alert">
                     <h3>The photograph could not load.</h3>
-                    <p>The sample details below are still available.</p>
-                    <button className="sp-btn" type="button" onClick={retryImage}>Retry photograph</button>
+                    <p>Please try again in a moment.</p>
+                    <button className="sp-btn sp-btn-secondary" type="button" onClick={retryImage}>Retry photograph</button>
                   </div>
                 ) : (
                   <>
                     <img
                       key={imageAttempt}
                       src={`/style-preview/horse.jpg${imageAttempt ? `?retry=${imageAttempt}` : ""}`}
-                      alt="A dark bay horse standing among grasses beside a paddock fence. Photograph used only as a fictional illustration."
+                      alt="A dark bay horse standing among grasses beside a paddock fence."
                       width="660"
                       height="1024"
                       fetchPriority="high"
@@ -95,47 +96,71 @@ export default function StylePreview() {
                     {imageState === "loading" && <div className="sp-photo-loading" role="status" aria-label="Loading horse photograph" />}
                   </>
                 )}
-                {imageState !== "error" && <span className="sp-photo-label">Fictional illustration</span>}
+                {expanded && (
+                  <button
+                    className="sp-photo-control sp-photo-close"
+                    type="button"
+                    aria-label="Close horse profile"
+                    onClick={() => {
+                      setExpanded(false);
+                      setActionFeedback("");
+                    }}
+                  >
+                    <X aria-hidden="true" />
+                  </button>
+                )}
                 <button
-                  className="sp-save"
+                  className="sp-photo-control sp-save"
                   type="button"
-                  aria-label={saved ? "Remove fictional horse from preview favourites" : "Save fictional horse to preview favourites"}
+                  aria-label={saved ? "Remove horse from favourites" : "Save horse to favourites"}
                   aria-pressed={saved}
                   onClick={() => setSaved((value) => !value)}
                 >
-                  {saved ? <Check aria-hidden="true" /> : <Heart aria-hidden="true" />}
+                  <Heart aria-hidden="true" fill={saved ? "currentColor" : "none"} />
                 </button>
               </div>
-              <div className="sp-card-body">
-                <div className="sp-card-heading">
+              <div className={`sp-card-body${expanded ? " sp-card-body-expanded" : ""}`}>
+                <div className={`sp-card-heading${expanded ? " sp-card-heading-expanded" : ""}`}>
                   <h2 id="sp-horse-name">Arden</h2>
-                  <span>Illustrative profile</span>
+                  {expanded ? <p className="sp-horse-price">A$18,500</p> : <span>8 years · Gelding · Warmblood</span>}
                 </div>
-                <p className="sp-card-meta"><span>8 years</span><span>Gelding</span><span>Warmblood</span></p>
-                <button className="sp-btn" type="button" aria-expanded={expanded} aria-controls="sp-horse-detail" onClick={() => setExpanded((value) => !value)}>
-                  {expanded ? "Close sample profile" : "View sample profile"} <ArrowRight aria-hidden="true" />
-                </button>
-                  <div className="sp-card-detail" id="sp-horse-detail" hidden={!expanded}>
-                    <h3>Additional information</h3>
-                    <p>Arden is an invented name. All profile details are fictional and do not describe the photographed horse. This is a style demonstration, with no seller, price, enquiry or payment attached.</p>
-                    <h3>Level of Education</h3>
-                    <p><span className="sp-education">Well educated</span></p>
-                    <div className="sp-detail-actions" aria-label="Sample detail actions">
-                      <button className="sp-btn sp-btn-secondary" type="button" onClick={() => setExpanded(false)}>Back</button>
-                      <button className="sp-btn sp-btn-secondary" type="button" aria-pressed={saved} onClick={() => setSaved(value => !value)}>
-                        <Heart aria-hidden="true" />{saved ? "Favourited" : "Favourite"}
-                      </button>
-                      <button className="sp-btn" type="button" onClick={() => setDemoStatus("Contact Seller is a preview sample only. No message was sent.")}>
+                {!expanded ? (
+                  <>
+                    <button className="sp-btn sp-btn-secondary sp-profile-toggle" type="button" aria-expanded={false} aria-controls="sp-horse-detail" onClick={() => setExpanded(true)}>
+                      View full profile <ArrowRight aria-hidden="true" />
+                    </button>
+                    <div id="sp-horse-detail" hidden />
+                  </>
+                ) : (
+                  <div className="sp-card-detail" id="sp-horse-detail">
+                    <dl className="sp-facts-grid">
+                      <div><dt>Discipline</dt><dd>Showjumping</dd></div>
+                      <div><dt>Height</dt><dd>16.2 hands</dd></div>
+                      <div><dt>Age</dt><dd>8 years</dd></div>
+                      <div><dt>Sex</dt><dd>Gelding</dd></div>
+                      <div><dt>Breed</dt><dd>Warmblood</dd></div>
+                      <div><dt>Location</dt><dd>Southern Highlands, NSW</dd></div>
+                    </dl>
+                    <section className="sp-detail-section" aria-labelledby="sp-education-heading">
+                      <h3 id="sp-education-heading">Level of Education</h3>
+                      <p><span className="sp-education">Established competition horse</span></p>
+                    </section>
+                    <section className="sp-detail-section sp-about" aria-labelledby="sp-about-heading">
+                      <h3 id="sp-about-heading">About</h3>
+                      <p className="sp-detail-copy">Arden is a thoughtful, elastic gelding with a careful jump and an easy rhythm around a course. He is established at 1.20m and enjoys a varied routine at home.</p>
+                    </section>
+                    <div className="sp-contact-dock">
+                      <button className="sp-btn" type="button" onClick={() => setActionFeedback("Contact Seller is a preview only. No message was sent.")}>
                         <MessageCircle aria-hidden="true" />Contact Seller
                       </button>
                     </div>
-                    <button className="sp-text-link" type="button" onClick={() => setDemoStatus("Report this listing is a preview sample only. No report was submitted.")}>Report this listing</button>
-                    <p role="status" aria-live="polite">{demoStatus}</p>
+                    <button className="sp-detail-report" type="button" onClick={() => setActionFeedback("Report this listing is a preview only. No report was submitted.")}>Report this listing</button>
                   </div>
-                <p role="status" aria-live="polite">{saved ? "Saved in this preview only. Refreshing clears it." : "Sample only. No live listing or account connection."}</p>
+                )}
               </div>
             </article>
-            <p className="sp-caption">The proposed card: photograph first, 16px corners, a subtle shadow. No heavy frame.</p>
+            <p className="sp-caption">A fictional horse profile for style review; this is not a live listing.</p>
+            {actionFeedback && <p className="sp-action-feedback" role="status" aria-live="polite">{actionFeedback}</p>}
           </div>
         </section>
 

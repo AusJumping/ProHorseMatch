@@ -43,13 +43,62 @@ test("preview is static, no-index and uses only the local photograph", () => {
   assert.match(source, /src=\{`\/style-preview\/horse\.jpg/);
   assert.doesNotMatch(source, /\bfetch\(|apiRequest|useAuth|useQuery|localStorage|sessionStorage/);
   assert.match(source, /aria-pressed=\{saved\}/);
-  assert.match(source, /aria-expanded=\{expanded\}/);
+  assert.match(source, /aria-expanded=\{false\}/);
+  assert.match(source, /new URLSearchParams\(window\.location\.search\)\.get\("details"\) === "open"/);
 });
 
-test("sample card preserves the existing no-location layout and detail footer", () => {
+test("expanded horse profile follows the approved photo-led detail layout", () => {
   const source = readFileSync(new URL("../pages/style-preview.tsx", import.meta.url), "utf8");
-  assert.doesNotMatch(source, /Southern Highlands|MapPin|sp-location/);
-  for (const text of ["Level of Education", "Well educated", "Back", "Favourite", "Contact Seller", "Report this listing"]) {
+  const css = postcss.parse(readFileSync(new URL("../pages/style-preview.css", import.meta.url), "utf8"));
+  const cardStart = source.indexOf('<article className="sp-horse-card"');
+  const cardEnd = source.indexOf("</article>", cardStart);
+  assert.ok(cardStart >= 0 && cardEnd > cardStart);
+  const card = source.slice(cardStart, cardEnd);
+
+  for (const text of [
+    "Discipline", "Showjumping", "Height", "16.2 hands", "Age", "8 years",
+    "Sex", "Gelding", "Breed", "Warmblood", "Location", "Southern Highlands, NSW",
+    "Level of Education", "Established competition horse", "About",
+    "A$18,500", "Contact Seller", "Report this listing",
+  ]) {
     assert.ok(source.includes(text), text);
   }
+  assert.match(card, /sp-photo-expanded/);
+  assert.match(card, /aria-label="Close horse profile"/);
+  assert.match(card, /className="sp-photo-control sp-save"/);
+  assert.match(card, /className="sp-btn" type="button" onClick=\{\(\) => setActionFeedback\("Contact Seller is a preview only\. No message was sent\."\)\}/);
+  assert.doesNotMatch(card, /Close sample profile|>Back<\/button|>Favourite<\/button|Favourited|Fictional illustration|Illustrative profile|not a live listing/);
+  assert.match(source, /A fictional horse profile for style review; this is not a live listing\./);
+  assert.match(source, /setActionFeedback\("Report this listing is a preview only\. No report was submitted\."\)/);
+  assert.doesNotMatch(source, /fetch\(|apiRequest|\/api\/messages|\/api\/reports/);
+  assert.match(source, /get\("details"\) === "open"/);
+
+  const selectors = new Set<string>();
+  const declarations = new Map<string, Array<import("postcss").Declaration>>();
+  css.walkRules((rule) => {
+    rule.selectors.forEach((selector) => selectors.add(selector));
+    for (const selector of rule.selectors) {
+      const existing = declarations.get(selector) ?? [];
+      declarations.set(selector, [
+        ...existing,
+        ...rule.nodes.filter((node): node is import("postcss").Declaration => node.type === "decl"),
+      ]);
+    }
+  });
+
+  assert.ok(selectors.has(".phm-style-preview .sp-photo-expanded"));
+  assert.ok(selectors.has(".phm-style-preview .sp-facts-grid"));
+  assert.ok(selectors.has(".phm-style-preview .sp-detail-report"));
+  assert.ok(selectors.has(".phm-style-preview .sp-contact-dock"));
+  assert.ok(selectors.has(".phm-style-preview .sp-contact-dock .sp-btn"));
+  assert.equal(selectors.has(".phm-style-preview .sp-card-body .sp-btn"), false);
+
+  const mobileDock = declarations.get(".phm-style-preview .sp-contact-dock") ?? [];
+  assert.ok(mobileDock.some(({ prop, value }) => prop === "position" && value === "fixed"));
+  assert.ok(mobileDock.some(({ prop, value }) => prop === "padding" && value.includes("safe-area-inset-bottom")));
+  const cardBody = declarations.get(".phm-style-preview .sp-card-body-expanded") ?? [];
+  assert.ok(cardBody.some(({ prop, value }) => prop === "padding-bottom" && value.includes("safe-area-inset-bottom")));
+  const report = declarations.get(".phm-style-preview .sp-detail-report") ?? [];
+  assert.ok(report.some(({ prop, value }) => prop === "font-size" && value === "14px"));
+  assert.ok(report.some(({ prop, value }) => prop === "text-decoration" && value === "none"));
 });
