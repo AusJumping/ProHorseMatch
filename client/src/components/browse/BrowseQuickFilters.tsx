@@ -132,7 +132,7 @@ export default function BrowseQuickFilters({
           <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
           Refine your search
         </div>
-        <div className="flex gap-2.5 overflow-x-auto pb-1" aria-label="Quick horse filters">
+        <div className="flex w-full flex-nowrap gap-2.5 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Quick horse filters">
           {quickDisciplines.map(({ label, value }) => {
             const selected = activeFilters.disciplines.includes(value);
             return (
@@ -159,7 +159,7 @@ export default function BrowseQuickFilters({
       </div>
 
       <Dialog open={activeRange !== null} onOpenChange={(open) => !open && setActiveRange(null)}>
-        <DialogContent className="bottom-0 left-0 top-auto w-full max-w-none translate-x-0 translate-y-0 gap-7 rounded-t-[1.5rem] border-0 bg-background p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-18px_60px_rgba(42,36,25,0.18)] sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:w-[min(92vw,32rem)] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border sm:p-8 sm:pb-8">
+        <DialogContent className="bottom-0 left-0 top-auto w-full max-w-none translate-x-0 translate-y-0 gap-7 rounded-t-[1.5rem] border-0 bg-background p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-[0_-18px_60px_rgba(42,36,25,0.18)] data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-left-0 data-[state=closed]:slide-out-to-left-0 data-[state=open]:zoom-in-100 data-[state=closed]:zoom-out-100 sm:left-1/2 sm:top-1/2 sm:bottom-auto sm:w-[min(92vw,32rem)] sm:max-w-lg sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl sm:border sm:p-8 sm:pb-8">
           {activeRange && config ? (
             <>
               <DialogHeader className="pr-8 text-left">

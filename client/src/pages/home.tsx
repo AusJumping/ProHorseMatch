@@ -386,12 +386,9 @@ export default function Home() {
   return (
     <Layout 
       pageTitle="" 
-      showFilterButton 
-      onFilterClick={toggleFilterPanel}
-      showMobileFilterButton={isMobile}
-      onMobileFilterClick={toggleFilterPanel}
+      browseMode
     >
-      <div className="mx-auto w-full max-w-[1600px] px-4 pb-12 pt-7 sm:px-7 sm:pt-10 lg:px-10">
+      <div className="mx-auto w-full max-w-[1600px] px-4 pb-12 pt-6 sm:px-7 sm:pt-10 lg:px-10">
         <div className="mb-7 flex flex-col gap-2 sm:mb-9">
           <p className="font-accent text-[0.68rem] font-bold uppercase tracking-[0.2em] text-secondary">The collection</p>
           <h1 className="font-display text-3xl leading-tight text-foreground sm:text-[2.65rem]">Find your next great horse.</h1>
@@ -422,12 +419,10 @@ export default function Home() {
           <p className="font-accent text-sm font-semibold text-foreground" aria-live="polite">
             {isLoading ? "Finding horses…" : isError ? "Listings unavailable" : `${horses?.length ?? 0} ${horses?.length === 1 ? "horse" : "horses"}`}
           </p>
-          {!isMobile && (
-            <Button type="button" variant="outline" className="rounded-full" onClick={toggleFilterPanel} aria-expanded={isFilterOpen}>
-              <SlidersHorizontal className="mr-2 h-4 w-4" aria-hidden="true" />
-              All filters
-            </Button>
-          )}
+          <Button type="button" variant="outline" className={`rounded-full ${isMobile ? "h-9 px-3 text-xs" : ""}`} onClick={toggleFilterPanel} aria-expanded={isFilterOpen}>
+            <SlidersHorizontal className="mr-2 h-4 w-4" aria-hidden="true" />
+            All filters
+          </Button>
         </div>
 
         <BrowseHorseGrid
@@ -438,6 +433,8 @@ export default function Home() {
           isError={isError}
           onRetry={() => { void refetchHorses(); }}
           onToggleSaved={handleToggleSaved}
+          currentUserId={user?.id}
+          isBuyer={Boolean(user?.is_searching)}
         />
 
         {isMobile && (

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { Heart } from "lucide-react";
+import { ArrowRight, Heart, MapPin } from "lucide-react";
 import type { Horse, Match } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatHorseAge, formatHorseHeight, isRecentlyAdded } from "@/components/browse/presentation";
+import { formatHorseHeight, getAustralianState, isRecentlyAdded } from "@/components/browse/presentation";
 
 interface BrowseHorseGridProps {
   horses?: Horse[];
@@ -14,6 +14,8 @@ interface BrowseHorseGridProps {
   isError: boolean;
   onRetry: () => void;
   onToggleSaved: (horseId: number, isSaved: boolean) => Promise<boolean>;
+  currentUserId?: number;
+  isBuyer: boolean;
 }
 
 function HorsePhoto({ horse }: { horse: Horse }) {
@@ -58,11 +60,15 @@ function HorseListing({
   horse,
   isSaved,
   isPending,
+  isBuyer,
+  isOwnerHorse,
   onToggleSaved,
 }: {
   horse: Horse;
   isSaved: boolean;
   isPending: boolean;
+  isBuyer: boolean;
+  isOwnerHorse: boolean;
   onToggleSaved: (horseId: number, isSaved: boolean) => Promise<boolean>;
 }) {
   const [optimisticSaved, setOptimisticSaved] = useState<boolean | null>(null);
@@ -73,8 +79,22 @@ function HorseListing({
 
   const saved = optimisticSaved ?? isSaved;
   const discipline = horse.disciplines?.[0] || "Discipline unlisted";
-  const height = formatHorseHeight(horse.height_hands as number | string | null);
-  const location = horse.location_country || "Location unlisted";
+  const level = horse.levels?.[0];
+  const age = horse.age === null || horse.age === undefined ? null : `${horse.age}yo`;
+  const sex = horse.sex ? horse.sex.charAt(0).toUpperCase() + horse.sex.slice(1).toLowerCase() : null;
+  const heightHands = horse.height_hands as number | string | null | undefined;
+  const height = heightHands === "young_horse"
+    ? "Young horse"
+    : heightHands === null || heightHands === undefined || heightHands === ""
+      ? null
+      : formatHorseHeight(heightHands);
+  const colour = horse.colour ? horse.colour.charAt(0).toUpperCase() + horse.colour.slice(1).toLowerCase() : null;
+  const details = [[age, sex].filter(Boolean).join(" "), height, colour].filter(Boolean).join(" · ");
+  const state = getAustralianState(
+    horse.additional_info,
+    (horse as Horse & { location_state?: string; state?: string }).location_state ??
+      (horse as Horse & { state?: string }).state,
+  );
 
   return (
     <article className="group relative min-w-0">
@@ -86,7 +106,7 @@ function HorseListing({
       <div className="relative z-10 pointer-events-none">
         <div className="relative">
           <HorsePhoto horse={horse} />
-          <Button
+          {isBuyer && !isOwnerHorse ? <Button
             type="button"
             variant="ghost"
             size="icon"
@@ -107,15 +127,29 @@ function HorseListing({
             }`}
           >
             <Heart className={`h-[1.15rem] w-[1.15rem] ${saved ? "fill-[#cdac6e]" : ""}`} strokeWidth={1.8} />
-          </Button>
+          </Button> : null}
         </div>
         <div className="px-1 pb-1 pt-4">
           <h2 className="font-accent text-[1.25rem] font-bold leading-tight tracking-[-0.025em] text-foreground transition-colors group-hover:text-secondary">
             {horse.name}
           </h2>
-          <p className="mt-2 truncate text-[0.79rem] leading-relaxed text-muted-foreground" title={`${discipline} · ${height} · ${formatHorseAge(horse.age)} · ${location}`}>
-            {discipline} · {height} · {formatHorseAge(horse.age)} · {location}
+          <p className="mt-2 truncate text-[0.82rem] font-medium leading-relaxed text-foreground/80">
+            {discipline}{level ? ` · ${level}` : ""}
           </p>
+          {details ? <p className="mt-1 truncate text-[0.78rem] leading-relaxed text-muted-foreground">{details}</p> : null}
+          {state ? (
+            <p className="mt-1.5 flex items-center gap-1 text-xs leading-relaxed text-muted-foreground">
+              <MapPin className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span>{state}</span>
+            </p>
+          ) : null}
+          <Link
+            href={`/horse/${horse.id}`}
+            className="pointer-events-auto mt-3 inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.02em] text-secondary hover:underline"
+            aria-label={`View ${horse.name}`}
+          >
+            View horse <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </Link>
         </div>
       </div>
     </article>
@@ -130,10 +164,12 @@ export default function BrowseHorseGrid({
   isError,
   onRetry,
   onToggleSaved,
+  currentUserId,
+  isBuyer,
 }: BrowseHorseGridProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading horses">
+      <div className="grid grid-cols-1 gap-x-7 gap-y-10 md:grid-cols-2 lg:grid-cols-3" aria-label="Loading horses">
         {[0, 1, 2, 3, 4, 5].map((item) => (
           <div key={item} className="space-y-4">
             <Skeleton className="aspect-[1.42/1] w-full rounded-[1.1rem] bg-[#e8e7e3]" />
@@ -169,13 +205,15 @@ export default function BrowseHorseGrid({
 
   const likedHorseIds = new Set(matches.filter((match) => match.is_liked).map((match) => match.horse_id));
   return (
-    <div className="grid grid-cols-1 gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-x-5 gap-y-8 md:grid-cols-2 md:gap-x-7 md:gap-y-10 lg:grid-cols-3">
       {horses.map((horse) => (
         <HorseListing
           key={horse.id}
           horse={horse}
           isSaved={likedHorseIds.has(horse.id)}
           isPending={pendingSaveIds.has(horse.id)}
+          isBuyer={isBuyer}
+          isOwnerHorse={currentUserId === undefined || horse.owner_id === currentUserId}
           onToggleSaved={onToggleSaved}
         />
       ))}

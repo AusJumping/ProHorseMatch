@@ -1,239 +1,194 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
-import { 
-  Home, Heart, Filter, User, List, CreditCard, 
-  Menu, ChevronRight, LogOut, ShieldAlert, Plus, Settings, Search, MessageCircle, Shield
+import { useQuery } from "@tanstack/react-query";
+import {
+  Bell,
+  ChevronRight,
+  CreditCard,
+  Heart,
+  Home,
+  List,
+  LogOut,
+  MessageCircle,
+  Plus,
+  Search,
+  Shield,
+  UserRound,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { useState } from "react";
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetTrigger, 
-  SheetHeader, 
-  SheetTitle,
-  SheetClose
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 const MobileNavbar = () => {
   const [location, navigate] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
-  const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  
-  // Log for debugging
-  console.log("MobileNavbar - Auth state:", { isAuthenticated, isSelling: user?.is_selling });
-  
-  const isOwner = user?.is_selling;
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const isAdmin = user?.email === "info@australianjumping.com.au";
+  const { data: conversations = [] } = useQuery<Array<{ unread_count?: number }>>({
+    queryKey: ["/api/conversations"],
+    enabled: isAuthenticated,
+    refetchInterval: 10000,
+  });
+  const unreadMessages = conversations.reduce((total, conversation) => total + (conversation.unread_count || 0), 0);
+
+  const visit = (path: string) => {
+    navigate(path);
+    setProfileMenuOpen(false);
+  };
 
   const handleLogout = async () => {
     try {
       await logout();
-    } catch (error) {
+      setProfileMenuOpen(false);
+      navigate("/auth");
+    } catch {
       toast({
-        title: "Logout Error",
+        title: "Logout error",
         description: "Failed to log out. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  // Side menu navigation items
-  const renderMobileMenu = () => (
-    <div className="flex flex-col h-full">
-      <SheetHeader className="text-left border-b border-neutral-200 pb-4 mb-4">
-        <SheetTitle className="font-accent text-xl">
-          {user ? (
-            <div className="flex flex-col">
-              <span>{user.name || user.business_name || 'Welcome!'}</span>
-              <span className="text-sm font-normal text-neutral-500">{user.email}</span>
-            </div>
-          ) : (
-            'Menu'
-          )}
-        </SheetTitle>
-      </SheetHeader>
-      
-      <div className="flex-1 flex flex-col space-y-1">
-        <Button 
-          variant="ghost" 
-          className={`justify-start h-12 ${location === "/filter" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-          onClick={() => {
-            console.log("Find Horses clicked, navigating to /filter with show_filters");
-            // The timestamp makes every tap a new address, so the filters reopen even when already on this page
-            navigate(`/filter?show_filters=true&t=${Date.now()}`);
-            setOpen(false); // Close the sheet
-          }}
-        >
-          <Home className="mr-3 h-5 w-5" />
-          <span>Find Horses</span>
-        </Button>
-        
-        {isAuthenticated && (
-          <SheetClose asChild>
-            <Button 
-              variant="ghost" 
-              className={`justify-start h-12 ${location === "/my-horses" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-              onClick={() => navigate("/my-horses")}
-            >
-              <List className="mr-3 h-5 w-5" />
-              <span>My Horses</span>
-            </Button>
-          </SheetClose>
-        )}
-        
-        {isOwner && (
-          <SheetClose asChild>
-            <Button 
-              variant="ghost" 
-              className={`justify-start h-12 ${location === "/add-horse" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-              onClick={() => navigate("/add-horse")}
-            >
-              <Plus className="mr-3 h-5 w-5" />
-              <span>Add Horse</span>
-            </Button>
-          </SheetClose>
-        )}
-        
-        {isAuthenticated && (
-          <SheetClose asChild>
-            <Button 
-              variant="ghost" 
-              className={`justify-start h-12 ${location === "/favorites" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-              onClick={() => navigate("/favorites")}
-            >
-              <Heart className="mr-3 h-5 w-5" />
-              <span>My Favourites</span>
-            </Button>
-          </SheetClose>
-        )}
-        
-        {isAuthenticated && (
-          <SheetClose asChild>
-            <Button 
-              variant="ghost" 
-              className={`justify-start h-12 ${location === "/messages" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-              onClick={() => navigate("/messages")}
-            >
-              <MessageCircle className="mr-3 h-5 w-5" />
-              <span>Messages</span>
-            </Button>
-          </SheetClose>
-        )}
-        
-        {isAuthenticated && (
-          <SheetClose asChild>
-            <Button 
-              variant="ghost" 
-              className={`justify-start h-12 ${location === "/saved-searches" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-              onClick={() => navigate("/saved-searches")}
-            >
-              <Search className="mr-3 h-5 w-5" />
-              <span>Saved Searches</span>
-            </Button>
-          </SheetClose>
-        )}
-        
-        {isAdmin && (
-          <SheetClose asChild>
-            <Button 
-              variant="ghost" 
-              className={`justify-start h-12 ${
-                location === "/admin" ? "bg-red-600 text-white" : "text-red-600 hover:bg-red-50"
-              }`}
-              onClick={() => navigate("/admin")}
-            >
-              <Shield className="mr-3 h-5 w-5" />
-              <span>Admin Dashboard</span>
-            </Button>
-          </SheetClose>
-        )}
+  const openPrivateDestination = (path: string) => {
+    visit(isAuthenticated ? path : "/auth");
+  };
 
-        
+  const active = (path: string) => location === path || (path === "/filter" && location === "/");
 
-        
-        <SheetClose asChild>
-          <Button 
-            variant="ghost" 
-            className={`justify-start h-12 ${location === "/subscription" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-            onClick={() => navigate("/subscription")}
-          >
-            <CreditCard className="mr-3 h-5 w-5" />
-            <span>Subscription</span>
-          </Button>
-        </SheetClose>
-        
+  const tabs = [
+    { label: "Find Horses", path: "/filter", icon: Home, action: () => visit("/filter") },
+    { label: "Favourites", path: "/favorites", icon: Heart, action: () => openPrivateDestination("/favorites") },
+    { label: "Messages", path: "/messages", icon: MessageCircle, action: () => openPrivateDestination("/messages"), badge: unreadMessages },
+    { label: "Alerts", path: "/saved-searches", icon: Bell, action: () => openPrivateDestination("/saved-searches") },
+  ];
 
-      </div>
-      
-      {isAuthenticated && (
-        <>
-          <div className="border-t border-neutral-200 my-4 pt-4">
-            <SheetClose asChild>
-              <Button 
-                variant="ghost" 
-                className={`justify-start h-12 ${location === "/profile" ? "bg-primary-light bg-opacity-10 text-primary" : ""}`}
-                onClick={() => navigate("/profile")}
-              >
-                <User className="mr-3 h-5 w-5" />
-                <span>Profile</span>
-              </Button>
-            </SheetClose>
-            
-            <SheetClose asChild>
-              <Button 
-                variant="ghost" 
-                className="justify-start h-12 text-destructive hover:text-destructive"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-3 h-5 w-5" />
-                <span>Logout</span>
-              </Button>
-            </SheetClose>
-          </div>
-        </>
-      )}
-      
-      {!isAuthenticated && (
-        <div className="border-t border-neutral-200 my-4 pt-4">
-          <SheetClose asChild>
-            <Button 
-              variant="ghost" 
-              className="justify-start h-12"
-              onClick={() => {
-                setTimeout(() => {
-                  navigate("/auth");
-                }, 300);
-              }}
-            >
-              <LogOut className="mr-3 h-5 w-5 transform rotate-180" />
-              <span>Login</span>
-            </Button>
-          </SheetClose>
-        </div>
-      )}
-    </div>
+  const menuItem = (label: string, path: string, Icon: typeof Home) => (
+    <Button
+      key={path}
+      type="button"
+      variant="ghost"
+      className={`h-12 w-full justify-start rounded-xl px-3 text-left ${
+        location === path ? "bg-[#cdac6e]/15 text-[#705d37]" : "text-[#3c3b37] hover:bg-[#f1efe9]"
+      }`}
+      onClick={() => visit(path)}
+    >
+      <Icon className="mr-3 h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
+      <span className="flex-1">{label}</span>
+      <ChevronRight className="h-4 w-4 text-[#aaa69d]" aria-hidden="true" />
+    </Button>
   );
 
   return (
     <>
-      {/* Side Menu */}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="h-16 w-16 p-1 border-2 border-[#cdac6e] hover:bg-[#cdac6e]/10" 
-            aria-label="Menu"
+      <nav
+        aria-label="Main navigation"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-[#dedbd3] bg-[#f8f7f4]/95 px-1 pt-1.5 shadow-[0_-8px_28px_rgba(44,40,31,0.08)] backdrop-blur-md"
+        style={{ paddingBottom: "max(0.45rem, env(safe-area-inset-bottom))" }}
+      >
+        <div className="mx-auto grid max-w-xl grid-cols-5">
+          {tabs.map(({ label, path, icon: Icon, action, badge }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={action}
+              aria-current={active(path) ? "page" : undefined}
+              className={`relative flex min-h-[3.35rem] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.63rem] font-medium tracking-[0.015em] transition-colors ${
+                active(path) ? "text-[#705d37]" : "text-[#77756f] hover:text-foreground"
+              }`}
+            >
+              <span className={`relative flex h-6 w-8 items-center justify-center rounded-full ${active(path) ? "bg-[#cdac6e]/20" : ""}`}>
+                <Icon className="h-[1.15rem] w-[1.15rem]" strokeWidth={active(path) ? 2.2 : 1.8} aria-hidden="true" />
+                {badge && badge > 0 ? (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#9e5344] px-1 text-[9px] font-bold text-white">
+                    {badge > 99 ? "99+" : badge}
+                  </span>
+                ) : null}
+              </span>
+              <span>{label}</span>
+            </button>
+          ))}
+          <button
+            type="button"
+            onClick={() => setProfileMenuOpen(true)}
+            aria-haspopup="dialog"
+            aria-expanded={profileMenuOpen}
+            className={`flex min-h-[3.35rem] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.63rem] font-medium tracking-[0.015em] transition-colors ${
+              location === "/profile" || profileMenuOpen ? "text-[#705d37]" : "text-[#77756f] hover:text-foreground"
+            }`}
           >
-            <Menu className="h-14 w-14 stroke-[2.5px] text-[#cdac6e]" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="right" className="fixed inset-y-0 right-0 z-50 h-full w-[80%] border-l bg-white p-4 shadow-lg sm:max-w-sm" style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}>
-          {renderMobileMenu()}
+            <span className={`flex h-6 w-8 items-center justify-center rounded-full ${location === "/profile" || profileMenuOpen ? "bg-[#cdac6e]/20" : ""}`}>
+              <UserRound className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.8} aria-hidden="true" />
+            </span>
+            <span>Profile</span>
+          </button>
+        </div>
+      </nav>
+
+      <Sheet open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
+        <SheetContent
+          side="right"
+          className="w-[min(88vw,22rem)] border-l border-[#dedbd3] bg-[#faf9f6] p-5"
+          style={{ paddingTop: "calc(1.25rem + env(safe-area-inset-top, 0px))" }}
+        >
+          <SheetHeader className="mb-5 border-b border-[#e6e3dc] pb-4 text-left">
+            <SheetTitle className="font-accent text-xl text-[#34332f]">
+              {isAuthenticated ? user?.name || user?.business_name || "Your account" : "Welcome"}
+            </SheetTitle>
+            {isAuthenticated && user?.email ? (
+              <p className="text-sm font-normal text-muted-foreground">{user.email}</p>
+            ) : (
+              <p className="text-sm font-normal text-muted-foreground">Sign in to save horses and message sellers.</p>
+            )}
+          </SheetHeader>
+          <div className="flex flex-col gap-1.5">
+            {isAuthenticated ? (
+              <>
+                {menuItem("Profile", "/profile", UserRound)}
+                {menuItem("Saved Searches", "/saved-searches", Search)}
+                {user?.is_selling ? (
+                  <>
+                    {menuItem("My Horses", "/my-horses", List)}
+                    {menuItem("Add Horse", "/add-horse", Plus)}
+                  </>
+                ) : null}
+                {isAdmin ? menuItem("Admin Dashboard", "/admin", Shield) : null}
+                {menuItem("Subscription", "/subscription", CreditCard)}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="mt-3 h-12 justify-start rounded-xl px-3 text-destructive hover:bg-destructive/5 hover:text-destructive"
+                  onClick={() => void handleLogout()}
+                >
+                  <LogOut className="mr-3 h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button type="button" className="h-12 justify-start rounded-xl" onClick={() => visit("/auth")}>
+                  <UserRound className="mr-3 h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
+                  Log in
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 justify-start rounded-xl border-[#d9d4c8]"
+                  onClick={() => visit("/auth?tab=register")}
+                >
+                  <Plus className="mr-3 h-[1.1rem] w-[1.1rem]" aria-hidden="true" />
+                  Create account
+                </Button>
+              </>
+            )}
+          </div>
         </SheetContent>
       </Sheet>
     </>

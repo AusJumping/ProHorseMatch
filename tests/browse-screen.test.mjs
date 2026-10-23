@@ -29,10 +29,12 @@ const Grid = load("client/src/components/browse/BrowseHorseGrid.tsx").default;
 const { default: QuickFilters, CurrencyProvider } = load("client/src/components/browse/BrowseQuickFilters.tsx", true);
 const baseProps = {
   pendingSaveIds: new Set(), isLoading: false, isError: false,
+  currentUserId: 2, isBuyer: true,
   onRetry() {}, onToggleSaved: async () => true,
 };
 const horse = {
-  id: 42, name: "Fictional listing", photos: [], disciplines: ["Jumping"],
+  id: 42, owner_id: 1, name: "Fictional listing", photos: [], disciplines: ["Jumping"], levels: ["1.20m"],
+  sex: "Mare", colour: "Bay", additional_info: "Based in Bowral, NSW.",
   height_hands: 16.2, age: 7, location_country: "Australia",
   currency: "AUD", price_min: 50000, price_max: 50000,
   created_at: new Date(),
@@ -69,11 +71,30 @@ test("cards expose a profile link and independent accessible save control", () =
   assert.match(html, /Jumping/);
   assert.doesNotMatch(html, /aria-label="Price"|Loading price|50,000/);
   assert.match(html, /16\.2hh/);
+  assert.match(html, /7yo Mare · 16\.2hh · Bay/);
+  assert.match(html, /Jumping · 1\.20m/);
+  assert.match(html, />NSW</);
+  assert.match(html, /View horse/);
   assert.match(html, /Photo unavailable/);
   assert.match(html, />New</);
   assert.match(html, /grid-cols-1/);
   assert.match(html, /lg:grid-cols-3/);
   assert.doesNotMatch(html.match(/<a\b[^>]*>[\s\S]*?<\/a>/)?.[0] ?? "", /<button/);
+});
+test("hearts are absent on own horses, logged-out cards and selling-only accounts", () => {
+  for (const props of [{ currentUserId: 1 }, { currentUserId: undefined, isBuyer: false }, { isBuyer: false }]) {
+    const html = render(React.createElement(Grid, { ...baseProps, ...props, horses: [horse] }));
+    assert.doesNotMatch(html, /aria-label="Save |aria-pressed/);
+    assert.match(html, /View horse/);
+  }
+});
+test("Australian state parsing omits unknown locations and ignores unrelated prose", () => {
+  const { getAustralianState } = load("client/src/components/browse/presentation.ts");
+  assert.equal(getAustralianState("Based in Bowral, NSW."), "NSW");
+  assert.equal(getAustralianState("Located in Serpentine, Western Australia."), "WA");
+  assert.equal(getAustralianState("Not sure. Lovely horse in Australia"), null);
+  assert.equal(getAustralianState("Previous owner in NSW. Travels to VIC."), null);
+  assert.equal(getAustralianState(null, "QLD"), "QLD");
 });
 test("saved and pending controls reflect match state", () => {
   const html = render(React.createElement(Grid, {

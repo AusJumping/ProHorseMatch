@@ -5,23 +5,19 @@ import MobileNavbar from "./MobileNavbar";
 import { PWAInstallBanner } from "./PWAInstallBanner";
 import { NotificationBell } from "./NotificationBell";
 import { UnreadNotificationBanner } from "./UnreadNotificationBanner";
-import { ArrowLeft, Filter, PlusCircle, RefreshCw } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
-import { useToast } from "@/hooks/use-toast";
 
 interface LayoutProps {
   children: ReactNode;
   pageTitle: string;
   showBackButton?: boolean;
   onBackClick?: () => void;
-  showFilterButton?: boolean;
-  onFilterClick?: () => void;
-  showMobileFilterButton?: boolean;
-  onMobileFilterClick?: () => void;
   horseCount?: number;
   currentHorseIndex?: number;
+  browseMode?: boolean;
 }
 
 const Layout = ({
@@ -29,32 +25,13 @@ const Layout = ({
   pageTitle,
   showBackButton = false,
   onBackClick,
-  showFilterButton = false,
-  onFilterClick,
-  showMobileFilterButton = false,
-  onMobileFilterClick,
   horseCount,
   currentHorseIndex,
+  browseMode = false,
 }: LayoutProps) => {
   const isMobile = useMobile();
-  const [location, navigate] = useLocation();
-  const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
-  
-  // Debug log
-  console.log("Layout - Auth state:", { isAuthenticated });
-  
-  const handleRefreshSession = () => {
-    toast({
-      title: "Refreshing session",
-      description: "Please wait while we refresh your session...",
-    });
-    
-    // Force a page reload to refresh the session
-    window.location.reload();
-  };
-
-  const isOwner = user?.is_selling;
+  const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -73,7 +50,7 @@ const Layout = ({
       {/* Main Content */}
       <div className={`flex-1 flex flex-col ${isMobile ? 'w-full max-w-full' : ''}`}>
         {/* Header */}
-        <header
+        {!browseMode ? <header
           className={`bg-white border-b border-neutral-200 p-4 ${isMobile ? 'w-full' : ''}`}
           style={{ paddingTop: "calc(1rem + env(safe-area-inset-top, 0px))" }}
         >
@@ -100,57 +77,27 @@ const Layout = ({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Mobile Filters Button */}
-              {isMobile && showMobileFilterButton && onMobileFilterClick && (
-                <Button
-                  onClick={onMobileFilterClick}
-                  className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium"
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filters
-                </Button>
-              )}
-              
-              {/* Add Horse Button for mobile (only on home page for owners) */}
-              {isMobile && isOwner && location === "/" && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/add-horse");
-                  }}
-                  className="flex items-center"
-                >
-                  <PlusCircle className="mr-1 h-4 w-4" />
-                  <span className="text-sm">Add Horse</span>
-                </Button>
-              )}
-              
               {/* Notification Bell - shows for authenticated users */}
               {isAuthenticated && (
                 <NotificationBell />
               )}
               
-              {/* Mobile Menu Button */}
-              {isMobile && (
-                <MobileNavbar />
-              )}
             </div>
 
 
           </div>
-        </header>
+        </header> : null}
 
         {/* Main Content Area */}
         <main
-          className={`flex-1 p-4 md:p-6 overflow-auto ${isMobile ? 'w-full max-w-full' : ''}`}
-          style={isMobile ? { paddingBottom: "calc(1rem + env(safe-area-inset-bottom, 0px))" } : undefined}
+          className={`flex-1 overflow-auto ${browseMode ? "p-0" : "p-4 md:p-6"} ${isMobile ? 'w-full max-w-full' : ''}`}
+          style={isMobile ? { paddingBottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))" } : undefined}
         >
           {children}
         </main>
       </div>
 
+      {isMobile && <MobileNavbar />}
       {/* Unread Notification Banner - shows on login if user has unread messages */}
       {isAuthenticated && <UnreadNotificationBanner />}
 
