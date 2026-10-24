@@ -158,7 +158,7 @@ await withRedesignBrowser(async ({ origin, send, evaluate, wait, navigate, fill,
     await capture("seller-flow-08-edit-pedigree");
     await jump("preview");
     await wait("document.body.innerText.includes('Cedar Ridge')");
-    await evaluate("document.querySelector('[aria-labelledby=\"listing-preview-pedigree\"]').scrollIntoView({block:'center'})");
+    await evaluate("document.querySelector('#listing-preview-pedigree').scrollIntoView({block:'center'})");
     await capture("seller-flow-08-edit-preview");
     await click("Save changes");
     await wait("document.querySelector('h1')?.textContent.includes('Your listing is updated')");

@@ -20,6 +20,7 @@ interface LayoutProps {
   browseMode?: boolean;
   hideHeader?: boolean;
   hideMobileNavigation?: boolean;
+  allowStickyContent?: boolean;
 }
 
 const Layout = ({
@@ -32,6 +33,7 @@ const Layout = ({
   browseMode = false,
   hideHeader = false,
   hideMobileNavigation = false,
+  allowStickyContent = false,
 }: LayoutProps) => {
   const isMobile = useMobile();
   const [, navigate] = useLocation();
@@ -94,7 +96,7 @@ const Layout = ({
 
         {/* Main Content Area */}
         <main
-          className={`flex-1 overflow-auto ${browseMode ? "p-0" : "p-4 md:p-6"} ${isMobile ? 'w-full max-w-full' : ''}`}
+          className={`flex-1 ${allowStickyContent ? "overflow-visible" : "overflow-auto"} ${browseMode ? "p-0" : "p-4 md:p-6"} ${isMobile ? 'w-full max-w-full' : ''}`}
           style={isMobile ? { paddingBottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))" } : undefined}
         >
           {children}

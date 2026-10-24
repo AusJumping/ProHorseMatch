@@ -1,6 +1,7 @@
 import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import RedesignSampleBanner from "@/components/RedesignSampleBanner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -94,7 +95,7 @@ function App() {
   // Static sandbox proposal only. Never mount auth, intro, push registration or
   // currency startup for this one route; all other paths keep the original tree.
   if (isStylePreviewRoute(import.meta.env.VITE_REDESIGN_SANDBOX, pathname)) {
-    return <StylePreview />;
+    return <><RedesignSampleBanner /><StylePreview /></>;
   }
 
   return (
@@ -104,6 +105,7 @@ function App() {
         <CurrencyProvider initialCurrency="AUD">
           <TooltipProvider>
             <Toaster />
+            <RedesignSampleBanner />
             <IntroGate><Router /></IntroGate>
           </TooltipProvider>
         </CurrencyProvider>

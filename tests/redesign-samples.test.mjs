@@ -13,7 +13,7 @@ test("ten realistic test-only samples preserve filtering and optional pedigree c
     assert.ok(h.price_min < h.price_max);
     assert.equal(h.photos.length, 3);
     assert.equal(new Set(h.photos).size, 3);
-    assert.match(h.description, /Fictional redesign sample, not for sale/);
+    assert.doesNotMatch(`${h.description}\n${h.additional_info}`, /Fictional redesign sample|fictional sample information|stock photographs/i);
     assert.match(h.additional_info, /NSW|VIC|QLD|SA|WA|TAS|ACT|NT/);
   }
   assert.ok(sampleHorses.some(h => h.sire && h.dam && h.dam_sire));

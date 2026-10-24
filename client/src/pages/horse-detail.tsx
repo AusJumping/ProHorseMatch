@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type TouchEvent } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import { Horse } from "@shared/schema";
 import { ownsHorse } from "@shared/horsePermissions";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Heart, MessageSquare, Loader2, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -20,7 +19,9 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { getBuyerDetailFields, getBuyerPedigree } from "@/components/listing/listing-model";
+import { getBuyerDetailFields } from "@/components/listing/listing-model";
+import { HorseIdentity, HorseListingSections } from "@/components/horse/HorseListingPresentation";
+import HorseShareButton from "@/components/horse/HorseShareButton";
 
 export default function HorseDetail() {
   const [, params] = useRoute("/horse/:id");
@@ -36,6 +37,7 @@ export default function HorseDetail() {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
   const touchStart = useRef<number | null>(null);
+  const messageFormRef = useRef<HTMLElement | null>(null);
 
   const reportMutation = useMutation({
     mutationFn: (data: { horse_id: number; reason: string; details?: string }) =>
@@ -103,6 +105,12 @@ export default function HorseDetail() {
     };
   }, [galleryOpen, photos.length]);
 
+  useEffect(() => {
+    if (!isMessageOpen) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    messageFormRef.current?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+  }, [isMessageOpen]);
+
   const requireSignIn = (action: string) => {
     if (isAuthenticated && user) return true;
     toast({ title: "Login required", description: `Please log in to ${action}.`, variant: "destructive" });
@@ -167,14 +175,12 @@ export default function HorseDetail() {
     if (window.history.length > 1) window.history.back();
     else navigate("/");
   };
-
   const showReportDialog = () => {
     if (!requireSignIn("report this listing")) return;
     setReportDialogOpen(true);
   };
-
-  const startSwipe = (event: React.TouchEvent) => { touchStart.current = event.touches[0]?.clientX ?? null; };
-  const finishSwipe = (event: React.TouchEvent) => {
+  const startSwipe = (event: TouchEvent) => { touchStart.current = event.touches[0]?.clientX ?? null; };
+  const finishSwipe = (event: TouchEvent) => {
     if (touchStart.current === null || photos.length < 2) return;
     const distance = event.changedTouches[0].clientX - touchStart.current;
     if (Math.abs(distance) > 45) setPhotoIndex((index) => (index + (distance < 0 ? 1 : photos.length - 1)) % photos.length);
@@ -185,10 +191,10 @@ export default function HorseDetail() {
   if (isLoading) {
     return (
       <Layout pageTitle="Horse detail" showBackButton onBackClick={handleBack}>
-        <div className="mx-auto max-w-xl animate-pulse space-y-5">
-          <div className="h-[38vh] min-h-64 rounded-2xl bg-neutral-200" />
-          <div className="h-8 w-2/3 rounded bg-neutral-200" />
-          <div className="grid grid-cols-2 gap-3">{Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-14 rounded-lg bg-neutral-200" />)}</div>
+        <div className="mx-auto max-w-5xl animate-pulse space-y-5">
+          <div className="h-[38vh] min-h-64 rounded-2xl bg-[#e4e0d7]" />
+          <div className="h-8 w-2/3 rounded bg-[#e4e0d7]" />
+          <div className="grid grid-cols-2 gap-3"><div className="h-32 rounded-xl bg-[#e4e0d7]" /><div className="h-32 rounded-xl bg-[#e4e0d7]" /></div>
         </div>
       </Layout>
     );
@@ -209,12 +215,16 @@ export default function HorseDetail() {
     );
   }
 
-  const details = getBuyerDetailFields(horse as any);
-  const pedigree = getBuyerPedigree(horse as any);
+  const summaryFacts = getBuyerDetailFields(horse).filter(([label, value]) =>
+    ["Discipline", "Level", "Age", "Sex", "Height"].includes(label) &&
+    Boolean(value?.trim()) && !value.startsWith("Not specified") && !value.startsWith("null ")
+  );
+  const shareUrl = `${window.location.origin}/horse/${horse.id}`;
 
   return (
-      <Layout pageTitle={horse.name} showBackButton onBackClick={handleBack} hideHeader hideMobileNavigation>
-      <div className={`mx-auto w-full ${isOwner ? "pb-4" : isBuyer ? "pb-32" : "pb-12"} max-w-3xl`}>
+    <Layout pageTitle={horse.name} showBackButton onBackClick={handleBack} hideHeader hideMobileNavigation allowStickyContent>
+      <div className="-mx-4 -my-4 min-h-[100dvh] bg-[#f5f4f0] px-4 py-4 md:-mx-6 md:-my-6 md:px-6 md:py-6">
+      <article data-testid="horse-listing" className={`mx-auto w-full max-w-6xl ${isBuyer ? "pb-28 lg:pb-5" : "pb-5"}`}>
         {isOwner && (
           <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-[#cdac6e]/35 bg-[#cdac6e]/10 px-4 py-3">
             <div>
@@ -225,126 +235,121 @@ export default function HorseDetail() {
           </div>
         )}
 
-        <div
-          className="group relative h-[42vh] min-h-[280px] max-h-[520px] overflow-hidden rounded-2xl bg-neutral-200 sm:h-[48vh]"
-          onTouchStart={startSwipe}
-          onTouchEnd={finishSwipe}
-        >
-          {photos.length ? (
-            <button
-              type="button"
-              className="absolute inset-0 block h-full w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#cdac6e]"
-              onClick={() => setGalleryOpen(true)}
-              aria-label={`Open photo ${photoIndex + 1} of ${photos.length} in full screen`}
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(290px,0.94fr)] lg:gap-6">
+          <div className="min-w-0 space-y-3.5">
+            <div
+              className="group relative h-[40vh] min-h-[260px] max-h-[520px] overflow-hidden rounded-xl bg-[#e8e6df] sm:h-[48vh] lg:rounded-2xl"
+              onTouchStart={startSwipe}
+              onTouchEnd={finishSwipe}
             >
-              <img src={photos[photoIndex]} alt={`${horse.name}, photo ${photoIndex + 1}`} className="h-full w-full object-cover object-center" />
-            </button>
-          ) : (
-            <div className="flex h-full items-center justify-center bg-[#e8e6df] text-center">
-              <p className="font-accent text-sm text-neutral-500">Photos coming soon</p>
-            </div>
-          )}
-          {photos.length > 1 && (
-            <>
-              <button type="button" aria-label="Previous photo" onClick={() => stepPhoto(-1)} className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/45 text-white transition hover:bg-neutral-950/65"><ChevronLeft className="h-5 w-5" /></button>
-              <button type="button" aria-label="Next photo" onClick={() => stepPhoto(1)} className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/45 text-white transition hover:bg-neutral-950/65"><ChevronRight className="h-5 w-5" /></button>
-              <div className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-neutral-950/55 px-3 py-1 text-xs font-medium tracking-wide text-white">{photoIndex + 1} / {photos.length}</div>
-            </>
-          )}
-          {photos.length > 1 && (
-            <div className="absolute bottom-3 left-3 flex gap-1.5" aria-label="Choose photo">
-              {photos.map((photo, index) => (
-                <button key={`${photo}-${index}`} type="button" onClick={() => setPhotoIndex(index)} aria-label={`Show photo ${index + 1}`} aria-current={index === photoIndex} className={`h-1.5 rounded-full transition-all ${index === photoIndex ? "w-6 bg-white" : "w-2 bg-white/60"}`} />
-              ))}
-            </div>
-          )}
-          <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))]">
-            <button type="button" onClick={handleBack} aria-label="Back to listings" className="flex h-11 w-11 items-center justify-center rounded-full bg-neutral-950/50 text-white shadow-sm backdrop-blur-sm transition hover:bg-neutral-950/70"><ArrowLeft className="h-5 w-5" /></button>
-            {isBuyer ? (
-              <button type="button" onClick={handleSave} aria-label={isSaved ? "Remove from favourites" : "Save to favourites"} aria-pressed={isSaved} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/95 text-neutral-800 shadow-sm backdrop-blur-sm transition hover:bg-white">
-                <Heart className={`h-5 w-5 ${isSaved ? "fill-[#cdac6e] text-[#cdac6e]" : ""}`} />
-              </button>
-            ) : <span className="h-11 w-11" aria-hidden="true" />}
-          </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-neutral-950/35 to-transparent" />
-          {photos.length > 0 && <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 text-[11px] font-medium tracking-wide text-white/90">Tap to view photos</p>}
-        </div>
-
-        <article className="px-1 pt-5 sm:px-3">
-          <h1 className="font-accent break-words text-3xl font-bold leading-tight text-neutral-900 sm:text-4xl">{horse.name}</h1>
-
-          <section aria-label="Horse details" className="mt-5 grid grid-cols-2 gap-x-5 gap-y-5 border-y border-neutral-200 py-5 sm:gap-x-10">
-            {details.map(([label, value]) => (
-              <div key={label} className="min-w-0">
-                <p className="text-xs font-medium tracking-wide text-neutral-500">{label}</p>
-                <p className="mt-1 break-words text-sm font-bold leading-snug text-neutral-900">{value || "Not specified"}</p>
+              {photos.length ? (
+                <button
+                  type="button"
+                  className="absolute inset-0 block h-full w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-[#cdac6e]"
+                  onClick={() => setGalleryOpen(true)}
+                  aria-label={`Open photo ${photoIndex + 1} of ${photos.length} in full screen`}
+                >
+                  <img src={photos[photoIndex]} alt={`${horse.name}, photo ${photoIndex + 1}`} className="h-full w-full object-cover object-center" />
+                </button>
+              ) : (
+                <div className="flex h-full items-center justify-center text-center"><p className="font-accent text-sm text-neutral-500">Photos coming soon</p></div>
+              )}
+              {photos.length > 1 && (
+                <>
+                  <button type="button" aria-label="Previous photo" onClick={() => stepPhoto(-1)} className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/45 text-white transition hover:bg-neutral-950/65"><ChevronLeft className="h-5 w-5" /></button>
+                  <button type="button" aria-label="Next photo" onClick={() => stepPhoto(1)} className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-neutral-950/45 text-white transition hover:bg-neutral-950/65"><ChevronRight className="h-5 w-5" /></button>
+                  <div className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-neutral-950/55 px-3 py-1 text-xs font-medium tracking-wide text-white">{photoIndex + 1} / {photos.length}</div>
+                </>
+              )}
+              {photos.length > 1 && (
+                <div className="absolute bottom-3 left-3 flex gap-1.5" aria-label="Choose photo">
+                  {photos.map((photo, index) => (
+                    <button key={`${photo}-${index}`} type="button" onClick={() => setPhotoIndex(index)} aria-label={`Show photo ${index + 1}`} aria-current={index === photoIndex} className={`h-1.5 rounded-full transition-all ${index === photoIndex ? "w-6 bg-white" : "w-2 bg-white/60"}`} />
+                  ))}
+                </div>
+              )}
+              <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between p-3 pt-[calc(.75rem+env(safe-area-inset-top,0px))]">
+                <button type="button" onClick={handleBack} aria-label="Back to listings" className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-950/50 text-white shadow-sm backdrop-blur-sm transition hover:bg-neutral-950/70"><ArrowLeft className="h-5 w-5" /></button>
+                {isBuyer ? (
+                  <button type="button" onClick={handleSave} aria-label={isSaved ? "Remove from favourites" : "Save to favourites"} aria-pressed={isSaved} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-neutral-800 shadow-sm backdrop-blur-sm transition hover:bg-white">
+                    <Heart className={`h-5 w-5 ${isSaved ? "fill-[#cdac6e] text-[#cdac6e]" : ""}`} />
+                  </button>
+                ) : <span className="h-10 w-10" aria-hidden="true" />}
               </div>
-            ))}
-          </section>
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-neutral-950/35 to-transparent" />
+              {photos.length > 0 && <p className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 text-[11px] font-medium tracking-wide text-white/90">Tap to view photos</p>}
+            </div>
 
-          <section aria-labelledby="horse-pedigree-heading" className="mt-6">
-            <h2 id="horse-pedigree-heading" className="font-accent text-lg font-semibold text-neutral-900">Pedigree</h2>
-            {pedigree.length > 0 ? (
-              <div className="mt-3 grid grid-cols-2 gap-x-5 gap-y-4 border-l-2 border-[#cdac6e] pl-4">
-                {pedigree.map(([label, value]) => <div key={label}><p className="text-xs font-medium text-neutral-500">{label}</p><p className="mt-1 break-words text-sm font-semibold text-neutral-900">{value}</p></div>)}
-              </div>
-            ) : isOwner ? (
-              <p className="mt-2 text-sm leading-6 text-neutral-600">
-                Add pedigree details to help buyers understand this horse’s breeding.
-              </p>
-            ) : (
-              <p className="mt-2 text-sm leading-6 text-neutral-600">Pedigree not provided by seller</p>
+            <div className="lg:hidden">
+              <HorseIdentity horse={horse} />
+            </div>
+
+            <HorseListingSections horse={horse} isOwner={isOwner} />
+
+            {isMessageOpen && isBuyer && (
+              <section ref={messageFormRef} className="scroll-mt-6 rounded-xl border border-[#e8e3d8] bg-white p-4">
+                <h2 className="font-accent text-base font-semibold">Message the seller</h2>
+                <label className="sr-only" htmlFor="seller-message">Your message</label>
+                <textarea
+                  id="seller-message"
+                  className="mt-3 w-full rounded-lg border border-neutral-300 bg-[#fbfaf7] p-3 text-sm outline-none focus:border-[#cdac6e] focus:ring-2 focus:ring-[#cdac6e]/25"
+                  rows={4}
+                  placeholder={`Ask a question about ${horse.name}...`}
+                  value={messageContent}
+                  onChange={(event) => setMessageContent(event.target.value)}
+                />
+                <div className="mt-3 flex gap-2">
+                  <Button variant="outline" onClick={() => setIsMessageOpen(false)}>Cancel</Button>
+                  <Button onClick={handleSendMessage} disabled={!messageContent.trim()}><MessageSquare className="mr-2 h-4 w-4" />Send message</Button>
+                </div>
+              </section>
             )}
-          </section>
 
-          <section className="mt-7">
-            <h2 className="font-accent text-xl font-semibold text-neutral-900">About {horse.name}</h2>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-neutral-700">{horse.description || "No description provided."}</p>
-          </section>
-
-          {horse.additional_info && (
-            <section className="mt-7">
-              <h2 className="font-accent text-lg font-semibold text-neutral-900">Additional Information</h2>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-neutral-700">{horse.additional_info}</p>
-            </section>
-          )}
-
-          {horse.education_level && (
-            <section className="mt-7">
-              <h2 className="font-accent text-lg font-semibold text-neutral-900">Level of Education</h2>
-              <Badge variant="outline" className="mt-2 border-[#cdac6e]/50 bg-[#cdac6e]/10 text-neutral-800">{horse.education_level}</Badge>
-            </section>
-          )}
-
-          {isMessageOpen && isBuyer && (
-            <section className="mt-7 rounded-xl border border-neutral-200 bg-white p-4">
-              <h2 className="font-accent text-lg font-semibold">Message the seller</h2>
-              <label className="sr-only" htmlFor="seller-message">Your message</label>
-              <textarea
-                id="seller-message"
-                className="mt-3 w-full rounded-lg border border-neutral-300 bg-[#fbfaf7] p-3 text-sm outline-none focus:border-[#cdac6e] focus:ring-2 focus:ring-[#cdac6e]/25"
-                rows={4}
-                placeholder={`Ask a question about ${horse.name}...`}
-                value={messageContent}
-                onChange={(event) => setMessageContent(event.target.value)}
-              />
-              <div className="mt-3 flex gap-2">
-                <Button variant="outline" onClick={() => setIsMessageOpen(false)}>Cancel</Button>
-                <Button onClick={handleSendMessage} disabled={!messageContent.trim()}><MessageSquare className="mr-2 h-4 w-4" />Send message</Button>
+            {isBuyer && (
+              <div className="flex justify-center py-2">
+                <button type="button" onClick={showReportDialog} className="text-xs text-neutral-400 transition-colors hover:text-neutral-600 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e]">Report this listing</button>
               </div>
-            </section>
-          )}
+            )}
+          </div>
 
-          {isBuyer && (
-            <div className="mt-9 flex justify-center pb-2">
-              <button type="button" onClick={showReportDialog} className="text-xs text-neutral-400 transition-colors hover:text-neutral-600 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e]">Report this listing</button>
+          <aside className="sticky top-6 hidden self-start lg:block">
+            <div className="rounded-2xl border border-[#e8e3d8] bg-white p-5 shadow-[0_8px_28px_rgba(78,65,43,0.07)]">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0"><HorseIdentity horse={horse} /></div>
+                <HorseShareButton url={shareUrl} />
+              </div>
+              <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-neutral-100 pt-4">
+                {summaryFacts.map(([label, value]) => (
+                  <div key={label} className="min-w-0">
+                    <dt className="text-[11px] font-medium tracking-wide text-neutral-500">{label}</dt>
+                    <dd className="mt-0.5 break-words text-sm font-semibold leading-snug text-neutral-900">{value}</dd>
+                  </div>
+                ))}
+                {horse.education_level && (
+                  <div className="col-span-2">
+                    <dt className="text-[11px] font-medium tracking-wide text-neutral-500">Education</dt>
+                    <dd className="mt-1"><span className="inline-flex rounded-full border border-[#cdac6e]/45 bg-[#cdac6e]/10 px-2.5 py-1 text-xs font-semibold text-neutral-800">{horse.education_level}</span></dd>
+                  </div>
+                )}
+              </dl>
+              {isBuyer && (
+                <div className="mt-5 flex gap-2 border-t border-neutral-100 pt-4">
+                  <Button className="h-11 flex-1 bg-[#cdac6e] font-semibold text-white hover:bg-[#b99a5e]" onClick={() => setIsMessageOpen(true)}>
+                    <MessageSquare className="mr-2 h-4 w-4" />Contact Seller
+                  </Button>
+                  <button type="button" onClick={handleSave} aria-label={isSaved ? "Remove from favourites" : "Save to favourites"} aria-pressed={isSaved} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-[#e5dfd2] text-neutral-700 transition-colors hover:bg-[#f7f4ed] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e]">
+                    <Heart className={`h-5 w-5 ${isSaved ? "fill-[#cdac6e] text-[#cdac6e]" : ""}`} />
+                  </button>
+                </div>
+              )}
             </div>
-          )}
-        </article>
+          </aside>
+        </div>
+      </article>
       </div>
 
       {isBuyer && !isMessageOpen && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200 bg-[#f5f4f0]/95 px-4 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-3 backdrop-blur-sm">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-neutral-200 bg-[#f5f4f0]/95 px-4 pb-[calc(.75rem+env(safe-area-inset-bottom,0px))] pt-2 backdrop-blur-sm lg:hidden">
           <div className="mx-auto max-w-3xl">
             <Button className="h-12 w-full bg-[#cdac6e] text-base font-semibold text-white hover:bg-[#b99a5e]" onClick={() => setIsMessageOpen(true)}>
               <MessageSquare className="mr-2 h-4 w-4" />Contact Seller

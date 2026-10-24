@@ -2,7 +2,6 @@
 import assert from "node:assert/strict";
 
 export const testOrigin = "https://prohorsematch-redesign.onrender.com";
-const disclaimer = "Fictional redesign sample, not for sale. Licensed Pexels stock photographs illustrate this profile; they may show different horses and do not identify a real horse for sale.";
 const photo = id => `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1200`;
 const samples = [
   ["Amber", "Jumping", "1.20m", 8, 16.1, "Mare", "Bay", "Warmblood", "Bowral, NSW", 25000, 35000,
@@ -34,8 +33,8 @@ export const sampleHorses = samples.map(([name, discipline, level, age, height, 
   price_min: min, price_max: max, currency: "AUD",
   sire: pedigree[0] || null, dam: pedigree[1] || null, dam_sire: pedigree[2] || null,
   education_level: age <= 5 ? "Basic education" : "Well educated",
-  description: `${description}\n\n${disclaimer}`,
-  additional_info: `Based in ${location}. Current work: four sessions weekly, with turnout and rest days. Handling: regular farrier and float practice. Veterinary history and suitability are fictional sample information only.\n\n${disclaimer}`,
+  description,
+  additional_info: `Based in ${location}. Current work: four sessions weekly, with turnout and rest days. Handling: regular farrier and float practice.`,
   photos: ids.map(photo), videos: [], characteristics: [], other_disciplines: [],
 }));
 
