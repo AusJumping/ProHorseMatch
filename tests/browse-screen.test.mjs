@@ -135,7 +135,7 @@ test("numeric range has two separately named slider thumbs and uses existing que
   for (const name of ["min_price", "max_price", "min_height", "max_height", "min_age", "max_age"]) assert.match(home, new RegExp(name));
   assert.match(home, /fetch\('\/api\/matches'/);
   assert.match(home, /credentials: 'include'/);
-  assert.match(home, /All filters/);
+  assert.match(home, /Filters\{activeFilterChips\.length/);
   assert.doesNotMatch(home, /currentHorseIndex=\{0\}/);
 });
 test("quick chips accurately label advanced bounds outside normal slider ranges", () => {

@@ -88,6 +88,15 @@ function HorseListing({
       : formatHorseHeight(heightHands);
   const colour = horse.colour ? horse.colour.charAt(0).toUpperCase() + horse.colour.slice(1).toLowerCase() : null;
   const details = [[age, sex].filter(Boolean).join(" "), height, colour].filter(Boolean).join(" · ");
+  const sire = horse.sire?.trim();
+  const damSire = horse.dam_sire?.trim();
+  const pedigree = sire && damSire
+    ? `${sire} x ${damSire}`
+    : sire
+      ? `By ${sire}`
+      : damSire
+        ? `Dam Sire: ${damSire}`
+        : null;
   return (
     <article className="group relative min-w-0">
       <Link
@@ -125,6 +134,11 @@ function HorseListing({
           <h2 className="font-accent text-[1.25rem] font-bold leading-tight tracking-[-0.025em] text-foreground transition-colors group-hover:text-secondary">
             {horse.name}
           </h2>
+          {pedigree ? (
+            <p data-horse-pedigree className="mt-1 truncate text-xs leading-relaxed text-muted-foreground" title={pedigree}>
+              {pedigree}
+            </p>
+          ) : null}
           <p className="mt-2 truncate text-[0.82rem] font-medium leading-relaxed text-foreground/80">
             {discipline}{level ? ` · ${level}` : ""}
           </p>
@@ -154,7 +168,7 @@ export default function BrowseHorseGrid({
 }: BrowseHorseGridProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-x-7 gap-y-10 md:grid-cols-2 lg:grid-cols-3" aria-label="Loading horses">
+      <div className="grid grid-cols-1 gap-x-5 gap-y-7 md:grid-cols-2 md:gap-x-7 md:gap-y-9 lg:grid-cols-3 2xl:grid-cols-4" aria-label="Loading horses">
         {[0, 1, 2, 3, 4, 5].map((item) => (
           <div key={item} className="space-y-4">
             <Skeleton className="aspect-[1.42/1] w-full rounded-[1.1rem] bg-[#e8e7e3]" />
@@ -190,7 +204,7 @@ export default function BrowseHorseGrid({
 
   const likedHorseIds = new Set(matches.filter((match) => match.is_liked).map((match) => match.horse_id));
   return (
-    <div className="grid grid-cols-1 gap-x-5 gap-y-8 md:grid-cols-2 md:gap-x-7 md:gap-y-10 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-x-5 gap-y-7 md:grid-cols-2 md:gap-x-7 md:gap-y-9 lg:grid-cols-3 2xl:grid-cols-4">
       {horses.map((horse) => (
         <HorseListing
           key={horse.id}

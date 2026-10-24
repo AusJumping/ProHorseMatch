@@ -73,10 +73,16 @@ try {
   await send("Runtime.enable");
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 900, deviceScaleFactor: 1, mobile: true });
   await login("buyer");
+  await wait("document.querySelectorAll('article button[aria-pressed]').length===10");
   assert.equal(await evaluate("getComputedStyle(document.querySelector('article').parentElement).gridTemplateColumns.split(' ').length"), 1);
   assert.equal(await evaluate("document.documentElement.scrollWidth<=innerWidth"), true, "No page-wide horizontal overflow");
   const cardText = await evaluate("[...document.querySelectorAll('article')].map(a=>a.innerText).join('\\n')");
   for (const text of ["Amber", "Jumping", "1.20m", "Mare", "16.1hh", "Bay", "View horse"]) assert.ok(cardText.includes(text), text);
+  assert.equal(
+    await evaluate("Boolean(document.querySelector('article [data-horse-pedigree]'))"),
+    true,
+    "At least one listing shows its available sire and dam-sire pedigree"
+  );
   assert.doesNotMatch(cardText, /NSW|VIC|QLD|Australia|Location/);
   assert.equal(await evaluate("document.querySelector('article button[aria-pressed]')?.getAttribute('aria-label')"), "Save Bramble");
   assert.doesNotMatch(cardText, /\$|AUD|25,000|35,000|Price/);
@@ -84,8 +90,16 @@ try {
   await wait("document.querySelector('article img')?.complete && document.querySelector('article img')?.naturalWidth>0");
   await wait("Number(getComputedStyle(document.querySelector('article img')).opacity)===1");
   await mkdir("generated-artifacts", { recursive: true });
-  const image = await send("Page.captureScreenshot", { format: "jpeg", quality: 85 });
-  await writeFile("generated-artifacts/mobile-browse-buyer.jpg", Buffer.from(image.data, "base64"));
+  const saveScreenshot = async path => {
+    const image = await send("Page.captureScreenshot", { format: "jpeg", quality: 85 });
+    await writeFile(path, Buffer.from(image.data, "base64"));
+  };
+  await saveScreenshot("generated-artifacts/browse-buyer-mobile.jpg");
+  assert.equal(await evaluate("document.querySelector('article img').getBoundingClientRect().top<innerHeight"), true, "First horse photo appears without scrolling");
+  await evaluate("(()=>{const cards=[...document.querySelectorAll('article')];const card=cards.find(a=>a.querySelector('[data-horse-pedigree]')?.textContent.includes(' x '))||cards.find(a=>a.querySelector('[data-horse-pedigree]'));card?.scrollIntoView({block:'center'});return Boolean(card)})()");
+  await wait("Boolean(document.querySelector('article [data-horse-pedigree]'))");
+  await saveScreenshot("generated-artifacts/browse-buyer-mobile-pedigree.jpg");
+  await evaluate("window.scrollTo(0,0)");
   const button = name => `[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith(${JSON.stringify(name)}))`;
   for (const name of ["Price", "Height", "Age"]) {
     await click(button(name));
@@ -100,6 +114,62 @@ try {
   }
   const nav = await evaluate("[...document.querySelectorAll('nav button')].map(a=>({label:a.textContent.trim()}))");
   for (const label of ["Find Horses", "Favourites", "Messages", "Alerts", "Profile"]) assert.ok(nav.some(n=>n.label===label), label);
+
+  // All Filters uses the same API filters, with a streamlined mobile-first panel.
+  await click("[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith('Filters'))");
+  await wait("document.querySelector('[role=\"dialog\"] h2')?.textContent==='Filters' && document.querySelector('[role=\"dialog\"]').getBoundingClientRect().bottom>=innerHeight-5");
+  const mobilePanel = await evaluate("(()=>{const r=document.querySelector('[role=\"dialog\"]').getBoundingClientRect();return {top:r.top,bottom:r.bottom,height:r.height}})()");
+  assert.ok(mobilePanel.bottom >= 897 && mobilePanel.height > 700, `Mobile filter panel covers most of screen: ${JSON.stringify(mobilePanel)}`);
+  assert.equal(await evaluate("document.querySelectorAll('[role=\"dialog\"] [aria-label=\"Price range\"] [role=\"slider\"]').length"), 2);
+  assert.equal(await evaluate("document.querySelectorAll('[role=\"dialog\"] [aria-label=\"Age range\"] [role=\"slider\"]').length"), 2);
+  assert.equal(await evaluate("document.querySelectorAll('[role=\"dialog\"] [aria-label=\"Height range\"] [role=\"slider\"]').length"), 2);
+  assert.equal(await evaluate("document.querySelector('[role=\"dialog\"] input#filter-sire')!==null"), true, "Sire search is visible without expanding anything");
+  assert.equal(await evaluate("document.querySelector('[role=\"dialog\"] input#filter-dam-sire')!==null"), true, "Dam sire search is visible without expanding anything");
+  assert.equal(await evaluate("[...document.querySelectorAll('[role=\"dialog\"] h3')].map(h=>h.textContent.trim()).join('|')"), "Discipline|Level|Price range|Age|Height|Sex|Bloodlines|Breed|Country");
+  await click("[...document.querySelectorAll('[role=\"dialog\"] [aria-label=\"Discipline\"] button')].find(b=>b.textContent.trim()==='Jumping')");
+  await wait("[...document.querySelectorAll('[role=\"dialog\"] [aria-label=\"Discipline\"] button')].some(b=>b.textContent.trim()==='Jumping' && b.getAttribute('aria-pressed')==='true')");
+  await click("[...document.querySelectorAll('[role=\"dialog\"] [aria-label=\"Other disciplines\"] button')].find(b=>b.textContent.trim()==='Eventing')");
+  await wait("[...document.querySelectorAll('[role=\"dialog\"] [aria-label=\"Other disciplines\"] button')].some(b=>b.textContent.trim()==='Eventing' && b.getAttribute('aria-pressed')==='true')");
+  const previewCount = await evaluate("(async()=>{const response=await fetch('/api/horses?disciplines=Jumping&currency=AUD');return (await response.json()).length})()");
+  const previewLabel = `Show ${previewCount} ${previewCount === 1 ? "horse" : "horses"}`;
+  await wait(`[...document.querySelectorAll('[role="dialog"] button')].some(b=>b.textContent.trim()===${JSON.stringify(previewLabel)})`);
+  await new Promise(resolve => setTimeout(resolve, 300));
+  await saveScreenshot("generated-artifacts/all-filters-mobile.jpg");
+  await evaluate("document.querySelector('#filter-sire').closest('section').scrollIntoView({block:'start'})");
+  await saveScreenshot("generated-artifacts/all-filters-mobile-bloodlines.jpg");
+  await evaluate("document.querySelector('#filter-panel-scroll').scrollTop=0");
+  await send("Emulation.setTouchEmulationEnabled", { enabled: true, configuration: "mobile" });
+  await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 190, y: Math.round(mobilePanel.top + 13), id: 1 }] });
+  await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: 190, y: Math.round(mobilePanel.top + 150), id: 1 }] });
+  await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await wait("!document.querySelector('[role=\"dialog\"]')");
+  await click("[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith('Filters'))");
+  await wait("document.querySelector('[role=\"dialog\"] h2')?.textContent==='Filters'");
+  assert.equal(await evaluate("document.querySelector('[role=\"dialog\"] input#filter-sire')!==null"), true);
+  await click("[...document.querySelectorAll('[role=\"dialog\"] button')].find(b=>b.textContent.trim().startsWith('Show'))");
+  await wait("!document.querySelector('[role=\"dialog\"]')");
+  await wait("document.querySelector('button[aria-label=\"Remove Jumping filter\"]')");
+  await wait("document.querySelector('button[aria-label=\"Remove Also Eventing filter\"]')");
+  assert.match(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith('Filters'))?.textContent||''"), /Filters \(2\)/);
+  await click("document.querySelector('button[aria-label=\"Remove Jumping filter\"]')");
+  await wait("!document.querySelector('button[aria-label=\"Remove Jumping filter\"]')");
+  assert.match(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith('Filters'))?.textContent||''"), /Filters \(1\)/);
+
+  await send("Emulation.setDeviceMetricsOverride", { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await wait("document.querySelector('article')?.parentElement && getComputedStyle(document.querySelector('article').parentElement).gridTemplateColumns.split(' ').length===3");
+  await click("[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith('Filters'))");
+  await wait("document.querySelector('[role=\"dialog\"] h2')?.textContent==='Filters' && Math.abs(document.querySelector('[role=\"dialog\"]').getBoundingClientRect().right-innerWidth)<2");
+  await new Promise(resolve => setTimeout(resolve, 400));
+  const desktopPanel = await evaluate("(()=>{const r=document.querySelector('[role=\"dialog\"]').getBoundingClientRect();return {left:r.left,right:r.right,width:r.width}})()");
+  assert.ok(desktopPanel.left > 900 && desktopPanel.right >= 1435, `Desktop filter panel slides in on the right: ${JSON.stringify(desktopPanel)}`);
+  await saveScreenshot("generated-artifacts/all-filters-desktop.jpg");
+  await send("Input.dispatchMouseEvent", { type: "mousePressed", x: 20, y: 200, button: "left", clickCount: 1 });
+  await send("Input.dispatchMouseEvent", { type: "mouseReleased", x: 20, y: 200, button: "left", clickCount: 1 });
+  await wait("!document.querySelector('[role=\"dialog\"]')");
+  await send("Emulation.setDeviceMetricsOverride", { width: 1920, height: 1080, deviceScaleFactor: 1, mobile: false });
+  await wait("document.querySelector('article')?.parentElement && getComputedStyle(document.querySelector('article').parentElement).gridTemplateColumns.split(' ').length===4");
+  await saveScreenshot("generated-artifacts/browse-buyer-desktop.jpg");
+
   await send("Network.clearBrowserCookies");
   await evaluate("localStorage.removeItem('authToken')");
   await login("seller");

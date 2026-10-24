@@ -73,17 +73,32 @@ try {
   await login("buyer");
   await navigate("/horse/1");
   await wait("document.querySelector('h1')?.textContent.includes('Amber') && document.querySelector('article')");
+  await wait("document.body.innerText.includes('Contact Seller')");
   let buyerText = await evaluate("document.body.innerText");
-  for (const fact of ["Discipline", "Level", "Age", "Sex", "Height", "Colour", "Breed", "Location", "Australia", "Sire", "Dam", "Dam sire", "About Amber", "Contact Seller", "Report this listing"]) assert.ok(buyerText.includes(fact), fact);
+  for (const fact of ["Discipline", "Level", "Age", "Sex", "Height", "Colour", "Breed", "Country", "Australia", "Sire", "Dam", "Dam sire", "About Amber", "Contact Seller", "Report this listing"]) assert.ok(buyerText.includes(fact), fact);
+  assert.equal(await evaluate("document.body.innerText.includes('Location')"), false);
   assert.doesNotMatch(buyerText, /\\$|AUD|25,000|35,000|Not specified/);
   assert.equal(await evaluate("document.querySelectorAll('button[aria-label=\"Save to favourites\"]').length"), 1);
   assert.equal(await evaluate("document.querySelectorAll('button[aria-label=\"Back to listings\"]').length"), 1);
+  assert.equal(
+    await evaluate("document.querySelector('section[aria-label=\"Horse details\"]')?.nextElementSibling===document.querySelector('#horse-pedigree-heading')?.closest('section')"),
+    true,
+    "Pedigree immediately follows the key facts"
+  );
+  assert.equal(await evaluate("document.querySelector('#horse-pedigree-heading')?.closest('section')?.nextElementSibling?.querySelector('h2')?.textContent"), `About Amber`);
   await mkdir("generated-artifacts", { recursive: true });
   const capturePage = async file => {
     const shot = await send("Page.captureScreenshot", { format: "jpeg", quality: 85 });
     await writeFile(file, Buffer.from(shot.data, "base64"));
   };
+  const capturePedigreeSection = async file => {
+    await evaluate("document.querySelector('#horse-pedigree-heading')?.scrollIntoView({block:'center'})");
+    await new Promise(resolve => setTimeout(resolve, 150));
+    await capturePage(file);
+  };
   await capturePage("generated-artifacts/horse-detail-buyer.jpg");
+  await capturePedigreeSection("generated-artifacts/horse-detail-buyer-pedigree.jpg");
+  await evaluate("window.scrollTo(0,0)");
   await send("Emulation.setTouchEmulationEnabled", { enabled: true, configuration: "mobile" });
   await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: 310, y: 190, id: 1 }] });
   await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [{ x: 70, y: 190, id: 1 }] });
@@ -96,20 +111,27 @@ try {
   await wait("!document.querySelector('[role=\"dialog\"][aria-label*=\"photo gallery\"]')");
   await navigate("/horse/4");
   await wait("document.querySelector('h1')?.textContent.includes('Jasper') && document.querySelector('article')");
-  assert.equal(await evaluate("[...document.querySelectorAll('h2')].some(h=>h.textContent.trim()==='Pedigree')"), false);
+  const buyerNoPedigreeText = await evaluate("document.body.innerText");
+  assert.match(buyerNoPedigreeText, /Pedigree not provided by seller/);
+  assert.doesNotMatch(buyerNoPedigreeText, /Not specified/);
+  await capturePage("generated-artifacts/horse-detail-buyer-no-pedigree.jpg");
+  await capturePedigreeSection("generated-artifacts/horse-detail-buyer-no-pedigree-section.jpg");
 
   await send("Network.clearBrowserCookies");
   await evaluate("localStorage.removeItem('authToken')");
   await login("seller");
-  await navigate("/horse/1");
-  await wait("document.querySelector('h1')?.textContent.includes('Amber') && document.querySelector('article')");
+  await navigate("/horse/4");
+  await wait("document.querySelector('h1')?.textContent.includes('Jasper') && document.querySelector('article')");
+  await wait("document.body.innerText.includes('You’re viewing your listing')");
   const sellerText = await evaluate("document.body.innerText");
   assert.match(sellerText, /You’re viewing your listing/);
   assert.match(sellerText, /Edit listing/);
+  assert.match(sellerText, /Add pedigree details to help buyers understand this horse’s breeding/);
   assert.doesNotMatch(sellerText, /Contact Seller|Report this listing|Price Range|25,000|35,000/);
   assert.equal(await evaluate("document.querySelectorAll('button[aria-label*=\"favourites\"], button[aria-pressed]').length"), 0);
   await capturePage("generated-artifacts/horse-detail-seller.jpg");
-  console.log("Passed normal buyer and seller login; privacy, eight facts, pedigree, photo lightbox, buyer-only actions and owner Edit action verified.");
+  await capturePedigreeSection("generated-artifacts/horse-detail-seller-pedigree.jpg");
+  console.log("Passed normal buyer and seller login; price privacy, eight facts, full/empty pedigree, photo lightbox, buyer-only actions and owner Edit action verified.");
 } finally {
   socket?.close();
   const exit = new Promise(resolve => chrome.once("exit", resolve));

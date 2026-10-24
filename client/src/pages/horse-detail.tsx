@@ -216,7 +216,7 @@ export default function HorseDetail() {
     ["Height", horse.height_hands ? `${horse.height_hands} hands` : "Not specified"],
     ["Colour", horse.colour],
     ["Breed", horse.breeds?.filter(Boolean).join(", ")],
-    ["Location", horse.location_country],
+    ["Country", horse.location_country],
   ] as const;
   const pedigree = [
     ["Sire", horse.sire],
@@ -294,14 +294,20 @@ export default function HorseDetail() {
             ))}
           </section>
 
-          {pedigree.length > 0 && (
-            <section className="mt-6">
-              <h2 className="font-accent text-lg font-semibold text-neutral-900">Pedigree</h2>
+          <section aria-labelledby="horse-pedigree-heading" className="mt-6">
+            <h2 id="horse-pedigree-heading" className="font-accent text-lg font-semibold text-neutral-900">Pedigree</h2>
+            {pedigree.length > 0 ? (
               <div className="mt-3 grid grid-cols-2 gap-x-5 gap-y-4 border-l-2 border-[#cdac6e] pl-4">
                 {pedigree.map(([label, value]) => <div key={label}><p className="text-xs font-medium text-neutral-500">{label}</p><p className="mt-1 break-words text-sm font-semibold text-neutral-900">{value}</p></div>)}
               </div>
-            </section>
-          )}
+            ) : isOwner ? (
+              <p className="mt-2 text-sm leading-6 text-neutral-600">
+                Add pedigree details to help buyers understand this horse’s breeding.
+              </p>
+            ) : (
+              <p className="mt-2 text-sm leading-6 text-neutral-600">Pedigree not provided by seller</p>
+            )}
+          </section>
 
           <section className="mt-7">
             <h2 className="font-accent text-xl font-semibold text-neutral-900">About {horse.name}</h2>

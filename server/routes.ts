@@ -13,6 +13,9 @@ import { uploadToCloudinary, deleteFromCloudinary, cloudinary } from "./cloudina
 import { db } from "./db";
 import { deleteAccountData, removeCloudinaryMedia } from "./accountDeletion";
 import { createAuthToken, verifyAuthToken } from "./authToken";
+import { checkFavourite, checkConversation, HorsePermissionError } from "./horsePermissions";
+import { createAdminGuard } from "./adminPermissions";
+import { mayDeleteImage } from "./mediaPermissions";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail, sendVerificationReminderEmail } from "./emailService";
 import { codeMatches, AttemptLimiter } from "./verificationCode";
 import { buildHorsePage, robotsTxt, sitemapXml } from "./seoPages";
@@ -50,12 +53,10 @@ import {
 
 
 
-// Ensure we have test users available but NOT test horses
-// We remove the default horses completely from our application
+// Remove obsolete in-memory seed horses; never provision privileged users here.
 (async () => {
   // The separate redesign database contains only explicitly seeded fake users.
   if (process.env.REDESIGN_SANDBOX === "true") return;
-  console.log("Setting up test users only (no default horses)...");
   try {
     // Remove all horses owned by user ID 1 (problematic seed horses)
     if (storage instanceof MemStorage) {
@@ -86,28 +87,8 @@ import {
       }
     }
     
-    // Check if the admin user exists
-    const adminEmail = "info@australianjumping.com.au";
-    let admin = await storage.getUserByEmail(adminEmail);
-    
-    if (!admin) {
-      console.log(`Creating admin user: ${adminEmail}`);
-      admin = await storage.createUser({
-        email: adminEmail,
-        password: "AdminPro2025!",
-        username: "admin_prohorsematch",
-        name: "ProHorseMatch Admin",
-        business_name: "Australian Jumping Association",
-        is_selling: false,
-        is_searching: false,
-        email_verified: true
-      });
-      console.log("Created admin user:", admin);
-    } else {
-      console.log("Admin user already exists:", admin);
-    }
   } catch (error) {
-    console.error("Error setting up test users:", error);
+    console.error("Error removing obsolete in-memory seed horses:", error);
   }
 })();
 import MemoryStore from "memorystore";
@@ -1127,6 +1108,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     req.userId = userId;
     next();
   };
+
+  // Enforce the boundary before any legacy helper can read, write or send.
+  // Prefix guards also protect future administrative/test endpoints by default.
+  const requireAdministrator = createAdminGuard(storage, isTokenAuthenticated);
+  app.use("/api/admin", requireAdministrator);
+  app.use("/api/test", requireAdministrator);
+  app.use("/api/reminders/check-conversations", requireAdministrator);
   
   // Self-service account deletion (required by the App Store and Google Play).
   // Only ever acts on the logged-in user's own account, and needs their password.
@@ -1171,16 +1159,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.delete("/api/admin/delete-all-horses", isAuthenticated, async (req, res) => {
+  app.delete("/api/admin/delete-all-horses", requireAdministrator, async (req, res) => {
     try {
       console.log("Delete all horses request received");
       
-      // Get user to verify they are a seller
-      const userId = req.session.userId;
+      // The shared administrator guard has authenticated this identity.
+      const userId = req.userId!;
       const user = await storage.getUserById(userId);
       
-      if (!user || !user.is_selling) {
-        return res.status(403).json({ message: "Only sellers can perform this action" });
+      if (!user || user.email !== "info@australianjumping.com.au") {
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Get all horses
@@ -1206,20 +1194,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Delete specific horses (Maestro, Bella, Cassini)
-  app.delete("/api/admin/delete-specific-horses", isAuthenticated, async (req, res) => {
+  app.delete("/api/admin/delete-specific-horses", requireAdministrator, async (req, res) => {
     try {
       console.log("Delete specific horses request received");
       
       // Get user to verify they are a seller
-      const userId = req.session.userId;
+      const userId = req.userId!;
       console.log("Current user ID:", userId);
       
       const user = await storage.getUserById(userId);
       console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
       
-      if (!user || !user.is_selling) {
+      if (!user || user.email !== "info@australianjumping.com.au") {
         console.log("User doesn't have seller permissions");
-        return res.status(403).json({ message: "Only sellers can perform this action" });
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Get all horses
@@ -1270,7 +1258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Delete horse by ID - direct method
-  app.delete("/api/admin/delete-horse/:id", isAuthenticated, async (req, res) => {
+  app.delete("/api/admin/delete-horse/:id", requireAdministrator, async (req, res) => {
     try {
       console.log("Delete horse by ID request received");
       
@@ -1279,15 +1267,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`Attempting to delete horse with ID: ${horseId}`);
       
       // Get user to verify they are a seller
-      const userId = req.session.userId;
+      const userId = req.userId!;
       console.log("Current user ID:", userId);
       
       const user = await storage.getUserById(userId);
       console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
       
-      if (!user || !user.is_selling) {
+      if (!user || user.email !== "info@australianjumping.com.au") {
         console.log("User doesn't have seller permissions");
-        return res.status(403).json({ message: "Only sellers can perform this action" });
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Get the horse to delete
@@ -1327,20 +1315,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Reset database but keep specific user's horses
-  app.delete("/api/admin/reset-database", isAuthenticated, async (req, res) => {
+  app.delete("/api/admin/reset-database", requireAdministrator, async (req, res) => {
     try {
       console.log("Reset database request received");
       
       // Get user to verify they are a seller
-      const userId = req.session.userId;
+      const userId = req.userId!;
       console.log("Current user ID:", userId);
       
       const user = await storage.getUserById(userId);
       console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
       
-      if (!user || !user.is_selling) {
+      if (!user || user.email !== "info@australianjumping.com.au") {
         console.log("User doesn't have seller permissions");
-        return res.status(403).json({ message: "Only sellers can perform this action" });
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Special direct method for MemStorage
@@ -1444,20 +1432,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Completely clear the database and start fresh
-  app.post("/api/admin/clean-database", isAuthenticated, async (req, res) => {
+  app.post("/api/admin/clean-database", requireAdministrator, async (req, res) => {
     try {
       console.log("Clean database request received - COMPLETE RESET");
       
       // Get user to verify they are a seller
-      const userId = req.session.userId;
+      const userId = req.userId!;
       console.log("Current user ID:", userId);
       
       const user = await storage.getUserById(userId);
       console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
       
-      if (!user || !user.is_selling) {
+      if (!user || user.email !== "info@australianjumping.com.au") {
         console.log("User doesn't have seller permissions");
-        return res.status(403).json({ message: "Only sellers can perform this action" });
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Use our enhanced storage reset functionality
@@ -1520,20 +1508,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Completely rebuild the database from scratch
-  app.post("/api/admin/rebuild-database", isAuthenticated, async (req, res) => {
+  app.post("/api/admin/rebuild-database", requireAdministrator, async (req, res) => {
     try {
       console.log("Rebuild database request received");
       
       // Get user to verify they are a seller
-      const userId = req.session.userId;
+      const userId = req.userId!;
       console.log("Current user ID:", userId);
       
       const user = await storage.getUserById(userId);
       console.log("User found:", user ? "Yes" : "No", user ? `(is_selling: ${user.is_selling})` : "");
       
-      if (!user || !user.is_selling) {
+      if (!user || user.email !== "info@australianjumping.com.au") {
         console.log("User doesn't have seller permissions");
-        return res.status(403).json({ message: "Only sellers can perform this action" });
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Special direct method for MemStorage
@@ -1674,14 +1662,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Add sample horses
-  app.post("/api/admin/add-sample-horses", isAuthenticated, async (req, res) => {
+  app.post("/api/admin/add-sample-horses", requireAdministrator, async (req, res) => {
     try {
       // Get user to verify they are a seller
-      const userId = req.session.userId;
+      const userId = req.userId!;
       const user = await storage.getUserById(userId);
       
-      if (!user || !user.is_selling) {
-        return res.status(403).json({ message: "Only sellers can perform this action" });
+      if (!user || user.email !== "info@australianjumping.com.au") {
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Create sample horses
@@ -2909,6 +2897,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (validatedData.customer_id !== req.userId) {
         return res.status(403).json({ message: "Cannot create match for another user" });
       }
+      await checkFavourite(storage, user.id, validatedData.horse_id, validatedData.is_liked === true);
       
       // Check if a match already exists for this user and horse
       const existingMatches = await storage.getMatchesByCustomerId(req.userId);
@@ -2931,6 +2920,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(201).json(match);
     } catch (error) {
       console.error("Create match error:", error);
+      if (error instanceof HorsePermissionError) return res.status(error.status).json({ message: error.message });
       return res.status(400).json({ message: error.message || "Invalid request" });
     }
   });
@@ -2965,11 +2955,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Cannot update match that belongs to another user" });
       }
       
-      // Update the match with new data
-      const updatedMatch = await storage.updateMatch(matchId, req.body);
+      // Only like state is editable: never let a toggle reassign user or horse.
+      if (typeof req.body.is_liked !== "boolean" ||
+          Object.keys(req.body).some(key => key !== "is_liked")) {
+        return res.status(400).json({ message: "Only is_liked can be updated" });
+      }
+      await checkFavourite(storage, userId, match.horse_id, req.body.is_liked);
+      const updatedMatch = await storage.updateMatch(matchId, { is_liked: req.body.is_liked });
       return res.json(updatedMatch);
     } catch (error) {
       console.error("Update match error:", error);
+      if (error instanceof HorsePermissionError) return res.status(error.status).json({ message: error.message });
       return res.status(500).json({ message: "Failed to update match" });
     }
   });
@@ -3342,15 +3338,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Admin endpoint to delete all horses
-  app.delete("/api/admin/horses", isAuthenticated, async (req, res) => {
+  app.delete("/api/admin/horses", requireAdministrator, async (req, res) => {
     try {
       // Only allow for logged-in sellers
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(req.userId!);
       
       console.log(`DELETE /api/admin/horses - Requested by user:`, user);
       
-      if (!user || !user.is_selling) {
-        return res.status(403).json({ message: "Only users with selling permission can perform this operation" });
+      if (!user || user.email !== "info@australianjumping.com.au") {
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Get all horses first
@@ -3386,20 +3382,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Temporary admin endpoint to reassign horses to current user
-  app.post("/api/admin/reassign-horses", isAuthenticated, async (req, res) => {
+  app.post("/api/admin/reassign-horses", requireAdministrator, async (req, res) => {
     try {
       // Only allow for logged-in sellers
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUserById(req.userId!);
       
       console.log(`POST /api/admin/reassign-horses - user:`, user);
       
-      if (!user || !user.is_selling) {
-        return res.status(403).json({ message: "Only users with selling permission can reassign horses" });
+      if (!user || user.email !== "info@australianjumping.com.au") {
+        return res.status(403).json({ message: "Administrator access required" });
       }
       
       // Get source owner ID from request body or default to 1 (the original owner)
       const sourceOwnerId = req.body.sourceOwnerId || 1;
-      const targetUserId = req.session.userId;
+      const targetUserId = req.userId!;
       
       console.log(`POST /api/admin/reassign-horses - transferring from owner ${sourceOwnerId} to ${targetUserId}`);
       
@@ -3815,7 +3811,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Upload to Cloudinary with 'image' resource type
       console.log("Uploading to Cloudinary as image...");
-      const result = await uploadToCloudinary(req.file.buffer, 'horses', 'image');
+      const result = await uploadToCloudinary(req.file.buffer, `horses/users/${req.userId}/images`, 'image');
       console.log("Cloudinary upload successful:", {
         url: result.secure_url,
         public_id: result.public_id,
@@ -3874,7 +3870,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Upload to Cloudinary with 'video' resource type
       console.log("Uploading to Cloudinary as video...");
-      const result = await uploadToCloudinary(req.file.buffer, 'horses', 'video');
+      const result = await uploadToCloudinary(req.file.buffer, `horses/users/${req.userId}/videos`, 'video');
       console.log("Cloudinary video upload successful:", {
         url: result.secure_url,
         public_id: result.public_id,
@@ -3910,6 +3906,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!public_id) {
         return res.status(400).json({ message: "No public_id provided" });
+      }
+
+      if (!await mayDeleteImage(storage, req.userId!, public_id, process.env.CLOUDINARY_CLOUD_NAME)) {
+        return res.status(403).json({ message: "You do not have permission to delete this image" });
       }
 
       // Delete from Cloudinary
@@ -4192,26 +4192,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/messages", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.userId;
-      const { customer_id, owner_id, horse_id, content } = req.body;
+      const { content } = req.body;
 
       // Validate required fields
-      if (!customer_id || !owner_id || !horse_id || !content?.trim()) {
-        console.log("Missing fields - customer_id:", customer_id, "owner_id:", owner_id, "horse_id:", horse_id, "content:", content);
+      if (typeof content !== "string" || !content.trim()) {
         return res.status(400).json({ 
           message: "Missing required fields: customer_id, owner_id, horse_id and content are required" 
         });
       }
 
-      // Verify user has permission to send this message
-      if (userId !== parseInt(customer_id) && userId !== parseInt(owner_id)) {
-        return res.status(403).json({ message: "Access denied" });
-      }
-
-      // Stop the message if either party has blocked the other
-      const otherPartyId = userId === parseInt(customer_id) ? parseInt(owner_id) : parseInt(customer_id);
-      if (await storage.isBlocked(userId, otherPartyId)) {
-        return res.status(403).json({ message: "Unable to send message" });
-      }
+      const parties = await checkConversation(storage, userId, req.body);
+      // Keep the normalized IDs throughout this route's existing message flow.
+      const customer_id = String(parties.customer_id);
+      const owner_id = String(parties.owner_id);
+      const horse_id = String(parties.horse_id);
 
       // Determine sender type
       const sender_type = userId === parseInt(customer_id) ? "customer" : "owner";
@@ -4341,6 +4335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(newMessage);
     } catch (error) {
       console.error("Error sending message:", error);
+      if (error instanceof HorsePermissionError) return res.status(error.status).json({ message: error.message });
       res.status(500).json({ 
         message: "Failed to send message. Please try again.",
         error: error instanceof Error ? error.message : "Unknown error"
@@ -4352,19 +4347,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/conversations", isTokenAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.userId;
-      const { customer_id, owner_id, horse_id } = req.body;
+      const { customer_id, owner_id, horse_id } = await checkConversation(storage, userId, req.body);
 
       console.log("Creating conversation with:", { customer_id, owner_id, horse_id, userId });
 
-      // Validate required fields
-      if (!customer_id || !owner_id || !horse_id) {
-        return res.status(400).json({ 
-          message: "Missing required fields: customer_id, owner_id, and horse_id are required" 
-        });
-      }
-
       // Check if conversation already exists
-      const existingConversations = await storage.getConversations();
+      const existingConversations = await storage.getConversationsByCustomerId(customer_id);
       const existingConversation = existingConversations.find(conv => 
         conv.customer_id === customer_id && 
         conv.owner_id === owner_id && 
@@ -4387,6 +4375,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(newConversation);
     } catch (error) {
       console.error("Error creating conversation:", error);
+      if (error instanceof HorsePermissionError) return res.status(error.status).json({ message: error.message });
       res.status(500).json({ 
         message: "Internal server error",
         error: error instanceof Error ? error.message : "Unknown error"

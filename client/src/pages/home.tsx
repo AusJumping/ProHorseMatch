@@ -5,12 +5,15 @@ import FilterPanel from "@/components/FilterPanel";
 import Layout from "@/components/Layout";
 import { useToast } from "@/hooks/use-toast";
 import type { Horse, Match } from "@shared/schema";
+import { ownsHorse } from "@shared/horsePermissions";
 import { useMobile } from "@/hooks/use-mobile";
 import { useAuth } from "@/lib/auth";
 import BrowseHorseGrid from "@/components/browse/BrowseHorseGrid";
 import BrowseQuickFilters from "@/components/browse/BrowseQuickFilters";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal } from "lucide-react";
+import { formatPrice } from "@/lib/currencyConverter";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
 interface Filter {
   disciplines: string[];
@@ -31,15 +34,22 @@ interface Filter {
   dam_sire: string | null;
 }
 
+function syncDisciplineQuery(selected: string[]) {
+  const url = new URL(window.location.href);
+  if (selected.length) url.searchParams.set("discipline", selected[0]);
+  else url.searchParams.delete("discipline");
+  window.history.replaceState(null, "", url.toString());
+}
+
 export default function Home() {
   const isMobile = useMobile();
   const [location] = useLocation();
   const search = useSearch();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
+  const { setCurrentCurrency } = useCurrency();
   const queryClient = useQueryClient();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [showFilter, setShowFilter] = useState(false);
   const [hasLocalUser, setHasLocalUser] = useState(false);
   const [pendingSaveIds, setPendingSaveIds] = useState<Set<number>>(() => new Set());
   const pendingSaveIdsRef = useRef<Set<number>>(new Set());
@@ -65,27 +75,16 @@ export default function Home() {
   // Check if this is the discover route to show filter by default
   // For filter route, check URL parameters to determine if user wants to see filters
   useEffect(() => {
-    console.log("Filter visibility effect - location:", location, "isMobile:", isMobile);
-    
     // Check for show_filters URL parameter
     const urlParams = new URLSearchParams(window.location.search);
     const showFiltersParam = urlParams.get('show_filters');
     
     if (location === "/discover") {
-      console.log("Setting showFilter to true for discover route");
-      setShowFilter(true);
+      setIsFilterOpen(true);
     } else if (location === "/filter" && showFiltersParam === "true") {
-      // User clicked "Find Horses" in navigation - show filters
-      console.log("Setting showFilter to true for mobile filter route with show_filters=true");
-      setShowFilter(isMobile);
-      setIsFilterOpen(!isMobile);
-    } else if (location === "/filter" && isMobile) {
-      // Mobile users on filter route without show_filters param (like "Get Started") - show horses first
-      console.log("Setting showFilter to false for mobile filter route (horses first)");
-      setShowFilter(false);
-    } else if (location === "/filter") {
-      // Keep the browse grid full-width until advanced filters are requested.
-      setShowFilter(false);
+      setIsFilterOpen(true);
+    } else {
+      setIsFilterOpen(false);
     }
     
     // Check if we have a discipline filter in localStorage or URL
@@ -108,7 +107,7 @@ export default function Home() {
         disciplines: [disciplineFilter]
       }));
     }
-  }, [location, isMobile, search]);
+  }, [location, search]);
   
   useEffect(() => {
     try {
@@ -241,6 +240,12 @@ export default function Home() {
       return false;
     }
 
+    const horse = horses?.find(item => item.id === horseId);
+    if (horse && ownsHorse(currentUser.id, horse) && !isSaved) {
+      toast({ title: "Cannot save your own horse", variant: "destructive" });
+      return false;
+    }
+
     if (!horseId) {
       toast({
         title: "Error",
@@ -300,11 +305,13 @@ export default function Home() {
   };
 
   const toggleQuickDiscipline = (discipline: string) => {
+    const next = activeFilters.disciplines.includes(discipline)
+      ? activeFilters.disciplines.filter((item) => item !== discipline)
+      : [discipline];
+    syncDisciplineQuery(next);
     setActiveFilters((prev) => ({
       ...prev,
-      disciplines: prev.disciplines.includes(discipline)
-        ? prev.disciplines.filter((item) => item !== discipline)
-        : [discipline],
+      disciplines: next,
       levels: [],
     }));
   };
@@ -360,7 +367,6 @@ export default function Home() {
     
     // On mobile, ensure the filter panel doesn't automatically show after applying filters
     if (isMobile && location === "/filter") {
-      setShowFilter(false);
       // The "show filters" request is now done. Remove it from the URL, otherwise the next URL
       // change (the filter panel records the chosen discipline there) reopens the panel and the
       // person has to tap Apply Filters a second time.
@@ -374,25 +380,94 @@ export default function Home() {
   };
 
   const toggleFilterPanel = () => {
-    if (isMobile) {
-      // On mobile, toggle the main showFilter state to show/hide the filter sidebar
-      setShowFilter(!showFilter);
-    } else {
-      // On desktop, use the separate mobile filter panel state
-      setIsFilterOpen(!isFilterOpen);
-    }
+    setIsFilterOpen((open) => !open);
   };
+
+  const removeActiveFilter = (key: string, value?: string) => {
+    if (key === "disciplines") {
+      syncDisciplineQuery(activeFilters.disciplines.filter((item) => item !== value));
+    }
+    setActiveFilters((previous) => {
+      if (key === "price") return { ...previous, price_min: null, price_max: null };
+      if (key === "age") return { ...previous, age_min: null, age_max: null };
+      if (key === "height") return { ...previous, height_min: null, height_max: null };
+      if (key === "height_young") return {
+        ...previous,
+        height_min: previous.height_min === "young_horse" ? null : previous.height_min,
+        height_max: previous.height_max === "young_horse" ? null : previous.height_max,
+      };
+      if (key === "location_country") return { ...previous, location_country: null };
+      if (key === "sire" || key === "dam_sire") return { ...previous, [key]: null };
+      if (key === "disciplines" || key === "other_disciplines" || key === "sexes" || key === "breeds" || key === "levels") {
+        const selected = previous[key] as string[];
+        return { ...previous, [key]: selected.filter((item) => item !== value) };
+      }
+      return previous;
+    });
+  };
+
+  const clearAllActiveFilters = () => {
+    syncDisciplineQuery([]);
+    setActiveFilters({
+      disciplines: [],
+      breeds: [],
+      sexes: [],
+      levels: [],
+      other_disciplines: [],
+      location_country: null,
+      location_radius_km: null,
+      age_min: null,
+      age_max: null,
+      height_min: null,
+      height_max: null,
+      price_min: null,
+      price_max: null,
+      currency: "AUD",
+      sire: null,
+      dam_sire: null,
+    });
+    setCurrentCurrency("AUD");
+  };
+
+  const activeFilterChips: { key: string; value?: string; label: string }[] = [];
+  activeFilters.disciplines.forEach((value) => activeFilterChips.push({ key: "disciplines", value, label: value }));
+  activeFilters.levels.forEach((value) => activeFilterChips.push({ key: "levels", value, label: value }));
+  activeFilters.other_disciplines.forEach((value) => activeFilterChips.push({ key: "other_disciplines", value, label: `Also ${value}` }));
+  activeFilters.sexes.forEach((value) => activeFilterChips.push({ key: "sexes", value, label: value }));
+  activeFilters.breeds.forEach((value) => activeFilterChips.push({ key: "breeds", value, label: value }));
+  if (activeFilters.price_min !== null && activeFilters.price_min > 0 || activeFilters.price_max !== null && activeFilters.price_max < 999999999) {
+    const currency = activeFilters.currency || "AUD";
+    const minimum = activeFilters.price_min && activeFilters.price_min > 0 ? formatPrice(activeFilters.price_min, currency) : "Any";
+    const maximum = activeFilters.price_max && activeFilters.price_max < 999999999 ? formatPrice(activeFilters.price_max, currency) : "Any";
+    activeFilterChips.push({ key: "price", label: `Price ${minimum} to ${maximum}` });
+  }
+  if (activeFilters.age_min !== null || activeFilters.age_max !== null && activeFilters.age_max < 999) {
+    const minimum = activeFilters.age_min === null ? "Any" : activeFilters.age_min === 0 ? "Weanling" : `${activeFilters.age_min}+`;
+    const maximum = activeFilters.age_max === null || activeFilters.age_max >= 999 ? "Any" : activeFilters.age_max === 0 ? "Weanling" : `${activeFilters.age_max}`;
+    activeFilterChips.push({ key: "age", label: `Age ${minimum} to ${maximum}` });
+  }
+  if (activeFilters.height_min === "young_horse" || activeFilters.height_max === "young_horse") {
+    activeFilterChips.push({ key: "height_young", label: "Young horse" });
+  } else if (activeFilters.height_min !== null && activeFilters.height_min > 0 || activeFilters.height_max !== null && activeFilters.height_max < 999) {
+    const formatHeight = (value: number | null) => value === null || value === 0 || value >= 999 ? "Any" : `${Number(value)}hh`;
+    activeFilterChips.push({ key: "height", label: `Height ${formatHeight(activeFilters.height_min)} to ${formatHeight(activeFilters.height_max)}` });
+  }
+  if (activeFilters.location_country && activeFilters.location_country !== "any_location") {
+    activeFilterChips.push({ key: "location_country", label: activeFilters.location_country });
+  }
+  if (activeFilters.sire) activeFilterChips.push({ key: "sire", label: `Sire: ${activeFilters.sire}` });
+  if (activeFilters.dam_sire) activeFilterChips.push({ key: "dam_sire", label: `Dam sire: ${activeFilters.dam_sire}` });
   
   return (
     <Layout 
       pageTitle="" 
       browseMode
     >
-      <div className="mx-auto w-full max-w-[1600px] px-4 pb-12 pt-6 sm:px-7 sm:pt-10 lg:px-10">
-        <div className="mb-7 flex flex-col gap-2 sm:mb-9">
-          <p className="font-accent text-[0.68rem] font-bold uppercase tracking-[0.2em] text-secondary">The collection</p>
-          <h1 className="font-display text-3xl leading-tight text-foreground sm:text-[2.65rem]">Find your next great horse.</h1>
-          <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+      <div className="mx-auto w-full max-w-[1600px] px-4 pb-12 pt-3 sm:px-7 sm:pt-10 lg:px-10">
+        <div className="mb-4 flex flex-col gap-1 sm:mb-9 sm:gap-2">
+          <p className="font-accent text-[0.6rem] font-bold uppercase tracking-[0.16em] text-secondary sm:text-[0.68rem] sm:tracking-[0.2em]">The collection</p>
+          <h1 className="font-display text-2xl leading-7 text-foreground sm:text-[2.65rem] sm:leading-tight">Find your next great horse.</h1>
+          <p className="max-w-xl text-xs leading-4 text-muted-foreground sm:text-sm sm:leading-6">
             Thoughtfully matched performance horses, ready for what comes next.
           </p>
         </div>
@@ -403,29 +478,41 @@ export default function Home() {
           onApplyRange={applyQuickRange}
         />
 
-        {(!isMobile && isFilterOpen || isMobile && showFilter) ? (
-          <div className="mb-8 rounded-[1.25rem] border border-border/70 bg-card p-5 shadow-sm sm:p-6">
-            <FilterPanel
-              isOpen={true}
-              onClose={() => { setIsFilterOpen(false); setShowFilter(false); }}
-              activeFilters={activeFilters}
-              onApplyFilters={handleApplyFilters}
-              horseCount={horses?.length || 0}
-            />
-          </div>
-        ) : null}
-
-        <div className="mb-5 flex min-h-6 items-baseline justify-between gap-3">
+        <div className="mb-3 flex min-h-6 items-baseline justify-between gap-3 sm:mb-5">
           <p className="font-accent text-sm font-semibold text-foreground" aria-live="polite">
             {isLoading ? "Finding horses…" : isError ? "Listings unavailable" : `${horses?.length ?? 0} ${horses?.length === 1 ? "horse" : "horses"}`}
           </p>
           <Button type="button" variant="outline" className={`rounded-full ${isMobile ? "h-9 px-3 text-xs" : ""}`} onClick={toggleFilterPanel} aria-expanded={isFilterOpen}>
             <SlidersHorizontal className="mr-2 h-4 w-4" aria-hidden="true" />
-            All filters
+            Filters{activeFilterChips.length ? ` (${activeFilterChips.length})` : ""}
           </Button>
         </div>
 
+        {activeFilterChips.length > 0 ? (
+          <div className="mb-5 flex flex-wrap gap-2" aria-label="Active filters">
+            {activeFilterChips.map((chip) => (
+              <button
+                key={`${chip.key}:${chip.value ?? ""}`}
+                type="button"
+                onClick={() => removeActiveFilter(chip.key, chip.value)}
+                aria-label={`Remove ${chip.label} filter`}
+                className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-[#dedbd2] bg-white px-3 py-1 text-xs font-medium text-[#34332f] transition hover:border-[#cdac6e] hover:bg-[#f8f7f4] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e]"
+              >
+                {chip.label}<span aria-hidden="true" className="text-muted-foreground">×</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={clearAllActiveFilters}
+              className="min-h-8 px-2 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e]"
+            >
+              Clear all
+            </button>
+          </div>
+        ) : null}
+
         <BrowseHorseGrid
+          currentUserId={user?.id}
           horses={horses}
           matches={matches}
           pendingSaveIds={pendingSaveIds}
@@ -433,19 +520,15 @@ export default function Home() {
           isError={isError}
           onRetry={() => { void refetchHorses(); }}
           onToggleSaved={handleToggleSaved}
-          currentUserId={user?.id}
-          isBuyer={Boolean(user?.is_searching)}
         />
 
-        {isMobile && (
-          <FilterPanel
-            isOpen={isFilterOpen}
-            onClose={() => setIsFilterOpen(false)}
-            activeFilters={activeFilters}
-            onApplyFilters={handleApplyFilters}
-            horseCount={horses?.length || 0}
-          />
-        )}
+        <FilterPanel
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          activeFilters={activeFilters}
+          onApplyFilters={handleApplyFilters}
+          horseCount={horses?.length || 0}
+        />
       </div>
     </Layout>
   );

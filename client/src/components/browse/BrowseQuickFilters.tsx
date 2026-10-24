@@ -127,8 +127,8 @@ export default function BrowseQuickFilters({
 
   return (
     <>
-      <div className="mb-7">
-        <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <div className="mb-4 sm:mb-7">
+        <div className="mb-2 flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:mb-3 sm:text-xs sm:tracking-[0.14em]">
           <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
           Refine your search
         </div>

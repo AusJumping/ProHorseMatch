@@ -1,17 +1,27 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { X, Menu } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import * as SliderPrimitive from "@radix-ui/react-slider";
+import { Check, ChevronDown, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useMobile } from "@/hooks/use-mobile";
-import { useCurrency } from "@/contexts/CurrencyContext";
+import type { Horse } from "@shared/schema";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { CurrencySelector } from "@/components/CurrencySelector";
-import MobileNavbar from "@/components/MobileNavbar";
-import { getMinPrice, getMaxPrice, formatPrice } from "@/lib/currencyConverter";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { useMobile } from "@/hooks/use-mobile";
+import { formatPrice, getMaxPrice } from "@/lib/currencyConverter";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface FilterPanelProps {
   isOpen: boolean;
@@ -21,704 +31,674 @@ interface FilterPanelProps {
   horseCount?: number;
 }
 
-// Available filter options
+interface FilterConstants {
+  disciplines?: string[];
+  sexes?: string[];
+  countries?: string[];
+  levels?: Record<string, string[]>;
+}
 
-// Price range options for horse filtering
-const priceOptions = [
-  5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000,
-  55000, 60000, 65000, 70000, 75000, 80000, 85000, 90000, 95000, 100000,
-  150000, 200000, 250000, 300000, 350000, 400000, 450000, 500000
+const breedOptions = [
+  "Warmblood",
+  "Warmblood Cross",
+  "Thoroughbred",
+  "Thoroughbred Cross",
+  "Stock Horse",
+  "Stock Horse Cross",
+  "Riding Pony",
+  "Other",
 ];
 
-// Helper function to format price with currency symbol
-const formatPriceWithCurrency = (amount: number, currency: string): string => {
-  switch (currency) {
-    case "USD":
-      return `$${amount.toLocaleString()}`;
-    case "GBP":
-      return `£${amount.toLocaleString()}`;
-    case "EUR":
-      return `€${amount.toLocaleString()}`;
-    case "AUD":
-      return `A$${amount.toLocaleString()}`;
-    case "NZD":
-      return `NZ$${amount.toLocaleString()}`;
-    default:
-      return `$${amount.toLocaleString()}`;
-  }
-};
+const fallbackCountries = [
+  "Australia",
+  "New Zealand",
+  "North America",
+  "Northern Europe",
+  "Central Europe",
+  "Southern Europe",
+  "United Kingdom and Ireland",
+];
 
-const FilterPanel = ({ 
-  isOpen, 
-  onClose, 
-  activeFilters, 
+function FilterSection({
+  title,
+  children,
+  action,
+  className = "",
+}: {
+  title: ReactNode;
+  children: ReactNode;
+  action?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={`border-t border-[#dedbd2] py-5 ${className}`}>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-accent text-sm font-semibold text-foreground">{title}</h3>
+        {action}
+      </div>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function ChoiceChips({
+  options,
+  selected,
+  onSelect,
+  label,
+}: {
+  options: string[];
+  selected: string[];
+  onSelect: (value: string) => void;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2" aria-label={label}>
+      {options.map((option) => {
+        const active = selected.includes(option);
+        return (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onSelect(option)}
+            className={`min-h-10 rounded-full border px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e] focus-visible:ring-offset-2 ${
+              active
+                ? "border-[#2b2b2b] bg-[#2b2b2b] text-white"
+                : "border-[#d9d7d0] bg-white text-[#34332f] hover:border-[#cdac6e]"
+            }`}
+          >
+            {option}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function SearchableChoice({
+  label,
+  value,
+  placeholder,
+  options,
+  onSelect,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  options: string[];
+  onSelect: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = useMemo(
+    () => options.filter((option) => option.toLowerCase().includes(search.trim().toLowerCase())),
+    [options, search],
+  );
+
+  return (
+    <Popover open={open} onOpenChange={(nextOpen) => {
+      setOpen(nextOpen);
+      if (!nextOpen) setSearch("");
+    }}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          aria-label={label}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          className="h-11 w-full justify-between rounded-none border-0 border-b border-[#dedbd2] bg-transparent px-0 text-left font-normal text-foreground shadow-none hover:bg-transparent"
+        >
+          <span className={value ? "truncate" : "truncate text-muted-foreground"}>{value || placeholder}</span>
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        side="bottom"
+        className="z-[70] w-[var(--radix-popover-trigger-width)] rounded-xl border-[#dedbd2] bg-white p-2 shadow-lg"
+      >
+        <Input
+          autoFocus
+          type="search"
+          role="searchbox"
+          aria-label={`Search ${label.toLowerCase()}`}
+          placeholder={`Search ${label.toLowerCase()}…`}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="mb-2 h-10 rounded-none border-0 border-b border-[#dedbd2] bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+        />
+        <div role="listbox" aria-label={label} className="max-h-52 overflow-y-auto">
+          <button
+            type="button"
+            role="option"
+            aria-selected={!value}
+            onClick={() => {
+              onSelect("");
+              setOpen(false);
+              setSearch("");
+            }}
+            className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 text-left text-sm text-muted-foreground hover:bg-[#f2f0e9]"
+          >
+            {placeholder}
+            {!value ? <Check className="h-4 w-4" aria-hidden="true" /> : null}
+          </button>
+          {filtered.map((option) => (
+            <button
+              key={option}
+              type="button"
+              role="option"
+              aria-selected={value === option}
+              onClick={() => {
+                onSelect(option);
+                setOpen(false);
+                setSearch("");
+              }}
+              className="flex min-h-10 w-full items-center justify-between rounded-lg px-3 text-left text-sm text-foreground hover:bg-[#f2f0e9]"
+            >
+              {option}
+              {value === option ? <Check className="h-4 w-4 text-[#8b713c]" aria-hidden="true" /> : null}
+            </button>
+          ))}
+          {!filtered.length ? <p className="px-3 py-5 text-center text-sm text-muted-foreground">No matches</p> : null}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function BloodlineSearch({
+  id,
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <Label htmlFor={id} className="mb-1 block text-xs font-medium text-muted-foreground">{label}</Label>
+      <Input
+        id={id}
+        type="search"
+        list={`${id}-suggestions`}
+        placeholder={`Search ${label.toLowerCase()}`}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-10 rounded-none border-0 border-b border-[#dedbd2] bg-transparent px-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+      />
+      <datalist id={`${id}-suggestions`}>
+        {options.map((name) => <option key={name} value={name} />)}
+      </datalist>
+    </div>
+  );
+}
+
+function RangeSlider({
+  label,
+  values,
+  min,
+  max,
+  step,
+  display,
+  onChange,
+  disabled = false,
+}: {
+  label: string;
+  values: [number, number];
+  min: number;
+  max: number;
+  step: number;
+  display: (value: number, index: number) => string;
+  onChange: (values: [number, number]) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className={disabled ? "space-y-4 opacity-50" : "space-y-4"}>
+      <div className="flex items-center justify-between gap-3 text-sm font-semibold text-foreground">
+        <span>{display(values[0], 0)}</span>
+        <span className="text-muted-foreground">to</span>
+        <span>{display(values[1], 1)}</span>
+      </div>
+      <SliderPrimitive.Root
+        min={min}
+        max={max}
+        step={step}
+        minStepsBetweenThumbs={0}
+        value={values}
+        onValueChange={(next) => {
+          if (next.length === 2) onChange([next[0], next[1]]);
+        }}
+        disabled={disabled}
+        aria-label={label}
+        className="relative flex w-full touch-none select-none items-center py-2"
+      >
+        <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-[#e8e6df]">
+          <SliderPrimitive.Range className="absolute h-full bg-[#2b2b2b]" />
+        </SliderPrimitive.Track>
+        {["Minimum", "Maximum"].map((bound) => (
+          <SliderPrimitive.Thumb
+            key={bound}
+            aria-label={`${bound} ${label}`}
+            aria-valuetext={display(values[bound === "Minimum" ? 0 : 1], bound === "Minimum" ? 0 : 1)}
+            className="block h-6 w-6 rounded-full border-2 border-[#2b2b2b] bg-white shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e] focus-visible:ring-offset-2 disabled:pointer-events-none"
+          />
+        ))}
+      </SliderPrimitive.Root>
+    </div>
+  );
+}
+
+const emptyFilters = () => ({
+  disciplines: [],
+  breeds: [],
+  sexes: [],
+  levels: [],
+  other_disciplines: [],
+  location_country: null,
+  location_radius_km: null,
+  age_min: null,
+  age_max: null,
+  height_min: null,
+  height_max: null,
+  price_min: null,
+  price_max: null,
+  currency: "AUD",
+  sire: null,
+  dam_sire: null,
+});
+
+const asNumber = (value: unknown, fallback: number) =>
+  typeof value === "number" && Number.isFinite(value) ? value : fallback;
+
+const FilterPanel = ({
+  isOpen,
+  onClose,
+  activeFilters,
   onApplyFilters,
-  horseCount 
+  horseCount = 0,
 }: FilterPanelProps) => {
   const isMobile = useMobile();
   const [filters, setFilters] = useState(activeFilters);
+  const [previewFilters, setPreviewFilters] = useState(activeFilters);
+  const dragStartY = useRef<number | null>(null);
   const { currentCurrency, setCurrentCurrency } = useCurrency();
-  
-  // Fetch constants for filter options
-  const { data: constants } = useQuery({
-    queryKey: ['/api/constants'],
+  const { data: constants } = useQuery<FilterConstants>({ queryKey: ["/api/constants"] });
+  const { data: horsesForBloodlines = [] } = useQuery<Horse[]>({
+    queryKey: ["/api/horses/bloodline-suggestions"],
+    enabled: isOpen,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async () => {
+      const response = await fetch("/api/horses");
+      if (!response.ok) throw new Error("Could not load bloodline suggestions");
+      return response.json();
+    },
   });
-  
-  // Sync currency between context and filters
+
+  useEffect(() => setFilters(activeFilters), [activeFilters]);
   useEffect(() => {
-    if (currentCurrency) {
-      handleChange('currency', currentCurrency);
+    const timer = window.setTimeout(() => setPreviewFilters(filters), 250);
+    return () => window.clearTimeout(timer);
+  }, [filters]);
+
+  useEffect(() => {
+    if (currentCurrency && filters.currency !== currentCurrency) {
+      setFilters((previous: any) => ({ ...previous, currency: currentCurrency }));
     }
   }, [currentCurrency]);
 
-  useEffect(() => {
-    setFilters(activeFilters);
-  }, [activeFilters]);
-
-  const handleChange = (key: string, value: any, autoApply: boolean = false) => {
-    setFilters(prev => {
-      // Validation for min/max pairs to ensure max is not less than min
-      let newFilters = prev;
-      
-      if (key === 'price_min' && prev.price_max && value > prev.price_max && prev.price_max !== 999999999) {
-        // If new min is greater than current max, set max to null or a higher value
-        newFilters = {
-          ...prev,
-          [key]: value,
-          price_max: 999999999 // Reset to "No Max" when min exceeds max
-        };
-      } else if (key === 'price_max' && prev.price_min && value < prev.price_min && value !== 999999999) {
-        // If new max is less than current min, don't update
-        return prev;
-      } else if (key === 'age_min' && prev.age_max && value > prev.age_max && prev.age_max !== 999) {
-        // If new min is greater than current max, set max to null or a higher value
-        newFilters = {
-          ...prev,
-          [key]: value,
-          age_max: 999 // Reset to "No Max" when min exceeds max
-        };
-      } else if (key === 'age_max' && prev.age_min && value < prev.age_min && value !== 999) {
-        // If new max is less than current min, don't update
-        return prev;
-      } else if (key === 'height_min' && prev.height_max && value > prev.height_max && prev.height_max !== 999) {
-        // If new min is greater than current max, set max to null or a higher value
-        newFilters = {
-          ...prev,
-          [key]: value,
-          height_max: 999 // Reset to "No Max" when min exceeds max
-        };
-      } else if (key === 'height_max' && prev.height_min && value < prev.height_min && value !== 999) {
-        // If new max is less than current min, don't update
-        return prev;
-      } else {
-        // Default case: just update the value
-        newFilters = {
-          ...prev,
-          [key]: value
-        };
-      }
-      
-      // Auto-apply filters for dropdown changes
-      if (autoApply) {
-        setTimeout(() => {
-          const filtersToApply = {
-            ...newFilters,
-            sire: newFilters.sire || null,
-            dam_sire: newFilters.dam_sire || null
-          };
-          
-          console.log("Auto-applying filters:", filtersToApply);
-          onApplyFilters(filtersToApply);
-        }, 100);
-      }
-      
-      return newFilters;
-    });
-    
-    // Also update currency context if currency is changed
-    if (key === 'currency') {
-      setCurrentCurrency(value);
-    }
+  const change = (key: string, value: any) => {
+    setFilters((previous: any) => ({ ...previous, [key]: value }));
+    if (key === "currency") setCurrentCurrency(value);
   };
 
-  const toggleItem = (key: string, value: string) => {
-    setFilters(prev => {
-      const currentArray = [...(prev[key] || [])];
-      const index = currentArray.indexOf(value);
-      
-      if (index === -1) {
-        return {
-          ...prev,
-          [key]: [...currentArray, value]
-        };
-      } else {
-        currentArray.splice(index, 1);
-        return {
-          ...prev,
-          [key]: currentArray
-        };
-      }
-    });
+  const resultPreview = useQuery({
+    queryKey: ["/api/horses/filter-result-count", previewFilters],
+    enabled: isOpen,
+    staleTime: 5_000,
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      previewFilters.disciplines?.forEach((value: string) => params.append("disciplines", value));
+      previewFilters.breeds?.forEach((value: string) => params.append("breeds", value));
+      previewFilters.sexes?.forEach((value: string) => params.append("sexes", value));
+      previewFilters.levels?.forEach((value: string) => params.append("levels", value));
+      if (previewFilters.location_country) params.append("location_country", previewFilters.location_country);
+      if (previewFilters.age_min !== null) params.append("min_age", previewFilters.age_min?.toString() || "0");
+      if (previewFilters.age_max !== null) params.append("max_age", previewFilters.age_max?.toString() || "999");
+      if (previewFilters.height_min !== null) params.append("min_height", previewFilters.height_min?.toString() || "0");
+      if (previewFilters.height_max !== null) params.append("max_height", previewFilters.height_max?.toString() || "999");
+      if (previewFilters.price_min !== null) params.append("min_price", previewFilters.price_min?.toString() || "0");
+      if (previewFilters.price_max !== null) params.append("max_price", previewFilters.price_max?.toString() || "999999999");
+      if (previewFilters.currency) params.append("currency", previewFilters.currency);
+      if (previewFilters.sire) params.append("sire", previewFilters.sire);
+      if (previewFilters.dam_sire) params.append("dam_sire", previewFilters.dam_sire);
+      const query = params.toString();
+      const response = await fetch(`/api/horses${query ? `?${query}` : ""}`);
+      if (!response.ok) throw new Error("Could not count matching horses");
+      const horses = await response.json();
+      return Array.isArray(horses) ? horses.length : 0;
+    },
+  });
+
+  const selectSingle = (key: string, value: string) => {
+    const selected = filters[key]?.[0] ?? "";
+    change(key, selected === value ? [] : [value]);
   };
 
-  const handleApply = () => {
-    // Verify the filter data before sending it
-    console.log("Apply button clicked with filters:", filters);
-    
-    // Make a copy of filters to ensure we're not affected by any state issues
-    const filtersToApply = {...filters};
-    
-    // Ensure discipline is properly formatted for the API
-    if (filtersToApply.disciplines && filtersToApply.disciplines[0] === "all_disciplines") {
-      filtersToApply.disciplines = [];
+  const toggleMultiple = (key: string, value: string) => {
+    const selected: string[] = filters[key] ?? [];
+    change(key, selected.includes(value) ? selected.filter((item) => item !== value) : [...selected, value]);
+  };
+
+  const currency = filters.currency || currentCurrency || "AUD";
+  const priceMax = getMaxPrice(currency);
+  const priceValues: [number, number] = [
+    Math.max(0, Math.min(priceMax, asNumber(filters.price_min, 0))),
+    Math.max(0, Math.min(priceMax, asNumber(filters.price_max, priceMax))),
+  ];
+  const ageValues: [number, number] = [
+    Math.max(-1, Math.min(16, asNumber(filters.age_min, -1))),
+    Math.max(0, Math.min(17, asNumber(filters.age_max, 17))),
+  ];
+  const heightIsYoungHorse = filters.height_min === "young_horse" || filters.height_max === "young_horse";
+  const heightValues: [number, number] = [
+    Math.max(12.9, Math.min(16.3, asNumber(filters.height_min, 12.9))),
+    Math.max(13, Math.min(17.1, asNumber(filters.height_max, 17.1))),
+  ];
+  const sexes = Array.from(new Set<string>([
+    "Colt",
+    "Filly",
+    ...(constants?.sexes ?? []),
+  ]));
+  const countries: string[] = constants?.countries?.length ? constants.countries : fallbackCountries;
+  const levels: string[] = filters.disciplines?.[0]
+    ? Array.from(new Set([
+      "Unbroken",
+      "Not Competing",
+      "Young Horse",
+      ...(constants?.levels?.[filters.disciplines[0]] ?? []),
+    ]))
+    : [];
+  const bloodlineSuggestions = Array.from(new Set(
+    horsesForBloodlines
+      .flatMap((horse) => [horse.sire, horse.dam_sire])
+      .filter((name): name is string => Boolean(name?.trim()))
+      .map((name) => name.trim()),
+  )).sort((a, b) => a.localeCompare(b));
+  const mainDisciplines = ["Jumping", "Dressage", "Eventing"];
+  const otherDisciplines = mainDisciplines.filter((item) => item !== filters.disciplines?.[0]);
+
+  const apply = () => {
+    const filtersToApply = { ...filters };
+    if (filtersToApply.disciplines?.includes("all_disciplines")) filtersToApply.disciplines = [];
+    if (filtersToApply.breeds?.includes("all_breeds")) filtersToApply.breeds = [];
+    if (filtersToApply.sexes?.includes("any_sex")) filtersToApply.sexes = [];
+    if (filtersToApply.location_country === "any_location" || !filtersToApply.location_country) {
+      filtersToApply.location_country = null;
     }
-    
-    // Ensure breeds is properly formatted
-    if (filtersToApply.breeds && filtersToApply.breeds[0] === "all_breeds") {
-      filtersToApply.breeds = [];
-    }
-    
-    // Ensure sexes is properly formatted
-    if (filtersToApply.sexes && filtersToApply.sexes[0] === "any_sex") {
-      filtersToApply.sexes = [];
-    }
-    
-    // Add additional logging for debugging
-    console.log("Sending processed filters:", filtersToApply);
-    
-    // Keep this simpler for mobile - just apply filters and close panel
-  console.log("FILTER PANEL: Applying filters", filtersToApply);
-  
-  // First apply the filters
-  onApplyFilters(filtersToApply);
-  
-  // Force a quick timeout before closing the panel
-  setTimeout(() => {
-    // Then close the panel
+    if (filtersToApply.location_radius_km === "any_radius") filtersToApply.location_radius_km = null;
+    onApplyFilters(filtersToApply);
     onClose();
-    
-    // Update URL query parameter for the current session only (no localStorage persistence)
-    if (filtersToApply.disciplines && filtersToApply.disciplines.length > 0) {
-      const url = new URL(window.location.href);
-      url.searchParams.set('discipline', filtersToApply.disciplines[0]);
-      window.history.replaceState(null, "", url.toString());
-    } else {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('discipline');
-      window.history.replaceState(null, "", url.toString());
-    }
-  }, 100);
+    const url = new URL(window.location.href);
+    if (filtersToApply.disciplines?.length) url.searchParams.set("discipline", filtersToApply.disciplines[0]);
+    else url.searchParams.delete("discipline");
+    window.history.replaceState(null, "", url.toString());
   };
 
-  const handleReset = () => {
-    const resetFilters = {
-      disciplines: [],  // Empty array for All Disciplines
-      breeds: [],       // Empty array for All Breeds
-      sexes: [],        // Empty array for Any Sex
-      other_disciplines: [],
-      location_country: null,
-      location_radius_km: null,
-      age_min: null,
-      age_max: null,
-      height_min: null,
-      height_max: null,
-      price_min: null,
-      price_max: null,
-      currency: "AUD",
-      sire: null,
-      dam_sire: null
-    };
-    setFilters(resetFilters);
-    onApplyFilters(resetFilters); // Apply the reset filters immediately
+  const clearAll = () => {
+    const reset = emptyFilters();
+    setFilters(reset);
+    setCurrentCurrency("AUD");
   };
 
-  if (!isOpen && isMobile) return null;
+  const resultLabel = `${horseCount} ${horseCount === 1 ? "horse" : "horses"}`;
+
+  const heightLabel = (value: number, index: number) => {
+    if (index === 0 && value <= 12.9) return "Any height";
+    if (index === 1 && value >= 17.1) return "Any height";
+    return `${value.toFixed(1)}hh`;
+  };
+
+  const ageLabel = (value: number, index: number) => {
+    if (index === 0 && value < 0) return "Any age";
+    if (index === 1 && value >= 17) return "Any age";
+    if (value === 0) return "Weanling";
+    if (value === 1) return "Yearling";
+    return `${value} years`;
+  };
 
   return (
-    <div className={`${isMobile ? 'fixed inset-0 bg-black bg-opacity-50 z-50' : ''}`}>
-      <div className={`
-        ${isMobile 
-          ? 'absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-5 max-h-[85vh] overflow-y-auto z-50' 
-          : 'h-full'}
-      `}>
-        <div className="flex justify-between items-center mb-5">
-          <Button
-            className="flex-1 mr-3"
-            onClick={handleApply}
-            data-testid="button-apply-filters-top"
-          >
-            Apply Filters
-          </Button>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={handleReset}
-              className="text-sm px-3 py-1.5 h-8 reset-button"
-            >
-              Reset All
-            </Button>
-            {isMobile && (
-              <div className="mobileMenu">
-                <MobileNavbar />
-              </div>
-            )}
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className={`fixed z-50 flex max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden border-[#dedbd2] bg-white p-0 shadow-2xl duration-300 [&>button:last-child]:hidden data-[state=open]:slide-in-from-left-0 data-[state=closed]:slide-out-to-left-0 data-[state=open]:slide-in-from-top-0 data-[state=closed]:slide-out-to-top-0 ${
+          isMobile
+            ? "bottom-0 left-0 right-0 top-auto h-[min(92dvh,56rem)] max-h-[92dvh] w-full rounded-t-[1.5rem] border-t data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full"
+            : "bottom-0 left-auto right-0 top-0 h-dvh w-[min(36vw,31rem)] rounded-none border-l data-[state=open]:slide-in-from-right-full data-[state=closed]:slide-out-to-right-full"
+        }`}
+        onTouchStart={(event) => {
+          const target = event.target as HTMLElement;
+          const scrollArea = event.currentTarget.querySelector<HTMLElement>("#filter-panel-scroll");
+          if (
+            isMobile &&
+            (target.closest("[data-filter-drag-zone]") ||
+              (scrollArea?.scrollTop === 0 && !target.closest("input, button, [role='slider']")))
+          ) {
+            dragStartY.current = event.touches[0]?.clientY ?? null;
+          }
+        }}
+        onTouchEnd={(event) => {
+          const startY = dragStartY.current;
+          dragStartY.current = null;
+          const scrollArea = event.currentTarget.querySelector<HTMLElement>("#filter-panel-scroll");
+          if (isMobile && startY !== null && scrollArea?.scrollTop === 0 && event.changedTouches[0].clientY - startY > 80) onClose();
+        }}
+      >
+        {isMobile ? (
+          <div data-filter-drag-zone className="flex h-7 shrink-0 touch-pan-y items-center justify-center" aria-hidden="true">
+            <span className="h-1 w-10 rounded-full bg-[#d4d1c8]" />
           </div>
-        </div>
-        
-        {/* Filter Forms */}
-        <div className="space-y-6">
-          {/* Disciplines */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Main Discipline</Label>
-            <Select 
-              value={filters.disciplines && filters.disciplines.length > 0 ? filters.disciplines[0] : "all_disciplines"} 
-              onValueChange={(value) => {
-                if (value === "all_disciplines") {
-                  handleChange('disciplines', [], false);
-                } else {
-                  handleChange('disciplines', [value], false);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                <SelectValue placeholder="All Disciplines" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all_disciplines">All Disciplines</SelectItem>
-                {constants?.disciplines?.map((discipline: string) => (
-                  <SelectItem key={discipline} value={discipline}>{discipline}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {/* Discipline Levels */}
-          {(filters.disciplines && filters.disciplines.length > 0 && filters.disciplines[0] && filters.disciplines[0] !== "all_disciplines") ? (
-            <div className="filter-group">
-              <Label className="block font-accent font-semibold mb-2 text-neutral-800">Competition Level</Label>
-              <Select 
-                value={filters.levels?.[0] || ""} 
-                onValueChange={(value) => handleChange('levels', [value], false)}
+        ) : null}
+        <DialogHeader className="relative shrink-0 border-b border-[#e3e0d8] px-5 pb-3 text-left sm:px-7 sm:pt-5">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="font-display text-xl font-semibold text-foreground">Filters</DialogTitle>
+            <DialogClose asChild>
+              <button
+                type="button"
+                aria-label="Close filters"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-foreground transition hover:bg-[#eeece5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cdac6e]"
               >
-                <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                  <SelectValue placeholder="Any Level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any_level">Any Level</SelectItem>
-                  <SelectItem value="Unbroken">Unbroken</SelectItem>
-                  <SelectItem value="Not Competing">Not Competing</SelectItem>
-                  <SelectItem value="Young Horse">Young Horse</SelectItem>
-                  {constants?.levels && constants.levels[filters.disciplines[0]]?.map((level: string) => (
-                    <SelectItem key={level} value={level}>{level}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <div className="filter-group">
-              <Label className="block font-accent font-semibold mb-2 text-neutral-800 opacity-50">Competition Level</Label>
-              <Select disabled>
-                <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg opacity-50">
-                  <SelectValue placeholder="Select a discipline first" />
-                </SelectTrigger>
-              </Select>
-            </div>
-          )}
-          
-          {/* Other Disciplines */}
-          {constants?.disciplines && constants.disciplines.length > 0 && (
-            <div className="filter-group">
-              <Label className="block font-accent font-semibold mb-2 text-neutral-800">Other Discipline(s)</Label>
-              <div className="flex flex-wrap gap-3">
-                {constants.disciplines
-                  .filter((discipline: string) => {
-                    const mainDiscipline = filters.disciplines?.[0];
-                    return !mainDiscipline || mainDiscipline === "all_disciplines" || discipline !== mainDiscipline;
-                  })
-                  .map((discipline: string) => {
-                  const selected = (filters.other_disciplines || []).includes(discipline);
-                  return (
-                    <label key={discipline} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={selected}
-                        onCheckedChange={(val) => {
-                          const current = filters.other_disciplines || [];
-                          const updated = val
-                            ? [...current, discipline]
-                            : current.filter((d: string) => d !== discipline);
-                          handleChange('other_disciplines', updated, false);
-                        }}
-                      />
-                      <span className="text-sm">{discipline}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                <X className="h-5 w-5" aria-hidden="true" />
+              </button>
+            </DialogClose>
+          </div>
+        </DialogHeader>
 
-          {/* Price Range and Currency */}
-          <div className="filter-group">
-            <div className="mb-3">
-              <Label className="block font-accent font-semibold mb-2 text-neutral-800">Currency</Label>
-              <CurrencySelector 
-                defaultValue={filters.currency || "AUD"}
-                onChange={(value) => handleChange('currency', value)}
-                showLabel={false}
+        <div id="filter-panel-scroll" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 sm:px-7">
+          <FilterSection title="Discipline" className="border-t-0">
+            <ChoiceChips
+              label="Discipline"
+              options={mainDisciplines}
+              selected={filters.disciplines ?? []}
+              onSelect={(value) => selectSingle("disciplines", value)}
+            />
+            <div className="mt-4">
+              <p className="mb-2 text-xs font-medium text-muted-foreground">Also consider</p>
+              <ChoiceChips
+                label="Other disciplines"
+                options={otherDisciplines}
+                selected={filters.other_disciplines ?? []}
+                onSelect={(value) => toggleMultiple("other_disciplines", value)}
               />
             </div>
-            
-            {/* Only show price range after currency is selected */}
-            {filters.currency && (
-              <>
-                <Label className="block font-accent font-semibold mb-2 text-neutral-800">Price Range (in {filters.currency})</Label>
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <Select 
-                      value={filters.price_min?.toString() || "0"} 
-                      onValueChange={(value) => handleChange('price_min', parseInt(value))}
-                    >
-                      <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                        {filters.price_min && filters.price_min !== 0 ? (
-                          <SelectValue />
-                        ) : (
-                          <span className="text-muted-foreground">Min</span>
-                        )}
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0">No Min</SelectItem>
-                        {priceOptions
-                          .filter(price => price >= getMinPrice(filters.currency || "AUD") && price <= getMaxPrice(filters.currency || "AUD"))
-                          .map((price) => (
-                            <SelectItem key={price} value={price.toString()}>
-                              {formatPriceWithCurrency(price, filters.currency || "AUD")}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex-1">
-                    <Select 
-                      value={filters.price_max?.toString() || "999999999"} 
-                      onValueChange={(value) => handleChange('price_max', parseInt(value))}
-                    >
-                      <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                        {filters.price_max && filters.price_max !== 999999999 ? (
-                          <SelectValue />
-                        ) : (
-                          <span className="text-muted-foreground">Max</span>
-                        )}
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="999999999">No Max</SelectItem>
-                        {priceOptions
-                          .filter(price => price >= getMinPrice(filters.currency || "AUD") && price <= getMaxPrice(filters.currency || "AUD"))
-                          .map((price) => (
-                            <SelectItem key={price} value={price.toString()}>
-                              {formatPriceWithCurrency(price, filters.currency || "AUD")}
-                            </SelectItem>
-                          ))}
-                        <SelectItem value="999999">
-                          Over {formatPriceWithCurrency(getMaxPrice(filters.currency || "AUD"), filters.currency || "AUD")}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </>
+          </FilterSection>
+
+          <FilterSection title="Level">
+            {levels.length ? (
+              <SearchableChoice
+                label="Level"
+                value={filters.levels?.[0] ?? ""}
+                placeholder="Any level"
+                options={levels}
+                onSelect={(value) => change("levels", value ? [value] : [])}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">Choose a discipline to see its levels.</p>
             )}
-          </div>
-          
-          {/* Age Range */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Age Range</Label>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <Select 
-                  value={filters.age_min?.toString() || "0"} 
-                  onValueChange={(value) => handleChange('age_min', parseInt(value), true)}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    {filters.age_min && filters.age_min !== 0 ? (
-                      <SelectValue />
-                    ) : (
-                      <span className="text-muted-foreground">Min</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">Weanling</SelectItem>
-                    <SelectItem value="1">Yearling</SelectItem>
-                    <SelectItem value="2">2 years</SelectItem>
-                    <SelectItem value="3">3 years</SelectItem>
-                    <SelectItem value="4">4 years</SelectItem>
-                    <SelectItem value="5">5 years</SelectItem>
-                    <SelectItem value="6">6 years</SelectItem>
-                    <SelectItem value="7">7 years</SelectItem>
-                    <SelectItem value="8">8 years</SelectItem>
-                    <SelectItem value="9">9 years</SelectItem>
-                    <SelectItem value="10">10 years</SelectItem>
-                    <SelectItem value="11">11 years</SelectItem>
-                    <SelectItem value="12">12 years</SelectItem>
-                    <SelectItem value="13">13 years</SelectItem>
-                    <SelectItem value="14">14 years</SelectItem>
-                    <SelectItem value="15">15 years</SelectItem>
-                    <SelectItem value="16">16 years</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <Select 
-                  value={filters.age_max?.toString() || "999"} 
-                  onValueChange={(value) => handleChange('age_max', parseInt(value), true)}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    {filters.age_max && filters.age_max !== 999 ? (
-                      <SelectValue />
-                    ) : (
-                      <span className="text-muted-foreground">Max</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="999">No Max</SelectItem>
-                    <SelectItem value="0">Weanling</SelectItem>
-                    <SelectItem value="1">Yearling</SelectItem>
-                    <SelectItem value="2">2 years</SelectItem>
-                    <SelectItem value="3">3 years</SelectItem>
-                    <SelectItem value="4">4 years</SelectItem>
-                    <SelectItem value="5">5 years</SelectItem>
-                    <SelectItem value="6">6 years</SelectItem>
-                    <SelectItem value="7">7 years</SelectItem>
-                    <SelectItem value="8">8 years</SelectItem>
-                    <SelectItem value="9">9 years</SelectItem>
-                    <SelectItem value="10">10 years</SelectItem>
-                    <SelectItem value="11">11 years</SelectItem>
-                    <SelectItem value="12">12 years</SelectItem>
-                    <SelectItem value="13">13 years</SelectItem>
-                    <SelectItem value="14">14 years</SelectItem>
-                    <SelectItem value="15">15 years</SelectItem>
-                    <SelectItem value="16">16 years</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          
-          {/* Height Range */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Height Range</Label>
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <Select 
-                  value={filters.height_min === "young_horse" ? "young_horse" : (filters.height_min?.toString() || "0")} 
-                  onValueChange={(value) => handleChange('height_min', value === "young_horse" ? "young_horse" : parseFloat(value), true)}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    {filters.height_min && filters.height_min !== 0 ? (
-                      filters.height_min === "young_horse" ? "Young Horse" : <SelectValue />
-                    ) : (
-                      <span className="text-muted-foreground">Min</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">No Min</SelectItem>
-                    <SelectItem value="young_horse">Young Horse</SelectItem>
-                    <SelectItem value="13.0">13.0 hh</SelectItem>
-                    <SelectItem value="13.1">13.1 hh</SelectItem>
-                    <SelectItem value="13.2">13.2 hh</SelectItem>
-                    <SelectItem value="13.3">13.3 hh</SelectItem>
-                    <SelectItem value="14.0">14.0 hh</SelectItem>
-                    <SelectItem value="14.1">14.1 hh</SelectItem>
-                    <SelectItem value="14.2">14.2 hh</SelectItem>
-                    <SelectItem value="14.3">14.3 hh</SelectItem>
-                    <SelectItem value="15.0">15.0 hh</SelectItem>
-                    <SelectItem value="15.1">15.1 hh</SelectItem>
-                    <SelectItem value="15.2">15.2 hh</SelectItem>
-                    <SelectItem value="15.3">15.3 hh</SelectItem>
-                    <SelectItem value="16.0">16.0 hh</SelectItem>
-                    <SelectItem value="16.1">16.1 hh</SelectItem>
-                    <SelectItem value="16.2">16.2 hh</SelectItem>
-                    <SelectItem value="16.3">16.3 hh</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <Select 
-                  value={filters.height_max === "young_horse" ? "young_horse" : (filters.height_max?.toString() || "999")} 
-                  onValueChange={(value) => handleChange('height_max', value === "young_horse" ? "young_horse" : parseFloat(value), true)}
-                >
-                  <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                    {filters.height_max && filters.height_max !== 999 ? (
-                      filters.height_max === "young_horse" ? "Young Horse" : <SelectValue />
-                    ) : (
-                      <span className="text-muted-foreground">Max</span>
-                    )}
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="999">No Max</SelectItem>
-                    <SelectItem value="young_horse">Young Horse</SelectItem>
-                    <SelectItem value="13">13 hh</SelectItem>
-                    <SelectItem value="13.1">13.1 hh</SelectItem>
-                    <SelectItem value="13.2">13.2 hh</SelectItem>
-                    <SelectItem value="13.3">13.3 hh</SelectItem>
-                    <SelectItem value="14">14 hh</SelectItem>
-                    <SelectItem value="14.1">14.1 hh</SelectItem>
-                    <SelectItem value="14.2">14.2 hh</SelectItem>
-                    <SelectItem value="14.3">14.3 hh</SelectItem>
-                    <SelectItem value="15">15 hh</SelectItem>
-                    <SelectItem value="15.1">15.1 hh</SelectItem>
-                    <SelectItem value="15.2">15.2 hh</SelectItem>
-                    <SelectItem value="15.3">15.3 hh</SelectItem>
-                    <SelectItem value="16">16 hh</SelectItem>
-                    <SelectItem value="16.1">16.1 hh</SelectItem>
-                    <SelectItem value="16.2">16.2 hh</SelectItem>
-                    <SelectItem value="16.3">16.3 hh</SelectItem>
-                    <SelectItem value="17">17 hh</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-          
-          {/* Breed */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Breed</Label>
-            <Select 
-              value={filters.breeds && filters.breeds.length > 0 ? filters.breeds[0] : "all_breeds"} 
-              onValueChange={(value) => {
-                if (value === "all_breeds") {
-                  handleChange('breeds', [], false);
+          </FilterSection>
+
+          <FilterSection
+            title="Price range"
+            action={(
+              <CurrencySelector
+                key={currency}
+                defaultValue={currency}
+                onChange={(value) => change("currency", value)}
+                showLabel={false}
+                className="w-[5.5rem] shrink-0 [&_button]:h-8 [&_button]:rounded-full [&_button]:border-0 [&_button]:bg-transparent [&_button]:px-2 [&_button]:text-xs"
+              />
+            )}
+          >
+            <RangeSlider
+              label="Price range"
+              values={priceValues}
+              min={0}
+              max={priceMax}
+              step={5000}
+              display={(value, index) => {
+                const unbounded = index === 0 ? value <= 0 : value >= priceMax;
+                return unbounded ? "Any price" : formatPrice(value, currency);
+              }}
+              onChange={([minimum, maximum]) => {
+                change("price_min", minimum <= 0 ? null : minimum);
+                change("price_max", maximum >= priceMax ? null : maximum);
+              }}
+            />
+          </FilterSection>
+
+          <FilterSection title="Age">
+            <RangeSlider
+              label="Age range"
+              values={ageValues}
+              min={-1}
+              max={17}
+              step={1}
+              display={ageLabel}
+              onChange={([minimum, maximum]) => {
+                change("age_min", minimum < 0 ? null : minimum);
+                change("age_max", maximum >= 17 ? null : maximum);
+              }}
+            />
+          </FilterSection>
+
+          <FilterSection title="Height">
+            <RangeSlider
+              label="Height range"
+              values={heightValues}
+              min={12.9}
+              max={17.1}
+              step={0.1}
+              display={heightLabel}
+              disabled={heightIsYoungHorse}
+              onChange={([minimum, maximum]) => {
+                change("height_min", minimum <= 12.9 ? null : Number(minimum.toFixed(1)));
+                change("height_max", maximum >= 17.1 ? null : Number(maximum.toFixed(1)));
+              }}
+            />
+            <button
+              type="button"
+              aria-pressed={heightIsYoungHorse}
+              onClick={() => {
+                if (heightIsYoungHorse) {
+                  if (filters.height_min === "young_horse") change("height_min", null);
+                  if (filters.height_max === "young_horse") change("height_max", null);
                 } else {
-                  handleChange('breeds', [value], false);
+                  change("height_min", "young_horse");
+                  change("height_max", "young_horse");
                 }
               }}
+              className={`mt-4 min-h-9 rounded-full border px-3 text-xs font-medium ${
+                heightIsYoungHorse ? "border-[#2b2b2b] bg-[#2b2b2b] text-white" : "border-[#dedbd2] bg-white text-foreground"
+              }`}
             >
-              <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                <SelectValue placeholder="All Breeds" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all_breeds">All Breeds</SelectItem>
-                <SelectItem value="Warmblood">Warmblood</SelectItem>
-                <SelectItem value="Warmblood Cross">Warmblood Cross</SelectItem>
-                <SelectItem value="Thoroughbred">Thoroughbred</SelectItem>
-                <SelectItem value="Thoroughbred Cross">Thoroughbred Cross</SelectItem>
-                <SelectItem value="Stock Horse">Stock Horse</SelectItem>
-                <SelectItem value="Stock Horse Cross">Stock Horse Cross</SelectItem>
-                <SelectItem value="Riding Pony">Riding Pony</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {/* Sex */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Sex</Label>
-            <Select 
-              value={filters.sexes && filters.sexes.length > 0 ? filters.sexes[0] : "any_sex"} 
-              onValueChange={(value) => {
-                if (value === "any_sex") {
-                  handleChange('sexes', [], false);
-                } else {
-                  handleChange('sexes', [value], false);
-                }
-              }}
-            >
-              <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                <SelectValue placeholder="Any Sex" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any_sex">Any Sex</SelectItem>
-                <SelectItem value="Colt">Colt</SelectItem>
-                <SelectItem value="Filly">Filly</SelectItem>
-                {constants?.sexes?.map((sex: string) => (
-                  <SelectItem key={sex} value={sex}>{sex}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          {/* Bloodlines */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Bloodlines</Label>
-            <div className="space-y-3">
-              <div>
-                <Label className="block text-sm font-medium mb-1 text-neutral-700">Sire</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter sire name..."
-                  value={filters.sire || ""}
-                  onChange={(e) => handleChange('sire', e.target.value || null)}
-                  className="w-full bg-neutral-100 border border-neutral-200 rounded-lg"
-                />
-              </div>
-              <div>
-                <Label className="block text-sm font-medium mb-1 text-neutral-700">Dam Sire</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter dam sire name..."
-                  value={filters.dam_sire || ""}
-                  onChange={(e) => handleChange('dam_sire', e.target.value || null)}
-                  className="w-full bg-neutral-100 border border-neutral-200 rounded-lg"
-                />
-              </div>
+              Young horse
+            </button>
+          </FilterSection>
+
+          <FilterSection title="Sex">
+            <ChoiceChips
+              label="Sex"
+              options={sexes}
+              selected={filters.sexes ?? []}
+              onSelect={(value) => selectSingle("sexes", value)}
+            />
+          </FilterSection>
+
+          <FilterSection title="Bloodlines">
+            <div className="space-y-4">
+              <BloodlineSearch
+                id="filter-sire"
+                label="Sire"
+                value={filters.sire ?? ""}
+                options={bloodlineSuggestions}
+                onChange={(value) => change("sire", value || null)}
+              />
+              <BloodlineSearch
+                id="filter-dam-sire"
+                label="Dam Sire"
+                value={filters.dam_sire ?? ""}
+                options={bloodlineSuggestions}
+                onChange={(value) => change("dam_sire", value || null)}
+              />
             </div>
-          </div>
+          </FilterSection>
 
-          {/* Location */}
-          <div className="filter-group">
-            <Label className="block font-accent font-semibold mb-2 text-neutral-800">Location</Label>
-            <Select 
-              value={filters.location_country || ""} 
-              onValueChange={(value) => handleChange('location_country', value, false)}
-            >
-              <SelectTrigger className="w-full bg-neutral-100 border border-neutral-200 rounded-lg">
-                <SelectValue placeholder="Any Location" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any_location">Any Location</SelectItem>
-                {constants && constants.countries ? (
-                  constants.countries.map((country) => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
-                  ))
-                ) : (
-                  <>
-                    <SelectItem value="Australia">Australia</SelectItem>
-                    <SelectItem value="New Zealand">New Zealand</SelectItem>
-                    <SelectItem value="North America">North America</SelectItem>
-                    <SelectItem value="Northern Europe">Northern Europe</SelectItem>
-                    <SelectItem value="Central Europe">Central Europe</SelectItem>
-                    <SelectItem value="Southern Europe">Southern Europe</SelectItem>
-                    <SelectItem value="United Kingdom and Ireland">United Kingdom and Ireland</SelectItem>
-                  </>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+          <FilterSection title="Breed">
+            <SearchableChoice
+              label="Breed"
+              value={filters.breeds?.[0] ?? ""}
+              placeholder="Any breed"
+              options={breedOptions}
+              onSelect={(value) => change("breeds", value ? [value] : [])}
+            />
+          </FilterSection>
+
+          <FilterSection title="Country">
+            <SearchableChoice
+              label="Country"
+              value={filters.location_country ?? ""}
+              placeholder="Any country"
+              options={countries}
+              onSelect={(value) => change("location_country", value || null)}
+            />
+          </FilterSection>
+          <div className="h-5" aria-hidden="true" />
         </div>
-        
 
-        
-        {/* Filter Actions */}
-        <div className="flex gap-3 mt-6">
+        <footer className="flex shrink-0 items-center gap-4 border-t border-[#e3e0d8] bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-3 sm:px-7">
           <Button
-            variant="outline"
-            className="flex-1 reset-button"
-            onClick={handleReset}
+            type="button"
+            variant="ghost"
+            onClick={clearAll}
+            className="h-11 shrink-0 px-1 text-sm font-medium text-muted-foreground hover:text-foreground"
           >
-            Reset All
+            Clear all
           </Button>
           <Button
-            className="flex-1"
-            onClick={handleApply}
-            onTouchEnd={(e) => {
-              e.preventDefault();
-              handleApply();
-            }}
+            type="button"
+            onClick={apply}
+            className="h-12 flex-1 rounded-full bg-[#2b2b2b] text-base font-semibold text-white hover:bg-[#1c1c1c]"
           >
-            Apply Filters
+            Show {resultPreview.data ?? horseCount} {(resultPreview.data ?? horseCount) === 1 ? "horse" : "horses"}
           </Button>
-        </div>
-      </div>
-    </div>
+        </footer>
+      </DialogContent>
+    </Dialog>
   );
 };
 
