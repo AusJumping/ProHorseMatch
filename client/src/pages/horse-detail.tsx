@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { getBuyerDetailFields, getBuyerPedigree } from "@/components/listing/listing-model";
 
 export default function HorseDetail() {
   const [, params] = useRoute("/horse/:id");
@@ -208,21 +209,8 @@ export default function HorseDetail() {
     );
   }
 
-  const details = [
-    ["Discipline", horse.disciplines?.filter(Boolean).join(", ")],
-    ["Level", horse.levels?.filter(Boolean).join(", ")],
-    ["Age", horse.age === 1 ? "Yearling" : `${horse.age} years`],
-    ["Sex", horse.sex],
-    ["Height", horse.height_hands ? `${horse.height_hands} hands` : "Not specified"],
-    ["Colour", horse.colour],
-    ["Breed", horse.breeds?.filter(Boolean).join(", ")],
-    ["Country", horse.location_country],
-  ] as const;
-  const pedigree = [
-    ["Sire", horse.sire],
-    ["Dam", horse.dam],
-    ["Dam sire", horse.dam_sire],
-  ].filter((item): item is [string, string] => Boolean(item[1]?.trim()));
+  const details = getBuyerDetailFields(horse as any);
+  const pedigree = getBuyerPedigree(horse as any);
 
   return (
       <Layout pageTitle={horse.name} showBackButton onBackClick={handleBack} hideHeader hideMobileNavigation>

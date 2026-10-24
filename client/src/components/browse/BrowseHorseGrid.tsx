@@ -156,6 +156,42 @@ function HorseListing({
   );
 }
 
+export function BrowseHorsePreview({ horse }: { horse: Horse }) {
+  const discipline = horse.disciplines?.[0] || "Discipline unlisted";
+  const level = horse.levels?.[0];
+  const age = horse.age === null || horse.age === undefined ? null : `${horse.age}yo`;
+  const sex = horse.sex ? horse.sex.charAt(0).toUpperCase() + horse.sex.slice(1).toLowerCase() : null;
+  const heightHands = horse.height_hands as number | string | null | undefined;
+  const height = heightHands === "young_horse"
+    ? "Young horse"
+    : heightHands === null || heightHands === undefined || heightHands === ""
+      ? null
+      : formatHorseHeight(heightHands);
+  const colour = horse.colour ? horse.colour.charAt(0).toUpperCase() + horse.colour.slice(1).toLowerCase() : null;
+  const details = [[age, sex].filter(Boolean).join(" "), height, colour].filter(Boolean).join(" · ");
+  const sire = horse.sire?.trim();
+  const damSire = horse.dam_sire?.trim();
+  const pedigree = sire && damSire ? `${sire} x ${damSire}` : sire ? `By ${sire}` : damSire ? `Dam Sire: ${damSire}` : null;
+  return (
+    <article className="group relative min-w-0">
+      <div className="relative">
+        <HorsePhoto horse={horse} />
+        <Button type="button" variant="ghost" size="icon" disabled aria-label="Save horse (preview only; no changes will be made)"
+          className="absolute right-4 top-4 h-11 w-11 rounded-full border border-black/5 bg-background/95 text-[#3d3b35] opacity-70 shadow-sm">
+          <Heart className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.8} />
+        </Button>
+      </div>
+      <div className="px-1 pb-1 pt-4">
+        <h2 className="font-accent text-[1.25rem] font-bold leading-tight tracking-[-0.025em] text-foreground">{horse.name || "Your horse"}</h2>
+        {pedigree ? <p data-horse-pedigree className="mt-1 truncate text-xs leading-relaxed text-muted-foreground" title={pedigree}>{pedigree}</p> : null}
+        <p className="mt-2 truncate text-[0.82rem] font-medium leading-relaxed text-foreground/80">{discipline}{level ? ` · ${level}` : ""}</p>
+        {details ? <p className="mt-1 truncate text-[0.78rem] leading-relaxed text-muted-foreground">{details}</p> : null}
+        <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.02em] text-secondary">View horse <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></span>
+      </div>
+    </article>
+  );
+}
+
 export default function BrowseHorseGrid({
   currentUserId,
   horses,
