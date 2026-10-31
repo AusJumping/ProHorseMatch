@@ -16,6 +16,7 @@ import { createAuthToken, verifyAuthToken } from "./authToken";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail, sendVerificationReminderEmail } from "./emailService";
 import { codeMatches, AttemptLimiter } from "./verificationCode";
 import { buildHorsePage, robotsTxt, sitemapXml } from "./seoPages";
+import { createAdminGuard } from "./adminPermissions";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
@@ -1126,6 +1127,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
   
+  // Everything under /api/admin, plus the test and reminder helpers, is for the administrator only.
+  // Before this guard, several destructive routes (delete all horses, reset or rebuild the
+  // database) only checked "is a seller", and every user is a seller during the beta, and the
+  // test/reminder helpers needed no login at all. The guard runs first, so it also protects any
+  // admin route added later.
+  const requireAdministrator = createAdminGuard(storage, isTokenAuthenticated);
+  app.use("/api/admin", requireAdministrator);
+  app.use("/api/test", requireAdministrator);
+  app.use("/api/reminders/check-conversations", requireAdministrator);
+
   // Self-service account deletion (required by the App Store and Google Play).
   // Only ever acts on the logged-in user's own account, and needs their password.
   app.delete("/api/account", isTokenAuthenticated, async (req: any, res: Response) => {
@@ -1955,6 +1966,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Get horse error:", error);
       return res.status(500).json({ message: "Failed to get horse" });
     }
+  });
+
+  // Which version is running (Render sets RENDER_GIT_COMMIT). Public and harmless; lets a deploy be confirmed.
+  app.get("/api/build-info", (_req, res) => {
+    res.set("Cache-Control", "no-cache").json({ commit: (process.env.RENDER_GIT_COMMIT || "unknown").slice(0, 7) });
   });
 
   // Public, crawler-readable pages for search engines and AI tools (see server/seoPages.ts).
