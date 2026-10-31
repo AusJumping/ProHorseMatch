@@ -16,17 +16,17 @@ const horse = {
   disciplines: ["showjumping"], levels: ["1.10m"], breeds: ["warmblood"], age: 8,
   height_hands: 16.2, height_cm: null, sex: "Gelding", colour: "Bay",
   sire: "Massimo Quality", dam: "Weinfee", dam_sire: null,
-  price_min: 50000, price_max: 50000, currency: "AUD",
+  price_min: 50000, price_max: 75000, currency: "AUD",
   description: "First paragraph.\n\nSecond paragraph with <b>tags</b> & symbols.",
   photos: ["https://res.cloudinary.com/x/image/upload/v1/horse.jpg"],
   created_at: new Date("2026-05-01T00:00:00Z"),
 };
 
-test("page has the listing's name, details and price in plain HTML", () => {
+test("page has the listing's name and details in plain HTML", () => {
   const html = seo.buildHorsePage(template, horse, BASE);
   assert.match(html, /<title>Finch Farm Whitaker \| 8yo Warmblood gelding for sale \| Pro Horse Match<\/title>/);
   assert.match(html, /<h1>Finch Farm Whitaker<\/h1>/);
-  for (const text of ["16.2hh", "Bay", "Gelding", "Warmblood", "Showjumping", "1.10m", "Massimo Quality", "Weinfee", "Australia", "A$50,000"]) {
+  for (const text of ["16.2hh", "Bay", "Gelding", "Warmblood", "Showjumping", "1.10m", "Massimo Quality", "Weinfee", "Australia"]) {
     assert.ok(html.includes(text), `missing ${text}`);
   }
   assert.match(html, /<link rel="canonical" href="https:\/\/prohorsematch.com\/horse\/118" \/>/);
@@ -40,14 +40,12 @@ test("the app itself is untouched: script, root and loader are still there", () 
   assert.equal((html.match(/<title>/g) || []).length, 1);
 });
 
-test("structured data is valid JSON with price and properties", () => {
+test("structured data is valid JSON with the listing's properties and no price", () => {
   const html = seo.buildHorsePage(template, horse, BASE);
   const json = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1];
   const data = JSON.parse(json);
   assert.equal(data["@type"], "Product");
-  assert.equal(data.offers["@type"], "Offer");
-  assert.equal(data.offers.price, 50000);
-  assert.equal(data.offers.priceCurrency, "AUD");
+  assert.equal(data.offers, undefined);
   assert.ok(data.additionalProperty.some(p => p.name === "Height" && p.value === "16.2hh"));
   assert.deepEqual(data.image, ["https://res.cloudinary.com/x/image/upload/v1/horse.jpg"]);
 });
@@ -61,15 +59,12 @@ test("seller text is escaped, so it can never inject markup or break the JSON", 
   assert.equal(JSON.parse(json).name, evil.name);
 });
 
-test("price wording: range, no maximum, unpriced", () => {
-  assert.equal(seo.priceText({ price_min: 20000, price_max: 40000, currency: "AUD" }), "A$20,000 to A$40,000");
-  assert.equal(seo.priceText({ price_min: 20000, price_max: 999999999, currency: "NZD" }), "NZ$20,000");
-  assert.equal(seo.priceText({ price_min: 0, price_max: 30000, currency: "AUD" }), "up to A$30,000");
-  assert.equal(seo.priceText({ price_min: 0, price_max: 0, currency: "AUD" }), null);
-  const range = seo.structuredData({ ...horse, price_min: 20000, price_max: 40000 }, BASE);
-  assert.equal(range.offers["@type"], "AggregateOffer");
-  assert.equal(range.offers.lowPrice, 20000);
-  assert.equal(seo.structuredData({ ...horse, price_min: 0, price_max: 0 }, BASE).offers, undefined);
+test("price is private: it appears nowhere in the page, its metadata or the structured data", () => {
+  const priced = { ...horse, price_min: 12345, price_max: 67890, currency: "AUD", description: "Lovely horse." };
+  const html = seo.buildHorsePage(template, priced, BASE);
+  for (const leak of ["12345", "12,345", "67890", "67,890", "A$", "Price", "price", "Offer", "priceCurrency"]) {
+    assert.ok(!html.includes(leak), `price leaked as ${leak}`);
+  }
 });
 
 test("a sparse listing still builds without errors", () => {

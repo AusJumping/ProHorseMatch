@@ -1,5 +1,9 @@
 // Public, crawler-readable versions of horse listing pages.
 //
+// PRICE IS DELIBERATELY NEVER INCLUDED. Sellers enter a price range only so buyers can filter;
+// it is private (owner-only in the app, and never in search results, share previews or
+// structured data). Do not add price back to anything in this file.
+//
 // The app is a single-page React app, so a search engine or AI tool that does not run
 // JavaScript only ever saw an empty shell. These helpers put each listing's details into the
 // page HTML itself (title, description, structured data and plain text). React still takes
@@ -22,15 +26,10 @@ type HorseLike = {
   sire?: string | null;
   dam?: string | null;
   dam_sire?: string | null;
-  price_min?: number | null;
-  price_max?: number | null;
-  currency?: string | null;
   description?: string | null;
   photos?: string[] | null;
   created_at?: Date | string | null;
 };
-
-const NO_MAX_PRICE = 999999999;
 
 export function escapeHtml(value: unknown): string {
   return String(value ?? "")
@@ -53,23 +52,6 @@ function jsonForScript(data: unknown): string {
 function words(value: string): string {
   const cleaned = value.replace(/[_-]+/g, " ").trim();
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-}
-
-const CURRENCY_SYMBOLS: Record<string, string> = { AUD: "A$", NZD: "NZ$", USD: "US$", EUR: "€", GBP: "£" };
-
-function money(amount: number, currency: string): string {
-  const symbol = CURRENCY_SYMBOLS[currency] ?? `${currency} `;
-  return `${symbol}${amount.toLocaleString("en-AU")}`;
-}
-
-export function priceText(horse: HorseLike): string | null {
-  const min = horse.price_min ?? 0;
-  const max = horse.price_max ?? 0;
-  const currency = (horse.currency || "AUD").toUpperCase();
-  if (min <= 0 && (max <= 0 || max >= NO_MAX_PRICE)) return null;
-  if (max >= NO_MAX_PRICE || max === min || max <= 0) return money(min, currency);
-  if (min <= 0) return `up to ${money(max, currency)}`;
-  return `${money(min, currency)} to ${money(max, currency)}`;
 }
 
 function heightText(horse: HorseLike): string | null {
@@ -106,7 +88,6 @@ function facts(horse: HorseLike): Array<[string, string]> {
   add("Dam", horse.dam);
   add("Dam sire", horse.dam_sire);
   add("Location", horse.location_country);
-  add("Price", priceText(horse));
   return rows;
 }
 
@@ -128,17 +109,12 @@ export function pageDescription(horse: HorseLike): string {
   if (discipline) bits.push(discipline);
   if (horse.levels?.length) bits.push(horse.levels[0]);
   if (horse.location_country) bits.push(horse.location_country);
-  const price = priceText(horse);
-  if (price) bits.push(price);
   const text = `${bits.filter(Boolean).join(", ")}. Horse for sale on ${SITE_NAME}.`;
   return text.length > 300 ? `${text.slice(0, 297)}...` : text;
 }
 
 export function structuredData(horse: HorseLike, baseUrl: string): object {
   const url = `${baseUrl}/horse/${horse.id}`;
-  const currency = (horse.currency || "AUD").toUpperCase();
-  const min = horse.price_min ?? 0;
-  const max = horse.price_max ?? 0;
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -146,19 +122,10 @@ export function structuredData(horse: HorseLike, baseUrl: string): object {
     category: "Horse",
     description: pageDescription(horse),
     url,
-    additionalProperty: facts(horse)
-      .filter(([label]) => label !== "Price")
-      .map(([name, value]) => ({ "@type": "PropertyValue", name, value })),
+    additionalProperty: facts(horse).map(([name, value]) => ({ "@type": "PropertyValue", name, value })),
   };
   const photos = (horse.photos ?? []).filter(Boolean).slice(0, 6).map(p => absoluteUrl(p, baseUrl));
   if (photos.length) data.image = photos;
-
-  if (min > 0 || (max > 0 && max < NO_MAX_PRICE)) {
-    const hasRange = max > min && max < NO_MAX_PRICE && min > 0;
-    data.offers = hasRange
-      ? { "@type": "AggregateOffer", priceCurrency: currency, lowPrice: min, highPrice: max, availability: "https://schema.org/InStock", url }
-      : { "@type": "Offer", priceCurrency: currency, price: min > 0 ? min : max, availability: "https://schema.org/InStock", url };
-  }
   return data;
 }
 
