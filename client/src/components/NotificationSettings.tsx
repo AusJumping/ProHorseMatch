@@ -66,6 +66,7 @@ export function NotificationSettings() {
   const { data: status } = useQuery<{ 
     subscribed: boolean; 
     count: number;
+    nativeDevices?: number;
     preferences?: {
       notify_matches: boolean;
       notify_messages: boolean;
@@ -361,14 +362,16 @@ export function NotificationSettings() {
           <div className="flex-1">
             <p className="text-sm font-medium">
               {isNativeApp
-                ? 'App notification settings'
+                ? (status?.nativeDevices ? 'Notifications are on' : 'Notifications are off for this app')
                 : isSubscribed
                   ? 'Notifications enabled on this device'
                   : 'Notifications not enabled in this browser'}
             </p>
             <p className="text-sm text-muted-foreground">
               {isNativeApp
-                ? "Check your phone's settings for this app"
+                ? (status?.nativeDevices
+                    ? "You'll get alerts for new matches, messages and listing updates. Switch off any you don't want below."
+                    : "Allow notifications for Pro Horse Match in your phone's settings, then reopen the app.")
                 : isSubscribed
                   ? "This browser is subscribed to push notifications"
                   : status?.subscribed

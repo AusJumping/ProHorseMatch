@@ -2392,10 +2392,15 @@ export class DatabaseStorage implements IStorage {
     notify_updates?: boolean;
     notify_digest?: boolean;
   }): Promise<void> {
+    // The same switches apply to browser subscriptions and to phones running the app
     await db
       .update(pushSubscriptions)
       .set(preferences)
       .where(eq(pushSubscriptions.user_id, userId));
+    await db
+      .update(deviceTokens)
+      .set(preferences)
+      .where(eq(deviceTokens.user_id, userId));
   }
   
   // Login tracking and analytics methods

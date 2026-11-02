@@ -18,6 +18,7 @@ import { codeMatches, AttemptLimiter } from "./verificationCode";
 import { buildHorsePage, robotsTxt, sitemapXml } from "./seoPages";
 import { createAdminGuard } from "./adminPermissions";
 import { horsePrivacyFor, viewerIdFromRequest } from "./horsePrivacy";
+import { summariseNotificationStatus } from "./notificationPrefs";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
@@ -5682,19 +5683,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.userId;
       const subscriptions = await storage.getPushSubscriptionsByUserId(userId);
-      
-      const preferences = subscriptions[0] ? {
-        notify_matches: subscriptions[0].notify_matches ?? true,
-        notify_messages: subscriptions[0].notify_messages ?? true,
-        notify_updates: subscriptions[0].notify_updates ?? true,
-        notify_digest: subscriptions[0].notify_digest ?? true
-      } : undefined;
-      
-      return res.json({ 
-        subscribed: subscriptions.length > 0,
-        count: subscriptions.length,
-        preferences
-      });
+      const devices = await storage.getDeviceTokensByUserId(userId);
+      return res.json(summariseNotificationStatus(subscriptions, devices));
     } catch (error) {
       console.error("Push status error:", error);
       return res.status(500).json({ 
