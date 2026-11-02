@@ -15,7 +15,7 @@ import type { Horse, Match } from "@shared/schema";
 export default function Favorites() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [favoriteHorses, setFavoriteHorses] = useState<Horse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,6 +49,11 @@ export default function Favorites() {
   });
 
   useEffect(() => {
+    // Wait until the app has finished checking who is logged in. Redirecting before that sent
+    // genuinely logged-in people to the login page (for example when Favourites was the first
+    // screen opened after the app started).
+    if (authLoading) return;
+
     // Try to load user data from localStorage if not authenticated through session
     let currentUser = user;
     if (!isAuthenticated && isLoading) {
@@ -93,7 +98,7 @@ export default function Favorites() {
       setFavoriteHorses(likedHorses);
       setIsLoading(false);
     }
-  }, [matches, horses, matchesLoading, horsesLoading, isAuthenticated, user, navigate, toast, isLoading]);
+  }, [matches, horses, matchesLoading, horsesLoading, isAuthenticated, authLoading, user, navigate, toast, isLoading]);
 
   const handleRemoveFromFavorites = async (horseId: number) => {
     try {
