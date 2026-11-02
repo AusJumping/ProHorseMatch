@@ -3,7 +3,8 @@ import { getMessaging, type Messaging } from 'firebase-admin/messaging';
 
 let messaging: Messaging | null = null;
 
-const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+const serviceAccountJson = process.env.REDESIGN_SANDBOX === "true"
+  ? undefined : process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
 if (!serviceAccountJson) {
   console.error('FIREBASE_SERVICE_ACCOUNT_KEY is not configured - native push notifications are disabled');

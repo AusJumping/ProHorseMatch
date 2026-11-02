@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ProHorseMatch — behaviour and price-visibility audit</title>
+<style>
+body{margin:0;background:#f5f4f0;color:#242424;font:17px/1.65 system-ui,sans-serif}main{max-width:960px;margin:auto;padding:38px 22px 80px}h1{font-size:32px;line-height:1.2}h2{font-size:24px;margin-top:38px}h3{font-size:20px}li{margin:10px 0}a{color:#274b68}section,.notice{background:white;padding:22px 28px;border-radius:12px;margin:20px 0}.notice{border-left:5px solid #cdac6e}table{border-collapse:collapse;width:100%;font-size:15px}th,td{text-align:left;vertical-align:top;padding:12px 8px;border-bottom:1px solid #deddd8}th{background:#efeee9}.label{font-weight:700}code{overflow-wrap:anywhere}nav a{display:inline-block;margin-right:14px}@media(max-width:600px){section,.notice{padding:16px}table{font-size:14px}th,td{padding:8px 5px}}
+</style>
+<main>
+<h1>ProHorseMatch: behaviour to protect during the redesign</h1>
+<p>Source-code audit of the <strong>redesign workspace</strong>, 23 October 2026. This is a plain-English inventory of explicit rules found in the routed screens, server routes, data checks and outgoing-message templates. It is not a claim that every route has passed a signed-in end-to-end test, or that the live site has been tested.</p>
+<div class="notice"><strong>No access, ownership or subscription rules were changed for this audit.</strong> “Server enforced” means the server checks it. “Screen only” means the interface hides or disables something, but the same protection was not found consistently on the server. Existing gaps are listed separately; they must not be mistaken for intentional product rules.</div>
+<nav><a href="#accounts">Accounts</a><a href="#listings">Listings</a><a href="#buyers">Buyers</a><a href="#messages">Messages</a><a href="#plans">Plans</a><a href="#prices">Price findings</a><a href="#gaps">Protection gaps</a><a href="#test">Test-site setup</a></nav>
+
+<section id="accounts"><h2>1. Accounts, visitors and identity</h2><ol>
+<li><strong>Visitors can browse and filter listings and open a horse’s detail page without signing in.</strong> The listing-reading endpoints are public. Public horse pages also contain search-engine/share-preview information.</li>
+<li>Visitors can open sign-in, registration, verification, password-recovery, help, privacy, unsubscribe and account-deletion information pages. Private actions still require sign-in.</li>
+<li>Registration requires the registration fields to pass validation, an unused email address and acceptance of the terms. Usernames are constrained to 3–20 characters; the seller-registration form also requires business/contact names.</li>
+<li>Ordinary login requires a correct email/password and a verified email address. <strong>Existing exception:</strong> the server skips the verification requirement for addresses containing <code>@example.com</code>.</li>
+<li>The main beta-registration flow currently gives people both searching and selling roles. Verification/beta activation also supports that combined beta access. An account can hold both roles; a seller is not automatically prohibited from buying someone else’s horse.</li>
+<li>Users can change their own searching/selling role settings. They cannot update someone else’s role settings through the checked account route, and explicitly turning both roles off is rejected.</li>
+<li>Users can update their own buyer preferences; the route checks the account belongs to the signed-in user.</li>
+<li>Verification and password-recovery links/codes must be valid and unexpired. Password recovery does not allow someone to reset an arbitrary account merely by providing its email. Login supports legacy passwords and upgrades a successful legacy login to a hash.</li>
+<li>Users can log out. The inactivity-logout hook is currently disabled: inactivity alone does not deliberately sign them out. Authentication credentials can still expire or become invalid.</li>
+<li>Account deletion requires sign-in and the account’s current password. It deletes the signed-in account’s associated data and attempts to clean up its uploaded media. The designated administrator account cannot delete itself through the ordinary self-service deletion route.</li>
+<li>Administrator status is currently recognised through one designated email address, not through a general editable “admin” role. Ordinary accounts must not acquire administrator controls in the redesign.</li>
+</ol></section>
+
+<section id="listings"><h2>2. Creating, owning and managing horses</h2><ol>
+<li><strong>Creating a horse requires sign-in and selling permission.</strong> The server uses the signed-in seller as the owner; it rejects an attempt to create a horse for a different owner.</li>
+<li>Updating a horse through the ordinary listing route requires selling permission and ownership. The designated administrator has a separate override. The ordinary update route preserves the existing listing ID and owner ID.</li>
+<li>Deleting through the ordinary listing route requires selling permission and ownership. A seller cannot delete another seller’s horse. Administrators have a separate checked route for deleting any horse.</li>
+<li>“My Horses” is backed by the signed-in user’s own listings. It must not become a screen for editing another seller’s horses just because their profile can be viewed.</li>
+<li>The delete-listing screen asks whether the horse sold through the app, sold elsewhere or remains unsold; it enables confirmation after a response is selected. The server records those answers but does not enforce exactly the same selection requirement. Failure to store the survey does not intentionally prevent the horse being deleted.</li>
+<li>Sellers enter a minimum and maximum price and a currency for filtering. Seller forms check price limits and ordering. This is not permission to publish that range to buyers.</li>
+<li>The listing includes required identity/location, discipline/level/breed, age, sex, colour, price-filter values and photos. Pedigree, description, extra information, education and videos can be supplied. “Young horse” height is converted to an empty numeric height on storage.</li>
+<li>The current create-listing interface allows up to <strong>four photos</strong>. It supports ordering/removing media. This is why four photographs per sample listing fit the existing interface without changing a rule.</li>
+<li>Uploaded images/videos require a signed-in account on the Cloudinary routes. Images have a 5 MB check; videos have a 500 MB limit. Accepted upload types are images/videos, not arbitrary documents.</li>
+<li>Creating a listing can notify users with matching saved searches. Editing a listing can notify people who favourited it. A notification failure does not intentionally roll back the listing change.</li>
+<li>The social-promotion choice belongs to listing submission. A redesign must preserve the seller’s explicit choice rather than quietly opting everyone in.</li>
+</ol></section>
+
+<section id="buyers"><h2>3. Searching, favourites and saved searches</h2><ol>
+<li>Buyers can combine the existing filters: discipline, level, breed, sex, country, age, height, price budget, sire and dam sire. Retain the existing search behaviour, rather than changing the matching logic during styling.</li>
+<li>Budget controls and a buyer’s saved budget may show the buyer’s <strong>own search criteria</strong>. They must not reveal an individual horse’s seller-entered range.</li>
+<li>Signing in is required to save/un-save a favourite. Being a seller does not prevent saving somebody else’s horse. The server does not impose a paid-plan requirement on favourites.</li>
+<li>A favourite must be created for the signed-in user, not another user. Repeating the action for the same horse updates the existing match instead of deliberately creating another one.</li>
+<li>A user can read their own favourite records and can only update a favourite record they own. Updating their own record must not alter someone else’s favourites.</li>
+<li><strong>Owner self-actions are inconsistent today:</strong> the horse-detail screen hides Favourite and Contact Seller when the listing belongs to the current user. The new browse heart and the favourite-creation server route do not consistently enforce that same own-horse restriction. Do not describe “cannot favourite own horse” as fully protected yet.</li>
+<li>Creating, reading, editing or deleting saved searches requires sign-in. New searches are assigned to the signed-in user; editing/deleting checks existing ownership.</li>
+<li>A saved search retains its filters and notification preference. Disabling notifications is distinct from deleting the saved search or its filter criteria.</li>
+<li>No consistently enforced paid-plan limit on searching, favourites or saved-search count was found in those routes. Do not invent a new restriction while redesigning their controls.</li>
+</ol></section>
+
+<section id="messages"><h2>4. Contact, conversations, blocking and reporting</h2><ol>
+<li>Contacting a seller from a horse page requires sign-in. The detail screen hides that action for the listing owner.</li>
+<li>Reading the messages for a specified buyer/seller/horse conversation requires the signed-in user to be one of its two participants. Conversation-list responses are scoped to the current user.</li>
+<li>Sending a message requires the buyer ID, seller ID, horse ID and non-blank content. The signed-in sender must match the supplied buyer or seller ID. Sender type is determined from that identity.</li>
+<li>If the two parties are blocked, the send-message route refuses the message. The restriction is not a subscription feature.</li>
+<li>Messaging is organised by buyer, seller and horse. Starting a new conversation and sending a message are separate routes; their enforcement is not identical (see gaps).</li>
+<li>A participant can mark a conversation read. That route marks messages received by that user, not the messages that user sent. Individual-message read access also checks participation.</li>
+<li>A participant can delete a conversation and its associated messages. The current implementation does not treat this as merely hiding the thread for that participant.</li>
+<li>The app tracks unread messages. New-conversation and subsequent-message emails use different templates; reminder timing and unsubscribes affect notification sending.</li>
+<li>A signed-in user can block/unblock another account and list their own blocked IDs. Blocking oneself is rejected.</li>
+<li>A signed-in user can report a listing, user or message with a reason and optional details. Report review/status management belongs to the designated administrator.</li>
+<li>There is no reliable server-wide self-contact prohibition or complete verification that supplied conversation parties match the horse’s actual owner. This is a protection gap, not permission for the redesigned interface to encourage self-contact.</li>
+</ol></section>
+
+<section id="plans"><h2>5. Free beta, paid plans and payments</h2><ol>
+<li><strong>The current normal product is the free beta.</strong> Beta activation requires sign-in, takes a beta-plan identifier, marks the local subscription active and enables both searching and selling. No card/payment is required for beta activation.</li>
+<li>The beta interface advertises unlimited searching and listing, favourites, seller contact and notifications. Creating a listing, sending messages, favouriting and saved searches do not consistently check payment status.</li>
+<li>The Searching, Selling and Unlimited paid plans are marked <strong>Coming Soon</strong>. The future Selling plan advertises a three-horse limit; that is not a listing cap currently enforced by the create-listing route.</li>
+<li>Subscription status belongs to the signed-in account. When configured, paid subscriptions use Stripe; beta/no-Stripe status can be read from local account data.</li>
+<li>There are existing subscription creation, confirmation, webhook and cancellation paths. Cancellation can be scheduled for period-end. Styling must not silently activate billing or change an account’s cancellation behaviour.</li>
+<li>Native-store payment gates and unavailable-payment screens are distinct from web payment controls. The redesign sandbox deliberately disables payment integrations.</li>
+<li>A legacy horse-checkout route still treats the horse’s minimum price as a purchase amount and has a payment-success page. This conflicts with the owner’s filter-only pricing requirement and must not be presented as an approved buyer journey.</li>
+<li>App subscription fees and voluntary donations are <strong>not horse prices</strong>. Removing horse-price disclosure does not imply removing the app’s own transparent payment information.</li>
+</ol></section>
+
+<section><h2>6. Notifications, preferences and administrator tools</h2><ol>
+<li>Browser push subscription and native-device registration require sign-in. Native registration accepts iOS or Android and requires a token.</li>
+<li>Users can unsubscribe devices, inspect their notification status and set their own notification preferences. Operating-system/browser permission is still needed for delivery.</li>
+<li>Email unsubscribe requests are distinct from browser push permissions. Message email handling checks unsubscribe status; the app also has reminder and announcement flows.</li>
+<li>Checked administrator routes allow listing oversight, user/revenue/login/deletion analytics, user management, report review and bulk notification/reminder administration. Ordinary buyers/sellers should not receive these controls.</li>
+<li>Administrator horse edit/delete uses the checked administrator paths, not ordinary buyer ownership. Do not remove those management abilities just to make an ordinary buyer preview appear correct.</li>
+<li>Some older routes with “admin” names actually check only sign-in or selling status, and several test/reminder routes lack the expected administrator gate. Their names are not evidence of protection. They are flagged below, not reclassified as safe public features.</li>
+<li>The redesign launcher requires the separate named Neon test database and the redesign branch, strips outgoing-service/payment credentials and explicitly disables outbound email/push. It does not intentionally run against a live fallback database.</li>
+</ol></section>
+
+<section id="prices"><h2>7. Every horse-price disclosure found in the inspected application paths</h2>
+<p><strong>These are findings before any further price-removal changes in this audit.</strong> Public HTML, data responses and share metadata matter even if a React screen hides a number.</p>
+<table><thead><tr><th>Where</th><th>Who can see it / current finding</th></tr></thead><tbody>
+<tr><td>Older reusable HorseCard — latent risk, not a confirmed active buyer screen</td><td>A price-range badge is not owner-gated inside the component. Current call sites are the owner’s My Horses screen and an older SwipeSection component that was not found mounted in the routed app. The current Favourites screen does not use this card. Reusing it in a new buyer screen would expose prices unless guarded.</td></tr>
+<tr><td>Public horse-page HTML</td><td>The server’s non-JavaScript facts table includes “Price”. Logged-out visitors, crawlers and page-source readers can receive it before React replaces the page.</td></tr>
+<tr><td>Search descriptions / share previews</td><td>The server’s page description includes the range. That description feeds search/social metadata, so a shared listing can disclose it away from the app.</td></tr>
+<tr><td>Search-engine structured data</td><td>Product “Offer” / “AggregateOffer” fields contain the price or low/high range and currency. This is public machine-readable disclosure.</td></tr>
+<tr><td>New-listing notification emails</td><td>Both HTML and plain-text templates include “Price”; listing creation passes the horse’s range into that email. Recipients are not necessarily the owner.</td></tr>
+<tr><td>Public listing data</td><td>Public listing-list and single-listing responses currently return complete horse records, including price_min and price_max. The values reach a non-owner’s browser even if not drawn on screen.</td></tr>
+<tr><td>Administrator horse-management table</td><td>Administrators can see a listing’s price range even when not its owner. This is a non-owner disclosure, separate from the normal buyer interface.</td></tr>
+<tr><td>Legacy horse checkout / payment success</td><td>The checkout displays the minimum as the purchase price and on its Pay button. The success screen displays an amount from its URL. These routes are payment-config dependent and disabled in the redesign sandbox, but remain in the source.</td></tr>
+<tr><td>Payment-provider metadata</td><td>The legacy payment-intent route copies both horse-price bounds into payment-provider metadata. This is not an ordinary buyer price label, but still sends those values outside the owner’s listing editor.</td></tr>
+</tbody></table>
+<h3>Places already restricted or not found to disclose a horse’s price automatically</h3><ul>
+<li>The current redesigned browse grid and style-preview card no longer print a horse price.</li>
+<li>The current Favourites screen uses its own price-free markup, not the older HorseCard.</li>
+<li>The horse-detail price block is explicitly owner-only.</li>
+<li>Owner listing-entry/edit fields are appropriate places for the owner to enter/review the filtering range.</li>
+<li>Buyer budget filters, saved-search budget summaries and currency settings show search criteria, not an individual listing’s private range.</li>
+<li>No automatic horse-price insertion was found in the message screen, ordinary message/conversation emails or push templates. A user can still type a price into their own free-text message or listing description; preventing arbitrary user-entered numbers would be a new content-moderation rule.</li>
+<li>“Price updated” push wording exists, but does not itself include a numeric range.</li>
+</ul><p>The live site was not changed or queried for private data. This source audit identifies paths that could disclose prices; which legacy paths are operational on a particular deployment also depends on its configuration.</p>
+</section>
+
+<section id="gaps"><h2>8. Existing protection gaps — do not hide these behind a visual redesign</h2><ul>
+<li><strong>Own-horse favourites/contact:</strong> screen-only or inconsistent checks, not a reliable server-wide prohibition.</li>
+<li><strong>Conversation creation:</strong> the creation route does not repeat the participant, blocking and horse-owner checks used elsewhere. Message sending also trusts supplied participant relationships more than it should.</li>
+<li><strong>Editable record identity:</strong> some updates check the existing record owner but pass broader request fields onward. This includes favourite/saved-search updates and customer preference updates; field-level restrictions need a dedicated review rather than an assumption.</li>
+<li><strong>Legacy administrative/test helpers:</strong> some broad data operations are gated only by seller status; some sample/notification/reminder helpers do not have the expected sign-in/admin checks. Do not exercise these against live data.</li>
+<li><strong>Media ownership:</strong> authenticated image deletion checks a supplied media identifier without consistently proving it belongs to the signed-in owner.</li>
+<li><strong>Account security:</strong> legacy plaintext handling, a development-email verification exception, sensitive request logging and permissive input paths deserve a separate hardening review.</li>
+<li><strong>Paid-tier differences:</strong> marketing promises and current enforcement are not the same. Do not add a paywall or horse cap as an incidental design change.</li>
+<li><strong>Test discoverability:</strong> the existing public SEO helpers use live-style canonical/sitemap behaviour. The test deployment needs an explicit no-index policy before expanding realistic sample data.</li>
+</ul>
+<p>This is a source-level behaviour audit, not a completed security scan or proof of exploitability. None of these observations authorises an unrelated change to the live site. The redesign should preserve legitimate workflows while fixes to gaps are explicitly agreed and tested.</p>
+</section>
+
+<section id="test"><h2>9. Test accounts, sample-data requirements and preview policy</h2>
+<p>The current sandbox seeder already defines a separate buyer and seller (<code>buyer@redesign.invalid</code> and <code>seller@redesign.invalid</code>) and three seller-owned placeholder listings. Code definitions alone do not prove current remote account access or the deployed dataset.</p>
+<ul>
+<li>Use only <code>https://prohorsematch-redesign.onrender.com</code>. Check its sandbox-status response before any account/listing write. Never fall back to the live URL/database.</li>
+<li>Confirm both accounts through normal authentication, with separate account IDs. All prepared sample horses must be owned by the test seller; use no personal-account horses as examples.</li>
+<li>Prepare 8–10 realistic fictional horses with plain names; vary Jumping, Dressage and Eventing, levels, ages, heights, sexes, colours, filtering budgets and Australian states. State/city detail can live in the listing information: the existing schema has a country field but no separate Australian-state field.</li>
+<li>Use four licensed real-horse photographs for each listing, within the current create-form photo limit. Record source pages, photographer/attribution where available and the source licence. Photos illustrate fictional listings; they do not imply the photographed animals are actually for sale.</li>
+<li>Some horses should have all or part of their pedigree, and others no pedigree. Show only supplied details, with no empty pedigree section.</li>
+<li>Keep outbound email, push, payment and external uploads disabled. Keep test data out of live feeds, indexing and production seed paths.</li>
+<li>From now on, show actual application designs while normally signed in as the test buyer. A static specimen or mocked fixture is not evidence that a buyer’s real permissions work.</li>
+</ul>
+<p><strong>Pending verification:</strong> signed-in remote account checks and sample setup require the existing test-account password through secure secret entry. No live-account credentials or live database connection are needed.</p>
+</section>
+
+<section><h2>10. Source trail and release check</h2>
+<p>Reviewed: server route registration and authentication/ownership checks; shared account/listing/search validation; account deletion; listing/search/matching behaviour; free-beta and future paid-plan presentation; buyer listing, favourites, messaging, owner editing and administrator screens; email/push templates; server-rendered SEO/share helpers; redesign launcher/seeding protections.</p>
+<p>Key source locations: <code>server/routes.ts</code>, <code>server/storage.ts</code>, <code>server/seoPages.ts</code>, <code>server/emailService.ts</code>, <code>server/pushNotifications.ts</code>, <code>shared/schema.ts</code>, <code>client/src/App.tsx</code>, <code>client/src/components/HorseCard.tsx</code>, <code>client/src/components/browse/</code>, <code>client/src/pages/horse-detail.tsx</code>, <code>client/src/pages/subscription.tsx</code>, <code>client/src/pages/checkout.tsx</code>, <code>scripts/redesign-safety.mjs</code> and <code>scripts/redesign-data.ts</code>.</p>
+<p>Before rollout, test logged-out, test-buyer and test-seller paths separately: read/search; save/un-save; self-actions; contact/reply/read/delete; edit/delete ownership; saved searches; partial/missing pedigree; absence of listing prices in rendered screens, HTML/metadata, emails and non-owner responses; test-only media/data; outgoing-message suppression. Administrator checks must use a separately authorised test administrator, never a personal live account.</p>
+</section>
+</main></html>

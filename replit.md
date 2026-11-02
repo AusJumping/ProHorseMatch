@@ -1,3 +1,22 @@
+# Redesign isolation — standing project instruction
+
+All new redesign work belongs on the `redesign` branch. Do not push to `main`,
+merge into `main`, or change the existing Render service, live database or
+prohorsematch.com without explicit release approval.
+
+**Why:** The owner wants major visual/usability work isolated from the live site.
+
+Use a separate Render service and a NEW empty Neon project/database with fictional
+data only. Use `npm run redesign:start` on Render and `npm run dev` for the workspace
+preview; both require the separate test database and strip outbound-service credentials.
+Never bypass the sandbox launcher's refusal to start by substituting a live
+DATABASE_URL or running the production startup command for redesign development.
+
+Setup, demo accounts, limitations and the safe merge checklist are documented in
+`docs/redesign-render.md`. Test setup remains pending until the owner supplies the
+new test database settings; never describe the Render test service as created
+merely because the branch and scripts exist.
+
 # ProHorseMatch
 
 ## Overview

@@ -1,5 +1,6 @@
 import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { paymentsAvailable, stripePromise } from '@/lib/payments';
+import { PaymentsUnavailable } from '@/components/PaymentsUnavailable';
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import Layout from '@/components/Layout';
@@ -9,12 +10,6 @@ import { Loader2, CheckCircle, Heart } from 'lucide-react';
 import { apiRequest } from "@/lib/queryClient";
 import { isNativeApp, NativePaymentGate } from '@/components/NativePaymentGate';
 
-// Make sure to call `loadStripe` outside of a component's render to avoid
-// recreating the `Stripe` object on every render.
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
-}
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 // The checkout form component that uses Stripe Elements
 const DonationCheckoutForm = ({ amount }: { amount: number }) => {
@@ -135,6 +130,10 @@ const DonationCheckoutForm = ({ amount }: { amount: number }) => {
 
 // Main donation checkout page
 export default function DonationCheckout() {
+  return paymentsAvailable ? <EnabledDonationCheckout /> : <PaymentsUnavailable />;
+}
+
+function EnabledDonationCheckout() {
   const [searchParams] = useState(() => new URLSearchParams(window.location.search));
   // Get amount from URL and handle it more safely to avoid parsing errors
   const amountParam = searchParams.get('amount') || '10';

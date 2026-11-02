@@ -10,6 +10,7 @@ import { useIsTouchDevice } from "@/hooks/useIsTouchDevice";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/lib/auth";
+import { ownsHorse } from "@shared/horsePermissions";
 
 interface HorseCardProps {
   horse: Horse;
@@ -77,6 +78,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault(); // Prevent any default behavior
+    if (ownsHorse(user?.id, horse)) return;
     
     // First try to get a current user from localStorage if React Query hasn't loaded it yet
     // This helps with mobile browsers that might have session issues
@@ -242,7 +244,7 @@ const HorseCard = ({ horse, onShowMore, onLike, showFavoriteButton = false, matc
           </Button>
           
           {/* Like button - show when onLike prop is provided */}
-          {onLike && (
+          {onLike && !ownsHorse(user?.id, horse) && (
             <button
               type="button"
               className={`w-10 h-10 flex items-center justify-center rounded-md transition-colors ${

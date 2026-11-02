@@ -4,6 +4,9 @@ import path from "path";
 import runtimeErrorOverlay from "@replit/vite-plugin-runtime-error-modal";
 
 export default defineConfig({
+  preview: {
+    allowedHosts: [".replit.dev"],
+  },
   plugins: [
     react(),
     runtimeErrorOverlay(),

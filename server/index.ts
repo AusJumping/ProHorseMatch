@@ -4,9 +4,22 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+if (process.env.REDESIGN_SANDBOX === "true") {
+  app.use((_req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow, noarchive");
+    res.setHeader("X-ProHorseMatch-Environment", "redesign");
+    next();
+  });
+  app.get("/robots.txt", (_req, res) => res.type("text/plain").send("User-agent: *\nDisallow: /\n"));
+  app.get("/api/redesign-status", (_req, res) => res.json({
+    environment: "redesign", outboundEmail: false, outboundPush: false,
+    payments: false, mediaUploads: false,
+  }));
+}
+
 // Permanent redirect: any replit.app hostname → prohorsematch.com
 app.use((req, res, next) => {
-  if (req.hostname && req.hostname.includes('replit.app')) {
+  if (process.env.REDESIGN_SANDBOX !== "true" && req.hostname && req.hostname.includes('replit.app')) {
     return res.redirect(301, `https://prohorsematch.com${req.originalUrl}`);
   }
   next();

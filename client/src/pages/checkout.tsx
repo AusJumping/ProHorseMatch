@@ -1,5 +1,6 @@
 import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
-import { loadStripe } from '@stripe/stripe-js';
+import { paymentsAvailable, stripePromise } from '@/lib/payments';
+import { PaymentsUnavailable } from '@/components/PaymentsUnavailable';
 import { useEffect, useState } from 'react';
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -8,12 +9,6 @@ import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle } from 'lucide-react';
 
-// Make sure to call `loadStripe` outside of a component's render to avoid
-// recreating the `Stripe` object on every render.
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
-}
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const CheckoutForm = ({ horseId, horsePrice, horseName, horseCurrency }: { horseId: number, horsePrice: number, horseName: string, horseCurrency: string }) => {
   const stripe = useStripe();
@@ -125,6 +120,10 @@ const CheckoutForm = ({ horseId, horsePrice, horseName, horseCurrency }: { horse
 };
 
 export default function Checkout() {
+  return paymentsAvailable ? <EnabledCheckout /> : <PaymentsUnavailable />;
+}
+
+function EnabledCheckout() {
   const [clientSecret, setClientSecret] = useState("");
   const [horseDetails, setHorseDetails] = useState<{id: number, name: string, price: number, currency: string} | null>(null);
   const [location] = useLocation();

@@ -6,6 +6,10 @@ let mailService: MailService | null = null;
 let resend: any = null;
 
 async function initializeEmailService() {
+  if (process.env.REDESIGN_SANDBOX === "true") {
+    console.log("Redesign sandbox: outbound email is disabled.");
+    return;
+  }
   if (process.env.RESEND_API_KEY) {
     const { Resend } = await import('resend');
     resend = new Resend(process.env.RESEND_API_KEY);
