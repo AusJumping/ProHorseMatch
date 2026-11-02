@@ -17,6 +17,7 @@ import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMe
 import { codeMatches, AttemptLimiter } from "./verificationCode";
 import { buildHorsePage, robotsTxt, sitemapXml } from "./seoPages";
 import { createAdminGuard } from "./adminPermissions";
+import { horsePrivacyFor, viewerIdFromRequest } from "./horsePrivacy";
 import { generateVerificationToken, isTokenExpired, createTokenExpiration, createPasswordResetExpiration, generateReminderToken, hashReminderToken, createReminderTokenExpiration } from "./authUtils";
 import { sendNewMatchNotification, sendNewMessageNotification, sendHorseUpdateNotification } from "./pushNotifications";
 import { 
@@ -1913,7 +1914,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const horses = await storage.getHorsesByFilters(filters);
       console.log(`GET /api/horses - returning ${horses.length} horses`);
-      return res.json(horses);
+      // Price ranges are private to the owner (and the administrator)
+      const hidePrivate = await horsePrivacyFor(storage, viewerIdFromRequest(req));
+      return res.json(horses.map(hidePrivate));
     } catch (error) {
       console.error("Get horses error:", error);
       return res.status(500).json({ message: "Failed to get horses" });
@@ -1961,7 +1964,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Horse not found" });
       }
       
-      return res.json(horse);
+      // Price ranges are private to the owner (and the administrator)
+      const hidePrivate = await horsePrivacyFor(storage, viewerIdFromRequest(req));
+      return res.json(hidePrivate(horse));
     } catch (error) {
       console.error("Get horse error:", error);
       return res.status(500).json({ message: "Failed to get horse" });
@@ -4086,6 +4091,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Enhance conversations with horse details and other user info with error handling
+      const hideHorsePrivate = await horsePrivacyFor(storage, userId);
       let conversationsWithDetails;
       try {
         const enhancementPromises = conversations.map(async (conversation) => {
@@ -4133,7 +4139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             return {
               ...conversation,
-              horse: horse || null,
+              horse: horse ? hideHorsePrivate(horse as any) : null,
               otherUser: otherUser ? {
                 id: otherUser.id,
                 username: otherUser.username,
