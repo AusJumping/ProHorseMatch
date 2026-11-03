@@ -132,7 +132,7 @@ export default function BrowseQuickFilters({
           <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
           Refine your search
         </div>
-        <div className="flex w-full flex-nowrap gap-2.5 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Quick horse filters">
+        <div className="flex w-full flex-nowrap gap-1.5 overflow-x-auto overscroll-x-contain pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" aria-label="Quick horse filters">
           {quickDisciplines.map(({ label, value }) => {
             const selected = activeFilters.disciplines.includes(value);
             return (

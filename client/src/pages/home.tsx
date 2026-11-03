@@ -464,7 +464,7 @@ export default function Home() {
       browseMode
     >
       <div className="mx-auto w-full max-w-[1600px] px-4 pb-12 pt-3 sm:px-7 sm:pt-10 lg:px-10">
-        <div className="mb-4 flex flex-col gap-1 sm:mb-9 sm:gap-2">
+        <div className="mb-7 flex flex-col gap-1 sm:mb-9 sm:gap-2">
           <h1 className="font-accent text-2xl font-bold leading-7 text-accent sm:text-[2.65rem] sm:leading-tight">Find your match</h1>
         </div>
 
