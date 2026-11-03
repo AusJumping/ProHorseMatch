@@ -123,11 +123,9 @@ function HorseListing({
               const success = await onToggleSaved(horse.id, saved);
               if (!success) setOptimisticSaved(null);
             }}
-            className={`pointer-events-auto absolute right-4 top-4 h-11 w-11 rounded-full border border-black/5 bg-background/95 shadow-sm transition-transform motion-safe:duration-200 hover:scale-105 hover:bg-background disabled:opacity-60 ${
-              saved ? "text-[#2b2b2b]" : "text-[#3d3b35]"
-            }`}
+            className="pointer-events-auto absolute right-4 top-4 h-11 w-11 rounded-full bg-[#cdac6e] text-white shadow-sm transition-transform motion-safe:duration-200 hover:scale-105 hover:bg-[#b99a5e] hover:text-white disabled:opacity-60"
           >
-            <Heart className={`h-[1.15rem] w-[1.15rem] ${saved ? "fill-[#cdac6e]" : ""}`} strokeWidth={1.8} />
+            <Heart className={`h-[1.15rem] w-[1.15rem] ${saved ? "fill-white" : ""}`} strokeWidth={1.8} />
           </Button> : null}
         </div>
         <div className="px-1 pb-1 pt-4">
@@ -177,7 +175,7 @@ export function BrowseHorsePreview({ horse }: { horse: Horse }) {
       <div className="relative">
         <HorsePhoto horse={horse} />
         <Button type="button" variant="ghost" size="icon" disabled aria-label="Save horse (preview only; no changes will be made)"
-          className="absolute right-4 top-4 h-11 w-11 rounded-full border border-black/5 bg-background/95 text-[#3d3b35] opacity-70 shadow-sm">
+          className="absolute right-4 top-4 h-11 w-11 rounded-full bg-[#cdac6e] text-white opacity-70 shadow-sm">
           <Heart className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.8} />
         </Button>
       </div>

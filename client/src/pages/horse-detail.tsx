@@ -271,8 +271,8 @@ export default function HorseDetail() {
               <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between p-3 pt-[calc(.75rem+env(safe-area-inset-top,0px))]">
                 <button type="button" onClick={handleBack} aria-label="Back to listings" className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-950/50 text-white shadow-sm backdrop-blur-sm transition hover:bg-neutral-950/70"><ArrowLeft className="h-5 w-5" /></button>
                 {isBuyer ? (
-                  <button type="button" onClick={handleSave} aria-label={isSaved ? "Remove from favourites" : "Save to favourites"} aria-pressed={isSaved} className="flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-neutral-800 shadow-sm backdrop-blur-sm transition hover:bg-white">
-                    <Heart className={`h-5 w-5 ${isSaved ? "fill-[#cdac6e] text-[#cdac6e]" : ""}`} />
+                  <button type="button" onClick={handleSave} aria-label={isSaved ? "Remove from favourites" : "Save to favourites"} aria-pressed={isSaved} className="flex h-10 w-10 items-center justify-center rounded-full bg-[#cdac6e] text-white shadow-sm transition hover:bg-[#b99a5e]">
+                    <Heart className={`h-5 w-5 ${isSaved ? "fill-white" : ""}`} />
                   </button>
                 ) : <span className="h-10 w-10" aria-hidden="true" />}
               </div>
