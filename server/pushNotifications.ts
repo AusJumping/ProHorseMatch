@@ -1,3 +1,4 @@
+import { wantsNotification, type NotifyKey } from './notificationPrefs';
 import webpush from 'web-push';
 import { storage } from './storage';
 import { getFirebaseMessaging } from './firebaseAdmin';
@@ -43,7 +44,7 @@ export async function sendPushNotification(
 
     // Browser (web push) subscriptions
     const subscriptions = await storage.getPushSubscriptionsByUserId(userId);
-    const activeSubscriptions = subscriptions.filter(sub => sub[preferenceKey as keyof PushSubscription] === true);
+    const activeSubscriptions = subscriptions.filter(sub => wantsNotification(sub, preferenceKey as NotifyKey));
 
     const webPromises = activeSubscriptions.map(async (subscription) => {
       if (!subscription.endpoint || !subscription.p256dh || !subscription.auth) {
@@ -90,7 +91,7 @@ export async function sendPushNotification(
 
     if (messaging) {
       const deviceTokens = await storage.getDeviceTokensByUserId(userId);
-      const activeDeviceTokens = deviceTokens.filter(d => d[preferenceKey as keyof DeviceToken] === true);
+      const activeDeviceTokens = deviceTokens.filter(d => wantsNotification(d, preferenceKey as NotifyKey));
 
       nativePromises = activeDeviceTokens.map(async (device) => {
         try {
