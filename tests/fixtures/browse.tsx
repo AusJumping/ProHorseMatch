@@ -32,7 +32,7 @@ function Fixture() {
   return (
     <main style={{ maxWidth: 1440, margin: "0 auto", padding: "24px 16px", background: "white" }}>
       <p style={{ fontSize: 12, marginBottom: 20 }}>Component test only · Fictional horses · No database or account access</p>
-      <h1 className="mb-7 font-display text-3xl">Find your next great horse.</h1>
+      <h1 className="mb-7 font-accent text-3xl font-bold">Find your match</h1>
       <BrowseQuickFilters
         activeFilters={filters}
         onDisciplineToggle={(discipline) => setFilters((previous) => ({

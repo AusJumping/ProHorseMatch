@@ -97,7 +97,12 @@ const Layout = ({
         {/* Main Content Area */}
         <main
           className={`flex-1 ${allowStickyContent ? "overflow-visible" : "overflow-auto"} ${browseMode ? "p-0" : "p-4 md:p-6"} ${isMobile ? 'w-full max-w-full' : ''}`}
-          style={isMobile ? { paddingBottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))" } : undefined}
+          style={isMobile ? {
+            paddingBottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))",
+            // The browse screen has no header bar, so keep its content clear of the iPhone status bar
+            // (clock, battery). The inset is 0 on desktop and Android, so nothing changes there.
+            ...(browseMode ? { paddingTop: "env(safe-area-inset-top, 0px)" } : {}),
+          } : undefined}
         >
           {children}
         </main>

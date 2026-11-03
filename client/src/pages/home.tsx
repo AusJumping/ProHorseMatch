@@ -466,7 +466,7 @@ export default function Home() {
       <div className="mx-auto w-full max-w-[1600px] px-4 pb-12 pt-3 sm:px-7 sm:pt-10 lg:px-10">
         <div className="mb-4 flex flex-col gap-1 sm:mb-9 sm:gap-2">
           <p className="font-accent text-[0.6rem] font-bold uppercase tracking-[0.16em] text-secondary sm:text-[0.68rem] sm:tracking-[0.2em]">The collection</p>
-          <h1 className="font-display text-2xl leading-7 text-foreground sm:text-[2.65rem] sm:leading-tight">Find your next great horse.</h1>
+          <h1 className="font-accent text-2xl font-bold leading-7 text-foreground sm:text-[2.65rem] sm:leading-tight">Find your match</h1>
           <p className="max-w-xl text-xs leading-4 text-muted-foreground sm:text-sm sm:leading-6">
             Thoughtfully matched performance horses, ready for what comes next.
           </p>
