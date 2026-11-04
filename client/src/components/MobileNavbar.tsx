@@ -9,6 +9,7 @@ import {
   Home,
   List,
   LogOut,
+  Menu,
   MessageCircle,
   Plus,
   Search,
@@ -70,13 +71,19 @@ const MobileNavbar = () => {
     { label: "Alerts", path: "/saved-searches", icon: Bell, action: () => openPrivateDestination("/saved-searches") },
   ];
 
-  const menuItem = (label: string, path: string, Icon: typeof Home) => (
+  const menuItem = (label: string, path: string, Icon: typeof Home, tone: "normal" | "admin" = "normal") => (
     <Button
       key={path}
       type="button"
       variant="ghost"
       className={`h-12 w-full justify-start rounded-xl px-3 text-left ${
-        location === path ? "bg-[#cdac6e]/15 text-[#705d37]" : "text-[#3c3b37] hover:bg-[#f1efe9]"
+        tone === "admin"
+          ? location === path
+            ? "bg-red-600 text-white hover:bg-red-600 hover:text-white"
+            : "text-red-600 hover:bg-red-50 hover:text-red-600"
+          : location === path
+            ? "bg-[#cdac6e]/15 text-[#705d37]"
+            : "text-[#3c3b37] hover:bg-[#f1efe9]"
       }`}
       onClick={() => visit(path)}
     >
@@ -120,14 +127,15 @@ const MobileNavbar = () => {
             onClick={() => setProfileMenuOpen(true)}
             aria-haspopup="dialog"
             aria-expanded={profileMenuOpen}
+            aria-label="Open menu"
             className={`flex min-h-[3.35rem] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[0.63rem] font-medium tracking-[0.015em] transition-colors ${
-              location === "/profile" || profileMenuOpen ? "text-[#705d37]" : "text-[#77756f] hover:text-foreground"
+              profileMenuOpen ? "text-[#705d37]" : "text-[#77756f] hover:text-foreground"
             }`}
           >
-            <span className={`flex h-6 w-8 items-center justify-center rounded-full ${location === "/profile" || profileMenuOpen ? "bg-[#cdac6e]/20" : ""}`}>
-              <UserRound className="h-[1.15rem] w-[1.15rem]" strokeWidth={1.8} aria-hidden="true" />
+            <span className={`flex h-6 w-8 items-center justify-center rounded-full ${profileMenuOpen ? "bg-[#cdac6e]/20" : ""}`}>
+              <Menu className="h-[1.15rem] w-[1.15rem]" strokeWidth={profileMenuOpen ? 2.2 : 1.8} aria-hidden="true" />
             </span>
-            <span>Profile</span>
+            <span>Menu</span>
           </button>
         </div>
       </nav>
@@ -159,7 +167,7 @@ const MobileNavbar = () => {
                     {menuItem("Add Horse", "/add-horse", Plus)}
                   </>
                 ) : null}
-                {isAdmin ? menuItem("Admin Dashboard", "/admin", Shield) : null}
+                {isAdmin ? menuItem("Admin Dashboard", "/admin", Shield, "admin") : null}
                 {menuItem("Subscription", "/subscription", CreditCard)}
                 <Button
                   type="button"
