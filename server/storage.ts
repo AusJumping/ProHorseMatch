@@ -1693,16 +1693,10 @@ export class DatabaseStorage implements IStorage {
     console.log("DatabaseStorage.getHorsesByFilters - dam_sire filter:", filters.dam_sire);
     
     // Get all horses first and filter in JavaScript for now (simpler approach)
-    const horsesByRecency = await db.select().from(horses).orderBy(
+    // Newest listing first. (The temporary pin for Finch Farm Whitaker has been removed.)
+    const allHorses = await db.select().from(horses).orderBy(
       desc(horses.created_at)
     );
-    // Temporary featured listing: move it to the front without changing
-    // the order of the other horses.
-    const featuredHorseId = 118; // Finch Farm Whitaker
-    const allHorses = [
-      ...horsesByRecency.filter(horse => horse.id === featuredHorseId),
-      ...horsesByRecency.filter(horse => horse.id !== featuredHorseId),
-    ];
 
     // If no filters are provided, return all horses (most recent first)
     if (Object.keys(filters).length === 0) {
