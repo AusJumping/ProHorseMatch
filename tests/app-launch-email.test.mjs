@@ -46,6 +46,8 @@ test("the email uses Jo's approved wording, links the App Store and can be unsub
     assert.ok(body.includes(APP_STORE_URL));
     assert.ok(body.includes("Download Pro Horse Match for iPhone"));
     assert.ok(body.includes("no need to create another account"));
+    assert.ok(body.includes("Never miss a match or a message"));
+    assert.ok(body.includes("chat message"));
     assert.ok(body.includes("Android"));
     assert.ok(body.includes("Google Play"));
     assert.ok(body.includes("info@australianjumping.com.au"));

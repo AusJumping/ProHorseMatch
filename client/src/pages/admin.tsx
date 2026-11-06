@@ -1834,7 +1834,7 @@ export default function AdminPage() {
           </div>
 
           {/* Desktop Tabs */}
-          <TabsList className="hidden md:grid w-full grid-cols-9">
+          <TabsList className="hidden md:grid w-full grid-cols-10">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="reports">Reports</TabsTrigger>

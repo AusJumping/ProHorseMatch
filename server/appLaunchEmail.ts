@@ -91,6 +91,7 @@ export function renderAppLaunchEmail(params: { name?: string; unsubscribeUrl: st
     <h1 style="margin:0 0 18px 0;font-size:28px;line-height:1.25;color:#2b2b2b;">Pro Horse Match is now available for iPhone</h1>
     <p style="${p}">Finding your next performance horse, or connecting your horse with the right buyer, is now even more convenient.</p>
     <p style="${p}">Download Pro Horse Match from the App Store to browse horses, save your favourites and keep in touch with buyers and sellers from your iPhone.</p>
+    <p style="${p}"><strong>Never miss a match or a message: you will get an alert whenever a new horse matches your search and whenever someone sends you a chat message.</strong></p>
     <p style="${p}">Already a member? Sign in with your existing Pro Horse Match email address and password. There\u2019s no need to create another account.</p>
     <div style="text-align:center;margin:30px 0;">
       <a href="${APP_STORE_URL}" style="background:#cdac6e;color:#2b2b2b;padding:16px 34px;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;display:inline-block;">Download Pro Horse Match for iPhone</a>
@@ -120,6 +121,8 @@ Pro Horse Match is now available for iPhone
 Finding your next performance horse, or connecting your horse with the right buyer, is now even more convenient.
 
 Download Pro Horse Match from the App Store to browse horses, save your favourites and keep in touch with buyers and sellers from your iPhone.
+
+Never miss a match or a message: you will get an alert whenever a new horse matches your search and whenever someone sends you a chat message.
 
 Already a member? Sign in with your existing Pro Horse Match email address and password. There\u2019s no need to create another account.
 
