@@ -510,6 +510,82 @@ function SubscriptionReminderPanel() {
   );
 }
 
+function AppLaunchEmailPanel() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [previewSent, setPreviewSent] = useState(false);
+
+  const { data } = useQuery<any>({
+    queryKey: ['/api/admin/app-launch-email/status'],
+    refetchInterval: (query: any) => (query?.state?.data?.job?.running ? 3000 : false),
+  });
+  const summary = data?.summary;
+  const job = data?.job;
+
+  const previewMutation = useMutation({
+    mutationFn: () => apiRequest('POST', '/api/admin/app-launch-email/preview'),
+    onSuccess: () => {
+      setPreviewSent(true);
+      toast({ title: "Preview sent", description: "Check info@australianjumping.com.au for the preview." });
+    },
+    onError: (error: any) => toast({ title: "Preview failed", description: error.message || "An error occurred", variant: "destructive" }),
+  });
+
+  const sendMutation = useMutation({
+    mutationFn: () => apiRequest('POST', '/api/admin/app-launch-email/send', { confirmCount: summary?.eligible }),
+    onSuccess: () => {
+      toast({ title: "Sending started", description: "The emails are going out one at a time. You can leave this page." });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/app-launch-email/status'] });
+    },
+    onError: (error: any) => toast({ title: "Not sent", description: error.message || "An error occurred", variant: "destructive" }),
+  });
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2"><Mail className="h-5 w-5" />Now on the App Store email</CardTitle>
+        <CardDescription>
+          Tells people the app is on the App Store, that alerts for matches and chat messages are on, and that Android testers are wanted.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {summary ? (
+          <div className="rounded-md border p-4 text-sm space-y-1">
+            <p><strong>{summary.eligible}</strong> people will receive it (verified email, not unsubscribed).</p>
+            <p className="text-muted-foreground">
+              Left out: {summary.notVerified} not verified, {summary.unsubscribed} unsubscribed, {summary.invalidEmail} invalid address, {summary.alreadySent} already sent.
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Checking who would receive it...</p>
+        )}
+
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" onClick={() => previewMutation.mutate()} disabled={previewMutation.isPending || job?.running}>
+            {previewMutation.isPending ? 'Sending preview...' : 'Send a preview to me'}
+          </Button>
+          <Button
+            disabled={!previewSent || !summary || summary.eligible === 0 || sendMutation.isPending || job?.running}
+            onClick={() => {
+              if (confirm(`Send the email to ${summary.eligible} people now? This cannot be undone.`)) sendMutation.mutate();
+            }}
+          >
+            {summary ? `Send to ${summary.eligible} people` : 'Send'}
+          </Button>
+        </div>
+        {!previewSent && <p className="text-xs text-muted-foreground">Send yourself the preview first. The send button unlocks after that.</p>}
+
+        {job && (job.running || job.finishedAt > 0) && (
+          <div className="rounded-md bg-muted p-4 text-sm">
+            {job.running ? 'Sending...' : 'Finished.'} Sent {job.sent} of {job.total}
+            {job.failed > 0 ? `, ${job.failed} failed (run it again to retry only those)` : ''}.
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function EmailAnnouncementPanel() {
   const { toast } = useToast();
   const [previewSent, setPreviewSent] = useState(false);
@@ -2508,6 +2584,7 @@ export default function AdminPage() {
           <TabsContent value="email" className="space-y-6">
             <EmailVerificationReminderPanel />
             <SubscriptionReminderPanel />
+            <AppLaunchEmailPanel />
             <EmailAnnouncementPanel />
           </TabsContent>
             </Tabs>

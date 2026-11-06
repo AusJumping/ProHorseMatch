@@ -16,6 +16,9 @@ import { createAuthToken, verifyAuthToken } from "./authToken";
 import { checkFavourite, checkConversation, HorsePermissionError } from "./horsePermissions";
 import { createAdminGuard } from "./adminPermissions";
 import { mayDeleteImage } from "./mediaPermissions";
+import { selectRecipients, greetingName, LAUNCH_CAMPAIGN_ID, CONTACT_EMAIL as LAUNCH_CONTACT } from "./appLaunchEmail";
+import { sentUserIds, claimRecipient, releaseRecipient } from "./appLaunchEmailLog";
+import { sendAppLaunchEmail } from "./emailService";
 import { sendVerificationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendMessageNotificationEmail, sendHorseListingNotification, sendNewConversationNotificationEmail, sendConversationReminderEmail, sendSubscriptionReminderEmail, sendPushNotificationAnnouncementEmail, sendVerificationReminderEmail } from "./emailService";
 import { codeMatches, AttemptLimiter } from "./verificationCode";
 import { buildHorsePage, robotsTxt, sitemapXml } from "./seoPages";
@@ -2828,6 +2831,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Batch announcement email error:", error);
       return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // ---- "Now on the App Store" launch email (admin only: everything under /api/admin is behind requireAdministrator) ----
+  const launchJob = { running: false, startedAt: 0, finishedAt: 0, total: 0, sent: 0, failed: 0, errors: [] as string[] };
+
+  app.get("/api/admin/app-launch-email/status", async (req: any, res) => {
+    try {
+      const [users, already] = await Promise.all([storage.getUsers(), sentUserIds(LAUNCH_CAMPAIGN_ID)]);
+      const { summary } = selectRecipients(users, already, [LAUNCH_CONTACT]);
+      return res.json({ summary, job: launchJob });
+    } catch (error) {
+      console.error("Launch email status error:", error);
+      return res.status(500).json({ message: "Could not work out who would receive this email" });
+    }
+  });
+
+  app.post("/api/admin/app-launch-email/preview", async (req: any, res) => {
+    try {
+      const admin = await storage.getUserById(req.userId!);
+      const ok = await sendAppLaunchEmail({ to: LAUNCH_CONTACT, name: greetingName(admin || {}) });
+      return ok ? res.json({ success: true, message: `Preview sent to ${LAUNCH_CONTACT}` }) : res.status(500).json({ success: false, message: "The preview could not be sent" });
+    } catch (error) {
+      console.error("Launch email preview error:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/admin/app-launch-email/send", async (req: any, res) => {
+    try {
+      if (launchJob.running) return res.status(409).json({ message: "A send is already running" });
+      const [users, already] = await Promise.all([storage.getUsers(), sentUserIds(LAUNCH_CAMPAIGN_ID)]);
+      const { recipients } = selectRecipients(users, already, [LAUNCH_CONTACT]);
+      // The person pressing the button confirms the exact number they saw on screen.
+      if (req.body?.confirmCount !== recipients.length) {
+        return res.status(409).json({ message: `The number of recipients changed to ${recipients.length}. Reload the page and check it again.` });
+      }
+      Object.assign(launchJob, { running: true, startedAt: Date.now(), finishedAt: 0, total: recipients.length, sent: 0, failed: 0, errors: [] });
+      res.status(202).json({ message: `Sending to ${recipients.length} people in the background`, job: launchJob });
+
+      // Runs after the response: one email at a time, about two per second to stay inside the provider's limit.
+      (async () => {
+        for (const user of recipients) {
+          let claimed = false;
+          try {
+            claimed = await claimRecipient(LAUNCH_CAMPAIGN_ID, user.id, user.email);
+            if (!claimed) continue; // somebody else already sent it
+            const ok = await sendAppLaunchEmail({ to: user.email, name: greetingName(user) });
+            if (ok) {
+              launchJob.sent++;
+            } else {
+              launchJob.failed++;
+              launchJob.errors.push(`Not sent: user ${user.id}`);
+              await releaseRecipient(LAUNCH_CAMPAIGN_ID, user.id);
+            }
+          } catch (error) {
+            launchJob.failed++;
+            launchJob.errors.push(`Error for user ${user.id}`);
+            if (claimed) await releaseRecipient(LAUNCH_CAMPAIGN_ID, user.id).catch(() => {});
+          }
+          await new Promise(resolve => setTimeout(resolve, 550));
+        }
+        launchJob.running = false;
+        launchJob.finishedAt = Date.now();
+        console.log(`Launch email finished: sent ${launchJob.sent}, failed ${launchJob.failed}, total ${launchJob.total}`);
+      })();
+    } catch (error) {
+      launchJob.running = false;
+      console.error("Launch email send error:", error);
+      if (!res.headersSent) return res.status(500).json({ message: "Internal server error" });
     }
   });
 

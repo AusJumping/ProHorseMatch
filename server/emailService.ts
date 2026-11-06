@@ -1,5 +1,6 @@
 import { MailService } from '@sendgrid/mail';
 import { verificationCodeFor } from './verificationCode';
+import { renderAppLaunchEmail, unsubscribeUrlFor, CONTACT_EMAIL } from './appLaunchEmail';
 
 // Support both SendGrid and Resend
 let mailService: MailService | null = null;
@@ -26,7 +27,8 @@ async function initializeEmailService() {
 // Initialize the service
 initializeEmailService();
 
-const BASE_URL = 'https://pro-horse-match-info6446.replit.app';
+// Unsubscribe links must use the real site address (the old Replit address no longer hosts the app).
+const BASE_URL = 'https://prohorsematch.com';
 
 function getUnsubscribeHeaders(email: string): Record<string, string> {
   const encodedEmail = Buffer.from(email).toString('base64url');
@@ -1335,6 +1337,47 @@ Connecting Performance Horses with new owners
     return true;
   } catch (error) {
     console.error('Push notification announcement email service error:', error);
+    return false;
+  }
+}
+// "Now on the App Store" announcement. Sent one person at a time by the admin tool in routes.ts.
+export async function sendAppLaunchEmail(params: { to: string; name?: string }): Promise<boolean> {
+  const unsubscribeUrl = unsubscribeUrlFor(params.to);
+  const { subject, html, text } = renderAppLaunchEmail({ name: params.name, unsubscribeUrl });
+  const headers = getUnsubscribeHeaders(params.to);
+  try {
+    if (resend) {
+      const { error } = await resend.emails.send({
+        from: 'Pro Horse Match <notifications@prohorsematch.com>',
+        to: [params.to],
+        replyTo: CONTACT_EMAIL,
+        subject,
+        html,
+        text,
+        headers,
+      });
+      if (error) {
+        console.error('App launch email error:', error);
+        return false;
+      }
+      return true;
+    }
+    if (mailService) {
+      await mailService.send({
+        from: 'notifications@prohorsematch.com',
+        replyTo: CONTACT_EMAIL,
+        to: params.to,
+        subject,
+        html,
+        text,
+        headers,
+      });
+      return true;
+    }
+    console.warn('No email service configured - app launch email not sent');
+    return false;
+  } catch (error) {
+    console.error('App launch email service error:', error);
     return false;
   }
 }
