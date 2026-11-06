@@ -38,22 +38,20 @@ test("greeting uses a first name, never a login handle or an email address", () 
   assert.equal(greetingName({ name: "jo@example.com" }), "");
 });
 
-test("the email says what Jo wants, links the App Store and can be unsubscribed", () => {
+test("the email uses Jo's approved wording, links the App Store and can be unsubscribed", () => {
   const unsub = unsubscribeUrlFor("sam@example.com");
   const { subject, html, text } = renderAppLaunchEmail({ name: "Sam", unsubscribeUrl: unsub });
-  assert.equal(subject, "Pro Horse Match is now on the App Store");
+  assert.equal(subject, "Pro Horse Match is now available for iPhone");
   for (const body of [html, text]) {
     assert.ok(body.includes(APP_STORE_URL));
-    assert.ok(body.includes("Never miss a match"));
-    assert.ok(body.includes("chat message"));
+    assert.ok(body.includes("Download Pro Horse Match for iPhone"));
+    assert.ok(body.includes("no need to create another account"));
     assert.ok(body.includes("Android"));
     assert.ok(body.includes("Google Play"));
     assert.ok(body.includes("info@australianjumping.com.au"));
     assert.ok(body.includes("https://prohorsematch.com/unsubscribe?email="));
   }
-  assert.ok(html.includes("Hi Sam,"));
-  assert.ok(renderAppLaunchEmail({ unsubscribeUrl: unsub }).html.includes("Hi there,"));
-});
+  });
 
 test("house style: no emojis and no em dashes, and nothing is injected through the name", () => {
   const { html, text, subject } = renderAppLaunchEmail({ name: '<img src=x onerror=alert(1)>', unsubscribeUrl: unsubscribeUrlFor("x@example.com") });

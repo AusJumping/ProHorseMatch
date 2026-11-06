@@ -72,13 +72,12 @@ export function unsubscribeUrlFor(email: string): string {
   return `${SITE_URL}/unsubscribe?email=${Buffer.from(email).toString("base64url")}`;
 }
 
-export const LAUNCH_SUBJECT = "Pro Horse Match is now on the App Store";
-const PREHEADER = "Never miss a match or a chat message. Plus, Android testers wanted.";
+export const LAUNCH_SUBJECT = "Pro Horse Match is now available for iPhone";
+const PREHEADER = "Download Pro Horse Match from the App Store. Android testers wanted.";
 
 export function renderAppLaunchEmail(params: { name?: string; unsubscribeUrl: string }): { subject: string; html: string; text: string } {
-  const hello = params.name ? `Hi ${escapeHtml(params.name)},` : "Hi there,";
-  const helloText = params.name ? `Hi ${params.name},` : "Hi there,";
   const unsub = escapeHtml(params.unsubscribeUrl);
+  const p = "font-size:16px;line-height:1.7;margin:0 0 18px 0;";
 
   const html = `<!doctype html>
 <html>
@@ -89,21 +88,22 @@ export function renderAppLaunchEmail(params: { name?: string; unsubscribeUrl: st
     <div style="color:#e4e2dd;font-size:28px;font-weight:700;letter-spacing:4px;">PRO HORSE MATCH</div>
   </div>
   <div style="background:#ffffff;padding:40px 32px;border-left:1px solid #e8e3d3;border-right:1px solid #e8e3d3;">
-    <h1 style="margin:0 0 18px 0;font-size:28px;line-height:1.25;color:#2b2b2b;">Pro Horse Match is now on the App Store</h1>
-    <p style="font-size:16px;line-height:1.7;margin:0 0 18px 0;">${hello}</p>
-    <p style="font-size:16px;line-height:1.7;margin:0 0 18px 0;">You can now download the Pro Horse Match app on your iPhone. Sign in with the same email and password you already use, and you will get an alert whenever a new horse matches your search and whenever someone sends you a chat message.</p>
-    <p style="font-size:18px;line-height:1.5;margin:0 0 26px 0;font-weight:700;color:#8a6f3c;">Never miss a match. Never miss a message.</p>
+    <h1 style="margin:0 0 18px 0;font-size:28px;line-height:1.25;color:#2b2b2b;">Pro Horse Match is now available for iPhone</h1>
+    <p style="${p}">Finding your next performance horse, or connecting your horse with the right buyer, is now even more convenient.</p>
+    <p style="${p}">Download Pro Horse Match from the App Store to browse horses, save your favourites and keep in touch with buyers and sellers from your iPhone.</p>
+    <p style="${p}">Already a member? Sign in with your existing Pro Horse Match email address and password. There\u2019s no need to create another account.</p>
     <div style="text-align:center;margin:30px 0;">
-      <a href="${APP_STORE_URL}" style="background:#cdac6e;color:#2b2b2b;padding:16px 34px;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;display:inline-block;">Get the app on the App Store</a>
+      <a href="${APP_STORE_URL}" style="background:#cdac6e;color:#2b2b2b;padding:16px 34px;text-decoration:none;border-radius:6px;font-weight:700;font-size:16px;display:inline-block;">Download Pro Horse Match for iPhone</a>
     </div>
-    <p style="font-size:16px;line-height:1.7;margin:0 0 18px 0;">The app has our fresh new look, built for browsing performance horses by discipline, saving the ones you like and chatting with sellers and buyers without leaving the app.</p>
     <div style="background:#faf6ec;border-left:4px solid #cdac6e;padding:20px 22px;margin:30px 0;">
       <p style="font-size:18px;font-weight:700;margin:0 0 10px 0;">Android is coming soon, and we need your help</p>
-      <p style="font-size:16px;line-height:1.7;margin:0;">Before we launch on Google Play, we need a small group of Android users to try the app for two weeks. If you have an Android phone and would like to help, just reply to this email or write to <a href="mailto:${CONTACT_EMAIL}" style="color:#8a6f3c;">${CONTACT_EMAIL}</a> and we will send you the link.</p>
+      <p style="font-size:16px;line-height:1.7;margin:0 0 12px 0;">Before we can launch on Google Play, we need a small group of Android users to try the app for two weeks.</p>
+      <p style="font-size:16px;line-height:1.7;margin:0 0 12px 0;">If you have an Android phone and can spare a few minutes during that time, email <a href="mailto:${CONTACT_EMAIL}" style="color:#8a6f3c;">${CONTACT_EMAIL}</a> and we\u2019ll send you the link and instructions.</p>
+      <p style="font-size:16px;line-height:1.7;margin:0;">Your feedback will help make the app better for everyone.</p>
     </div>
-    <p style="font-size:16px;line-height:1.7;margin:0 0 18px 0;">You can also keep using Pro Horse Match on any device at <a href="${SITE_URL}" style="color:#8a6f3c;">prohorsematch.com</a>. It is the same account.</p>
-    <p style="font-size:16px;line-height:1.7;margin:28px 0 0 0;">Thank you for being part of Pro Horse Match.</p>
-    <p style="font-size:16px;line-height:1.7;margin:6px 0 0 0;"><strong>The Pro Horse Match team</strong></p>
+    <p style="${p}">Thank you to everyone who has supported Pro Horse Match so far. Whether you\u2019re looking for your next horse or finding the right home for one, we\u2019re glad you\u2019re part of it.</p>
+    <p style="${p}">You can still use Pro Horse Match any time at <a href="${SITE_URL}" style="color:#8a6f3c;">prohorsematch.com</a>.</p>
+    <p style="font-size:16px;line-height:1.7;margin:28px 0 0 0;"><strong>The Pro Horse Match team</strong></p>
   </div>
   <div style="padding:22px 30px;text-align:center;font-size:12px;line-height:1.6;color:#6f6a5f;">
     You are receiving this because you have a Pro Horse Match account. Questions? Write to <a href="mailto:${CONTACT_EMAIL}" style="color:#6f6a5f;">${CONTACT_EMAIL}</a>.<br>
@@ -115,25 +115,28 @@ export function renderAppLaunchEmail(params: { name?: string; unsubscribeUrl: st
 
   const text = `PRO HORSE MATCH
 
-Pro Horse Match is now on the App Store
+Pro Horse Match is now available for iPhone
 
-${helloText}
+Finding your next performance horse, or connecting your horse with the right buyer, is now even more convenient.
 
-You can now download the Pro Horse Match app on your iPhone. Sign in with the same email and password you already use, and you will get an alert whenever a new horse matches your search and whenever someone sends you a chat message.
+Download Pro Horse Match from the App Store to browse horses, save your favourites and keep in touch with buyers and sellers from your iPhone.
 
-Never miss a match. Never miss a message.
+Already a member? Sign in with your existing Pro Horse Match email address and password. There\u2019s no need to create another account.
 
-Get the app on the App Store:
+Download Pro Horse Match for iPhone:
 ${APP_STORE_URL}
 
-The app has our fresh new look, built for browsing performance horses by discipline, saving the ones you like and chatting with sellers and buyers without leaving the app.
-
 ANDROID IS COMING SOON, AND WE NEED YOUR HELP
-Before we launch on Google Play, we need a small group of Android users to try the app for two weeks. If you have an Android phone and would like to help, just reply to this email or write to ${CONTACT_EMAIL} and we will send you the link.
+Before we can launch on Google Play, we need a small group of Android users to try the app for two weeks.
 
-You can also keep using Pro Horse Match on any device at ${SITE_URL}. It is the same account.
+If you have an Android phone and can spare a few minutes during that time, email ${CONTACT_EMAIL} and we\u2019ll send you the link and instructions.
 
-Thank you for being part of Pro Horse Match.
+Your feedback will help make the app better for everyone.
+
+Thank you to everyone who has supported Pro Horse Match so far. Whether you\u2019re looking for your next horse or finding the right home for one, we\u2019re glad you\u2019re part of it.
+
+You can still use Pro Horse Match any time at ${SITE_URL}.
+
 The Pro Horse Match team
 
 ---
