@@ -4671,9 +4671,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get all active saved searches with email notifications enabled
       const allSearches = await storage.getSavedSearches();
-      const activeSearches = allSearches.filter(search => 
-        search.is_active && search.email_notifications
-      );
+      // Push is the main way people hear about matches, so it does not depend on the email switch.
+      const activeSearches = allSearches.filter(search => search.is_active);
 
       console.log(`Found ${activeSearches.length} active saved searches to check`);
 
@@ -4689,10 +4688,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Get user details for email
             const user = await storage.getUserById(search.user_id);
             if (user && user.email_verified) {
-              await sendSearchMatchEmail(user, search, newHorse);
-              
-              // Send push notification for new match
-              await sendNewMatchNotification(user.id, newHorse.name, newHorse.id);
+              // Push first, and each step on its own: a failed email must never stop the push (or the reverse).
+              try {
+                await sendNewMatchNotification(user.id, newHorse.name, newHorse.id);
+              } catch (pushError) {
+                console.error(`Match push failed for user ${user.id}:`, pushError);
+              }
+              if (search.email_notifications) {
+                try {
+                  await sendSearchMatchEmail(user, search, newHorse);
+                } catch (emailError) {
+                  console.error(`Match email failed for user ${user.id}:`, emailError);
+                }
+              }
               
               // Record the notification
               await storage.createSearchNotification({
